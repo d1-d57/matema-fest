@@ -204,8 +204,30 @@
       letter-spacing: -0.01em;
       text-transform: none;
       display: flex;
+      gap: 0.3em;
       overflow: hidden;
       line-height: 1;
+    }
+
+    /* Mobile preloader: на узких экранах "Фрактальная Одиссея" в italic
+       при font-size 48px = ~600px ширины, что больше viewport 375px.
+       Решаем двумя правилами: уменьшаем размер, и flex-wrap чтобы
+       title переносился на две строки естественным образом. */
+    @media (max-width: 600px) {
+      .preloader-title {
+        font-size: clamp(36px, 11vw, 48px);
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+        max-width: 92vw;
+      }
+      .preloader-slogan {
+        font-size: clamp(9.5px, 2.5vw, 13px);
+        max-width: 96vw;
+        text-align: center;
+        line-height: 1.5;
+        letter-spacing: 0.1em;
+      }
     }
 
     .preloader-title .letter {
@@ -215,20 +237,25 @@
       animation: letterIn 2000ms var(--ease-out-expo) forwards;
     }
 
+    .preloader-title .word {
+      display: inline-flex;
+      white-space: nowrap;
+    }
+
     @keyframes letterIn {
       to { opacity: 1; transform: translateY(0); }
     }
 
     .preloader-slogan {
       font-family: var(--font-body);
-      font-size: clamp(11px, 1.05vw, 15px);
+      font-size: clamp(11px, 1.4vw, 20px);
       color: var(--color-muted);
       letter-spacing: 0.18em;
       text-transform: uppercase;
       margin-top: clamp(20px, 2.5vh, 32px);
       opacity: 0;
       transform: translateY(15px);
-      transition: opacity 3600ms var(--ease-out-expo), transform 3600ms var(--ease-out-expo);
+      transition: opacity 600ms var(--ease-out-expo), transform 600ms var(--ease-out-expo);
     }
 
     .preloader-slogan.visible {
@@ -2243,7 +2270,7 @@
   <!-- ====== PRELOADER ====== -->
   <div id="preloader">
     <div class="preloader-title" id="preloader-title"></div>
-    <div class="preloader-slogan" id="preloader-slogan">лекции · мастерские · инсталляции · музыка</div>
+    <div class="preloader-slogan" id="preloader-slogan">научпоп · искусство · музыка · мастерские</div>
     <div class="preloader-progress">
       <div class="preloader-progress-fill"></div>
     </div>
@@ -3853,29 +3880,40 @@ window.addEventListener('resize', ()=>{
     const title = document.getElementById('preloader-title');
     const slogan = document.getElementById('preloader-slogan');
     const preloader = document.getElementById('preloader');
-    const word = 'Фрактальная Одиссея';
+    const phrase = 'Фрактальная Одиссея';
 
-    /* Split into letters with staggered delay */
-    word.split('').forEach(function(ch, i) {
-      const span = document.createElement('span');
-      span.className = 'letter';
-      span.textContent = ch === ' ' ? '\u00A0' : ch;
-      span.style.animationDelay = (i * 60) + 'ms';
-      title.appendChild(span);
+    /* Split into words then letters. Каждое слово — отдельный flex-child,
+       внутри слова буквы держатся вместе через white-space:nowrap.
+       Это даёт правильный word-wrap на mobile: "Фрактальная" / "Одиссея",
+       а не "Фрактальная Одис" / "сея". */
+    var letterIndex = 0;
+    phrase.split(' ').forEach(function(word) {
+      var wordSpan = document.createElement('span');
+      wordSpan.className = 'word';
+      word.split('').forEach(function(ch) {
+        var span = document.createElement('span');
+        span.className = 'letter';
+        span.textContent = ch;
+        span.style.animationDelay = (letterIndex * 60) + 'ms';
+        wordSpan.appendChild(span);
+        letterIndex++;
+      });
+      title.appendChild(wordSpan);
     });
 
-    /* Show slogan after last letter starts */
-    var sloganDelay = word.length * 60 + 800;
+    /* Show slogan early enough to be seen before preloader exit.
+       MIN_PRELOADER_MS = 1500, поэтому слоган должен появиться значительно раньше.
+       Раньше было letterIndex*60+800 = ~1880мс, что наступало уже после exit. */
     setTimeout(function() {
       slogan.classList.add('visible');
-    }, sloganDelay);
+    }, 700);
 
     /* Smart exit: ждём либо event 'load' (страница реально готова),
        либо минимум 1500мс (чтобы анимация букв успела сложиться).
        Что наступит позже — то и срабатывает. На быстром интернете
        с закэшированными шрифтами выходим за 1.5с вместо 4.5с;
        на медленном ждём окончания загрузки. */
-    var MIN_PRELOADER_MS = 1500;
+    var MIN_PRELOADER_MS = 2300;
     var startTime = performance.now();
     var exited = false;
 
