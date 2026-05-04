@@ -25,6 +25,10 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔺</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Preconnect к heavy third-party — даёт ~350мс на mobile -->
+  <link rel="preconnect" href="https://maps.yastatic.net" crossorigin>
+  <link rel="preconnect" href="https://timepad.ru">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
 
   <!-- Lenis smooth scroll -->
@@ -513,7 +517,7 @@
       gap: var(--space-xs);
       padding: 18px 44px;
       background: var(--color-accent);
-      color: var(--color-bg-light);
+      color: var(--color-bg-dark);
       font-family: var(--font-body);
       font-size: clamp(14px, 1vw, 16px);
       font-weight: 500;
@@ -2255,6 +2259,7 @@
   <!-- Dot Navigation -->
   <nav id="dot-nav" aria-label="Навигация по секциям"></nav>
 
+  <main>
   <!-- ====== HERO ====== -->
   <section id="hero" class="section" data-theme="dark">
     <span class="chapter-num chapter-num--dark chapter-num--bottom-right" aria-hidden="true">i</span>
@@ -2297,7 +2302,7 @@
   <section id="about" class="section" data-theme="light">
     <span class="chapter-num chapter-num--light chapter-num--top-left" aria-hidden="true">ii</span>
     <span class="chapter-label chapter-label--light" style="top: clamp(40px, 8vw, 90px); left: calc(clamp(20px, 4vw, 80px) + clamp(80px, 16vw, 130px));" aria-hidden="true">Глава · Манифест</span>
-    <img class="about-watermark" src="assets/about-50.png" alt="" aria-hidden="true">
+    <picture><source type="image/webp" srcset="assets/about-50.webp"><img class="about-watermark" src="assets/about-50.png" alt="" aria-hidden="true"></picture>
     <span class="about-watermark-caption" aria-hidden="true">лет работе<br>Бенуа Мандельброта<br>«Fractal Geometry<br>of Nature»</span>
     <div class="about-content">
       <h2 class="about-title reveal">Полвека фракталу</h2>
@@ -2435,7 +2440,7 @@
         <div class="schedule-list-hint">Программа собирается — до 23 мая список будет расти</div>
       </aside>
       <div class="schedule-fern-col">
-        <iframe class="schedule-fern-fullbleed" id="schedule-fern" srcdoc="<!doctype html>
+        <iframe class="schedule-fern-fullbleed" id="schedule-fern" title="Расписание фестиваля в форме папоротника" srcdoc="<!doctype html>
 <html lang=&quot;ru&quot;>
 <head>
 <meta charset=&quot;utf-8&quot;>
@@ -3770,6 +3775,7 @@ window.addEventListener('resize', ()=>{
       <span class="marquee-item">лекции <span class="accent">·</span> мастерские <span class="accent">·</span> инсталляции <span class="accent">·</span> музыка</span>
     </div>
   </div>
+  </main>
 
   <!-- ====== FOOTER ====== -->
   <footer id="footer">
