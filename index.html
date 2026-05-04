@@ -4000,53 +4000,10 @@ window.addEventListener('resize', ()=>{
   /* ============================================
      HERO — Text-split word animation
      ============================================ */
-  /* ============================================
-     ADAPTIVE LOADING — определяем "слабое" устройство
-     ============================================
-     Признаки слабого устройства / медленного контекста:
-       — < 4 ГБ RAM (deviceMemory)
-       — < 4 CPU-ядер (hardwareConcurrency)
-       — медленное соединение (2g/slow-2g/slow-4g)
-       — пользователь включил Save Data в браузере
-       — пользователь выбрал prefers-reduced-motion в системе
-     На "сильном" устройстве — полные анимации как и раньше.
-     На "слабом" — мгновенный показ контента, никаких 4-секундных fade-in.
-     Mac в Safari, нормальный Wi-Fi → НЕ слабое, всё как было. */
-  function isWeakDevice() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-    if (navigator.deviceMemory && navigator.deviceMemory < 4) return true;
-    if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) return true;
-    var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (conn) {
-      if (conn.saveData) return true;
-      var et = conn.effectiveType;
-      if (et === '2g' || et === 'slow-2g' || et === 'slow-4g') return true;
-    }
-    return false;
-  }
-  var WEAK_DEVICE = isWeakDevice();
-
-  /* На слабых устройствах сразу показываем все элементы которые иначе
-     CSS скрывает через opacity:0. Это нужно вызвать ДО startHeroAnimations
-     и initSectionAnimations, иначе на слабом устройстве элементы навсегда
-     останутся скрытыми. */
-  function showAllImmediately() {
-    var hidden = document.querySelectorAll(
-      '#hero-title, #hero-label, #hero-meta, #hero-desc, ' +
-      '.hero-opencall-hint, .hero-buttons, #scroll-hint, ' +
-      '.about-title, .about-label, .about-text, ' +
-      '.tracks-title, .tracks-label, ' +
-      '.speakers-title, .speaker-card, ' +
-      '.cta-title, .cta-subtitle'
-    );
-    for (var i = 0; i < hidden.length; i++) {
-      hidden[i].style.opacity = '1';
-    }
-  }
-
   function startHeroAnimations() {
-    if (WEAK_DEVICE) {
-      showAllImmediately();
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reducedMotion) {
       return;
     }
 
@@ -4071,9 +4028,10 @@ window.addEventListener('resize', ()=>{
   function initSectionAnimations() {
     if (typeof gsap === 'undefined') return;
 
-    /* На слабом устройстве секции уже показаны через showAllImmediately().
-       Регистрируем no-op'ы. */
-    if (WEAK_DEVICE) {
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ===== REDUCED MOTION: no hiding, no animation, just register no-ops ===== */
+    if (reducedMotion) {
       sectionAnimations.about = function() {};
       sectionAnimations.tracks = function() {};
       sectionAnimations.speakers = function() {};
