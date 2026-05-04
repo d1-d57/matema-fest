@@ -963,6 +963,15 @@
     .chapter-num--top-left { top: clamp(20px, 4vw, 60px); left: clamp(20px, 4vw, 80px); }
     .chapter-num--bottom-right { bottom: clamp(20px, 4vw, 60px); right: clamp(20px, 4vw, 80px); }
 
+    /* Mobile: левые цифры переезжают вправо — на узком экране они
+       наезжают на заголовки, а правый угол всегда свободнее. */
+    @media (max-width: 900px) {
+      .chapter-num--top-left {
+        left: auto;
+        right: clamp(16px, 4vw, 32px);
+      }
+    }
+
     /* Маленькая каллиграфическая «глава» под номером.
        Декоративный label — на mobile/tablet скрываем, иначе наезжает на цифру. */
     .chapter-label {
@@ -2067,8 +2076,37 @@
         min-height: 130px;
         width: 100%;
       }
+      /* На mobile фотографии слишком мелкие и плохо обрезаются.
+         Возвращаем нейтральные карточки: имя и роль на тёмном фоне,
+         без фото — как было до версии с has-photo. */
+      .speakers-grid--compact .speaker-card.has-photo .speaker-photo,
+      .speakers-grid--compact .speaker-card.has-photo::after {
+        display: none;
+      }
+      .speakers-grid--compact .speaker-card.has-photo .speaker-name,
+      .speakers-grid--compact .speaker-card.has-photo .speaker-role {
+        position: static;
+        opacity: 1;
+        transform: none;
+        text-shadow: none;
+        color: var(--color-bg-light);
+      }
+      .speakers-grid--compact .speaker-card.has-photo {
+        background: rgba(236, 227, 208, 0.04);
+        border: 1px solid rgba(236, 227, 208, 0.12);
+        padding: clamp(16px, 4vw, 24px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
       .speakers-content {
         padding: clamp(40px, 8vw, 80px) clamp(20px, 5vw, 32px);
+      }
+      /* Заголовок секции имеет цифру-главу в правом углу — даём ему
+         padding-right под её ширину чтобы текст не попадал под цифру. */
+      .speakers-header .speakers-title {
+        padding-right: clamp(70px, 18vw, 130px);
       }
 
       /* Schedule: на мобильном список идёт вертикально, папоротник скрыт.
