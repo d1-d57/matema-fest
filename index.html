@@ -481,31 +481,6 @@
       color: var(--color-accent);
     }
 
-    /* Плашка «лучше с компьютера» — видима только на мобильном */
-    .hero-desktop-hint {
-      display: none;
-      align-items: center;
-      gap: 10px;
-      margin: -32px 0 var(--space-md);
-      padding: 10px 14px;
-      border-left: 1px solid var(--color-accent);
-      font-family: var(--font-body);
-      font-size: 11px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--color-muted);
-      max-width: 320px;
-      line-height: 1.4;
-    }
-    .hero-desktop-hint-mark {
-      color: var(--color-accent);
-      font-size: 12px;
-      flex-shrink: 0;
-    }
-    @media (max-width: 1024px) {
-      .hero-desktop-hint { display: flex; }
-    }
-
     /* Hero description */
     .hero-desc {
       max-width: 920px;
@@ -1020,65 +995,75 @@
     .chapter-label--light { color: #6B5F49; }
 
     /* ============================================
-       TRACKS — Заголовок и метка (используются в overlay над canvas)
+       TRACKS — Аполлонова развёртка + правая панель
+       Структура (desktop): два столбца grid'ом — анимация слева, панель
+       информации справа. Анимация прижата к разделительной линии (вариант
+       C из обсуждения архитектуры): свободное поле уходит влево.
+       Разделитель — тонкая бежевая линия 1px rgba(184,169,138,0.14),
+       тот же цвет что между списком и папоротником в #schedule —
+       чтобы две карты фестиваля держали единый язык.
+       Структура (mobile ≤900px): анимация во весь viewport, заголовок
+       абсолютно top-left над canvas, панель превращается в bottom drawer
+       с blur, появляется только при зуме внутрь категории.
        ============================================ */
-    .tracks-label {
-      font-family: var(--font-body);
-      font-size: var(--fs-small);
-      color: var(--color-muted);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin-bottom: var(--space-sm);
-    }
-
-    .tracks-title {
-      font-family: var(--font-display);
-      font-size: var(--fs-section-title);
-      font-weight: 700;
-      font-style: italic;
-      line-height: 1.1;
-      color: var(--color-bg-light);
-    }
-
-    /* ============================================
-       TRACKS — Аполлонова развёртка (новая структура)
-       ============================================ */
-    .section.section--tall,
-    #tracks {
-      display: block;       /* отменяем flex от .section — sticky child не должен быть в flex */
-      overflow: visible;    /* sticky не работает при overflow:hidden у предка */
-    }
-    .section.section--tall {
-      height: 300vh;
-      min-height: 300vh;
-    }
+    #tracks { display: block; padding: 0; }
     .tracks-stage {
       position: relative;
-      height: 100vh;
       width: 100%;
-      overflow: hidden;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr clamp(360px, 32vw, 460px);
       background: var(--color-bg-dark);
     }
+
+    /* Левая колонка: контейнер с анимацией.
+       justify-content: flex-end — анимация-квадрат прижата к правому
+       краю своей колонки, упирается в разделительную линию панели.
+       Свободное место остаётся слева (вариант C). */
+    .tracks-anim-col {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      overflow: hidden;
+      min-height: 100vh;
+    }
+    .apollon-container {
+      position: relative;
+      width: min(100vh, 100%);
+      height: min(100vh, 100%);
+      aspect-ratio: 1 / 1;
+      margin: 0;
+    }
     #tracks-canvas {
-      position: absolute;
-      inset: 0;
+      display: block;
       width: 100%;
       height: 100%;
-      display: block;
     }
-    .tracks-overlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
+
+    /* Правая колонка: панель информации.
+       Без своего фона — сидит на --color-bg-dark секции.
+       Padding и типографика — по образцу .schedule-list-col,
+       но title-сетка чуть мельче (нет длинного списка событий). */
+    .tracks-info-col {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(28px, 3vw, 40px);
+      padding: clamp(60px, 6vw, 100px) clamp(28px, 3vw, 44px) clamp(48px, 5vw, 80px);
+      border-left: 1px solid rgba(184, 169, 138, 0.14);
+      background: var(--color-bg-dark);
+      min-height: 100vh;
+      max-height: 100vh;
+      overflow-y: auto;
+      /* над римской цифрой "iii" в углу: цифра — chapter-num, position:absolute
+         относительно секции, она просвечивает фоном панели. Это ОК — у неё
+         alpha 0.18, читаемость текста сохраняется. */
       z-index: 2;
     }
-    .tracks-overlay .tracks-header {
-      position: absolute;
-      top: clamp(40px, 5vh, 60px);
-      left: var(--space-section-padding);
-      max-width: 280px;
-    }
-    .tracks-overlay .tracks-label {
+
+    .tracks-info-header { flex: 0 0 auto; }
+    .tracks-info-label {
       font-family: var(--font-body);
       font-size: clamp(11px, 0.85vw, 13px);
       text-transform: uppercase;
@@ -1086,95 +1071,463 @@
       color: var(--color-bg-light);
       opacity: 0.6;
       margin-bottom: 14px;
-      text-shadow: 0 1px 12px rgba(22, 20, 15, 0.85);
     }
-    .tracks-overlay .tracks-title {
+    .tracks-info-title-main {
       font-family: var(--font-display);
       font-style: italic;
       font-weight: 500;
-      font-size: clamp(28px, 3vw, 44px);
-      color: var(--color-bg-light);
+      font-size: clamp(36px, 3.6vw, 56px);
       line-height: 1.05;
+      letter-spacing: -0.01em;
+      color: var(--color-bg-light);
       margin: 0;
-      text-shadow: 0 2px 16px rgba(22, 20, 15, 0.9), 0 0 32px rgba(22, 20, 15, 0.6);
-    }
-    .tracks-stage-indicator {
-      display: none;  /* заменено на пульсирующую стрелку */
     }
 
-    /* Пульсирующая стрелка-индикатор «прокручивайте дальше» */
-    .tracks-scroll-arrow {
+    /* Body — место для динамического контента (default / zoomed).
+       Оба состояния absolute-позиционированы внутри body, переключение
+       opacity. min-height нужен чтобы flex-расчёт не схлопнул контейнер
+       пока контент пуст. */
+    .tracks-info-body {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: clamp(180px, 28vh, 280px);
+    }
+    .tracks-info-default,
+    .info-panel {
       position: absolute;
-      bottom: clamp(28px, 4vh, 48px);
-      left: 50%;
-      transform: translateX(-50%);
-      width: 38px;
-      height: 38px;
+      inset: 0;
+      transition: opacity 280ms ease;
+    }
+    .tracks-info-default {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      opacity: 1;
+    }
+    .tracks-info-default p {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: clamp(14px, 1.05vw, 16px);
+      line-height: 1.55;
+      color: rgba(236, 227, 208, 0.78);
+    }
+    .tracks-info-hint {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(13px, 0.95vw, 15px);
+      color: rgba(200, 154, 61, 0.85);
+    }
+
+    /* info-panel теперь — просто текст внутри колонки.
+       Все старые декорации (свой фон, рамка, blur, padding) убираем —
+       они были нужны когда панель плавала поверх canvas; теперь
+       контейнер сам даёт ей место. */
+    .info-panel {
+      background: none;
+      border: 0;
       padding: 0;
-      background: transparent;
-      border: 1px solid rgba(200, 154, 61, 0.55);
-      border-radius: 50%;
-      color: var(--color-accent);
-      cursor: pointer;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      max-height: none;
+      overflow: visible;
+      width: auto;
+      border-radius: 0;
+      transform: none;
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .info-panel.visible {
+      opacity: 1;
       pointer-events: auto;
+    }
+    /* Когда info-panel.visible — гасим default-текст. :has() поддержан
+       во всех актуальных браузерах (Chrome 105+, Safari 15.4+, FF 121+);
+       на старых fallback — default останется виден под info-panel,
+       приемлемая деградация. */
+    .tracks-info-body:has(.info-panel.visible) .tracks-info-default {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .info-panel h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 500;
+      font-size: clamp(28px, 2.8vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -0.005em;
+      color: var(--color-bg-light);
+    }
+    .info-panel p {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: clamp(14px, 1.05vw, 16px);
+      line-height: 1.55;
+      color: rgba(236, 227, 208, 0.78);
+    }
+
+    /* Тулбар управления панелью — две кнопки наверху, как в расписании.
+       Один паттерн (.panel-back / .panel-map-btn) переиспользуется
+       и в #tracks, и в #schedule, чтобы две карты фестиваля держали
+       единый язык интерфейса. */
+    .tracks-toolbar {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: clamp(14px, 1.6vw, 24px);
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+
+    /* Кнопка возврата из зума — текстовая, body-font 11px uppercase,
+       идентична .schedule-back. JS управляет видимостью через .visible
+       (плюс .is-disabled когда возвращаться некуда — приглушённое
+       состояние, не клик). */
+    .zoom-back {
+      padding: 6px 10px 6px 0;
+      background: transparent;
+      border: 0;
+      text-align: left;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-bg-light);
+      transition: color 200ms ease, opacity 200ms ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.25;          /* по умолчанию приглушённая (нечего сворачивать) */
+      pointer-events: none;
+    }
+    .zoom-back.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .zoom-back:hover { color: var(--color-accent); }
+    .zoom-back .arrow { transition: transform 220ms ease; }
+    .zoom-back:hover .arrow { transform: translateX(-4px); }
+    .zoom-back:focus-visible {
+      outline: 1px solid var(--color-accent);
+      outline-offset: 4px;
+    }
+
+    /* Кнопка «Карта локаций» — открывает модал. Тот же визуальный язык,
+       стрелка справа. Есть всегда (не зависит от состояния зума). */
+    .panel-map-btn {
+      padding: 6px 0 6px 0;
+      background: transparent;
+      border: 0;
+      text-align: left;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-bg-light);
+      transition: color 200ms ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-map-btn:hover { color: var(--color-accent); }
+    .panel-map-btn .arrow { transition: transform 220ms ease; }
+    .panel-map-btn:hover .arrow { transform: translateX(4px); }
+    .panel-map-btn:focus-visible {
+      outline: 1px solid var(--color-accent);
+      outline-offset: 4px;
+    }
+
+    /* MOBILE (≤900px) — другая модель layout'a.
+       Grid схлопывается, анимация идёт во всю ширину, info-col
+       перестраивается: header абсолютно поверх анимации (как было
+       до этой правки), body становится bottom drawer с blur,
+       видим только при зуме. */
+    @media (max-width: 900px) {
+      .tracks-stage {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+      .tracks-anim-col {
+        justify-content: center;
+        height: 100vh;
+        min-height: auto;
+      }
+      .apollon-container {
+        width: min(100vmin, 100%);
+        height: min(100vmin, 100%);
+      }
+
+      /* Информационная колонка перестаёт быть колонкой grid'a:
+         её содержимое раскладывается по странице через absolute. */
+      .tracks-info-col {
+        position: absolute;
+        inset: 0;
+        grid-column: 1;
+        grid-row: 1;
+        background: transparent;
+        border-left: 0;
+        padding: 0;
+        gap: 0;
+        max-height: none;
+        min-height: 0;
+        overflow: visible;
+        pointer-events: none;
+        z-index: 3;
+      }
+      /* Заголовок — абсолютно top-left, поверх анимации. */
+      .tracks-info-header {
+        position: absolute;
+        top: clamp(20px, 5vh, 40px);
+        left: clamp(16px, 5vw, 24px);
+        max-width: 75%;
+        pointer-events: none;
+      }
+      .tracks-info-label {
+        text-shadow: 0 1px 12px rgba(22, 20, 15, 0.85);
+      }
+      .tracks-info-title-main {
+        font-size: clamp(24px, 6.5vw, 36px);
+        text-shadow: 0 2px 16px rgba(22, 20, 15, 0.9),
+                     0 0 32px rgba(22, 20, 15, 0.6);
+      }
+
+      /* Body — bottom drawer. По умолчанию убран вниз, появляется
+         при .info-panel.visible. На mobile default-текст не показываем —
+         drawer молчит пока пользователь не зумирует. */
+      .tracks-info-body {
+        position: absolute;
+        inset: auto 0 0 0;
+        min-height: 0;
+        background: rgba(22, 20, 15, 0.88);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-top: 1px solid rgba(184, 169, 138, 0.14);
+        padding: 14px clamp(16px, 5vw, 24px) 16px;
+        transform: translateY(100%);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 320ms cubic-bezier(0.25, 1, 0.5, 1),
+                    opacity 240ms ease;
+      }
+      .tracks-info-body:has(.info-panel.visible) {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .tracks-info-default { display: none; }
+      .info-panel,
+      .tracks-info-body .info-panel {
+        position: relative;
+        inset: auto;
+      }
+
+      /* На mobile тулбар встаёт сверху-справа над анимацией —
+         компактные текстовые кнопки. Сидят между анимацией и заголовком. */
+      .tracks-toolbar {
+        position: absolute;
+        top: clamp(20px, 5vh, 40px);
+        right: clamp(16px, 5vw, 24px);
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        margin-bottom: 0;
+        z-index: 4;
+        pointer-events: auto;
+      }
+      .zoom-back, .panel-map-btn {
+        font-size: 10px;
+        padding: 4px 0;
+        text-shadow: 0 1px 12px rgba(22, 20, 15, 0.85);
+      }
+    }
+
+    /* ============================================
+       HOVER-TOOLTIP над Аполлонием — название круга
+       при наведении. Особенно полезно при зуме внутрь категории,
+       когда видны обводки соседних кругов с другими названиями.
+       Position: fixed относительно viewport, обновляется на mousemove
+       из IIFE анимации. ============================================ */
+    .tracks-hover-tip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 8;
+      padding: 5px 10px;
+      background: rgba(22, 20, 15, 0.92);
+      border: 1px solid rgba(200, 154, 61, 0.35);
+      border-radius: 4px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(13px, 1vw, 15px);
+      color: var(--color-bg-light);
+      white-space: nowrap;
+      opacity: 0;
+      transform: translate(-50%, -100%) translateY(-12px);
+      transition: opacity 160ms ease;
+    }
+    .tracks-hover-tip.visible { opacity: 1; }
+
+    /* ============================================
+       MAP MODAL — карта залов клуба, открывается из программы
+       и расписания. Mobile-first: на телефоне почти весь viewport,
+       на desktop — компактный overlay по центру.
+       ============================================ */
+    .map-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(16px, 4vw, 48px);
+    }
+    .map-modal.visible { display: flex; }
+
+    .map-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(22, 20, 15, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 240ms ease;
+    }
+    .map-modal.visible .map-modal-backdrop { opacity: 1; }
+
+    .map-modal-frame {
+      position: relative;
+      max-width: min(900px, 100%);
+      max-height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      opacity: 0;
+      transform: scale(0.96);
+      transition: opacity 280ms ease, transform 280ms ease;
+    }
+    .map-modal.visible .map-modal-frame {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .map-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--color-bg-light);
+    }
+    .map-modal-title {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 500;
+      font-size: clamp(20px, 2.4vw, 28px);
+      letter-spacing: -0.005em;
+      margin: 0;
+    }
+    .map-modal-subtitle {
+      display: block;
+      font-family: var(--font-body);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(236, 227, 208, 0.55);
+      margin-bottom: 4px;
+    }
+
+    /* Кнопка закрытия — большая, простая, заметная.
+       На mobile — большой touch-target ≥44px. */
+    .map-modal-close {
+      flex: 0 0 auto;
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(200, 154, 61, 0.35);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--color-bg-light);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      line-height: 1;
+      transition: background-color 200ms ease, border-color 200ms ease,
+                  transform 200ms ease;
+    }
+    .map-modal-close:hover {
+      background: rgba(200, 154, 61, 0.10);
+      border-color: var(--color-accent);
+      transform: rotate(90deg);
+    }
+    .map-modal-close:focus-visible {
+      outline: 1px solid var(--color-accent);
+      outline-offset: 4px;
+    }
+
+    .map-modal-image-wrap {
+      position: relative;
+      width: 100%;
+      flex: 0 1 auto;
+      min-height: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: opacity 400ms ease, border-color 200ms ease, transform 200ms ease;
-      animation: tracks-arrow-pulse 2.4s ease-in-out infinite;
     }
-    .tracks-scroll-arrow svg {
-      width: 16px;
-      height: 16px;
-    }
-    .tracks-scroll-arrow:hover {
-      border-color: var(--color-accent);
-      transform: translateX(-50%) translateY(2px);
-    }
-    .tracks-scroll-arrow--hidden {
-      opacity: 0;
-      pointer-events: none;
-      animation: none;
-    }
-    @keyframes tracks-arrow-pulse {
-      0%, 100% {
-        box-shadow: 0 0 0 0 rgba(200, 154, 61, 0.35);
-        transform: translateX(-50%) translateY(0);
-      }
-      50% {
-        box-shadow: 0 0 0 10px rgba(200, 154, 61, 0);
-        transform: translateX(-50%) translateY(3px);
-      }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .tracks-scroll-arrow { animation: none; }
+    .map-modal-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 12px 60px rgba(0, 0, 0, 0.45);
     }
 
-    /* Большая надпись при hover на малый круг */
-    #tracks-hover-label {
-      position: fixed;
-      pointer-events: none;
-      z-index: 50;
-      font-family: var(--font-display);
-      font-style: italic;
-      font-weight: 500;
-      font-size: clamp(28px, 3vw, 44px);
-      color: var(--color-bg-light);
-      line-height: 1;
-      opacity: 0;
-      transition: opacity 200ms ease;
-      text-shadow: 0 2px 20px rgba(22, 20, 15, 0.9), 0 0 40px rgba(22, 20, 15, 0.7);
+    /* На очень узких экранах модал занимает почти весь viewport. */
+    @media (max-width: 600px) {
+      .map-modal { padding: 16px 12px; }
+      .map-modal-frame { gap: 10px; }
+      .map-modal-title { font-size: 18px; }
+      .map-modal-subtitle { font-size: 10px; }
     }
-    #tracks-hover-label.visible { opacity: 1; }
 
-    @media (max-width: 800px) {
-      .section.section--tall {
-        height: 100vh;
-        min-height: 100vh;
-      }
-      .tracks-stage { position: relative; }
-      .tracks-overlay .tracks-header { max-width: 90%; }
-      #tracks-hover-label { font-size: 22px; }
+    /* Замок скролла страницы пока модал открыт. */
+    body.has-modal-open { overflow: hidden; }
+
+    /* ============================================
+       SCHEDULE TOOLBAR — две кнопки наверху панели расписания,
+       рядом, как в программе. Используем классы .panel-map-btn
+       (общий с tracks). Кнопка .schedule-back уже есть, она
+       sticky top:0 — рядом с ней ставим .panel-map-btn.
+       ============================================ */
+    .schedule-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--color-bg-dark);
+      display: flex;
+      align-items: center;
+      gap: clamp(14px, 1.6vw, 24px);
+      flex-wrap: wrap;
+      margin: 0 0 18px;
+      padding: 6px 10px 6px 0;
+    }
+    /* Внутри тулбара кнопка .schedule-back перестаёт быть sticky
+       (тулбар сам sticky), padding и margin сбрасываются. */
+    .schedule-toolbar .schedule-back {
+      position: static;
+      margin: 0;
+      padding: 0;
+      background: transparent;
     }
 
     /* Cursor defaults */
@@ -2299,10 +2652,6 @@
         <span class="separator">/</span>
         <span>18+</span>
       </div>
-      <div class="hero-desktop-hint" id="hero-desktop-hint" aria-hidden="true">
-        <span class="hero-desktop-hint-mark">◇</span>
-        <span>Эту страничку лучше открыть с&nbsp;компьютера</span>
-      </div>
       <p class="hero-desc" id="hero-desc">
         Фрактал — странное слово. Его произносят математики и биологи, художники и музыканты, и каждый имеет в виду что-то своё. В математике это объект, ради которого пришлось переписать теорию размерности. В природе — язык, на котором описывается всё ветвящееся: реки, деревья, побережья, лёгкие. В искусстве — форма, которая разрешила геометрию неровного.
         <br><br>
@@ -2348,20 +2697,46 @@
   <section id="tracks" class="section" data-theme="dark">
     <span class="chapter-num chapter-num--dark chapter-num--top-right" aria-hidden="true">iii</span>
     <div class="tracks-stage">
-      <div class="tracks-overlay">
-        <div class="tracks-header">
-          <div class="tracks-label">Программа</div>
-          <h2 class="tracks-title">Как устроен&nbsp;фестиваль</h2>
-        </div>
-        <div class="tracks-stage-indicator">
-          <div class="tracks-stage-dot"></div>
-          <div class="tracks-stage-dot"></div>
-          <div class="tracks-stage-dot"></div>
+      <div class="tracks-anim-col">
+        <div class="apollon-container">
+          <canvas id="tracks-canvas"></canvas>
         </div>
       </div>
-      <canvas id="tracks-canvas"></canvas>
+      <aside class="tracks-info-col">
+        <div class="tracks-info-header">
+          <!-- Сохраняем .tracks-label / .tracks-title чтобы GSAP fade-in
+               (sectionAnimations.tracks) продолжал работать без правок. -->
+          <div class="tracks-info-label tracks-label">Программа</div>
+          <h2 class="tracks-info-title-main tracks-title">Как устроен<br>фестиваль</h2>
+        </div>
+        <!-- Тулбар: две кнопки управления панелью.
+             — К общему виду: возврат из зума внутрь круга. По умолчанию
+               приглушённая (.is-disabled), активируется при зуме.
+             — Карта локаций: открывает модал со схемой залов клуба. -->
+        <div class="tracks-toolbar">
+          <button class="zoom-back" id="tracks-back-btn" type="button" aria-label="Вернуться к общему виду карты">
+            <span class="arrow" aria-hidden="true">←</span><span>к общему виду</span>
+          </button>
+          <button class="panel-map-btn" type="button" data-open-map aria-haspopup="dialog" aria-controls="map-modal">
+            <span>Карта локаций</span><span class="arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
+        <div class="tracks-info-body">
+          <!-- info-panel — содержимое появляется при зуме внутрь круга.
+               id'ы те же, JS анимации не правим. -->
+          <div class="info-panel" id="tracks-info-panel" role="status" aria-live="polite">
+            <h2 id="tracks-info-title"></h2>
+            <p id="tracks-info-desc"></p>
+          </div>
+          <!-- default state — короткая подводка к карте.
+               Виден когда info-panel НЕ .visible (управляется через :has()). -->
+          <div class="tracks-info-default">
+            <p>Нажмите на любой круг — увидите, что внутри.</p>
+            <p class="tracks-info-hint">Состав ещё дополняется.</p>
+          </div>
+        </div>
+      </aside>
     </div>
-    <div id="tracks-hover-label"></div>
   </section>
 
   <!-- ====== SPEAKERS ====== -->
@@ -2452,9 +2827,14 @@
     <span class="chapter-num chapter-num--dark chapter-num--top-right" aria-hidden="true">v</span>
     <div class="schedule-shell">
       <aside class="schedule-list-col">
-        <button type="button" class="schedule-back" id="schedule-back" aria-label="Вернуться к общему виду папоротника">
-          <span class="schedule-back-arrow" aria-hidden="true">←</span>к общему виду
-        </button>
+        <div class="schedule-toolbar">
+          <button type="button" class="schedule-back" id="schedule-back" aria-label="Вернуться к общему виду папоротника">
+            <span class="schedule-back-arrow" aria-hidden="true">←</span>к общему виду
+          </button>
+          <button class="panel-map-btn" type="button" data-open-map aria-haspopup="dialog" aria-controls="map-modal">
+            <span>Карта локаций</span><span class="arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
         <div class="schedule-list-header">
           <h2 class="schedule-list-title">Расписание</h2>
           <div class="schedule-list-meta">23 мая · от полудня до утра</div>
@@ -3750,7 +4130,7 @@ window.addEventListener('resize', ()=>{
             <span class="cta-card-label">Билеты</span>
             <span class="cta-card-title">Купить на TimePad</span>
           </div>
-          <div class="cta-card-widget">
+          <div class="cta-card-widget" data-lenis-prevent>
             <script type="text/javascript" async="async" defer="defer" charset="UTF-8" src="https://timepad.ru/js/tpwf/loader/min/loader.js" data-timepad-customized="380810" data-twf2s-event--id="3952401" data-timepad-widget-v2="event_register"></script>
           </div>
         </div>
@@ -3761,7 +4141,7 @@ window.addEventListener('resize', ()=>{
             <span class="cta-card-label">Где это</span>
             <span class="cta-card-title">Чистопрудный 23–25</span>
           </div>
-          <div class="cta-card-widget">
+          <div class="cta-card-widget" data-lenis-prevent>
             <script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A9a6fc8dcf68c5551839d2646291ff443d3f14c9a8a00576169c77fe3ade51188&amp;width=520&amp;height=400&amp;lang=ru_RU&amp;scroll=true"></script>
           </div>
         </div>
@@ -3798,6 +4178,39 @@ window.addEventListener('resize', ()=>{
       <span class="marquee-item">лекции <span class="accent">·</span> мастерские <span class="accent">·</span> инсталляции <span class="accent">·</span> музыка</span>
     </div>
   </div>
+
+  <!-- Hover-tooltip над Аполлонием. Управляется из IIFE анимации:
+       при изменении hoveredCircle обновляется text и position. -->
+  <div class="tracks-hover-tip" id="tracks-hover-tip" aria-hidden="true"></div>
+
+  <!-- Map modal — схема залов клуба Лахесис. Открывается из программы
+       и расписания через [data-open-map] кнопки. Esc / клик по фону /
+       крестик закрывают. -->
+  <div class="map-modal" id="map-modal" role="dialog" aria-modal="true" aria-labelledby="map-modal-title" aria-hidden="true">
+    <div class="map-modal-backdrop" data-close-map></div>
+    <div class="map-modal-frame" role="document">
+      <div class="map-modal-header">
+        <div>
+          <span class="map-modal-subtitle">Карта локаций</span>
+          <h2 class="map-modal-title" id="map-modal-title">Залы клуба Лахесис</h2>
+        </div>
+        <button class="map-modal-close" type="button" data-close-map aria-label="Закрыть карту">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="map-modal-image-wrap">
+        <picture>
+          <source srcset="assets/venue-map.webp" type="image/webp">
+          <img class="map-modal-image"
+               src="assets/venue-map.jpg"
+               alt="Схема залов клуба Лахесис: четыре зала фестиваля — Кантор, Мандельброт, Жюлиа, Серпинский — и два входа"
+               width="1448" height="1086"
+               loading="lazy" decoding="async">
+        </picture>
+      </div>
+    </div>
+  </div>
+
   </main>
 
   <!-- ====== FOOTER ====== -->
@@ -4213,7 +4626,7 @@ window.addEventListener('resize', ()=>{
       });
     }, {
       /* rootMargin: -50% сверху и снизу = центр viewport.
-         Работает корректно для любой высоты секции, включая section--tall (400vh) */
+         Работает корректно для секций любой высоты. */
       rootMargin: '-50% 0px -50% 0px',
       threshold: 0
     });
@@ -4342,605 +4755,581 @@ window.addEventListener('resize', ()=>{
   })();
 
   /* ============================================
-     APOLLONIAN PACKING — секция #tracks
-     Перо-черчение + цепная реакция + поцелуи касаний + дыхание
+     APOLLONIAN — секция #tracks
+     Самоподобная карта программы фестиваля. 7 крупных кругов —
+     стартовые дисциплины (научпоп · музыка · искусство · опыты ·
+     кино · мастерские · общение); вокруг них прорастает фрактальная
+     россыпь Аполлонова насыщения. Перо рисует круги «оркестром»:
+     все стартуют в начале, все финишируют в конце, скорости разные.
+     По клику на любой из шести крупных — зум внутрь круга +
+     info-panel с описанием раздела. Esc / клик мимо / кнопка
+     «к карте» — возврат. IntersectionObserver-стартед, RAF только
+     при необходимости, prefers-reduced-motion → финальный кадр.
      ============================================ */
   (function() {
-    var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const CIRCLES = [{"x":0.0,"y":0.605,"r":0.395,"sign":1,"tier":0,"tag":"научпоп"},{"x":-0.523945,"y":-0.3025,"r":0.395,"sign":1,"tier":0,"tag":"музыка"},{"x":0.523945,"y":-0.3025,"r":0.395,"sign":1,"tier":0,"tag":"искусство"},{"x":-0.626233,"y":0.361556,"r":0.276888,"sign":1,"tier":1,"tag":"опыты"},{"x":-0.0,"y":-0.723112,"r":0.276888,"sign":1,"tier":1,"tag":"кино"},{"x":0.626233,"y":0.361556,"r":0.276888,"sign":1,"tier":1,"tag":"мастерские"},{"x":-0.267589,"y":0.154493,"r":0.128986,"sign":1,"tier":2,"tag":"дискуссии"},{"x":-0.0,"y":-0.308986,"r":0.128986,"sign":1,"tier":2,"tag":"танцы"},{"x":0.267589,"y":0.154493,"r":0.128986,"sign":1,"tier":2,"tag":"игры"},{"x":0,"y":0,"r":0.18,"sign":1,"tier":1,"tag":"общение"},{"x":0,"y":0,"r":1.0,"sign":-1,"tier":-1},{"x":-0.106305,"y":0.187654,"r":0.035672,"sign":1,"tier":3},{"x":-0.05103,"y":0.193263,"r":0.019887,"sign":1,"tier":3},{"x":-0.015711,"y":0.194834,"r":0.015467,"sign":1,"tier":3},{"x":0.015192,"y":0.194845,"r":0.015436,"sign":1,"tier":3},{"x":0.050354,"y":0.193309,"r":0.019759,"sign":1,"tier":3},{"x":0.105036,"y":0.187823,"r":0.035197,"sign":1,"tier":3},{"x":-0.141862,"y":0.221794,"r":0.013622,"sign":1,"tier":3},{"x":-0.12679,"y":0.144414,"r":0.012174,"sign":1,"tier":3},{"x":-0.215665,"y":-0.001764,"r":0.035672,"sign":1,"tier":3},{"x":-0.192886,"y":-0.052439,"r":0.019887,"sign":1,"tier":3},{"x":-0.176587,"y":-0.083811,"r":0.015467,"sign":1,"tier":3},{"x":-0.161145,"y":-0.110579,"r":0.015436,"sign":1,"tier":3},{"x":-0.142233,"y":-0.140262,"r":0.019759,"sign":1,"tier":3},{"x":-0.110141,"y":-0.184875,"r":0.035197,"sign":1,"tier":3},{"x":-0.263011,"y":0.011959,"r":0.013622,"sign":1,"tier":3},{"x":-0.188461,"y":0.037596,"r":0.012174,"sign":1,"tier":3},{"x":0.10936,"y":-0.18589,"r":0.035672,"sign":1,"tier":3},{"x":0.141856,"y":-0.140825,"r":0.019887,"sign":1,"tier":3},{"x":0.160876,"y":-0.111023,"r":0.015467,"sign":1,"tier":3},{"x":0.176337,"y":-0.084266,"r":0.015436,"sign":1,"tier":3},{"x":0.192587,"y":-0.053047,"r":0.019759,"sign":1,"tier":3},{"x":0.215177,"y":-0.002948,"r":0.035197,"sign":1,"tier":3},{"x":0.121148,"y":-0.233753,"r":0.013622,"sign":1,"tier":3},{"x":0.061671,"y":-0.18201,"r":0.012174,"sign":1,"tier":3},{"x":-0.316878,"y":0.312322,"r":0.036361,"sign":1,"tier":3},{"x":-0.269056,"y":0.297251,"r":0.01378,"sign":1,"tier":3},{"x":-0.249518,"y":0.28951,"r":0.007236,"sign":1,"tier":3},{"x":-0.275536,"y":0.314946,"r":0.005064,"sign":1,"tier":3},{"x":-0.332774,"y":0.362813,"r":0.016574,"sign":1,"tier":3},{"x":-0.341043,"y":0.387523,"r":0.009483,"sign":1,"tier":3},{"x":-0.346152,"y":0.402287,"r":0.00614,"sign":1,"tier":3},{"x":-0.312342,"y":0.354083,"r":0.005646,"sign":1,"tier":3},{"x":-0.34435,"y":0.343966,"r":0.005544,"sign":1,"tier":3},{"x":-0.348758,"y":0.272755,"r":0.014451,"sign":1,"tier":3},{"x":-0.361989,"y":0.254211,"r":0.008328,"sign":1,"tier":3},{"x":-0.369831,"y":0.242399,"r":0.00585,"sign":1,"tier":3},{"x":-0.352969,"y":0.29187,"r":0.005122,"sign":1,"tier":3},{"x":-0.428918,"y":0.118264,"r":0.036361,"sign":1,"tier":3},{"x":-0.391955,"y":0.084384,"r":0.01378,"sign":1,"tier":3},{"x":-0.375482,"y":0.071334,"r":0.007236,"sign":1,"tier":3},{"x":-0.410519,"y":0.081148,"r":0.005064,"sign":1,"tier":3},{"x":-0.480593,"y":0.106784,"r":0.016574,"sign":1,"tier":3},{"x":-0.506126,"y":0.10159,"r":0.009483,"sign":1,"tier":3},{"x":-0.521467,"y":0.098632,"r":0.00614,"sign":1,"tier":3},{"x":-0.462816,"y":0.093455,"r":0.005646,"sign":1,"tier":3},{"x":-0.470058,"y":0.126233,"r":0.005544,"sign":1,"tier":3},{"x":-0.410591,"y":0.165656,"r":0.014451,"sign":1,"tier":3},{"x":-0.401148,"y":0.186386,"r":0.008328,"sign":1,"tier":3},{"x":-0.394839,"y":0.199083,"r":0.00585,"sign":1,"tier":3},{"x":-0.429251,"y":0.159745,"r":0.005122,"sign":1,"tier":3},{"x":-0.11204,"y":-0.430585,"r":0.036361,"sign":1,"tier":3},{"x":-0.122898,"y":-0.381635,"r":0.01378,"sign":1,"tier":3},{"x":-0.125964,"y":-0.360844,"r":0.007236,"sign":1,"tier":3},{"x":-0.134983,"y":-0.396094,"r":0.005064,"sign":1,"tier":3},{"x":-0.147818,"y":-0.469598,"r":0.016574,"sign":1,"tier":3},{"x":-0.165084,"y":-0.489113,"r":0.009483,"sign":1,"tier":3},{"x":-0.175315,"y":-0.50092,"r":0.00614,"sign":1,"tier":3},{"x":-0.150474,"y":-0.447537,"r":0.005646,"sign":1,"tier":3},{"x":-0.125708,"y":-0.470199,"r":0.005544,"sign":1,"tier":3},{"x":-0.061834,"y":-0.43841,"r":0.014451,"sign":1,"tier":3},{"x":-0.039159,"y":-0.440597,"r":0.008328,"sign":1,"tier":3},{"x":-0.025008,"y":-0.441482,"r":0.00585,"sign":1,"tier":3},{"x":-0.076282,"y":-0.451615,"r":0.005122,"sign":1,"tier":3},{"x":0.11204,"y":-0.430585,"r":0.036361,"sign":1,"tier":3},{"x":0.122898,"y":-0.381635,"r":0.01378,"sign":1,"tier":3},{"x":0.125964,"y":-0.360844,"r":0.007236,"sign":1,"tier":3},{"x":0.134983,"y":-0.396094,"r":0.005064,"sign":1,"tier":3},{"x":0.147818,"y":-0.469598,"r":0.016574,"sign":1,"tier":3},{"x":0.165084,"y":-0.489113,"r":0.009483,"sign":1,"tier":3},{"x":0.175315,"y":-0.50092,"r":0.00614,"sign":1,"tier":3},{"x":0.150474,"y":-0.447537,"r":0.005646,"sign":1,"tier":3},{"x":0.125708,"y":-0.470199,"r":0.005544,"sign":1,"tier":3},{"x":0.061834,"y":-0.43841,"r":0.014451,"sign":1,"tier":3},{"x":0.039159,"y":-0.440597,"r":0.008328,"sign":1,"tier":3},{"x":0.025008,"y":-0.441482,"r":0.00585,"sign":1,"tier":3},{"x":0.076282,"y":-0.451615,"r":0.005122,"sign":1,"tier":3},{"x":0.428918,"y":0.118264,"r":0.036361,"sign":1,"tier":3},{"x":0.391955,"y":0.084384,"r":0.01378,"sign":1,"tier":3},{"x":0.375482,"y":0.071334,"r":0.007236,"sign":1,"tier":3},{"x":0.410519,"y":0.081148,"r":0.005064,"sign":1,"tier":3},{"x":0.480593,"y":0.106784,"r":0.016574,"sign":1,"tier":3},{"x":0.506126,"y":0.10159,"r":0.009483,"sign":1,"tier":3},{"x":0.521467,"y":0.098632,"r":0.00614,"sign":1,"tier":3},{"x":0.462816,"y":0.093455,"r":0.005646,"sign":1,"tier":3},{"x":0.470058,"y":0.126233,"r":0.005544,"sign":1,"tier":3},{"x":0.410591,"y":0.165656,"r":0.014451,"sign":1,"tier":3},{"x":0.401148,"y":0.186386,"r":0.008328,"sign":1,"tier":3},{"x":0.394839,"y":0.199083,"r":0.00585,"sign":1,"tier":3},{"x":0.429251,"y":0.159745,"r":0.005122,"sign":1,"tier":3},{"x":0.316878,"y":0.312322,"r":0.036361,"sign":1,"tier":3},{"x":0.269056,"y":0.297251,"r":0.01378,"sign":1,"tier":3},{"x":0.249518,"y":0.28951,"r":0.007236,"sign":1,"tier":3},{"x":0.275536,"y":0.314946,"r":0.005064,"sign":1,"tier":3},{"x":0.332774,"y":0.362813,"r":0.016574,"sign":1,"tier":3},{"x":0.341043,"y":0.387523,"r":0.009483,"sign":1,"tier":3},{"x":0.346152,"y":0.402287,"r":0.00614,"sign":1,"tier":3},{"x":0.312342,"y":0.354083,"r":0.005646,"sign":1,"tier":3},{"x":0.34435,"y":0.343966,"r":0.005544,"sign":1,"tier":3},{"x":0.348758,"y":0.272755,"r":0.014451,"sign":1,"tier":3},{"x":0.361989,"y":0.254211,"r":0.008328,"sign":1,"tier":3},{"x":0.369831,"y":0.242399,"r":0.00585,"sign":1,"tier":3},{"x":0.352969,"y":0.29187,"r":0.005122,"sign":1,"tier":3},{"x":-0.495124,"y":0.732113,"r":0.11618,"sign":1,"tier":3},{"x":-0.655413,"y":0.687376,"r":0.050236,"sign":1,"tier":3},{"x":-0.59985,"y":0.652576,"r":0.015326,"sign":1,"tier":3},{"x":-0.601557,"y":0.673269,"r":0.005437,"sign":1,"tier":3},{"x":-0.602734,"y":0.681402,"r":0.002781,"sign":1,"tier":3},{"x":-0.619409,"y":0.644281,"r":0.00592,"sign":1,"tier":3},{"x":-0.628041,"y":0.641567,"r":0.003129,"sign":1,"tier":3},{"x":-0.579719,"y":0.642019,"r":0.007406,"sign":1,"tier":3},{"x":-0.588966,"y":0.638452,"r":0.002505,"sign":1,"tier":3},{"x":-0.569103,"y":0.636942,"r":0.004362,"sign":1,"tier":3},{"x":-0.562508,"y":0.633964,"r":0.002874,"sign":1,"tier":3},{"x":-0.629291,"y":0.751979,"r":0.019449,"sign":1,"tier":3},{"x":-0.617486,"y":0.729189,"r":0.006217,"sign":1,"tier":3},{"x":-0.613809,"y":0.720677,"r":0.003055,"sign":1,"tier":3},{"x":-0.655446,"y":0.745185,"r":0.007574,"sign":1,"tier":3},{"x":-0.651451,"y":0.754866,"r":0.002899,"sign":1,"tier":3},{"x":-0.666043,"y":0.740552,"r":0.003993,"sign":1,"tier":3},{"x":-0.613282,"y":0.776923,"r":0.01019,"sign":1,"tier":3},{"x":-0.610127,"y":0.763961,"r":0.003151,"sign":1,"tier":3},{"x":-0.626765,"y":0.774755,"r":0.003466,"sign":1,"tier":3},{"x":-0.603096,"y":0.789823,"r":0.006247,"sign":1,"tier":3},{"x":-0.596131,"y":0.79763,"r":0.004215,"sign":1,"tier":3},{"x":-0.591091,"y":0.80284,"r":0.003034,"sign":1,"tier":3},{"x":-0.723485,"y":0.649939,"r":0.027451,"sign":1,"tier":3},{"x":-0.689272,"y":0.639661,"r":0.008272,"sign":1,"tier":3},{"x":-0.693184,"y":0.650072,"r":0.00285,"sign":1,"tier":3},{"x":-0.698251,"y":0.632342,"r":0.003312,"sign":1,"tier":3},{"x":-0.677189,"y":0.637745,"r":0.003962,"sign":1,"tier":3},{"x":-0.714967,"y":0.685731,"r":0.009341,"sign":1,"tier":3},{"x":-0.707446,"y":0.675883,"r":0.003051,"sign":1,"tier":3},{"x":-0.727176,"y":0.680944,"r":0.003773,"sign":1,"tier":3},{"x":-0.709161,"y":0.69845,"r":0.00464,"sign":1,"tier":3},{"x":-0.705448,"y":0.704856,"r":0.002764,"sign":1,"tier":3},{"x":-0.759577,"y":0.623666,"r":0.01719,"sign":1,"tier":3},{"x":-0.737532,"y":0.620613,"r":0.005065,"sign":1,"tier":3},{"x":-0.756152,"y":0.646042,"r":0.005447,"sign":1,"tier":3},{"x":-0.753343,"y":0.653618,"r":0.002633,"sign":1,"tier":3},{"x":-0.781549,"y":0.604838,"r":0.011745,"sign":1,"tier":3},{"x":-0.766423,"y":0.604256,"r":0.003392,"sign":1,"tier":3},{"x":-0.78001,"y":0.620064,"r":0.003558,"sign":1,"tier":3},{"x":-0.796203,"y":0.590837,"r":0.008523,"sign":1,"tier":3},{"x":-0.795479,"y":0.60184,"r":0.002504,"sign":1,"tier":3},{"x":-0.806622,"y":0.580067,"r":0.006462,"sign":1,"tier":3},{"x":-0.814388,"y":0.571547,"r":0.005066,"sign":1,"tier":3},{"x":-0.820388,"y":0.564647,"r":0.004078,"sign":1,"tier":3},{"x":-0.825156,"y":0.558949,"r":0.003352,"sign":1,"tier":3},{"x":-0.829034,"y":0.554168,"r":0.002804,"sign":1,"tier":3},{"x":-0.427747,"y":0.599255,"r":0.032786,"sign":1,"tier":3},{"x":-0.472091,"y":0.605957,"r":0.012062,"sign":1,"tier":3},{"x":-0.460173,"y":0.616961,"r":0.004159,"sign":1,"tier":3},{"x":-0.464151,"y":0.591496,"r":0.004436,"sign":1,"tier":3},{"x":-0.490009,"y":0.60978,"r":0.00626,"sign":1,"tier":3},{"x":-0.499806,"y":0.612194,"r":0.003831,"sign":1,"tier":3},{"x":-0.506006,"y":0.613847,"r":0.002586,"sign":1,"tier":3},{"x":-0.406123,"y":0.639104,"r":0.012552,"sign":1,"tier":3},{"x":-0.422629,"y":0.635941,"r":0.004255,"sign":1,"tier":3},{"x":-0.399189,"y":0.623402,"r":0.004613,"sign":1,"tier":3},{"x":-0.398289,"y":0.6566,"r":0.006618,"sign":1,"tier":3},{"x":-0.394312,"y":0.666535,"r":0.004084,"sign":1,"tier":3},{"x":-0.391923,"y":0.672961,"r":0.002771,"sign":1,"tier":3},{"x":-0.407462,"y":0.555481,"r":0.01546,"sign":1,"tier":3},{"x":-0.427196,"y":0.561347,"r":0.005127,"sign":1,"tier":3},{"x":-0.434176,"y":0.564519,"r":0.00254,"sign":1,"tier":3},{"x":-0.399039,"y":0.57436,"r":0.005213,"sign":1,"tier":3},{"x":-0.396924,"y":0.581879,"r":0.002597,"sign":1,"tier":3},{"x":-0.397551,"y":0.533121,"r":0.008997,"sign":1,"tier":3},{"x":-0.408609,"y":0.53725,"r":0.002806,"sign":1,"tier":3},{"x":-0.393143,"y":0.544098,"r":0.002832,"sign":1,"tier":3},{"x":-0.391653,"y":0.519457,"r":0.005886,"sign":1,"tier":3},{"x":-0.387734,"y":0.510218,"r":0.00415,"sign":1,"tier":3},{"x":-0.384939,"y":0.503545,"r":0.003084,"sign":1,"tier":3},{"x":-0.375708,"y":0.86165,"r":0.060001,"sign":1,"tier":3},{"x":-0.457382,"y":0.86476,"r":0.021732,"sign":1,"tier":3},{"x":-0.43976,"y":0.842112,"r":0.006965,"sign":1,"tier":3},{"x":-0.449352,"y":0.841757,"r":0.002633,"sign":1,"tier":3},{"x":-0.432928,"y":0.83428,"r":0.003428,"sign":1,"tier":3},{"x":-0.438799,"y":0.888877,"r":0.008714,"sign":1,"tier":3},{"x":-0.436462,"y":0.877593,"r":0.00281,"sign":1,"tier":3},{"x":-0.450815,"y":0.888917,"r":0.003302,"sign":1,"tier":3},{"x":-0.429115,"y":0.898094,"r":0.004655,"sign":1,"tier":3},{"x":-0.423242,"y":0.902828,"r":0.002888,"sign":1,"tier":3},{"x":-0.489681,"y":0.859217,"r":0.01104,"sign":1,"tier":3},{"x":-0.478122,"y":0.850511,"r":0.003432,"sign":1,"tier":3},{"x":-0.481912,"y":0.871871,"r":0.003808,"sign":1,"tier":3},{"x":-0.506703,"y":0.854397,"r":0.006651,"sign":1,"tier":3},{"x":-0.517157,"y":0.850702,"r":0.004438,"sign":1,"tier":3},{"x":-0.524214,"y":0.847863,"r":0.003169,"sign":1,"tier":3},{"x":-0.371781,"y":0.784084,"r":0.017665,"sign":1,"tier":3},{"x":-0.391599,"y":0.797383,"r":0.006202,"sign":1,"tier":3},{"x":-0.399103,"y":0.802981,"r":0.00316,"sign":1,"tier":3},{"x":-0.35211,"y":0.798951,"r":0.006993,"sign":1,"tier":3},{"x":-0.352241,"y":0.789379,"r":0.00258,"sign":1,"tier":3},{"x":-0.344231,"y":0.80623,"r":0.003734,"sign":1,"tier":3},{"x":-0.373257,"y":0.758046,"r":0.008415,"sign":1,"tier":3},{"x":-0.381123,"y":0.765949,"r":0.002735,"sign":1,"tier":3},{"x":-0.364315,"y":0.764945,"r":0.002879,"sign":1,"tier":3},{"x":-0.374691,"y":0.74479,"r":0.004918,"sign":1,"tier":3},{"x":-0.375808,"y":0.736725,"r":0.003225,"sign":1,"tier":3},{"x":-0.297304,"y":0.917024,"r":0.035986,"sign":1,"tier":3},{"x":-0.344244,"y":0.926247,"r":0.011851,"sign":1,"tier":3},{"x":-0.336882,"y":0.912361,"r":0.003866,"sign":1,"tier":3},{"x":-0.332357,"y":0.937997,"r":0.004862,"sign":1,"tier":3},{"x":-0.326349,"y":0.942469,"r":0.002628,"sign":1,"tier":3},{"x":-0.361897,"y":0.92599,"r":0.005804,"sign":1,"tier":3},{"x":-0.371067,"y":0.924911,"r":0.00343,"sign":1,"tier":3},{"x":-0.305841,"y":0.871299,"r":0.010529,"sign":1,"tier":3},{"x":-0.315354,"y":0.881772,"r":0.003619,"sign":1,"tier":3},{"x":-0.292215,"y":0.877086,"r":0.004275,"sign":1,"tier":3},{"x":-0.310915,"y":0.856637,"r":0.004986,"sign":1,"tier":3},{"x":-0.314013,"y":0.849382,"r":0.002902,"sign":1,"tier":3},{"x":-0.244475,"y":0.945067,"r":0.023824,"sign":1,"tier":3},{"x":-0.274432,"y":0.953901,"r":0.007408,"sign":1,"tier":3},{"x":-0.266406,"y":0.96066,"r":0.003085,"sign":1,"tier":3},{"x":-0.285361,"y":0.954714,"r":0.003551,"sign":1,"tier":3},{"x":-0.254461,"y":0.916044,"r":0.006869,"sign":1,"tier":3},{"x":-0.245048,"y":0.918411,"r":0.002838,"sign":1,"tier":3},{"x":-0.25934,"y":0.907205,"r":0.003227,"sign":1,"tier":3},{"x":-0.207042,"y":0.961066,"r":0.016885,"sign":1,"tier":3},{"x":-0.227666,"y":0.968548,"r":0.005054,"sign":1,"tier":3},{"x":-0.216095,"y":0.941364,"r":0.004797,"sign":1,"tier":3},{"x":-0.179312,"y":0.971009,"r":0.012573,"sign":1,"tier":3},{"x":-0.194321,"y":0.977203,"r":0.003663,"sign":1,"tier":3},{"x":-0.187061,"y":0.956897,"r":0.003526,"sign":1,"tier":3},{"x":-0.158017,"y":0.977594,"r":0.009717,"sign":1,"tier":3},{"x":-0.169404,"y":0.982731,"r":0.002775,"sign":1,"tier":3},{"x":-0.164566,"y":0.96705,"r":0.002696,"sign":1,"tier":3},{"x":-0.141181,"y":0.982174,"r":0.007731,"sign":1,"tier":3},{"x":-0.127551,"y":0.985485,"r":0.006295,"sign":1,"tier":3},{"x":-0.116299,"y":0.987954,"r":0.005224,"sign":1,"tier":3},{"x":-0.106858,"y":0.989844,"r":0.004404,"sign":1,"tier":3},{"x":-0.881591,"y":0.062733,"r":0.11618,"sign":1,"tier":3},{"x":-0.922992,"y":0.223917,"r":0.050236,"sign":1,"tier":3},{"x":-0.865072,"y":0.193197,"r":0.015326,"sign":1,"tier":3},{"x":-0.883846,"y":0.18433,"r":0.005437,"sign":1,"tier":3},{"x":-0.891479,"y":0.181282,"r":0.002781,"sign":1,"tier":3},{"x":-0.867669,"y":0.214283,"r":0.00592,"sign":1,"tier":3},{"x":-0.869633,"y":0.223116,"r":0.003129,"sign":1,"tier":3},{"x":-0.845864,"y":0.181042,"r":0.007406,"sign":1,"tier":3},{"x":-0.847399,"y":0.190833,"r":0.002505,"sign":1,"tier":3},{"x":-0.83616,"y":0.174386,"r":0.004362,"sign":1,"tier":3},{"x":-0.830283,"y":0.170164,"r":0.002874,"sign":1,"tier":3},{"x":-0.965878,"y":0.168992,"r":0.019449,"sign":1,"tier":3},{"x":-0.940239,"y":0.170164,"r":0.006217,"sign":1,"tier":3},{"x":-0.931029,"y":0.171236,"r":0.003055,"sign":1,"tier":3},{"x":-0.973072,"y":0.19504,"r":0.007574,"sign":1,"tier":3},{"x":-0.979459,"y":0.186741,"r":0.002899,"sign":1,"tier":3},{"x":-0.974358,"y":0.206534,"r":0.003993,"sign":1,"tier":3},{"x":-0.979476,"y":0.142656,"r":0.01019,"sign":1,"tier":3},{"x":-0.966673,"y":0.146405,"r":0.003151,"sign":1,"tier":3},{"x":-0.98434,"y":0.155416,"r":0.003466,"sign":1,"tier":3},{"x":-0.985555,"y":0.127385,"r":0.006247,"sign":1,"tier":3},{"x":-0.988834,"y":0.11745,"r":0.004215,"sign":1,"tier":3},{"x":-0.990826,"y":0.110479,"r":0.003034,"sign":1,"tier":3},{"x":-0.924606,"y":0.301587,"r":0.027451,"sign":1,"tier":3},{"x":-0.898599,"y":0.277097,"r":0.008272,"sign":1,"tier":3},{"x":-0.909571,"y":0.275279,"r":0.00285,"sign":1,"tier":3},{"x":-0.89675,"y":0.288532,"r":0.003312,"sign":1,"tier":3},{"x":-0.890898,"y":0.267591,"r":0.003962,"sign":1,"tier":3},{"x":-0.951344,"y":0.276314,"r":0.009341,"sign":1,"tier":3},{"x":-0.939055,"y":0.274725,"r":0.003051,"sign":1,"tier":3},{"x":-0.953302,"y":0.289281,"r":0.003773,"sign":1,"tier":3},{"x":-0.959455,"y":0.264926,"r":0.00464,"sign":1,"tier":3},{"x":-0.963147,"y":0.258508,"r":0.002764,"sign":1,"tier":3},{"x":-0.919899,"y":0.34598,"r":0.01719,"sign":1,"tier":3},{"x":-0.906232,"y":0.328415,"r":0.005065,"sign":1,"tier":3},{"x":-0.937565,"y":0.331826,"r":0.005447,"sign":1,"tier":3},{"x":-0.942721,"y":0.325606,"r":0.002633,"sign":1,"tier":3},{"x":-0.91458,"y":0.374422,"r":0.011745,"sign":1,"tier":3},{"x":-0.906513,"y":0.361614,"r":0.003392,"sign":1,"tier":3},{"x":-0.926997,"y":0.365476,"r":0.003558,"sign":1,"tier":3},{"x":-0.909781,"y":0.394114,"r":0.008523,"sign":1,"tier":3},{"x":-0.918948,"y":0.387985,"r":0.002504,"sign":1,"tier":3},{"x":-0.905664,"y":0.408522,"r":0.006462,"sign":1,"tier":3},{"x":-0.902168,"y":0.419507,"r":0.005066,"sign":1,"tier":3},{"x":-0.899192,"y":0.428153,"r":0.004078,"sign":1,"tier":3},{"x":-0.896642,"y":0.435132,"r":0.003352,"sign":1,"tier":3},{"x":-0.894441,"y":0.44088,"r":0.002804,"sign":1,"tier":3},{"x":-0.732844,"y":0.070812,"r":0.032786,"sign":1,"tier":3},{"x":-0.76082,"y":0.105864,"r":0.012062,"sign":1,"tier":3},{"x":-0.76439,"y":0.090041,"r":0.004159,"sign":1,"tier":3},{"x":-0.744326,"y":0.106219,"r":0.004436,"sign":1,"tier":3},{"x":-0.77309,"y":0.11947,"r":0.00626,"sign":1,"tier":3},{"x":-0.780078,"y":0.126748,"r":0.003831,"sign":1,"tier":3},{"x":-0.78461,"y":0.131291,"r":0.002586,"sign":1,"tier":3},{"x":-0.756541,"y":0.032161,"r":0.012552,"sign":1,"tier":3},{"x":-0.762055,"y":0.048037,"r":0.004255,"sign":1,"tier":3},{"x":-0.739476,"y":0.034007,"r":0.004613,"sign":1,"tier":3},{"x":-0.767776,"y":0.016629,"r":0.006618,"sign":1,"tier":3},{"x":-0.774392,"y":0.008217,"r":0.004084,"sign":1,"tier":3},{"x":-0.778762,"y":0.002935,"r":0.002771,"sign":1,"tier":3},{"x":-0.684792,"y":0.075132,"r":0.01546,"sign":1,"tier":3},{"x":-0.699739,"y":0.089289,"r":0.005127,"sign":1,"tier":3},{"x":-0.705976,"y":0.093748,"r":0.00254,"sign":1,"tier":3},{"x":-0.69693,"y":0.058397,"r":0.005213,"sign":1,"tier":3},{"x":-0.702385,"y":0.052807,"r":0.002597,"sign":1,"tier":3},{"x":-0.660472,"y":0.077729,"r":0.008997,"sign":1,"tier":3},{"x":-0.669577,"y":0.085241,"r":0.002806,"sign":1,"tier":3},{"x":-0.667774,"y":0.068423,"r":0.002832,"sign":1,"tier":3},{"x":-0.64569,"y":0.079453,"r":0.005886,"sign":1,"tier":3},{"x":-0.635729,"y":0.080678,"r":0.00415,"sign":1,"tier":3},{"x":-0.628552,"y":0.081594,"r":0.003084,"sign":1,"tier":3},{"x":-0.934065,"y":-0.105452,"r":0.060001,"sign":1,"tier":3},{"x":-0.977595,"y":-0.036276,"r":0.021732,"sign":1,"tier":3},{"x":-0.94917,"y":-0.040212,"r":0.006965,"sign":1,"tier":3},{"x":-0.953659,"y":-0.031728,"r":0.002633,"sign":1,"tier":3},{"x":-0.938971,"y":-0.042213,"r":0.003428,"sign":1,"tier":3},{"x":-0.98919,"y":-0.064428,"r":0.008714,"sign":1,"tier":3},{"x":-0.978249,"y":-0.060809,"r":0.00281,"sign":1,"tier":3},{"x":-0.995232,"y":-0.054042,"r":0.003302,"sign":1,"tier":3},{"x":-0.992329,"y":-0.077423,"r":0.004655,"sign":1,"tier":3},{"x":-0.993493,"y":-0.084875,"r":0.002888,"sign":1,"tier":3},{"x":-0.988945,"y":-0.005532,"r":0.01104,"sign":1,"tier":3},{"x":-0.975625,"y":-0.01119,"r":0.003432,"sign":1,"tier":3},{"x":-0.996018,"y":-0.018587,"r":0.003808,"sign":1,"tier":3},{"x":-0.993281,"y":0.011619,"r":0.006651,"sign":1,"tier":3},{"x":-0.995308,"y":0.02252,"r":0.004438,"sign":1,"tier":3},{"x":-0.996378,"y":0.030051,"r":0.003169,"sign":1,"tier":3},{"x":-0.864927,"y":-0.07007,"r":0.017665,"sign":1,"tier":3},{"x":-0.886353,"y":-0.059557,"r":0.006202,"sign":1,"tier":3},{"x":-0.894954,"y":-0.055857,"r":0.00316,"sign":1,"tier":3},{"x":-0.867966,"y":-0.094539,"r":0.006993,"sign":1,"tier":3},{"x":-0.859743,"y":-0.08964,"r":0.00258,"sign":1,"tier":3},{"x":-0.870332,"y":-0.105002,"r":0.003734,"sign":1,"tier":3},{"x":-0.843116,"y":-0.055773,"r":0.008415,"sign":1,"tier":3},{"x":-0.853893,"y":-0.052912,"r":0.002735,"sign":1,"tier":3},{"x":-0.844619,"y":-0.066967,"r":0.002879,"sign":1,"tier":3},{"x":-0.832353,"y":-0.047903,"r":0.004918,"sign":1,"tier":3},{"x":-0.825926,"y":-0.042903,"r":0.003225,"sign":1,"tier":3},{"x":-0.942818,"y":-0.201039,"r":0.035986,"sign":1,"tier":3},{"x":-0.974276,"y":-0.165,"r":0.011851,"sign":1,"tier":3},{"x":-0.958568,"y":-0.164432,"r":0.003866,"sign":1,"tier":3},{"x":-0.978508,"y":-0.181169,"r":0.004862,"sign":1,"tier":3},{"x":-0.979376,"y":-0.188608,"r":0.002628,"sign":1,"tier":3},{"x":-0.982879,"y":-0.149583,"r":0.005804,"sign":1,"tier":3},{"x":-0.98653,"y":-0.141102,"r":0.00343,"sign":1,"tier":3},{"x":-0.907488,"y":-0.170784,"r":0.010529,"sign":1,"tier":3},{"x":-0.921314,"y":-0.167781,"r":0.003619,"sign":1,"tier":3},{"x":-0.905687,"y":-0.185478,"r":0.004275,"sign":1,"tier":3},{"x":-0.897327,"y":-0.159059,"r":0.004986,"sign":1,"tier":3},{"x":-0.892593,"y":-0.152748,"r":0.002902,"sign":1,"tier":3},{"x":-0.94069,"y":-0.260811,"r":0.023824,"sign":1,"tier":3},{"x":-0.963318,"y":-0.239285,"r":0.007408,"sign":1,"tier":3},{"x":-0.965159,"y":-0.249615,"r":0.003085,"sign":1,"tier":3},{"x":-0.969487,"y":-0.230228,"r":0.003551,"sign":1,"tier":3},{"x":-0.920547,"y":-0.237652,"r":0.006869,"sign":1,"tier":3},{"x":-0.917891,"y":-0.246988,"r":0.002838,"sign":1,"tier":3},{"x":-0.915333,"y":-0.229007,"r":0.003227,"sign":1,"tier":3},{"x":-0.935829,"y":-0.30123,"r":0.016885,"sign":1,"tier":3},{"x":-0.95262,"y":-0.28711,"r":0.005054,"sign":1,"tier":3},{"x":-0.923293,"y":-0.283539,"r":0.004797,"sign":1,"tier":3},{"x":-0.930575,"y":-0.330216,"r":0.012573,"sign":1,"tier":3},{"x":-0.943443,"y":-0.320315,"r":0.003663,"sign":1,"tier":3},{"x":-0.922227,"y":-0.316449,"r":0.003526,"sign":1,"tier":3},{"x":-0.92563,"y":-0.35195,"r":0.009717,"sign":1,"tier":3},{"x":-0.935772,"y":-0.344657,"r":0.002775,"sign":1,"tier":3},{"x":-0.919773,"y":-0.341006,"r":0.002696,"sign":1,"tier":3},{"x":-0.921178,"y":-0.368821,"r":0.007731,"sign":1,"tier":3},{"x":-0.91723,"y":-0.38228,"r":0.006295,"sign":1,"tier":3},{"x":-0.913743,"y":-0.393259,"r":0.005224,"sign":1,"tier":3},{"x":-0.910659,"y":-0.40238,"r":0.004404,"sign":1,"tier":3},{"x":-0.386467,"y":-0.794846,"r":0.11618,"sign":1,"tier":3},{"x":-0.267578,"y":-0.911293,"r":0.050236,"sign":1,"tier":3},{"x":-0.265222,"y":-0.845773,"r":0.015326,"sign":1,"tier":3},{"x":-0.282289,"y":-0.857598,"r":0.005437,"sign":1,"tier":3},{"x":-0.288744,"y":-0.862684,"r":0.002781,"sign":1,"tier":3},{"x":-0.248259,"y":-0.858565,"r":0.00592,"sign":1,"tier":3},{"x":-0.241593,"y":-0.864682,"r":0.003129,"sign":1,"tier":3},{"x":-0.266145,"y":-0.823061,"r":0.007406,"sign":1,"tier":3},{"x":-0.258433,"y":-0.829286,"r":0.002505,"sign":1,"tier":3},{"x":-0.267057,"y":-0.811328,"r":0.004362,"sign":1,"tier":3},{"x":-0.267775,"y":-0.804128,"r":0.002874,"sign":1,"tier":3},{"x":-0.336588,"y":-0.920971,"r":0.019449,"sign":1,"tier":3},{"x":-0.322753,"y":-0.899353,"r":0.006217,"sign":1,"tier":3},{"x":-0.31722,"y":-0.891913,"r":0.003055,"sign":1,"tier":3},{"x":-0.317626,"y":-0.940225,"r":0.007574,"sign":1,"tier":3},{"x":-0.328007,"y":-0.941606,"r":0.002899,"sign":1,"tier":3},{"x":-0.308315,"y":-0.947086,"r":0.003993,"sign":1,"tier":3},{"x":-0.366194,"y":-0.919579,"r":0.01019,"sign":1,"tier":3},{"x":-0.356546,"y":-0.910366,"r":0.003151,"sign":1,"tier":3},{"x":-0.357575,"y":-0.930172,"r":0.003466,"sign":1,"tier":3},{"x":-0.382459,"y":-0.917208,"r":0.006247,"sign":1,"tier":3},{"x":-0.392703,"y":-0.91508,"r":0.004215,"sign":1,"tier":3},{"x":-0.399735,"y":-0.91332,"r":0.003034,"sign":1,"tier":3},{"x":-0.201121,"y":-0.951526,"r":0.027451,"sign":1,"tier":3},{"x":-0.209326,"y":-0.916758,"r":0.008272,"sign":1,"tier":3},{"x":-0.216387,"y":-0.925351,"r":0.00285,"sign":1,"tier":3},{"x":-0.198499,"y":-0.920875,"r":0.003312,"sign":1,"tier":3},{"x":-0.213709,"y":-0.905336,"r":0.003962,"sign":1,"tier":3},{"x":-0.236377,"y":-0.962045,"r":0.009341,"sign":1,"tier":3},{"x":-0.231609,"y":-0.950608,"r":0.003051,"sign":1,"tier":3},{"x":-0.226127,"y":-0.970225,"r":0.003773,"sign":1,"tier":3},{"x":-0.250295,"y":-0.963376,"r":0.00464,"sign":1,"tier":3},{"x":-0.2577,"y":-0.963364,"r":0.002764,"sign":1,"tier":3},{"x":-0.160322,"y":-0.969645,"r":0.01719,"sign":1,"tier":3},{"x":-0.1687,"y":-0.949027,"r":0.005065,"sign":1,"tier":3},{"x":-0.181413,"y":-0.977868,"r":0.005447,"sign":1,"tier":3},{"x":-0.189378,"y":-0.979223,"r":0.002633,"sign":1,"tier":3},{"x":-0.133031,"y":-0.97926,"r":0.011745,"sign":1,"tier":3},{"x":-0.14009,"y":-0.96587,"r":0.003392,"sign":1,"tier":3},{"x":-0.146986,"y":-0.985541,"r":0.003558,"sign":1,"tier":3},{"x":-0.113578,"y":-0.98495,"r":0.008523,"sign":1,"tier":3},{"x":-0.123469,"y":-0.989825,"r":0.002504,"sign":1,"tier":3},{"x":-0.099042,"y":-0.988589,"r":0.006462,"sign":1,"tier":3},{"x":-0.08778,"y":-0.991054,"r":0.005066,"sign":1,"tier":3},{"x":-0.078804,"y":-0.9928,"r":0.004078,"sign":1,"tier":3},{"x":-0.071486,"y":-0.994081,"r":0.003352,"sign":1,"tier":3},{"x":-0.065407,"y":-0.995049,"r":0.002804,"sign":1,"tier":3},{"x":-0.305097,"y":-0.670068,"r":0.032786,"sign":1,"tier":3},{"x":-0.288729,"y":-0.711821,"r":0.012062,"sign":1,"tier":3},{"x":-0.304217,"y":-0.707002,"r":0.004159,"sign":1,"tier":3},{"x":-0.280175,"y":-0.697715,"r":0.004436,"sign":1,"tier":3},{"x":-0.283081,"y":-0.72925,"r":0.00626,"sign":1,"tier":3},{"x":-0.280272,"y":-0.738942,"r":0.003831,"sign":1,"tier":3},{"x":-0.278604,"y":-0.745138,"r":0.002586,"sign":1,"tier":3},{"x":-0.350419,"y":-0.671264,"r":0.012552,"sign":1,"tier":3},{"x":-0.339426,"y":-0.683978,"r":0.004255,"sign":1,"tier":3},{"x":-0.340287,"y":-0.657409,"r":0.004613,"sign":1,"tier":3},{"x":-0.369487,"y":-0.673228,"r":0.006618,"sign":1,"tier":3},{"x":-0.38008,"y":-0.674751,"r":0.004084,"sign":1,"tier":3},{"x":-0.38684,"y":-0.675895,"r":0.002771,"sign":1,"tier":3},{"x":-0.277329,"y":-0.630613,"r":0.01546,"sign":1,"tier":3},{"x":-0.272543,"y":-0.650636,"r":0.005127,"sign":1,"tier":3},{"x":-0.2718,"y":-0.658267,"r":0.00254,"sign":1,"tier":3},{"x":-0.297891,"y":-0.632758,"r":0.005213,"sign":1,"tier":3},{"x":-0.30546,"y":-0.634686,"r":0.002597,"sign":1,"tier":3},{"x":-0.262921,"y":-0.61085,"r":0.008997,"sign":1,"tier":3},{"x":-0.260968,"y":-0.622491,"r":0.002806,"sign":1,"tier":3},{"x":-0.274631,"y":-0.612521,"r":0.002832,"sign":1,"tier":3},{"x":-0.254037,"y":-0.59891,"r":0.005886,"sign":1,"tier":3},{"x":-0.247995,"y":-0.590896,"r":0.00415,"sign":1,"tier":3},{"x":-0.243614,"y":-0.585139,"r":0.003084,"sign":1,"tier":3},{"x":-0.558357,"y":-0.756198,"r":0.060001,"sign":1,"tier":3},{"x":-0.520214,"y":-0.828485,"r":0.021732,"sign":1,"tier":3},{"x":-0.50941,"y":-0.801899,"r":0.006965,"sign":1,"tier":3},{"x":-0.504307,"y":-0.810029,"r":0.002633,"sign":1,"tier":3},{"x":-0.506043,"y":-0.792067,"r":0.003428,"sign":1,"tier":3},{"x":-0.550391,"y":-0.82445,"r":0.008714,"sign":1,"tier":3},{"x":-0.541787,"y":-0.816784,"r":0.00281,"sign":1,"tier":3},{"x":-0.544417,"y":-0.834876,"r":0.003302,"sign":1,"tier":3},{"x":-0.563215,"y":-0.820671,"r":0.004655,"sign":1,"tier":3},{"x":-0.570251,"y":-0.817952,"r":0.002888,"sign":1,"tier":3},{"x":-0.499263,"y":-0.853685,"r":0.01104,"sign":1,"tier":3},{"x":-0.497503,"y":-0.839321,"r":0.003432,"sign":1,"tier":3},{"x":-0.514106,"y":-0.853284,"r":0.003808,"sign":1,"tier":3},{"x":-0.486578,"y":-0.866016,"r":0.006651,"sign":1,"tier":3},{"x":-0.478151,"y":-0.873222,"r":0.004438,"sign":1,"tier":3},{"x":-0.472164,"y":-0.877914,"r":0.003169,"sign":1,"tier":3},{"x":-0.493146,"y":-0.714014,"r":0.017665,"sign":1,"tier":3},{"x":-0.494754,"y":-0.737826,"r":0.006202,"sign":1,"tier":3},{"x":-0.495851,"y":-0.747124,"r":0.00316,"sign":1,"tier":3},{"x":-0.515857,"y":-0.704411,"r":0.006993,"sign":1,"tier":3},{"x":-0.507502,"y":-0.69974,"r":0.00258,"sign":1,"tier":3},{"x":-0.5261,"y":-0.701228,"r":0.003734,"sign":1,"tier":3},{"x":-0.469859,"y":-0.702273,"r":0.008415,"sign":1,"tier":3},{"x":-0.47277,"y":-0.713037,"r":0.002735,"sign":1,"tier":3},{"x":-0.480305,"y":-0.697978,"r":0.002879,"sign":1,"tier":3},{"x":-0.457662,"y":-0.696887,"r":0.004918,"sign":1,"tier":3},{"x":-0.450118,"y":-0.693821,"r":0.003225,"sign":1,"tier":3},{"x":-0.645514,"y":-0.715985,"r":0.035986,"sign":1,"tier":3},{"x":-0.630032,"y":-0.761247,"r":0.011851,"sign":1,"tier":3},{"x":-0.621686,"y":-0.747929,"r":0.003866,"sign":1,"tier":3},{"x":-0.646151,"y":-0.756828,"r":0.004862,"sign":1,"tier":3},{"x":-0.653028,"y":-0.753861,"r":0.002628,"sign":1,"tier":3},{"x":-0.620982,"y":-0.776407,"r":0.005804,"sign":1,"tier":3},{"x":-0.615463,"y":-0.78381,"r":0.00343,"sign":1,"tier":3},{"x":-0.601647,"y":-0.700516,"r":0.010529,"sign":1,"tier":3},{"x":-0.60596,"y":-0.71399,"r":0.003619,"sign":1,"tier":3},{"x":-0.613472,"y":-0.691609,"r":0.004275,"sign":1,"tier":3},{"x":-0.586412,"y":-0.697578,"r":0.004986,"sign":1,"tier":3},{"x":-0.57858,"y":-0.696634,"r":0.002902,"sign":1,"tier":3},{"x":-0.696214,"y":-0.684255,"r":0.023824,"sign":1,"tier":3},{"x":-0.688886,"y":-0.714615,"r":0.007408,"sign":1,"tier":3},{"x":-0.698753,"y":-0.711044,"r":0.003085,"sign":1,"tier":3},{"x":-0.684127,"y":-0.724487,"r":0.003551,"sign":1,"tier":3},{"x":-0.666087,"y":-0.678391,"r":0.006869,"sign":1,"tier":3},{"x":-0.672844,"y":-0.671423,"r":0.002838,"sign":1,"tier":3},{"x":-0.655993,"y":-0.678198,"r":0.003227,"sign":1,"tier":3},{"x":-0.728787,"y":-0.659837,"r":0.016885,"sign":1,"tier":3},{"x":-0.724954,"y":-0.681439,"r":0.005054,"sign":1,"tier":3},{"x":-0.707198,"y":-0.657826,"r":0.004797,"sign":1,"tier":3},{"x":-0.751263,"y":-0.640794,"r":0.012573,"sign":1,"tier":3},{"x":-0.749123,"y":-0.656888,"r":0.003663,"sign":1,"tier":3},{"x":-0.735167,"y":-0.640448,"r":0.003526,"sign":1,"tier":3},{"x":-0.767613,"y":-0.625644,"r":0.009717,"sign":1,"tier":3},{"x":-0.766368,"y":-0.638074,"r":0.002775,"sign":1,"tier":3},{"x":-0.755207,"y":-0.626043,"r":0.002696,"sign":1,"tier":3},{"x":-0.779997,"y":-0.613353,"r":0.007731,"sign":1,"tier":3},{"x":-0.789679,"y":-0.603205,"r":0.006295,"sign":1,"tier":3},{"x":-0.797444,"y":-0.594695,"r":0.005224,"sign":1,"tier":3},{"x":-0.803801,"y":-0.587464,"r":0.004404,"sign":1,"tier":3},{"x":0.386467,"y":-0.794846,"r":0.11618,"sign":1,"tier":3},{"x":0.267578,"y":-0.911293,"r":0.050236,"sign":1,"tier":3},{"x":0.265222,"y":-0.845773,"r":0.015326,"sign":1,"tier":3},{"x":0.282289,"y":-0.857598,"r":0.005437,"sign":1,"tier":3},{"x":0.288744,"y":-0.862684,"r":0.002781,"sign":1,"tier":3},{"x":0.248259,"y":-0.858565,"r":0.00592,"sign":1,"tier":3},{"x":0.241593,"y":-0.864682,"r":0.003129,"sign":1,"tier":3},{"x":0.266145,"y":-0.823061,"r":0.007406,"sign":1,"tier":3},{"x":0.258433,"y":-0.829286,"r":0.002505,"sign":1,"tier":3},{"x":0.267057,"y":-0.811328,"r":0.004362,"sign":1,"tier":3},{"x":0.267775,"y":-0.804128,"r":0.002874,"sign":1,"tier":3},{"x":0.336588,"y":-0.920971,"r":0.019449,"sign":1,"tier":3},{"x":0.322753,"y":-0.899353,"r":0.006217,"sign":1,"tier":3},{"x":0.31722,"y":-0.891913,"r":0.003055,"sign":1,"tier":3},{"x":0.317626,"y":-0.940225,"r":0.007574,"sign":1,"tier":3},{"x":0.328007,"y":-0.941606,"r":0.002899,"sign":1,"tier":3},{"x":0.308315,"y":-0.947086,"r":0.003993,"sign":1,"tier":3},{"x":0.366194,"y":-0.919579,"r":0.01019,"sign":1,"tier":3},{"x":0.356546,"y":-0.910366,"r":0.003151,"sign":1,"tier":3},{"x":0.357575,"y":-0.930172,"r":0.003466,"sign":1,"tier":3},{"x":0.382459,"y":-0.917208,"r":0.006247,"sign":1,"tier":3},{"x":0.392703,"y":-0.91508,"r":0.004215,"sign":1,"tier":3},{"x":0.399735,"y":-0.91332,"r":0.003034,"sign":1,"tier":3},{"x":0.201121,"y":-0.951526,"r":0.027451,"sign":1,"tier":3},{"x":0.209326,"y":-0.916758,"r":0.008272,"sign":1,"tier":3},{"x":0.216387,"y":-0.925351,"r":0.00285,"sign":1,"tier":3},{"x":0.198499,"y":-0.920875,"r":0.003312,"sign":1,"tier":3},{"x":0.213709,"y":-0.905336,"r":0.003962,"sign":1,"tier":3},{"x":0.236377,"y":-0.962045,"r":0.009341,"sign":1,"tier":3},{"x":0.231609,"y":-0.950608,"r":0.003051,"sign":1,"tier":3},{"x":0.226127,"y":-0.970225,"r":0.003773,"sign":1,"tier":3},{"x":0.250295,"y":-0.963376,"r":0.00464,"sign":1,"tier":3},{"x":0.2577,"y":-0.963364,"r":0.002764,"sign":1,"tier":3},{"x":0.160322,"y":-0.969645,"r":0.01719,"sign":1,"tier":3},{"x":0.1687,"y":-0.949027,"r":0.005065,"sign":1,"tier":3},{"x":0.181413,"y":-0.977868,"r":0.005447,"sign":1,"tier":3},{"x":0.189378,"y":-0.979223,"r":0.002633,"sign":1,"tier":3},{"x":0.133031,"y":-0.97926,"r":0.011745,"sign":1,"tier":3},{"x":0.14009,"y":-0.96587,"r":0.003392,"sign":1,"tier":3},{"x":0.146986,"y":-0.985541,"r":0.003558,"sign":1,"tier":3},{"x":0.113578,"y":-0.98495,"r":0.008523,"sign":1,"tier":3},{"x":0.123469,"y":-0.989825,"r":0.002504,"sign":1,"tier":3},{"x":0.099042,"y":-0.988589,"r":0.006462,"sign":1,"tier":3},{"x":0.08778,"y":-0.991054,"r":0.005066,"sign":1,"tier":3},{"x":0.078804,"y":-0.9928,"r":0.004078,"sign":1,"tier":3},{"x":0.071486,"y":-0.994081,"r":0.003352,"sign":1,"tier":3},{"x":0.065407,"y":-0.995049,"r":0.002804,"sign":1,"tier":3},{"x":0.305097,"y":-0.670068,"r":0.032786,"sign":1,"tier":3},{"x":0.288729,"y":-0.711821,"r":0.012062,"sign":1,"tier":3},{"x":0.304217,"y":-0.707002,"r":0.004159,"sign":1,"tier":3},{"x":0.280175,"y":-0.697715,"r":0.004436,"sign":1,"tier":3},{"x":0.283081,"y":-0.72925,"r":0.00626,"sign":1,"tier":3},{"x":0.280272,"y":-0.738942,"r":0.003831,"sign":1,"tier":3},{"x":0.278604,"y":-0.745138,"r":0.002586,"sign":1,"tier":3},{"x":0.350419,"y":-0.671264,"r":0.012552,"sign":1,"tier":3},{"x":0.339426,"y":-0.683978,"r":0.004255,"sign":1,"tier":3},{"x":0.340287,"y":-0.657409,"r":0.004613,"sign":1,"tier":3},{"x":0.369487,"y":-0.673228,"r":0.006618,"sign":1,"tier":3},{"x":0.38008,"y":-0.674751,"r":0.004084,"sign":1,"tier":3},{"x":0.38684,"y":-0.675895,"r":0.002771,"sign":1,"tier":3},{"x":0.277329,"y":-0.630613,"r":0.01546,"sign":1,"tier":3},{"x":0.272543,"y":-0.650636,"r":0.005127,"sign":1,"tier":3},{"x":0.2718,"y":-0.658267,"r":0.00254,"sign":1,"tier":3},{"x":0.297891,"y":-0.632758,"r":0.005213,"sign":1,"tier":3},{"x":0.30546,"y":-0.634686,"r":0.002597,"sign":1,"tier":3},{"x":0.262921,"y":-0.61085,"r":0.008997,"sign":1,"tier":3},{"x":0.260968,"y":-0.622491,"r":0.002806,"sign":1,"tier":3},{"x":0.274631,"y":-0.612521,"r":0.002832,"sign":1,"tier":3},{"x":0.254037,"y":-0.59891,"r":0.005886,"sign":1,"tier":3},{"x":0.247995,"y":-0.590896,"r":0.00415,"sign":1,"tier":3},{"x":0.243614,"y":-0.585139,"r":0.003084,"sign":1,"tier":3},{"x":0.558357,"y":-0.756198,"r":0.060001,"sign":1,"tier":3},{"x":0.520214,"y":-0.828485,"r":0.021732,"sign":1,"tier":3},{"x":0.50941,"y":-0.801899,"r":0.006965,"sign":1,"tier":3},{"x":0.504307,"y":-0.810029,"r":0.002633,"sign":1,"tier":3},{"x":0.506043,"y":-0.792067,"r":0.003428,"sign":1,"tier":3},{"x":0.550391,"y":-0.82445,"r":0.008714,"sign":1,"tier":3},{"x":0.541787,"y":-0.816784,"r":0.00281,"sign":1,"tier":3},{"x":0.544417,"y":-0.834876,"r":0.003302,"sign":1,"tier":3},{"x":0.563215,"y":-0.820671,"r":0.004655,"sign":1,"tier":3},{"x":0.570251,"y":-0.817952,"r":0.002888,"sign":1,"tier":3},{"x":0.499263,"y":-0.853685,"r":0.01104,"sign":1,"tier":3},{"x":0.497503,"y":-0.839321,"r":0.003432,"sign":1,"tier":3},{"x":0.514106,"y":-0.853284,"r":0.003808,"sign":1,"tier":3},{"x":0.486578,"y":-0.866016,"r":0.006651,"sign":1,"tier":3},{"x":0.478151,"y":-0.873222,"r":0.004438,"sign":1,"tier":3},{"x":0.472164,"y":-0.877914,"r":0.003169,"sign":1,"tier":3},{"x":0.493146,"y":-0.714014,"r":0.017665,"sign":1,"tier":3},{"x":0.494754,"y":-0.737826,"r":0.006202,"sign":1,"tier":3},{"x":0.495851,"y":-0.747124,"r":0.00316,"sign":1,"tier":3},{"x":0.515857,"y":-0.704411,"r":0.006993,"sign":1,"tier":3},{"x":0.507502,"y":-0.69974,"r":0.00258,"sign":1,"tier":3},{"x":0.5261,"y":-0.701228,"r":0.003734,"sign":1,"tier":3},{"x":0.469859,"y":-0.702273,"r":0.008415,"sign":1,"tier":3},{"x":0.47277,"y":-0.713037,"r":0.002735,"sign":1,"tier":3},{"x":0.480305,"y":-0.697978,"r":0.002879,"sign":1,"tier":3},{"x":0.457662,"y":-0.696887,"r":0.004918,"sign":1,"tier":3},{"x":0.450118,"y":-0.693821,"r":0.003225,"sign":1,"tier":3},{"x":0.645514,"y":-0.715985,"r":0.035986,"sign":1,"tier":3},{"x":0.630032,"y":-0.761247,"r":0.011851,"sign":1,"tier":3},{"x":0.621686,"y":-0.747929,"r":0.003866,"sign":1,"tier":3},{"x":0.646151,"y":-0.756828,"r":0.004862,"sign":1,"tier":3},{"x":0.653028,"y":-0.753861,"r":0.002628,"sign":1,"tier":3},{"x":0.620982,"y":-0.776407,"r":0.005804,"sign":1,"tier":3},{"x":0.615463,"y":-0.78381,"r":0.00343,"sign":1,"tier":3},{"x":0.601647,"y":-0.700516,"r":0.010529,"sign":1,"tier":3},{"x":0.60596,"y":-0.71399,"r":0.003619,"sign":1,"tier":3},{"x":0.613472,"y":-0.691609,"r":0.004275,"sign":1,"tier":3},{"x":0.586412,"y":-0.697578,"r":0.004986,"sign":1,"tier":3},{"x":0.57858,"y":-0.696634,"r":0.002902,"sign":1,"tier":3},{"x":0.696214,"y":-0.684255,"r":0.023824,"sign":1,"tier":3},{"x":0.688886,"y":-0.714615,"r":0.007408,"sign":1,"tier":3},{"x":0.698753,"y":-0.711044,"r":0.003085,"sign":1,"tier":3},{"x":0.684127,"y":-0.724487,"r":0.003551,"sign":1,"tier":3},{"x":0.666087,"y":-0.678391,"r":0.006869,"sign":1,"tier":3},{"x":0.672844,"y":-0.671423,"r":0.002838,"sign":1,"tier":3},{"x":0.655993,"y":-0.678198,"r":0.003227,"sign":1,"tier":3},{"x":0.728787,"y":-0.659837,"r":0.016885,"sign":1,"tier":3},{"x":0.724954,"y":-0.681439,"r":0.005054,"sign":1,"tier":3},{"x":0.707198,"y":-0.657826,"r":0.004797,"sign":1,"tier":3},{"x":0.751263,"y":-0.640794,"r":0.012573,"sign":1,"tier":3},{"x":0.749123,"y":-0.656888,"r":0.003663,"sign":1,"tier":3},{"x":0.735167,"y":-0.640448,"r":0.003526,"sign":1,"tier":3},{"x":0.767613,"y":-0.625644,"r":0.009717,"sign":1,"tier":3},{"x":0.766368,"y":-0.638074,"r":0.002775,"sign":1,"tier":3},{"x":0.755207,"y":-0.626043,"r":0.002696,"sign":1,"tier":3},{"x":0.779997,"y":-0.613353,"r":0.007731,"sign":1,"tier":3},{"x":0.789679,"y":-0.603205,"r":0.006295,"sign":1,"tier":3},{"x":0.797444,"y":-0.594695,"r":0.005224,"sign":1,"tier":3},{"x":0.803801,"y":-0.587464,"r":0.004404,"sign":1,"tier":3},{"x":0.881591,"y":0.062733,"r":0.11618,"sign":1,"tier":3},{"x":0.922992,"y":0.223917,"r":0.050236,"sign":1,"tier":3},{"x":0.865072,"y":0.193197,"r":0.015326,"sign":1,"tier":3},{"x":0.883846,"y":0.18433,"r":0.005437,"sign":1,"tier":3},{"x":0.891479,"y":0.181282,"r":0.002781,"sign":1,"tier":3},{"x":0.867669,"y":0.214283,"r":0.00592,"sign":1,"tier":3},{"x":0.869633,"y":0.223116,"r":0.003129,"sign":1,"tier":3},{"x":0.845864,"y":0.181042,"r":0.007406,"sign":1,"tier":3},{"x":0.847399,"y":0.190833,"r":0.002505,"sign":1,"tier":3},{"x":0.83616,"y":0.174386,"r":0.004362,"sign":1,"tier":3},{"x":0.830283,"y":0.170164,"r":0.002874,"sign":1,"tier":3},{"x":0.965878,"y":0.168992,"r":0.019449,"sign":1,"tier":3},{"x":0.940239,"y":0.170164,"r":0.006217,"sign":1,"tier":3},{"x":0.931029,"y":0.171236,"r":0.003055,"sign":1,"tier":3},{"x":0.973072,"y":0.19504,"r":0.007574,"sign":1,"tier":3},{"x":0.979459,"y":0.186741,"r":0.002899,"sign":1,"tier":3},{"x":0.974358,"y":0.206534,"r":0.003993,"sign":1,"tier":3},{"x":0.979476,"y":0.142656,"r":0.01019,"sign":1,"tier":3},{"x":0.966673,"y":0.146405,"r":0.003151,"sign":1,"tier":3},{"x":0.98434,"y":0.155416,"r":0.003466,"sign":1,"tier":3},{"x":0.985555,"y":0.127385,"r":0.006247,"sign":1,"tier":3},{"x":0.988834,"y":0.11745,"r":0.004215,"sign":1,"tier":3},{"x":0.990826,"y":0.110479,"r":0.003034,"sign":1,"tier":3},{"x":0.924606,"y":0.301587,"r":0.027451,"sign":1,"tier":3},{"x":0.898599,"y":0.277097,"r":0.008272,"sign":1,"tier":3},{"x":0.909571,"y":0.275279,"r":0.00285,"sign":1,"tier":3},{"x":0.89675,"y":0.288532,"r":0.003312,"sign":1,"tier":3},{"x":0.890898,"y":0.267591,"r":0.003962,"sign":1,"tier":3},{"x":0.951344,"y":0.276314,"r":0.009341,"sign":1,"tier":3},{"x":0.939055,"y":0.274725,"r":0.003051,"sign":1,"tier":3},{"x":0.953302,"y":0.289281,"r":0.003773,"sign":1,"tier":3},{"x":0.959455,"y":0.264926,"r":0.00464,"sign":1,"tier":3},{"x":0.963147,"y":0.258508,"r":0.002764,"sign":1,"tier":3},{"x":0.919899,"y":0.34598,"r":0.01719,"sign":1,"tier":3},{"x":0.906232,"y":0.328415,"r":0.005065,"sign":1,"tier":3},{"x":0.937565,"y":0.331826,"r":0.005447,"sign":1,"tier":3},{"x":0.942721,"y":0.325606,"r":0.002633,"sign":1,"tier":3},{"x":0.91458,"y":0.374422,"r":0.011745,"sign":1,"tier":3},{"x":0.906513,"y":0.361614,"r":0.003392,"sign":1,"tier":3},{"x":0.926997,"y":0.365476,"r":0.003558,"sign":1,"tier":3},{"x":0.909781,"y":0.394114,"r":0.008523,"sign":1,"tier":3},{"x":0.918948,"y":0.387985,"r":0.002504,"sign":1,"tier":3},{"x":0.905664,"y":0.408522,"r":0.006462,"sign":1,"tier":3},{"x":0.902168,"y":0.419507,"r":0.005066,"sign":1,"tier":3},{"x":0.899192,"y":0.428153,"r":0.004078,"sign":1,"tier":3},{"x":0.896642,"y":0.435132,"r":0.003352,"sign":1,"tier":3},{"x":0.894441,"y":0.44088,"r":0.002804,"sign":1,"tier":3},{"x":0.732844,"y":0.070812,"r":0.032786,"sign":1,"tier":3},{"x":0.76082,"y":0.105864,"r":0.012062,"sign":1,"tier":3},{"x":0.76439,"y":0.090041,"r":0.004159,"sign":1,"tier":3},{"x":0.744326,"y":0.106219,"r":0.004436,"sign":1,"tier":3},{"x":0.77309,"y":0.11947,"r":0.00626,"sign":1,"tier":3},{"x":0.780078,"y":0.126748,"r":0.003831,"sign":1,"tier":3},{"x":0.78461,"y":0.131291,"r":0.002586,"sign":1,"tier":3},{"x":0.756541,"y":0.032161,"r":0.012552,"sign":1,"tier":3},{"x":0.762055,"y":0.048037,"r":0.004255,"sign":1,"tier":3},{"x":0.739476,"y":0.034007,"r":0.004613,"sign":1,"tier":3},{"x":0.767776,"y":0.016629,"r":0.006618,"sign":1,"tier":3},{"x":0.774392,"y":0.008217,"r":0.004084,"sign":1,"tier":3},{"x":0.778762,"y":0.002935,"r":0.002771,"sign":1,"tier":3},{"x":0.684792,"y":0.075132,"r":0.01546,"sign":1,"tier":3},{"x":0.699739,"y":0.089289,"r":0.005127,"sign":1,"tier":3},{"x":0.705976,"y":0.093748,"r":0.00254,"sign":1,"tier":3},{"x":0.69693,"y":0.058397,"r":0.005213,"sign":1,"tier":3},{"x":0.702385,"y":0.052807,"r":0.002597,"sign":1,"tier":3},{"x":0.660472,"y":0.077729,"r":0.008997,"sign":1,"tier":3},{"x":0.669577,"y":0.085241,"r":0.002806,"sign":1,"tier":3},{"x":0.667774,"y":0.068423,"r":0.002832,"sign":1,"tier":3},{"x":0.64569,"y":0.079453,"r":0.005886,"sign":1,"tier":3},{"x":0.635729,"y":0.080678,"r":0.00415,"sign":1,"tier":3},{"x":0.628552,"y":0.081594,"r":0.003084,"sign":1,"tier":3},{"x":0.934065,"y":-0.105452,"r":0.060001,"sign":1,"tier":3},{"x":0.977595,"y":-0.036276,"r":0.021732,"sign":1,"tier":3},{"x":0.94917,"y":-0.040212,"r":0.006965,"sign":1,"tier":3},{"x":0.953659,"y":-0.031728,"r":0.002633,"sign":1,"tier":3},{"x":0.938971,"y":-0.042213,"r":0.003428,"sign":1,"tier":3},{"x":0.98919,"y":-0.064428,"r":0.008714,"sign":1,"tier":3},{"x":0.978249,"y":-0.060809,"r":0.00281,"sign":1,"tier":3},{"x":0.995232,"y":-0.054042,"r":0.003302,"sign":1,"tier":3},{"x":0.992329,"y":-0.077423,"r":0.004655,"sign":1,"tier":3},{"x":0.993493,"y":-0.084875,"r":0.002888,"sign":1,"tier":3},{"x":0.988945,"y":-0.005532,"r":0.01104,"sign":1,"tier":3},{"x":0.975625,"y":-0.01119,"r":0.003432,"sign":1,"tier":3},{"x":0.996018,"y":-0.018587,"r":0.003808,"sign":1,"tier":3},{"x":0.993281,"y":0.011619,"r":0.006651,"sign":1,"tier":3},{"x":0.995308,"y":0.02252,"r":0.004438,"sign":1,"tier":3},{"x":0.996378,"y":0.030051,"r":0.003169,"sign":1,"tier":3},{"x":0.864927,"y":-0.07007,"r":0.017665,"sign":1,"tier":3},{"x":0.886353,"y":-0.059557,"r":0.006202,"sign":1,"tier":3},{"x":0.894954,"y":-0.055857,"r":0.00316,"sign":1,"tier":3},{"x":0.867966,"y":-0.094539,"r":0.006993,"sign":1,"tier":3},{"x":0.859743,"y":-0.08964,"r":0.00258,"sign":1,"tier":3},{"x":0.870332,"y":-0.105002,"r":0.003734,"sign":1,"tier":3},{"x":0.843116,"y":-0.055773,"r":0.008415,"sign":1,"tier":3},{"x":0.853893,"y":-0.052912,"r":0.002735,"sign":1,"tier":3},{"x":0.844619,"y":-0.066967,"r":0.002879,"sign":1,"tier":3},{"x":0.832353,"y":-0.047903,"r":0.004918,"sign":1,"tier":3},{"x":0.825926,"y":-0.042903,"r":0.003225,"sign":1,"tier":3},{"x":0.942818,"y":-0.201039,"r":0.035986,"sign":1,"tier":3},{"x":0.974276,"y":-0.165,"r":0.011851,"sign":1,"tier":3},{"x":0.958568,"y":-0.164432,"r":0.003866,"sign":1,"tier":3},{"x":0.978508,"y":-0.181169,"r":0.004862,"sign":1,"tier":3},{"x":0.979376,"y":-0.188608,"r":0.002628,"sign":1,"tier":3},{"x":0.982879,"y":-0.149583,"r":0.005804,"sign":1,"tier":3},{"x":0.98653,"y":-0.141102,"r":0.00343,"sign":1,"tier":3},{"x":0.907488,"y":-0.170784,"r":0.010529,"sign":1,"tier":3},{"x":0.921314,"y":-0.167781,"r":0.003619,"sign":1,"tier":3},{"x":0.905687,"y":-0.185478,"r":0.004275,"sign":1,"tier":3},{"x":0.897327,"y":-0.159059,"r":0.004986,"sign":1,"tier":3},{"x":0.892593,"y":-0.152748,"r":0.002902,"sign":1,"tier":3},{"x":0.94069,"y":-0.260811,"r":0.023824,"sign":1,"tier":3},{"x":0.963318,"y":-0.239285,"r":0.007408,"sign":1,"tier":3},{"x":0.965159,"y":-0.249615,"r":0.003085,"sign":1,"tier":3},{"x":0.969487,"y":-0.230228,"r":0.003551,"sign":1,"tier":3},{"x":0.920547,"y":-0.237652,"r":0.006869,"sign":1,"tier":3},{"x":0.917891,"y":-0.246988,"r":0.002838,"sign":1,"tier":3},{"x":0.915333,"y":-0.229007,"r":0.003227,"sign":1,"tier":3},{"x":0.935829,"y":-0.30123,"r":0.016885,"sign":1,"tier":3},{"x":0.95262,"y":-0.28711,"r":0.005054,"sign":1,"tier":3},{"x":0.923293,"y":-0.283539,"r":0.004797,"sign":1,"tier":3},{"x":0.930575,"y":-0.330216,"r":0.012573,"sign":1,"tier":3},{"x":0.943443,"y":-0.320315,"r":0.003663,"sign":1,"tier":3},{"x":0.922227,"y":-0.316449,"r":0.003526,"sign":1,"tier":3},{"x":0.92563,"y":-0.35195,"r":0.009717,"sign":1,"tier":3},{"x":0.935772,"y":-0.344657,"r":0.002775,"sign":1,"tier":3},{"x":0.919773,"y":-0.341006,"r":0.002696,"sign":1,"tier":3},{"x":0.921178,"y":-0.368821,"r":0.007731,"sign":1,"tier":3},{"x":0.91723,"y":-0.38228,"r":0.006295,"sign":1,"tier":3},{"x":0.913743,"y":-0.393259,"r":0.005224,"sign":1,"tier":3},{"x":0.910659,"y":-0.40238,"r":0.004404,"sign":1,"tier":3},{"x":0.495124,"y":0.732113,"r":0.11618,"sign":1,"tier":3},{"x":0.655413,"y":0.687376,"r":0.050236,"sign":1,"tier":3},{"x":0.59985,"y":0.652576,"r":0.015326,"sign":1,"tier":3},{"x":0.601557,"y":0.673269,"r":0.005437,"sign":1,"tier":3},{"x":0.602734,"y":0.681402,"r":0.002781,"sign":1,"tier":3},{"x":0.619409,"y":0.644281,"r":0.00592,"sign":1,"tier":3},{"x":0.628041,"y":0.641567,"r":0.003129,"sign":1,"tier":3},{"x":0.579719,"y":0.642019,"r":0.007406,"sign":1,"tier":3},{"x":0.588966,"y":0.638452,"r":0.002505,"sign":1,"tier":3},{"x":0.569103,"y":0.636942,"r":0.004362,"sign":1,"tier":3},{"x":0.562508,"y":0.633964,"r":0.002874,"sign":1,"tier":3},{"x":0.629291,"y":0.751979,"r":0.019449,"sign":1,"tier":3},{"x":0.617486,"y":0.729189,"r":0.006217,"sign":1,"tier":3},{"x":0.613809,"y":0.720677,"r":0.003055,"sign":1,"tier":3},{"x":0.655446,"y":0.745185,"r":0.007574,"sign":1,"tier":3},{"x":0.651451,"y":0.754866,"r":0.002899,"sign":1,"tier":3},{"x":0.666043,"y":0.740552,"r":0.003993,"sign":1,"tier":3},{"x":0.613282,"y":0.776923,"r":0.01019,"sign":1,"tier":3},{"x":0.610127,"y":0.763961,"r":0.003151,"sign":1,"tier":3},{"x":0.626765,"y":0.774755,"r":0.003466,"sign":1,"tier":3},{"x":0.603096,"y":0.789823,"r":0.006247,"sign":1,"tier":3},{"x":0.596131,"y":0.79763,"r":0.004215,"sign":1,"tier":3},{"x":0.591091,"y":0.80284,"r":0.003034,"sign":1,"tier":3},{"x":0.723485,"y":0.649939,"r":0.027451,"sign":1,"tier":3},{"x":0.689272,"y":0.639661,"r":0.008272,"sign":1,"tier":3},{"x":0.693184,"y":0.650072,"r":0.00285,"sign":1,"tier":3},{"x":0.698251,"y":0.632342,"r":0.003312,"sign":1,"tier":3},{"x":0.677189,"y":0.637745,"r":0.003962,"sign":1,"tier":3},{"x":0.714967,"y":0.685731,"r":0.009341,"sign":1,"tier":3},{"x":0.707446,"y":0.675883,"r":0.003051,"sign":1,"tier":3},{"x":0.727176,"y":0.680944,"r":0.003773,"sign":1,"tier":3},{"x":0.709161,"y":0.69845,"r":0.00464,"sign":1,"tier":3},{"x":0.705448,"y":0.704856,"r":0.002764,"sign":1,"tier":3},{"x":0.759577,"y":0.623666,"r":0.01719,"sign":1,"tier":3},{"x":0.737532,"y":0.620613,"r":0.005065,"sign":1,"tier":3},{"x":0.756152,"y":0.646042,"r":0.005447,"sign":1,"tier":3},{"x":0.753343,"y":0.653618,"r":0.002633,"sign":1,"tier":3},{"x":0.781549,"y":0.604838,"r":0.011745,"sign":1,"tier":3},{"x":0.766423,"y":0.604256,"r":0.003392,"sign":1,"tier":3},{"x":0.78001,"y":0.620064,"r":0.003558,"sign":1,"tier":3},{"x":0.796203,"y":0.590837,"r":0.008523,"sign":1,"tier":3},{"x":0.795479,"y":0.60184,"r":0.002504,"sign":1,"tier":3},{"x":0.806622,"y":0.580067,"r":0.006462,"sign":1,"tier":3},{"x":0.814388,"y":0.571547,"r":0.005066,"sign":1,"tier":3},{"x":0.820388,"y":0.564647,"r":0.004078,"sign":1,"tier":3},{"x":0.825156,"y":0.558949,"r":0.003352,"sign":1,"tier":3},{"x":0.829034,"y":0.554168,"r":0.002804,"sign":1,"tier":3},{"x":0.427747,"y":0.599255,"r":0.032786,"sign":1,"tier":3},{"x":0.472091,"y":0.605957,"r":0.012062,"sign":1,"tier":3},{"x":0.460173,"y":0.616961,"r":0.004159,"sign":1,"tier":3},{"x":0.464151,"y":0.591496,"r":0.004436,"sign":1,"tier":3},{"x":0.490009,"y":0.60978,"r":0.00626,"sign":1,"tier":3},{"x":0.499806,"y":0.612194,"r":0.003831,"sign":1,"tier":3},{"x":0.506006,"y":0.613847,"r":0.002586,"sign":1,"tier":3},{"x":0.406123,"y":0.639104,"r":0.012552,"sign":1,"tier":3},{"x":0.422629,"y":0.635941,"r":0.004255,"sign":1,"tier":3},{"x":0.399189,"y":0.623402,"r":0.004613,"sign":1,"tier":3},{"x":0.398289,"y":0.6566,"r":0.006618,"sign":1,"tier":3},{"x":0.394312,"y":0.666535,"r":0.004084,"sign":1,"tier":3},{"x":0.391923,"y":0.672961,"r":0.002771,"sign":1,"tier":3},{"x":0.407462,"y":0.555481,"r":0.01546,"sign":1,"tier":3},{"x":0.427196,"y":0.561347,"r":0.005127,"sign":1,"tier":3},{"x":0.434176,"y":0.564519,"r":0.00254,"sign":1,"tier":3},{"x":0.399039,"y":0.57436,"r":0.005213,"sign":1,"tier":3},{"x":0.396924,"y":0.581879,"r":0.002597,"sign":1,"tier":3},{"x":0.397551,"y":0.533121,"r":0.008997,"sign":1,"tier":3},{"x":0.408609,"y":0.53725,"r":0.002806,"sign":1,"tier":3},{"x":0.393143,"y":0.544098,"r":0.002832,"sign":1,"tier":3},{"x":0.391653,"y":0.519457,"r":0.005886,"sign":1,"tier":3},{"x":0.387734,"y":0.510218,"r":0.00415,"sign":1,"tier":3},{"x":0.384939,"y":0.503545,"r":0.003084,"sign":1,"tier":3},{"x":0.375708,"y":0.86165,"r":0.060001,"sign":1,"tier":3},{"x":0.457382,"y":0.86476,"r":0.021732,"sign":1,"tier":3},{"x":0.43976,"y":0.842112,"r":0.006965,"sign":1,"tier":3},{"x":0.449352,"y":0.841757,"r":0.002633,"sign":1,"tier":3},{"x":0.432928,"y":0.83428,"r":0.003428,"sign":1,"tier":3},{"x":0.438799,"y":0.888877,"r":0.008714,"sign":1,"tier":3},{"x":0.436462,"y":0.877593,"r":0.00281,"sign":1,"tier":3},{"x":0.450815,"y":0.888917,"r":0.003302,"sign":1,"tier":3},{"x":0.429115,"y":0.898094,"r":0.004655,"sign":1,"tier":3},{"x":0.423242,"y":0.902828,"r":0.002888,"sign":1,"tier":3},{"x":0.489681,"y":0.859217,"r":0.01104,"sign":1,"tier":3},{"x":0.478122,"y":0.850511,"r":0.003432,"sign":1,"tier":3},{"x":0.481912,"y":0.871871,"r":0.003808,"sign":1,"tier":3},{"x":0.506703,"y":0.854397,"r":0.006651,"sign":1,"tier":3},{"x":0.517157,"y":0.850702,"r":0.004438,"sign":1,"tier":3},{"x":0.524214,"y":0.847863,"r":0.003169,"sign":1,"tier":3},{"x":0.371781,"y":0.784084,"r":0.017665,"sign":1,"tier":3},{"x":0.391599,"y":0.797383,"r":0.006202,"sign":1,"tier":3},{"x":0.399103,"y":0.802981,"r":0.00316,"sign":1,"tier":3},{"x":0.35211,"y":0.798951,"r":0.006993,"sign":1,"tier":3},{"x":0.352241,"y":0.789379,"r":0.00258,"sign":1,"tier":3},{"x":0.344231,"y":0.80623,"r":0.003734,"sign":1,"tier":3},{"x":0.373257,"y":0.758046,"r":0.008415,"sign":1,"tier":3},{"x":0.381123,"y":0.765949,"r":0.002735,"sign":1,"tier":3},{"x":0.364315,"y":0.764945,"r":0.002879,"sign":1,"tier":3},{"x":0.374691,"y":0.74479,"r":0.004918,"sign":1,"tier":3},{"x":0.375808,"y":0.736725,"r":0.003225,"sign":1,"tier":3},{"x":0.297304,"y":0.917024,"r":0.035986,"sign":1,"tier":3},{"x":0.344244,"y":0.926247,"r":0.011851,"sign":1,"tier":3},{"x":0.336882,"y":0.912361,"r":0.003866,"sign":1,"tier":3},{"x":0.332357,"y":0.937997,"r":0.004862,"sign":1,"tier":3},{"x":0.326349,"y":0.942469,"r":0.002628,"sign":1,"tier":3},{"x":0.361897,"y":0.92599,"r":0.005804,"sign":1,"tier":3},{"x":0.371067,"y":0.924911,"r":0.00343,"sign":1,"tier":3},{"x":0.305841,"y":0.871299,"r":0.010529,"sign":1,"tier":3},{"x":0.315354,"y":0.881772,"r":0.003619,"sign":1,"tier":3},{"x":0.292215,"y":0.877086,"r":0.004275,"sign":1,"tier":3},{"x":0.310915,"y":0.856637,"r":0.004986,"sign":1,"tier":3},{"x":0.314013,"y":0.849382,"r":0.002902,"sign":1,"tier":3},{"x":0.244475,"y":0.945067,"r":0.023824,"sign":1,"tier":3},{"x":0.274432,"y":0.953901,"r":0.007408,"sign":1,"tier":3},{"x":0.266406,"y":0.96066,"r":0.003085,"sign":1,"tier":3},{"x":0.285361,"y":0.954714,"r":0.003551,"sign":1,"tier":3},{"x":0.254461,"y":0.916044,"r":0.006869,"sign":1,"tier":3},{"x":0.245048,"y":0.918411,"r":0.002838,"sign":1,"tier":3},{"x":0.25934,"y":0.907205,"r":0.003227,"sign":1,"tier":3},{"x":0.207042,"y":0.961066,"r":0.016885,"sign":1,"tier":3},{"x":0.227666,"y":0.968548,"r":0.005054,"sign":1,"tier":3},{"x":0.216095,"y":0.941364,"r":0.004797,"sign":1,"tier":3},{"x":0.179312,"y":0.971009,"r":0.012573,"sign":1,"tier":3},{"x":0.194321,"y":0.977203,"r":0.003663,"sign":1,"tier":3},{"x":0.187061,"y":0.956897,"r":0.003526,"sign":1,"tier":3},{"x":0.158017,"y":0.977594,"r":0.009717,"sign":1,"tier":3},{"x":0.169404,"y":0.982731,"r":0.002775,"sign":1,"tier":3},{"x":0.164566,"y":0.96705,"r":0.002696,"sign":1,"tier":3},{"x":0.141181,"y":0.982174,"r":0.007731,"sign":1,"tier":3},{"x":0.127551,"y":0.985485,"r":0.006295,"sign":1,"tier":3},{"x":0.116299,"y":0.987954,"r":0.005224,"sign":1,"tier":3},{"x":0.106858,"y":0.989844,"r":0.004404,"sign":1,"tier":3}];
 
-    function reflect(c1, c2, c3, c4) {
-      var k = 2 * (c1.k + c2.k + c3.k) - c4.k;
-      if (Math.abs(k) < 1e-9) return null;
-      var x = (2 * (c1.k*c1.x + c2.k*c2.x + c3.k*c3.x) - c4.k*c4.x) / k;
-      var y = (2 * (c1.k*c1.y + c2.k*c2.y + c3.k*c3.y) - c4.k*c4.y) / k;
-      return { x: x, y: y, r: 1/Math.abs(k), k: k };
+    const cv = document.getElementById('tracks-canvas');
+    const ctx = cv.getContext('2d');
+    const container = document.querySelector('#tracks .apollon-container');
+    let cssW = 0, cssH = 0, dpr = 1;
+
+    function resize() {
+      // Размер берём от контейнера, а не от window — чтобы корректно
+      // работать при встраивании в страницу как секция.
+      const rect = container.getBoundingClientRect();
+      cssW = rect.width;
+      cssH = rect.height;
+      // DPR cap = 2: на 3x-retina экранах считается в 4 раза меньше пикселей,
+      // визуально не отличается от 3x при тонких линиях.
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      cv.width = cssW * dpr;
+      cv.height = cssH * dpr;
+      // canvas style — растягивается через CSS (width:100%, height:100%)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      scheduleRender();
+    }
+    window.addEventListener('resize', resize);
+    // ResizeObserver — реагирует на изменение размера контейнера, не только window
+    if (window.ResizeObserver) {
+      new ResizeObserver(resize).observe(container);
+    } else {
+      resize();
     }
 
-    function buildCircles() {
-      var r2 = 2 * Math.sqrt(3) - 3;
-      var d = 1 - r2;
-      var ki = 1 / r2;
+    // Мировые координаты: x,y в [-1, 1].
+    // Camera viewport: какая точка в центре экрана и какой "радиус" (halfSize)
+    // помещается в полу-ширину канваса. На корневом уровне:
+    //   centerX = 0, centerY = 0, halfSize = 1/0.92 ≈ 1.087
+    // Это эквивалентно прежней «жёсткой» проекции (вписан внешний круг + поля).
+    const ROOT_VIEWPORT = { centerX: 0, centerY: 0, halfSize: 1 / 0.92 };
+    let viewport = { ...ROOT_VIEWPORT };
 
-      var outer = { x: 0, y: 0, r: 1, k: -1, tier: -1 };
-      var top   = { x: 0,                          y: d,                          r: r2, k: ki, tier: 0, tag: 'выступления', innerLabel: true };
-      var left  = { x: -d * Math.sin(Math.PI/3),  y: -d * Math.cos(Math.PI/3),   r: r2, k: ki, tier: 0, tag: 'станции',     innerLabel: true };
-      var right = { x:  d * Math.sin(Math.PI/3),  y: -d * Math.cos(Math.PI/3),   r: r2, k: ki, tier: 0, tag: 'искусство',   innerLabel: true };
-
-      var sumK = top.k + left.k + right.k;
-      var sqrtTerm = Math.sqrt(top.k*left.k + left.k*right.k + top.k*right.k);
-      var k_central = sumK + 2 * sqrtTerm;
-      var central = { x: 0, y: 0, r: 1/k_central, k: k_central, tier: 1, tag: 'общение', innerLabel: true };
-
-      function annot(c, tier, tag, innerLabel) { c.tier = tier; c.tag = tag; c.innerLabel = innerLabel; return c; }
-      var ext_TL = annot(reflect(outer, top,  left,  right),  1, 'лекции',     true);
-      var ext_LR = annot(reflect(outer, left, right, top),    1, 'мастерские', true);
-      var ext_RT = annot(reflect(outer, right, top, left),    1, 'музыка',     true);
-
-      var mid_TL = annot(reflect(top,  left,  central, right), 2, 'игры',         false);
-      var mid_LR = annot(reflect(left, right, central, top),   2, 'сотворчество', false);
-      var mid_RT = annot(reflect(right, top,  central, left),  2, 'эксперименты', false);
-      mid_TL.hoverOnly = true; mid_LR.hoverOnly = true; mid_RT.hoverOnly = true;
-
-      var named = [outer, top, left, right, central, ext_TL, ext_LR, ext_RT, mid_TL, mid_LR, mid_RT];
-      var all = named.slice();
-      var minRadius = 0.005, maxDepth = 7;
-
-      function recurse(a, b, c, prev, depth) {
-        if (depth >= maxDepth) return;
-        var triplets = [[b, c, prev, a], [a, c, prev, b], [a, b, prev, c]];
-        for (var i = 0; i < triplets.length; i++) {
-          var p1 = triplets[i][0], p2 = triplets[i][1], p3 = triplets[i][2], p4 = triplets[i][3];
-          var next = reflect(p1, p2, p3, p4);
-          if (!next || next.r < minRadius || next.r > 5) continue;
-          var existing = null;
-          for (var j = 0; j < all.length; j++) {
-            var c2 = all[j];
-            if (Math.abs(c2.x - next.x) < 1e-4 && Math.abs(c2.y - next.y) < 1e-4 && Math.abs(c2.r - next.r) < 1e-4) {
-              existing = c2; break;
-            }
-          }
-          if (existing) {
-            if (existing.r > minRadius * 1.5) recurse(p1, p2, p3, existing, depth + 1);
-            continue;
-          }
-          next.tier = depth + 2;
-          all.push(next);
-          if (next.r > minRadius * 1.5) recurse(p1, p2, p3, next, depth + 1);
-        }
-      }
-
-      recurse(outer, top,  left,  right, 0);
-      recurse(outer, left, right, top,   0);
-      recurse(outer, right, top, left,   0);
-      recurse(top,  left,  right, central, 0);
-
-      function findNearAnchor(ax, ay, exclude, minR) {
-        minR = minR || 0.012;
-        var best = null, bestScore = Infinity;
-        for (var i = 0; i < all.length; i++) {
-          var c = all[i];
-          if (c.tag) continue;
-          if (c.tier < 2) continue;
-          if (c.r < minR) continue;
-          if (exclude.indexOf(c) !== -1) continue;
-          var d = Math.sqrt((c.x - ax)*(c.x - ax) + (c.y - ay)*(c.y - ay));
-          var score = d - c.r * 4;
-          if (score < bestScore) { bestScore = score; best = c; }
-        }
-        return best;
-      }
-
-      var ha = [];
-      function place(anchor_x, anchor_y, tag, minR) {
-        var c = findNearAnchor(anchor_x, anchor_y, ha, minR);
-        if (c) { c.tag = tag; c.hoverOnly = true; c.tier = c.tier; c.innerLabel = false; ha.push(c); }
-      }
-
-      // Сателлиты вокруг ext-кругов (между ext и центром)
-      place(ext_TL.x * 0.42, ext_TL.y * 0.42, 'дискуссии');
-      place(ext_RT.x * 0.42, ext_RT.y * 0.42, 'танцы', 0.010);
-
-      // Сателлиты между inner и ext (стороны треугольника)
-      place((left.x + ext_LR.x)/2, (left.y + ext_LR.y)/2, 'мастер-классы');
-      place((ext_LR.x + right.x)/2, (ext_LR.y + right.y)/2, 'живопись');
-      place((right.x + ext_RT.x)/2, (right.y + ext_RT.y)/2, 'кино');
-
-      // Карманы внутри inner
-      place(left.x * 1.1, left.y * 1.5, 'задачи');
-      place(right.x * 1.1, right.y * 1.5, 'SciArt');
-      place((ext_TL.x + left.x)/2, (ext_TL.y + left.y)/2, 'исследование');
-
-      return all;
+    function worldToScreen(x, y) {
+      // Камера: viewport.halfSize = радиус в мировых координатах,
+      // равный полу-ширине канваса в пикселях.
+      const scale = (cssW / 2) / viewport.halfSize;
+      return {
+        px: cssW / 2 + (x - viewport.centerX) * scale,
+        py: cssH / 2 - (y - viewport.centerY) * scale,
+        scale: scale
+      };
     }
 
-    var section = document.getElementById('tracks');
-    var canvas = document.getElementById('tracks-canvas');
-    if (!section || !canvas) return;
-    var ctx = canvas.getContext('2d');
-    var hoverLabel = document.getElementById('tracks-hover-label');
-
-    var allCircles = buildCircles();
-    var cssW = 0, cssH = 0, dpr = 1;
-    var progress = 0;          // 0..1 — единственный источник истины
-    var displayProgress = 0;   // сглаженный progress для рендера
-    var hoveredCircle = null;
-    var mouseX = 0, mouseY = 0;
-    var nowTime = 0;
-    var sectionEntered = false;
-    var lastUserNudge = 0;     // когда пользователь последний раз двигал прогресс вручную
-    var autoPlayActive = false;
-    var autoPlayStartTime = 0;
-    var autoPlayStartProgress = 0;
-    var kissFlashes = [];
-
-    var TOTAL_DURATION_MS = 15000;
-
-    // Строгая раскладка: чем больше круг — тем раньше он СТАРТУЕТ и тем раньше ЗАКАНЧИВАЕТ
-    // (по абсолютному времени). Длительность круга пропорциональна радиусу — линейная
-    // скорость пера у всех одинаковая.
-    // Формула: i-й круг (после сортировки по убыванию радиуса) стартует со сдвигом
-    // STAGGER_FACTOR от старта (i-1)-го; продолжительность ∝ радиусу.
-    // Это автоматически даёт ансамбль: внешний → 3 inner → 4 средних → mid → мелкие.
-    function setupChain() {
-      var sorted = allCircles.slice().sort(function(a, b) { return b.r - a.r; });
-
-      // Базовая «скорость» пера в условных единицах: длительность = c.r * SPEED_UNITS
-      // SPEED_UNITS = 1 (просто радиус). Старт каждого круга = сдвиг по времени.
-      // Сдвиг между соседями = доля радиуса предыдущего (большие → большая пауза до следующего).
-      var STAGGER_FACTOR = 0.18; // следующий круг стартует через 18% от длительности текущего
-
-      var t = 0;
-      sorted[0]._localStart = 0;
-      sorted[0]._localDur = sorted[0].r;
-      for (var i = 1; i < sorted.length; i++) {
-        var prev = sorted[i - 1];
-        // Старт текущего круга = старт предыдущего + STAGGER_FACTOR * длительность предыдущего
-        var startShift = prev._localStart + STAGGER_FACTOR * prev._localDur;
-        // Минимальный шаг по времени, чтобы мелкие круги не сливались в одно мгновение
-        var minShift = prev._localStart + 0.0008;
-        sorted[i]._localStart = Math.max(startShift, minShift);
-        sorted[i]._localDur = Math.max(0.005, sorted[i].r);
-      }
-
-      // Нормализуем общую шкалу так, чтобы максимальный _localStart + _localDur = 1.0
-      var maxEnd = 0;
-      for (var k = 0; k < sorted.length; k++) {
-        var le = sorted[k]._localStart + sorted[k]._localDur;
-        if (le > maxEnd) maxEnd = le;
-      }
-      var scaleFactor = maxEnd > 0 ? 1 / maxEnd : 1;
-      for (var m = 0; m < sorted.length; m++) {
-        var c = sorted[m];
-        c.drawStart = c._localStart * scaleFactor;
-        c.drawDuration = c._localDur * scaleFactor;
-        c.drawEnd = Math.min(1, c.drawStart + c.drawDuration);
-        // Лейбл стартует когда круг дорисован на ~90%, длится фиксированное время.
-        c.labelStart = Math.min(0.985, c.drawStart + c.drawDuration * 0.9);
-        c.labelDur = 0.06;
-      }
-
-      window.__kissPairs = computeKissPairs();
+    // Обратное: из screen-координат в world (для hit-test'а)
+    function screenToWorld(px, py) {
+      const scale = (cssW / 2) / viewport.halfSize;
+      return {
+        x: viewport.centerX + (px - cssW / 2) / scale,
+        y: viewport.centerY - (py - cssH / 2) / scale
+      };
     }
 
-    function computeKissPairs() {
-      // Для всех именованных кругов с innerLabel находим соседей-касающихся
-      var pairs = [];
-      var named = allCircles.filter(function(c){return c.tag && c.innerLabel;});
-      for (var i = 0; i < named.length; i++) {
-        for (var j = i+1; j < named.length; j++) {
-          var a = named[i], b = named[j];
-          var dx = a.x - b.x, dy = a.y - b.y;
-          var dist = Math.sqrt(dx*dx + dy*dy);
-          var sumR = a.r + b.r;
-          // Внешние касания: dist ≈ a.r + b.r
-          if (Math.abs(dist - sumR) < 0.005) {
-            // Точка касания между внешне касающимися кругами
-            var t = a.r / sumR;
-            var kx = a.x + (b.x - a.x) * t;
-            var ky = a.y + (b.y - a.y) * t;
-            pairs.push({a: a, b: b, x: kx, y: ky});
-          }
-          // Внутренние касания (один круг внутри другого): dist ≈ |rA - rB|
-          var diffR = Math.abs(a.r - b.r);
-          if (Math.abs(dist - diffR) < 0.005 && diffR > 0.001) {
-            var bigger = a.r > b.r ? a : b;
-            var smaller = a.r > b.r ? b : a;
-            // Точка на стороне меньшего, дальше от центра большего
-            var dirX = smaller.x - bigger.x;
-            var dirY = smaller.y - bigger.y;
-            var dirLen = Math.sqrt(dirX*dirX + dirY*dirY) || 1;
-            var kx2 = bigger.x + (dirX/dirLen) * bigger.r;
-            var ky2 = bigger.y + (dirY/dirLen) * bigger.r;
-            pairs.push({a: a, b: b, x: kx2, y: ky2});
-          }
-        }
-      }
-      return pairs;
+    // === Расчёт временных интервалов ===
+    // RANK-BASED модель.
+    // Структурные круги (с подписями + внешний) стартуют все в узком окне в начале
+    // и финишируют все в узком окне в конце. Длительности у всех большие — скорости
+    // пера разные: у внешнего перо летит быстро (большая окружность за то же время),
+    // у ушек медленно. Это даёт ощущение "оркестра": все играют параллельно.
+    // Detail (фоновая россыпь) появляется позже и тоже сходится в финале —
+    // мощный финал.
+    const sorted = CIRCLES.slice().sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
+    const isStructural = c => Boolean(c.tag) || c.sign === -1;
+    const structural = sorted.filter(isStructural);
+    const detail = sorted.filter(c => !isStructural(c));
+
+    // Окно стартов и финишей для структурных
+    const STRUCT_START_FIRST = 0.00;   // самый большой (внешний) стартует здесь
+    const STRUCT_START_LAST  = 0.20;   // самый малый структурный стартует здесь
+    const STRUCT_END_FIRST   = 0.80;   // самый большой финиширует здесь
+    const STRUCT_END_LAST    = 0.90;   // самый малый финиширует здесь
+
+    const Ns = structural.length;
+    for (let i = 0; i < Ns; i++) {
+      const c = structural[i];
+      // u: 0 — самый большой (i=0), 1 — самый малый (i=Ns-1)
+      const u = Ns > 1 ? i / (Ns - 1) : 0;
+      c.drawStart = STRUCT_START_FIRST + u * (STRUCT_START_LAST - STRUCT_START_FIRST);
+      c.drawEnd   = STRUCT_END_FIRST   + u * (STRUCT_END_LAST   - STRUCT_END_FIRST);
+      c.drawDuration = c.drawEnd - c.drawStart;
     }
 
-    // Возвращает [0..1] прогресс отрисовки данного круга от глобального displayProgress
-    function getCircleDrawProgress(circle) {
-      if (REDUCED) return 1;
-      var p = displayProgress;
-      if (p <= circle.drawStart) return 0;
-      if (p >= circle.drawEnd) return 1;
-      return (p - circle.drawStart) / Math.max(0.0001, circle.drawDuration);
+    // Окно стартов и финишей для detail (фон)
+    const DETAIL_START_FIRST = 0.55;   // самый большой detail стартует
+    const DETAIL_START_LAST  = 0.85;   // самый малый detail стартует
+    const DETAIL_END_FIRST   = 0.85;   // самый большой detail финиширует
+    const DETAIL_END_LAST    = 0.95;   // самый малый detail финиширует
+
+    const Nd = detail.length;
+    for (let i = 0; i < Nd; i++) {
+      const c = detail[i];
+      const u = Nd > 1 ? i / (Nd - 1) : 0;
+      c.drawStart = DETAIL_START_FIRST + u * (DETAIL_START_LAST - DETAIL_START_FIRST);
+      c.drawEnd   = DETAIL_END_FIRST   + u * (DETAIL_END_LAST   - DETAIL_END_FIRST);
+      c.drawDuration = c.drawEnd - c.drawStart;
     }
 
-    function getLabelProgress(circle) {
-      if (REDUCED) return 1;
-      var p = displayProgress;
-      if (p <= circle.labelStart) return 0;
-      var local = (p - circle.labelStart) / Math.max(0.0001, circle.labelDur);
+    // Лейблы — появляются под конец рисовки круга
+    for (const c of sorted) {
+      c.labelStart = Math.min(0.985, c.drawStart + c.drawDuration * 0.85);
+      c.labelDur = 0.04;
+    }
+
+    // (нормализация и labelStart уже посчитаны выше)
+
+    // === Прогресс ===
+    const TOTAL_DURATION_MS = 18000;
+    let progress = 0;
+    let startTime = 0;
+    let isPaused = true;        // анимация ждёт IntersectionObserver
+    let userSeekProgress = -1;
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function getCircleProgress(c) {
+      if (progress <= c.drawStart) return 0;
+      if (progress >= c.drawEnd) return 1;
+      return (progress - c.drawStart) / Math.max(0.0001, c.drawDuration);
+    }
+
+    function getLabelProgress(c) {
+      if (progress <= c.labelStart) return 0;
+      const local = (progress - c.labelStart) / Math.max(0.0001, c.labelDur);
       return Math.min(1, local);
     }
 
-    // Регистрируем «поцелуй» когда оба круга только что замкнулись
-    var firedKisses = {};
-    function checkKisses() {
-      var pairs = window.__kissPairs || [];
-      for (var i = 0; i < pairs.length; i++) {
-        var p = pairs[i];
-        var key = i;
-        if (firedKisses[key]) continue;
-        var pa = getCircleDrawProgress(p.a);
-        var pb = getCircleDrawProgress(p.b);
-        if (pa >= 0.999 && pb >= 0.999) {
-          firedKisses[key] = nowTime;
-          kissFlashes.push({x: p.x, y: p.y, t0: nowTime});
+    // === Стили рендера ===
+    const COLOR_MAIN = '200, 154, 61';     // gold
+    const COLOR_DIM = '121, 93, 41';       // gold_dim
+    const COLOR_FAINT = '74, 59, 28';      // gold_faint
+    const COLOR_TEXT = '236, 227, 208';
+    const COLOR_PEN = '244, 188, 91';
+
+    function strokeForCircle(c) {
+      // tier: -1=external, 0=big, 1=primary, 2=ear, 3=detail
+      if (c.tier === -1 || c.tier === 0 || c.tier === 1) {
+        return { color: COLOR_MAIN, width: 1.6, alpha: 1.0 };
+      }
+      if (c.tier === 2) {
+        return { color: COLOR_MAIN, width: 1.3, alpha: 1.0 };
+      }
+      // detail — по размеру
+      const r = Math.abs(c.r);
+      if (r >= 0.025) return { color: COLOR_DIM, width: 1.1, alpha: 1.0 };
+      if (r >= 0.012) return { color: COLOR_DIM, width: 0.7, alpha: 1.0 };
+      if (r >= 0.008) return { color: COLOR_DIM, width: 0.6, alpha: 0.85 };
+      return { color: COLOR_FAINT, width: 0.4, alpha: 0.85 };
+    }
+
+    function fontSizeForTier(tier, r, scale) {
+      // tier: 0 big, 1 primary, 2 ear; центр (общение) считается primary
+      // Размеры подобраны так, чтобы на desktop (cssW≈900px) и mobile (cssW≈390px)
+      // текст занимал максимум доступного места, но не вылезал из круга.
+      const rPx = r * scale;
+      if (tier === 0) return Math.min(56, Math.max(20, rPx * 0.30));   // big
+      if (tier === 1) return Math.min(42, Math.max(16, rPx * 0.34));   // primary, центр
+      if (tier === 2) return Math.min(24, Math.max(10, rPx * 0.45));   // ушки
+      return 0;
+    }
+
+    // Frustum culling: круг (worldX, worldY, worldR) виден если пересекает
+    // видимую квадратную область вокруг viewport.center радиуса viewport.halfSize
+    function isVisibleInViewport(wx, wy, wr) {
+      const hs = viewport.halfSize;
+      if (Math.abs(wx - viewport.centerX) > hs + wr) return false;
+      if (Math.abs(wy - viewport.centerY) > hs + wr) return false;
+      return true;
+    }
+
+    // Рисует ОДИН круг по уже-готовым world-координатам с альфой.
+    // extraAlpha [0..1] — общая альфа (для постепенного появления вложенных).
+    // allowPen — рисовать ли перо/подпись (только на корневом уровне).
+    // labelMul [0..1] — дополнительный множитель альфы только для подписи (чтобы
+    // гасить надпись родителя при зуме — текст переехал в info-panel).
+    function drawCircleAt(c, wx, wy, wr, extraAlpha, allowPen, labelMul) {
+      if (labelMul === undefined) labelMul = 1;
+      if (!isVisibleInViewport(wx, wy, wr)) return;
+      const dp = getCircleProgress(c);
+      if (dp <= 0.001) return;
+      const s = worldToScreen(wx, wy);
+      const rPx = wr * s.scale;
+      if (rPx < 0.5) return;
+
+      const style = strokeForCircle(c);
+      let strokeColor = `rgba(${style.color}, ${style.alpha * extraAlpha})`;
+      let lineWidth = style.width;
+
+      // Hover-подсветка только на корневом уровне (extraAlpha === 1)
+      if (extraAlpha === 1 && hoveredCircle && c === hoveredCircle) {
+        strokeColor = `rgba(${COLOR_PEN}, 1)`;
+        lineWidth = style.width + 1.0;
+      } else if (extraAlpha === 1 && hoveredCircle && isClickable(c) && c !== hoveredCircle) {
+        strokeColor = `rgba(${style.color}, ${style.alpha * 0.55})`;
+      }
+
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+
+      const eased = easeInOutCubic(dp);
+      const startA = -Math.PI / 2;
+      const endA = startA + eased * Math.PI * 2;
+
+      ctx.beginPath();
+      if (dp >= 0.999) {
+        ctx.arc(s.px, s.py, rPx, 0, Math.PI * 2);
+      } else {
+        ctx.arc(s.px, s.py, rPx, startA, endA, false);
+      }
+      ctx.stroke();
+
+      // Перо — только на корневом уровне
+      if (allowPen && dp < 0.999 && dp > 0.001 && (c.tag || c.tier === -1)) {
+        const penX = s.px + Math.cos(endA) * rPx;
+        const penY = s.py + Math.sin(endA) * rPx;
+        const isBig = c.tier === 0;
+        const penR = isBig ? 2.4 : 1.8;
+        const grad = ctx.createRadialGradient(penX, penY, 0, penX, penY, penR * 5);
+        grad.addColorStop(0, `rgba(${COLOR_PEN}, 0.5)`);
+        grad.addColorStop(1, `rgba(${COLOR_PEN}, 0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(penX, penY, penR * 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(${COLOR_PEN}, 0.95)`;
+        ctx.beginPath();
+        ctx.arc(penX, penY, penR, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Подпись — на корневом уровне (на вложенных пока без надписей)
+      if (allowPen && c.tag && dp >= 0.85 && labelMul > 0.001) {
+        const lp = getLabelProgress(c);
+        if (lp > 0) {
+          const fontSize = fontSizeForTier(c.tier, wr, s.scale);
+          ctx.font = `italic ${fontSize}px 'Cormorant Garamond', Georgia, 'Times New Roman', serif`;
+          ctx.fillStyle = `rgba(${COLOR_TEXT}, ${lp * labelMul})`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(c.tag, s.px, s.py);
         }
       }
     }
 
-    function resize() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      cssW = canvas.clientWidth;
-      cssH = canvas.clientHeight;
-      canvas.width = Math.round(cssW * dpr);
-      canvas.height = Math.round(cssH * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    function getViewport() {
-      var aspect = cssW / cssH;
-      var margin = 0.12;
-      return { scale: aspect >= 1 ? cssH / 2 * (1 - margin) : cssW / 2 * (1 - margin) };
-    }
-    function worldToScreen(x, y, vp) {
-      return { px: cssW / 2 + x * vp.scale, py: cssH / 2 - y * vp.scale };
-    }
-
-    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-    function easeInOutCubic(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2; }
-    function getPulse(circle) {
-      // Дыхание после построения — мягкая синусоида, фаза индивидуальна
-      var phase = circle.x * 7 + circle.y * 11;
-      return 0.93 + Math.sin(nowTime * 0.0018 + phase) * 0.07;
-    }
-
-    function findHovered(mx, my, vp) {
-      var best = null, bestR = Infinity;
-      for (var i = 0; i < allCircles.length; i++) {
-        var c = allCircles[i];
-        if (!c.tag || c.innerLabel) continue;
-        if (getCircleDrawProgress(c) < 0.95) continue;
-        var s = worldToScreen(c.x, c.y, vp);
-        var rPx = c.r * vp.scale;
-        var dx = mx - s.px, dy = my - s.py;
-        var dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist <= rPx && rPx < bestR) { best = c; bestR = rPx; }
-      }
-      return best;
-    }
-
+    // === Главный рендер ===
     function render() {
       ctx.clearRect(0, 0, cssW, cssH);
-      var vp = getViewport();
-      var sorted = allCircles.slice().sort(function(a, b) { return b.r - a.r; });
+      ctx.fillStyle = '#16140F';
+      ctx.fillRect(0, 0, cssW, cssH);
 
-      // Запускаем поцелуи касаний по мере того как соседи замыкаются
-      checkKisses();
+      // Альфа вложенного фрактала — нужна и для родительской надписи (1 - nestedAlpha)
+      const NESTED_FADE_FROM = 0.7;
+      const NESTED_FADE_TO   = 0.45;
+      let nestedAlpha = 0;
+      if (zoomedCircle) {
+        const t = (NESTED_FADE_FROM - viewport.halfSize) /
+                  (NESTED_FADE_FROM - NESTED_FADE_TO);
+        nestedAlpha = Math.max(0, Math.min(1, t));
+      }
 
-      for (var i = 0; i < sorted.length; i++) {
-        var c = sorted[i];
-        var dp = getCircleDrawProgress(c);
-        if (dp <= 0.001) continue;
-        var s = worldToScreen(c.x, c.y, vp);
-        var rPx = c.r * vp.scale;
-        if (rPx < 0.5) continue;
+      // 1. Корневой проход — основной фрактал
+      for (const c of sorted) {
+        // Надпись зумированного родителя гасим — она переехала в info-panel
+        const labelMul = (zoomedCircle && c === zoomedCircle) ? (1 - nestedAlpha) : 1;
+        drawCircleAt(c, c.x, c.y, Math.abs(c.r), 1.0, true, labelMul);
+      }
 
-        var isSmallTagged = c.tag && !c.innerLabel;
-        var isBigTagged = c.tag && c.innerLabel;
-        var fullyDrawn = dp >= 0.995;
-
-        // Альфа: «дыхание» появляется только после того как круг дорисован.
-        var breath = fullyDrawn ? getPulse(c) : 1;
-
-        var strokeColor, lineWidth, glowEnabled = false;
-        var isOuter = c.tier === -1;
-        if (c === hoveredCircle) {
-          strokeColor = 'rgba(225, 175, 90, 1)';
-          lineWidth = 2.4;
-          glowEnabled = true;
-        } else if (hoveredCircle && isSmallTagged) {
-          strokeColor = 'rgba(154, 144, 128, 0.4)';
-          lineWidth = 1;
-        } else if (isOuter) {
-          // Внешний круг — бренд-амбер, как структурные. Чуть толще.
-          strokeColor = 'rgba(220, 170, 80, ' + (0.92 * breath) + ')';
-          lineWidth = 1.8;
-        } else if (isSmallTagged) {
-          strokeColor = 'rgba(225, 175, 90, ' + breath + ')';
-          lineWidth = 1.6;
-        } else if (isBigTagged) {
-          strokeColor = 'rgba(200, 154, 61, ' + (0.78 * breath) + ')';
-          lineWidth = c.tier <= 0 ? 1.4 : 1.1;
-        } else {
-          strokeColor = 'rgba(154, 144, 128, ' + (0.30 * breath) + ')';
-          lineWidth = 0.65;
-        }
-
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = lineWidth;
-        ctx.lineCap = 'round';
-
-        // Рисование круга — частичная дуга от верхней точки по часовой стрелке.
-        // Угол 0 в canvas = справа; чтобы старт был сверху, начинаем с -π/2.
-        // По часовой стрелке: counterclockwise = false.
-        var eased = easeInOutCubic(dp);
-        var startA = -Math.PI / 2;
-        var endA = startA + eased * Math.PI * 2;
-
-        ctx.beginPath();
-        if (fullyDrawn) {
-          ctx.arc(s.px, s.py, rPx, 0, Math.PI * 2);
-        } else {
-          ctx.arc(s.px, s.py, rPx, startA, endA, false);
-        }
-        ctx.stroke();
-
-        // Точка-перо на кончике дуги (только пока рисуется)
-        if (!fullyDrawn && dp > 0.001 && (isBigTagged || isSmallTagged || c.tier === -1)) {
-          var penX = s.px + Math.cos(endA) * rPx;
-          var penY = s.py + Math.sin(endA) * rPx;
-          var penRadius = isBigTagged ? 2.2 : 1.6;
-          ctx.fillStyle = 'rgba(245, 200, 110, 0.95)';
-          ctx.beginPath();
-          ctx.arc(penX, penY, penRadius, 0, Math.PI * 2);
-          ctx.fill();
-          // Лёгкое свечение пера
-          var grad = ctx.createRadialGradient(penX, penY, 0, penX, penY, penRadius * 4);
-          grad.addColorStop(0, 'rgba(245, 200, 110, 0.35)');
-          grad.addColorStop(1, 'rgba(245, 200, 110, 0)');
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.arc(penX, penY, penRadius * 4, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Подписи структурных кругов — рисуются «пером»: открывается слева направо.
-        if (isBigTagged && rPx > 12 && fullyDrawn) {
-          var lp = getLabelProgress(c);
-          if (lp > 0) {
-            var fontSize = Math.max(10, Math.min(rPx * 0.30, 38));
-            ctx.font = 'italic 500 ' + fontSize + 'px Cormorant Garamond, serif';
-            // 1.85 (вместо 1.7) — даёт чуть больше места длинным словам вроде
-            // «мастерские» / «выступления». В пределах круга визуально не
-            // ломает композицию (1.85 ≈ 92.5% диаметра).
-            var maxWidth = rPx * 1.85;
-            var measured = ctx.measureText(c.tag).width;
-            if (measured > maxWidth) {
-              // Min 7 (вместо 8) — на маленьких кругах позволяет тексту
-              // действительно поместиться, а не «зависать» на 8px и вылазить.
-              fontSize = Math.max(7, fontSize * (maxWidth / measured));
-              ctx.font = 'italic 500 ' + fontSize + 'px Cormorant Garamond, serif';
-              measured = ctx.measureText(c.tag).width;
-              // Вторая итерация: если после первого уменьшения текст всё
-              // ещё шире maxWidth (упёрлись в min 7) — clip обрежет, но
-              // мы хотя бы не имеем «гарантированного» вылета за круг.
-            }
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'middle';
-            // Эффект «прорисовки пером»: clip по растущему слева направо прямоугольнику
-            ctx.save();
-            ctx.beginPath();
-            var visibleW = measured * easeOutCubic(lp);
-            var textX = s.px - measured / 2;
-            ctx.rect(textX, s.py - fontSize, visibleW, fontSize * 2);
-            ctx.clip();
-            ctx.fillStyle = 'rgba(236, 227, 208, 0.92)';
-            ctx.fillText(c.tag, textX, s.py);
-            ctx.restore();
-
-            // Кончик «пера» на конце текста, пока не дорисовался
-            if (lp < 1) {
-              var penTextX = textX + visibleW;
-              ctx.fillStyle = 'rgba(245, 200, 110, ' + (1 - lp) + ')';
-              ctx.beginPath();
-              ctx.arc(penTextX, s.py, 1.2, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
+      // 2. Вложенный фрактал — только когда мы зумированы внутрь одного из больших.
+      if (nestedAlpha > 0.01) {
+        const px = zoomedCircle.x;
+        const py = zoomedCircle.y;
+        const pr = Math.abs(zoomedCircle.r);
+        for (const c of sorted) {
+          if (c.sign === -1) continue;
+          const wx = px + c.x * pr;
+          const wy = py + c.y * pr;
+          const wr = Math.abs(c.r) * pr;
+          drawCircleAt(c, wx, wy, wr, nestedAlpha, false);
         }
       }
 
-      // Поцелуи касаний — короткая мягкая вспышка в точке касания
-      if (kissFlashes.length) {
-        var aliveKisses = [];
-        for (var ki = 0; ki < kissFlashes.length; ki++) {
-          var k = kissFlashes[ki];
-          var age = nowTime - k.t0;
-          var lifetime = 520;
-          if (age >= lifetime) continue;
-          aliveKisses.push(k);
-          var phase = age / lifetime;
-          // Двухфазная: 0..0.3 — рост, 0.3..1 — затухание
-          var alpha = phase < 0.3 ? phase / 0.3 : 1 - (phase - 0.3) / 0.7;
-          alpha = Math.max(0, Math.min(1, alpha)) * 0.85;
-          var ks = worldToScreen(k.x, k.y, vp);
-          var radius = 1.6 + phase * 6;
-          var grd = ctx.createRadialGradient(ks.px, ks.py, 0, ks.px, ks.py, radius * 3);
-          grd.addColorStop(0, 'rgba(245, 210, 130, ' + alpha + ')');
-          grd.addColorStop(0.5, 'rgba(220, 170, 80, ' + (alpha * 0.4) + ')');
-          grd.addColorStop(1, 'rgba(220, 170, 80, 0)');
-          ctx.fillStyle = grd;
-          ctx.beginPath();
-          ctx.arc(ks.px, ks.py, radius * 3, 0, Math.PI * 2);
-          ctx.fill();
-          // Точка ядра
-          ctx.fillStyle = 'rgba(245, 210, 130, ' + (alpha * 0.95) + ')';
-          ctx.beginPath();
-          ctx.arc(ks.px, ks.py, 1.3 + phase * 0.8, 0, Math.PI * 2);
-          ctx.fill();
+      // Если viewport вернулся к корню — отпускаем zoomedCircle
+      if (zoomedCircle && !zoomActive) {
+        if (Math.abs(viewport.halfSize - ROOT_VIEWPORT.halfSize) < 0.01 &&
+            Math.abs(viewport.centerX - ROOT_VIEWPORT.centerX) < 0.01 &&
+            Math.abs(viewport.centerY - ROOT_VIEWPORT.centerY) < 0.01) {
+          zoomedCircle = null;
         }
-        kissFlashes = aliveKisses;
       }
-
-      // Индикатор этапов убран — вместо него пульсирующая стрелка
     }
 
-    function allFinished() {
-      for (var i = 0; i < allCircles.length; i++) {
-        if (getCircleDrawProgress(allCircles[i]) < 0.999) return false;
+    // === Hover state ===
+    // Кликабельны 6 больших: 3 big (tier 0) + 3 primary_ext (tier 1, кроме центра).
+    // Центр (общение) и 3 ушка (tier 2) на этом этапе некликабельны.
+    function isClickable(c) {
+      if (c.tier === 0) return true;
+      if (c.tier === 1 && c.tag && c.tag !== 'общение') return true;
+      return false;
+    }
+    const clickableCircles = sorted.filter(isClickable);
+
+    // Заглушки описаний разделов. Контент позже подменим.
+    const SECTION_INFO = {
+      'научпоп':    { title: 'Научпоп',    desc: 'Лекции от учёных и популяризаторов о том, что происходит на переднем крае знания.' },
+      'музыка':     { title: 'Музыка',     desc: 'Концерты, импровизации и DJ-сеты в течение всего дня.' },
+      'искусство':  { title: 'Искусство',  desc: 'Работы художников на стыке науки, природы и эстетики.' },
+      'опыты':      { title: 'Опыты',      desc: 'Станции, где можно руками постигать физические явления и математические идеи.' },
+      'мастерские': { title: 'Мастерские', desc: 'Делать вместе с экспертами и создавать своё.' },
+      'кино':       { title: 'Кино',       desc: 'Документальные и научно-популярные фильмы.' },
+    };
+
+    let hoveredCircle = null;
+    let needsRedraw = true;
+
+    // Анимация рисования закончилась — можно начинать взаимодействовать
+    function isInteractive() { return progress >= 1; }
+
+    function findHovered(mx, my) {
+      if (!isInteractive()) return null;
+      for (const c of clickableCircles) {
+        const s = worldToScreen(c.x, c.y);
+        const rPx = Math.abs(c.r) * s.scale;
+        const dx = mx - s.px, dy = my - s.py;
+        if (dx*dx + dy*dy <= rPx*rPx) return c;
+      }
+      return null;
+    }
+
+    // Hover-tooltip с названием круга. Полезен когда видны частичные
+    // обводки соседних кругов в зуме — пользователь хочет узнать
+    // что это, не кликая. Tip — fixed-элемент в DOM (#tracks-hover-tip),
+    // скрытый по умолчанию через opacity: 0.
+    const hoverTip = document.getElementById('tracks-hover-tip');
+
+    function updateHoverTip(e) {
+      if (!hoverTip) return;
+      if (hoveredCircle && hoveredCircle.tag) {
+        hoverTip.textContent = hoveredCircle.tag;
+        hoverTip.style.left = e.clientX + 'px';
+        hoverTip.style.top = e.clientY + 'px';
+        hoverTip.classList.add('visible');
+      } else {
+        hoverTip.classList.remove('visible');
+      }
+    }
+
+    function onPointerMove(e) {
+      const rect = cv.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const found = findHovered(mx, my);
+      if (found !== hoveredCircle) {
+        hoveredCircle = found;
+        cv.style.cursor = found ? 'pointer' : 'default';
+        needsRedraw = true;
+      }
+      updateHoverTip(e);
+    }
+
+    function onPointerLeave() {
+      if (hoveredCircle !== null) {
+        hoveredCircle = null;
+        cv.style.cursor = 'default';
+        needsRedraw = true;
+      }
+      if (hoverTip) hoverTip.classList.remove('visible');
+    }
+
+    cv.addEventListener('mousemove', onPointerMove);
+    cv.addEventListener('mouseleave', onPointerLeave);
+
+    // === Зум-анимация ===
+    // viewport анимируется от текущего к target за ZOOM_DURATION_MS, easeInOutCubic.
+    // Линейная интерполяция centerX/Y и log-интерполяция halfSize (равномерная по
+    // масштабу) — это даёт более естественное ощущение приближения.
+    const ZOOM_DURATION_MS = 750;
+    let zoomFromVP = null;
+    let zoomToVP = null;
+    let zoomStartTime = 0;
+    let zoomActive = false;
+    let zoomedCircle = null;  // на каком большом сейчас «приближены» (или null)
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function startZoom(targetVP, focusCircle) {
+      zoomFromVP = { ...viewport };
+      zoomToVP = { ...targetVP };
+      zoomStartTime = performance.now();
+      zoomActive = true;
+      zoomedCircle = focusCircle;
+      hoveredCircle = null;
+      cv.style.cursor = 'default';
+      // Показ инфо-панели и кнопки back при зуме внутрь
+      if (focusCircle) {
+        const info = SECTION_INFO[focusCircle.tag];
+        if (info) {
+          document.getElementById('tracks-info-title').textContent = info.title;
+          document.getElementById('tracks-info-desc').textContent = info.desc;
+          document.getElementById('tracks-info-panel').classList.add('visible');
+        }
+        document.getElementById('tracks-back-btn').classList.add('visible');
+      } else {
+        // zoomOut → начинаем скрывать (фактическое скрытие после возврата)
+        document.getElementById('tracks-info-panel').classList.remove('visible');
+        document.getElementById('tracks-back-btn').classList.remove('visible');
+      }
+      scheduleRender();
+    }
+
+    function updateZoom(now) {
+      if (!zoomActive) return false;
+      const t = Math.min(1, (now - zoomStartTime) / ZOOM_DURATION_MS);
+      const e = easeInOutCubic(t);
+      viewport.centerX = lerp(zoomFromVP.centerX, zoomToVP.centerX, e);
+      viewport.centerY = lerp(zoomFromVP.centerY, zoomToVP.centerY, e);
+      // log-интерполяция halfSize: визуально равномерное приближение
+      viewport.halfSize = Math.exp(lerp(
+        Math.log(zoomFromVP.halfSize),
+        Math.log(zoomToVP.halfSize),
+        e
+      ));
+      if (t >= 1) {
+        zoomActive = false;
+        return false;
       }
       return true;
     }
 
-    // ---------- Управление progress ----------
-    // Скролл секции (когда section--tall): отображаем в progress 0..1
-    function onScroll() {
-      // Скролл больше не двигает progress — анимация полностью автономна.
-      // Оставляем только логику коллапса high-секции (на случай если она когда-то снова понадобится).
-      if (!sectionEntered) return;
+    function zoomIntoCircle(c) {
+      // padding 1.05 — небольшой воздух вокруг круга
+      startZoom({
+        centerX: c.x,
+        centerY: c.y,
+        halfSize: Math.abs(c.r) * 1.08
+      }, c);
     }
 
-    // Прыжок по нажатию стрелки/клик на индикатор: 3 нажатия = полный progress.
-    // Делаем это через скролл (чтобы сохранить связь со скроллом страницы).
-    function nudgeForward() {
-      if (!sectionEntered) return false;
-      var rect = section.getBoundingClientRect();
-      // Если мы ещё в секции — двигаем скролл на треть высоты секции (один шаг)
-      if (rect.top < 0 && rect.bottom > window.innerHeight) {
-        var step = window.innerHeight; // section--tall = 400vh, 1vh = 1 step
-        window.scrollBy({ top: step, behavior: 'smooth' });
-        return true;
+    function zoomOut() {
+      startZoom(ROOT_VIEWPORT, null);
+    }
+
+    cv.addEventListener('click', (e) => {
+      if (zoomActive || !isInteractive()) return;
+      const rect = cv.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const found = findHovered(mx, my);
+      if (found && found !== zoomedCircle) {
+        zoomIntoCircle(found);
+      } else if (zoomedCircle && !found) {
+        zoomOut();
       }
-      return false;
-    }
+    });
 
-    function onMouseMove(e) {
-      mouseX = e.clientX; mouseY = e.clientY;
-      var rect = canvas.getBoundingClientRect();
-      var cx = mouseX - rect.left;
-      var cy = mouseY - rect.top;
-      var vp = getViewport();
-      var found = findHovered(cx, cy, vp);
-
-      if (found !== hoveredCircle) {
-        hoveredCircle = found;
-        if (found) {
-          hoverLabel.textContent = found.tag;
-          hoverLabel.classList.add('visible');
-        } else {
-          hoverLabel.classList.remove('visible');
-        }
+    // Touch для мобильного: tap = клик
+    cv.addEventListener('touchend', (e) => {
+      if (zoomActive || !isInteractive()) return;
+      if (e.changedTouches.length === 0) return;
+      const t = e.changedTouches[0];
+      const rect = cv.getBoundingClientRect();
+      const mx = t.clientX - rect.left;
+      const my = t.clientY - rect.top;
+      const found = findHovered(mx, my);
+      if (found && found !== zoomedCircle) {
+        e.preventDefault();
+        zoomIntoCircle(found);
+      } else if (zoomedCircle && !found) {
+        e.preventDefault();
+        zoomOut();
       }
-      if (hoveredCircle) {
-        hoverLabel.style.left = (mouseX + 20) + 'px';
-        hoverLabel.style.top = (mouseY + 12) + 'px';
+    }, { passive: false });
+
+    document.getElementById('tracks-back-btn').addEventListener('click', () => {
+      if (zoomedCircle) zoomOut();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'Escape' || e.key === 'Esc') && zoomedCircle) {
+        zoomOut();
       }
+    });
+
+    // === Цикл ===
+    // RAF крутится только пока что-то меняется: анимация рисования, hover, перетягивание.
+    // Когда всё статично — рендер не запускается, экономит батарею на мобильном.
+    let rafScheduled = false;
+    function scheduleRender() {
+      if (rafScheduled) return;
+      rafScheduled = true;
+      requestAnimationFrame(tick);
     }
 
-    function isMobile() { return window.innerWidth <= 800; }
+    function tick(now) {
+      rafScheduled = false;
+      let stillAnimating = false;
 
-    // ---------- Авто-проигрывание ----------
-    // Линейный прогон 0→1 за TOTAL_DURATION_MS. Перекрытия этапов уже зашиты в setupChain.
-    var AUTO_DELAY = 600;  // мягкая задержка перед стартом
-
-    function maybeStartAutoPlay() {
-      if (!sectionEntered) return;
-      if (progress >= 0.999) return;
-      if (autoPlayActive) return;
-      if (nowTime - lastUserNudge < AUTO_DELAY) return;
-      autoPlayActive = true;
-      autoPlayStartTime = nowTime;
-      autoPlayStartProgress = progress;
-    }
-
-    function stepAutoPlay() {
-      if (!autoPlayActive) return;
-      var elapsed = nowTime - autoPlayStartTime;
-      var startP = autoPlayStartProgress;
-      var rate = (1 - startP) / TOTAL_DURATION_MS;
-      var p = Math.min(1, startP + elapsed * rate);
-      if (p > progress) progress = p;
-      if (progress >= 0.999) autoPlayActive = false;
-    }
-
-    function frameLoop(t) {
-      nowTime = t;
-      // Сглаживание displayProgress → progress
-      // Используем более мягкое сглаживание (8% за кадр) для плавного «живого» черчения
-      var diff = progress - displayProgress;
-      if (Math.abs(diff) < 0.0003) {
-        displayProgress = progress;
-      } else {
-        displayProgress += diff * 0.08;
+      if (!isPaused) {
+        const elapsed = now - startTime;
+        progress = Math.min(1, elapsed / TOTAL_DURATION_MS);
+        if (progress < 1) stillAnimating = true;
       }
-      maybeStartAutoPlay();
-      stepAutoPlay();
+
+      // Зум — обновить viewport
+      if (zoomActive) {
+        updateZoom(now);
+        stillAnimating = true;
+      }
+
       render();
-      requestAnimationFrame(frameLoop);
+      needsRedraw = false;
+
+      if (stillAnimating || needsRedraw) {
+        scheduleRender();
+      }
     }
 
-    resize();
-    setupChain();
+    // Старт анимации — запускается ТОЛЬКО когда секция попадает в viewport.
+    // Это критично при встраивании в страницу: иначе пользователь долистает
+    // до секции, а анимация уже отыграла наверху.
+    let animationStarted = false;
+    function startAnimation() {
+      if (animationStarted) return;
+      animationStarted = true;
+      startTime = performance.now();
+      progress = 0;
+      isPaused = false;
+      scheduleRender();
+    }
 
-    // Запуск секции — мягкая задержка перед началом авто-таймера
-    // Триггер sectionEntered: секция должна быть прижата к верху viewport
-    // (rect.top <= 0 и достаточно секции уже видно). Ловим это в onScroll, а не в IntersectionObserver,
-    // потому что IO срабатывает слишком рано — ещё во время скролла к секции.
-    var entryObserver = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting && !sectionEntered) {
-          var delay = REDUCED ? 0 : 250;
-          setTimeout(function() {
-            sectionEntered = true;
-            lastUserNudge = nowTime;
-          }, delay);
-          entryObserver.disconnect();
-        }
-      });
-    }, { threshold: 0.25, rootMargin: '0px' });
-    entryObserver.observe(section);
-
-    if (REDUCED) {
-      sectionEntered = true;
+    // Уважаем настройку "уменьшить анимацию" — сразу показываем финальный кадр
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      startTime = -1e9;  // anything in the past
       progress = 1;
-      displayProgress = 1;
+      isPaused = true;
+      animationStarted = true;
+      scheduleRender();
+    } else if (window.IntersectionObserver) {
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && e.intersectionRatio > 0.3) {
+            startAnimation();
+            io.disconnect();
+            break;
+          }
+        }
+      }, { threshold: [0, 0.3, 0.5] });
+      io.observe(container);
+    } else {
+      // fallback — старт сразу
+      startAnimation();
     }
 
-    if (isMobile()) {
-      // На мобильном — автоматическая анимация при попадании в viewport.
-      // Hover нет, но тап по кругу показывает подпись.
-      var moveTouch = function(e) {
-        if (e.touches && e.touches.length > 0) {
-          var t = e.touches[0];
-          var rect = canvas.getBoundingClientRect();
-          mouseX = t.clientX - rect.left;
-          mouseY = t.clientY - rect.top;
-        }
-      };
-      canvas.addEventListener('touchstart', moveTouch, { passive: true });
-      canvas.addEventListener('touchmove', moveTouch, { passive: true });
-      canvas.addEventListener('touchend', function() {
-        // Скрываем label через 2 сек после отпускания
-        setTimeout(function() { mouseX = -9999; mouseY = -9999; }, 2000);
-      }, { passive: true });
-    } else {
-      window.addEventListener('mousemove', onMouseMove);
-    }
-    window.addEventListener('resize', resize);
-    requestAnimationFrame(frameLoop);
+    // Будим цикл при ховере/действиях
+    cv.addEventListener('mousemove', () => scheduleRender());
+    cv.addEventListener('mouseleave', () => scheduleRender());
   })();
   </script>
 
@@ -5378,6 +5767,62 @@ window.addEventListener('resize', ()=>{
     window.addEventListener('resize', function(){
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(build, 200);
+    });
+  })();
+
+  /* ============================================
+     MAP MODAL — открытие/закрытие модала со схемой залов клуба.
+     Кнопки [data-open-map] из любой секции (программа, расписание)
+     открывают модал. Закрытие: [data-close-map] (крестик и backdrop),
+     Esc, focus-restoring к открывшей кнопке. На время открытия —
+     body.has-modal-open блокирует скролл страницы.
+     ============================================ */
+  (function() {
+    var modal = document.getElementById('map-modal');
+    if (!modal) return;
+    var lastTrigger = null;
+
+    function open(triggerEl) {
+      lastTrigger = triggerEl || null;
+      modal.classList.add('visible');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('has-modal-open');
+      // Фокус на крестик — чтобы Esc/Tab/Enter сразу работали с клавиатуры.
+      var closeBtn = modal.querySelector('.map-modal-close');
+      if (closeBtn) closeBtn.focus({ preventScroll: true });
+    }
+
+    function close() {
+      modal.classList.remove('visible');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('has-modal-open');
+      // Возвращаем фокус на кнопку, которая открыла модал — UX-нормa.
+      if (lastTrigger && typeof lastTrigger.focus === 'function') {
+        lastTrigger.focus({ preventScroll: true });
+      }
+      lastTrigger = null;
+    }
+
+    // Делегирование: одна точка обработки клика на document.
+    document.addEventListener('click', function(e) {
+      var openTrigger = e.target.closest('[data-open-map]');
+      if (openTrigger) {
+        e.preventDefault();
+        open(openTrigger);
+        return;
+      }
+      var closeTrigger = e.target.closest('[data-close-map]');
+      if (closeTrigger && modal.contains(closeTrigger)) {
+        e.preventDefault();
+        close();
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if ((e.key === 'Escape' || e.key === 'Esc') &&
+          modal.classList.contains('visible')) {
+        close();
+      }
     });
   })();
   </script>
