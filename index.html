@@ -2179,6 +2179,44 @@
 </head>
 <body>
 
+  <noscript>
+    <style>
+      #preloader { display: none !important; }
+      .noscript-fallback {
+        position: fixed; inset: 0; z-index: 99999;
+        background: #16140F; color: #ECE3D0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        padding: 40px 24px; text-align: center;
+        font-family: Georgia, 'Times New Roman', serif;
+      }
+      .noscript-fallback .ns-title {
+        font-style: italic; font-size: clamp(28px, 5vw, 48px);
+        font-weight: 500; margin-bottom: 18px; color: #ECE3D0;
+      }
+      .noscript-fallback .ns-meta {
+        font-family: 'Courier New', monospace;
+        font-size: 13px; letter-spacing: 0.15em;
+        color: #C89A3D; margin-bottom: 28px;
+      }
+      .noscript-fallback p {
+        max-width: 480px; line-height: 1.6;
+        font-size: 16px; color: rgba(236, 227, 208, 0.8);
+        margin: 0 0 16px;
+      }
+      .noscript-fallback a {
+        color: #C89A3D; text-decoration: none;
+        border-bottom: 1px solid rgba(200, 154, 61, 0.4);
+      }
+    </style>
+    <div class="noscript-fallback">
+      <div class="ns-title">Фрактальная Одиссея</div>
+      <div class="ns-meta">23 МАЯ · ЧИСТЫЕ ПРУДЫ · 18+</div>
+      <p>Этот сайт устроен с анимациями и интерактивом — для них нужен JavaScript. Включите его в настройках браузера и обновите страницу.</p>
+      <p>Если вы пришли за билетами — они здесь:<br><a href="https://matema-fest.timepad.ru/event/3952401/">matema-fest.timepad.ru</a></p>
+    </div>
+  </noscript>
+
   <!-- ====== PAGE THREAD ======
        Тонкий каллиграфический штрих по левому краю страницы.
        Один SVG на всю высоту body, рисуется по мере прокрутки через
@@ -2306,7 +2344,7 @@
         <!-- Ряд 1 · научпоп / открытие -->
 
         <div class="speaker-card has-photo col-c1" data-stagger="0">
-          <img class="speaker-photo" src="assets/speaker-evdokimov.jpg" alt="Михаил Евдокимов" loading="lazy">
+          <picture><source media="(min-width: 901px)" srcset="assets/speaker-evdokimov.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Михаил Евдокимов" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Михаил Евдокимов</div>
           <div class="speaker-role">Автор задач</div>
           <div class="speaker-bio">
@@ -2315,7 +2353,7 @@
         </div>
 
         <div class="speaker-card has-photo col-c2" data-stagger="1">
-          <img class="speaker-photo" src="assets/speaker-tarasevich.jpg" alt="Григорий Тарасевич" loading="lazy">
+          <picture><source media="(min-width: 901px)" srcset="assets/speaker-tarasevich.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Григорий Тарасевич" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Григорий Тарасевич</div>
           <div class="speaker-role">Научный журналист</div>
           <div class="speaker-bio">
@@ -2327,7 +2365,7 @@
         <!-- Ряд 2 · лекции -->
 
         <div class="speaker-card has-photo col-l1" data-stagger="2">
-          <img class="speaker-photo" src="assets/speaker-gelfand.jpg" alt="Михаил Гельфанд" loading="lazy">
+          <picture><source media="(min-width: 901px)" srcset="assets/speaker-gelfand.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Михаил Гельфанд" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Михаил Гельфанд</div>
           <div class="speaker-role">Биоинформатик</div>
           <div class="speaker-bio">
@@ -2336,7 +2374,7 @@
         </div>
 
         <div class="speaker-card has-photo col-l2" data-stagger="3">
-          <img class="speaker-photo" src="assets/speaker-raigorodski.jpg" alt="Андрей Райгородский" loading="lazy">
+          <picture><source media="(min-width: 901px)" srcset="assets/speaker-raigorodski.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Андрей Райгородский" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Андрей Райгородский</div>
           <div class="speaker-role">Математик</div>
           <div class="speaker-bio">
@@ -2345,7 +2383,7 @@
         </div>
 
         <div class="speaker-card has-photo col-l3" data-stagger="4">
-          <img class="speaker-photo" src="assets/speaker-skripchenko.jpg" alt="Александра Скрипченко" loading="lazy">
+          <picture><source media="(min-width: 901px)" srcset="assets/speaker-skripchenko.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Александра Скрипченко" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Александра Скрипченко</div>
           <div class="speaker-role">Математик</div>
           <div class="speaker-bio">
@@ -2357,7 +2395,7 @@
         <!-- Ряд 3 · музыка -->
 
         <div class="speaker-card has-photo col-c1" data-stagger="5">
-          <img class="speaker-photo" src="assets/speaker-termen.jpg" alt="Пётр Термен" loading="lazy">
+          <picture><source media="(min-width: 901px)" srcset="assets/speaker-termen.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Пётр Термен" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Пётр Термен</div>
           <div class="speaker-role">Музыкант · терменвокс</div>
           <div class="speaker-bio">
@@ -2366,7 +2404,7 @@
         </div>
 
         <div class="speaker-card has-photo col-c2" data-stagger="6">
-          <img class="speaker-photo" src="assets/speaker-gorelov.jpg" alt="Влад Горелов" loading="lazy">
+          <picture><source media="(min-width: 901px)" srcset="assets/speaker-gorelov.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Влад Горелов" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Влад Горелов</div>
           <div class="speaker-role">Солист «Научно-технического рэпа»</div>
           <div class="speaker-bio">
@@ -2663,6 +2701,7 @@ html,body{
   position:fixed;
   pointer-events:none;
   background:rgba(14,14,16,0.94);
+  -webkit-backdrop-filter:blur(8px);
   backdrop-filter:blur(8px);
   border:1px solid rgba(184,169,138,0.25);
   color:var(--text-main);
@@ -3205,6 +3244,8 @@ function setupCanvas(){
 
 function fitVP(vp){
   const vw=vp.xMax-vp.xMin, vh=vp.yMax-vp.yMin;
+  // Защита от 0-размера контейнера (display:none на mobile / до layout)
+  if(!cssW || !cssH || vw<=0 || vh<=0) return vp;
   const cAspect=cssW/cssH, vAspect=vw/vh;
   if(cAspect>vAspect){
     const nw=vh*cAspect; const dx=(nw-vw)/2;
@@ -3216,9 +3257,14 @@ function fitVP(vp){
 }
 
 function f2svg(x, y, vp){
+  // Защита от деления на 0 — возвращаем валидные числа.
+  // Это не нужно правильно отображать (контейнер всё равно невидим
+  // на mobile через display:none), но избавляет от NaN в SVG points.
+  const dx = vp.xMax - vp.xMin, dy = vp.yMax - vp.yMin;
+  if(!dx || !dy) return [0, 0];
   return [
-    ((x - vp.xMin) / (vp.xMax - vp.xMin)) * 100,
-    100 - ((y - vp.yMin) / (vp.yMax - vp.yMin)) * 100
+    ((x - vp.xMin) / dx) * 100,
+    100 - ((y - vp.yMin) / dy) * 100
   ];
 }
 
@@ -3818,11 +3864,19 @@ window.addEventListener('resize', ()=>{
       slogan.classList.add('visible');
     }, sloganDelay);
 
-    /* Exit preloader at 3600ms (adjusted for longer title) */
-    setTimeout(function() {
-      preloader.classList.add('exit');
+    /* Smart exit: ждём либо event 'load' (страница реально готова),
+       либо минимум 1500мс (чтобы анимация букв успела сложиться).
+       Что наступит позже — то и срабатывает. На быстром интернете
+       с закэшированными шрифтами выходим за 1.5с вместо 4.5с;
+       на медленном ждём окончания загрузки. */
+    var MIN_PRELOADER_MS = 1500;
+    var startTime = performance.now();
+    var exited = false;
 
-      /* After exit transition (900ms), remove preloader and start hero */
+    function exitPreloader() {
+      if (exited) return;
+      exited = true;
+      preloader.classList.add('exit');
       setTimeout(function() {
         preloader.style.display = 'none';
         initLenis();
@@ -3830,8 +3884,23 @@ window.addEventListener('resize', ()=>{
         initSectionAnimations();
         document.getElementById('progress-bar').classList.add('visible');
         document.getElementById('dot-nav').classList.add('visible');
-      }, 900);
-    }, 3600);
+      }, 700);
+    }
+
+    function tryExit() {
+      var elapsed = performance.now() - startTime;
+      var wait = Math.max(0, MIN_PRELOADER_MS - elapsed);
+      setTimeout(exitPreloader, wait);
+    }
+
+    if (document.readyState === 'complete') {
+      tryExit();
+    } else {
+      window.addEventListener('load', tryExit);
+      /* Жёсткий fallback на случай если 'load' никогда не сработает
+         (заблокированный сторонний скрипт может подвесить window.load) */
+      setTimeout(exitPreloader, 4000);
+    }
   })();
 
   /* ============================================
