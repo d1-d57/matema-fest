@@ -1613,7 +1613,11 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: sepia(0.35) saturate(0.85) contrast(1.05) brightness(0.85);
+      /* grayscale(1) первым — гарантирует что независимо от opacity
+         и mix-blend-mode фото всегда монохромное. Раньше во время
+         hover-перехода цвет на мгновение «пробивался» из-за того что
+         luminosity-блендинг не успевал справиться с растущей opacity. */
+      filter: grayscale(1) sepia(0.35) contrast(1.05) brightness(0.85);
       mix-blend-mode: luminosity;
       opacity: 0.72;
       transition: opacity .35s ease, filter .35s ease;
@@ -1622,7 +1626,7 @@
     .speakers-grid--compact .speaker-card:hover .speaker-photo,
     .speakers-grid--compact .speaker-card:focus-within .speaker-photo {
       opacity: 0.92;
-      filter: sepia(0.20) saturate(1) contrast(1.05) brightness(0.95);
+      filter: grayscale(1) sepia(0.20) contrast(1.05) brightness(0.95);
     }
     /* Тёмный градиент снизу — чтобы имя/роль читались поверх фото. */
     .speakers-grid--compact .speaker-card.has-photo::after {
