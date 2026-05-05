@@ -25,14 +25,17 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔺</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- preconnect для виджетов которые подгружаются по клику — ставит DNS+TLS заранее,
-       чтобы при первом клике на «Открыть карту»/«Билеты» не было +300мс задержки. -->
-  <link rel="preconnect" href="https://api-maps.yandex.ru" crossorigin>
-  <link rel="preconnect" href="https://timepad.ru" crossorigin>
+  <!-- preconnect для api-maps.yandex.ru / timepad.ru убран: PageSpeed предупреждает
+       что preconnect должно быть не более 4 для самых критичных источников. Виджеты
+       подгрузятся за 300мс позже при клике, что ОК — кнопки ниже первой шторки. -->
   <!-- Шрифты: уменьшено количество весов Cormorant с 9 до 4 (400/500 ital и regular)
        и JetBrains Mono с 2 до 1. Это сокращает количество woff2 файлов для загрузки
        примерно в 3 раза, экономя FCP/LCP на медленных мобильных. Если визуально
        какой-то заголовок будет тоньше/толще — вернём нужные веса по одному. -->
+  <!-- preload CSS-файла Google Fonts: запускает скачивание паралельно парсингу HTML,
+       не ждёт пока браузер дойдёт до тэга. Это вытаскивает шрифты из критпути LCP
+       примерно на 200-400мс. -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
 
   <!-- Lenis smooth scroll и GSAP — defer вместо синхронной загрузки.
@@ -196,7 +199,7 @@
       align-items: center;
       justify-content: center;
       clip-path: inset(0 0 0 0);
-      transition: clip-path 900ms var(--ease-out-expo);
+      transition: clip-path 500ms var(--ease-out-expo);
     }
 
     #preloader.exit {
@@ -4418,7 +4421,7 @@ window.addEventListener('resize', ()=>{
        Что наступит позже — то и срабатывает. На быстром интернете
        с закэшированными шрифтами выходим за 1.5с вместо 4.5с;
        на медленном ждём окончания загрузки. */
-    var MIN_PRELOADER_MS = 2300;
+    var MIN_PRELOADER_MS = 1500;
     var startTime = performance.now();
     var exited = false;
 
@@ -4433,7 +4436,7 @@ window.addEventListener('resize', ()=>{
         initSectionAnimations();
         document.getElementById('progress-bar').classList.add('visible');
         document.getElementById('dot-nav').classList.add('visible');
-      }, 700);
+      }, 400);
     }
 
     function tryExit() {
@@ -4447,8 +4450,9 @@ window.addEventListener('resize', ()=>{
     } else {
       window.addEventListener('load', tryExit);
       /* Жёсткий fallback на случай если 'load' никогда не сработает
-         (заблокированный сторонний скрипт может подвесить window.load) */
-      setTimeout(exitPreloader, 4000);
+         (заблокированный сторонний скрипт может подвесить window.load).
+         2500мс = MIN 1500 + 1000мс запаса. */
+      setTimeout(exitPreloader, 2500);
     }
   })();
 
@@ -4746,14 +4750,24 @@ window.addEventListener('resize', ()=>{
     var bar = document.getElementById('progress-bar');
     if (!bar) return;
 
+    // Кеш docHeight: было forced layout 100мс на каждое scroll-событие, потому что
+    // document.body.scrollHeight — layout-чтение, а Lenis даёт scroll плотно.
+    // Пересчитываем только при resize и после load (когда DOM устаканился).
+    var cachedDocHeight = 0;
+    function recomputeDocHeight() {
+      cachedDocHeight = document.body.scrollHeight - window.innerHeight;
+    }
+
     function updateProgress() {
       var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      var docHeight = document.body.scrollHeight - window.innerHeight;
-      var progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      var progress = cachedDocHeight > 0 ? (scrollTop / cachedDocHeight) * 100 : 0;
       bar.style.width = progress + '%';
     }
 
     window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', recomputeDocHeight, { passive: true });
+    window.addEventListener('load', recomputeDocHeight);
+    recomputeDocHeight();
     updateProgress();
   })();
 
