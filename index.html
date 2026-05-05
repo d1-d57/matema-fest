@@ -1612,10 +1612,12 @@
 
     .cta-card {
       background: transparent;
-      color: var(--color-bg-light);
-      border: 1.5px solid rgba(200, 154, 61, 0.40);
+      color: var(--color-bg-dark);
+      border: 1.5px solid rgba(22, 20, 15, 0.40);
       border-radius: 6px;
       padding: 0;
+      min-height: 380px;
+      max-height: 440px;
       display: flex;
       flex-direction: column;
       text-align: left;
@@ -1627,15 +1629,17 @@
     .cta-card.cta-card--loaded {
       background: var(--color-bg-light);
       color: var(--color-bg-dark);
-      border-color: rgba(200, 154, 61, 0.55);
+      border-color: rgba(22, 20, 15, 0.55);
     }
-    /* После загрузки виджета карточка растёт под содержимое iframe */
-    #cta-timepad-widget.cta-card--loaded { min-height: 720px; }
-    #cta-timepad-widget.cta-card--loaded .cta-card-widget { min-height: 720px; }
-    #cta-map-widget.cta-card--loaded { min-height: 400px; }
-    #cta-map-widget.cta-card--loaded .cta-card-widget { min-height: 400px; }
+    /* TimePad: нативная высота ~720px, не растягиваем карточку — оставляем
+       max-height 440 со скроллом внутри (как было раньше). Yandex map (400px)
+       помещается точно — фиксируем высоту чтобы не было пустоты снизу. */
+    #cta-map-widget.cta-card--loaded {
+      min-height: 400px;
+      max-height: 400px;
+    }
     #cta-map-widget.cta-card--loaded .cta-card-widget iframe {
-      width: 100% !important; height: 100% !important; min-height: 400px;
+      width: 100% !important; height: 100% !important;
     }
     .cta-card-header {
       flex-shrink: 0;
@@ -1670,8 +1674,8 @@
       background: transparent;
     }
     .cta-card--button:hover {
-      border-color: rgba(200, 154, 61, 0.85);
-      background: rgba(200, 154, 61, 0.04);
+      border-color: rgba(22, 20, 15, 0.75);
+      background: rgba(22, 20, 15, 0.05);
     }
     .cta-lazy-loader {
       width: 100%;
@@ -1686,14 +1690,14 @@
       background: transparent;
       border: 0;
       cursor: pointer;
-      color: var(--color-bg-light);
-      transition: color 220ms ease;
+      color: var(--color-bg-dark);
+      transition: opacity 220ms ease;
       text-align: center;
       line-height: 1.05;
     }
     .cta-lazy-loader:hover,
     .cta-lazy-loader:focus-visible {
-      color: var(--color-accent);
+      opacity: 0.75;
       outline: none;
     }
     .cta-lazy-main {
