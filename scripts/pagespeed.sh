@@ -118,7 +118,12 @@ extract() {
     A11Y=$(echo "$D" | jq -r '.a11y')
     BP=$(echo "$D"   | jq -r '.bp')
     SEO=$(echo "$D"  | jq -r '.seo')
-    echo "## ${STRATEGY^}"
+    case "$STRATEGY" in
+      mobile)  LABEL="Mobile" ;;
+      desktop) LABEL="Desktop" ;;
+      *)       LABEL="$STRATEGY" ;;
+    esac
+    echo "## $LABEL"
     echo
     echo "| Performance | Accessibility | Best Practices | SEO |"
     echo "|---:|---:|---:|---:|"
