@@ -817,7 +817,7 @@ window.FESTIVAL_DATA = {
     "art": {
       "art": {
         "slot": "big-1",
-        "display": "арт"
+        "display": "галерея"
       },
       "installation": {
         "slot": "big-2",
@@ -825,7 +825,7 @@ window.FESTIVAL_DATA = {
       },
       "media": {
         "slot": "big-3",
-        "display": "медиа"
+        "display": "медиа-арт"
       }
     }
   }
