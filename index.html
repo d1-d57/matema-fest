@@ -1247,6 +1247,9 @@
     /* Дубль текста заголовка: на desktop "Программа" большим + "Как устроен фестиваль" мелким сверху;
        на mobile — только "Как устроен фестиваль" большим, "Программа" мелким сверху. */
     .tracks-label-mobile, .tracks-title-mobile { display: none; }
+    /* "Программа" на desktop — амбер (в этой секции единственный цветной акцент,
+       помогает отличать заголовок от тёмного фона тире-страничной палитры). */
+    .tracks-title-desktop { color: var(--color-accent); }
 
     /* MOBILE (≤900px) — другая модель layout'a.
        Grid схлопывается, анимация идёт во всю ширину, info-col
@@ -1268,9 +1271,8 @@
         height: min(100vmin, 100%);
       }
 
-      /* Информационная колонка перестаёт быть grid-колонкой и кладётся
-         absolute поверх анимации. Внутри — flex-column: toolbar → header → body.
-         Padding-top достаточный, чтобы не лезть на римскую цифру в углу. */
+      /* Информационная колонка перестаёт быть колонкой grid'a:
+         её содержимое раскладывается по странице через absolute. */
       .tracks-info-col {
         position: absolute;
         inset: 0;
@@ -1278,21 +1280,20 @@
         grid-row: 1;
         background: transparent;
         border-left: 0;
-        padding: clamp(75px, 13vh, 130px) clamp(16px, 5vw, 24px) 0;
+        padding: 0;
         gap: 0;
         max-height: none;
         min-height: 0;
         overflow: visible;
-        display: flex;
-        flex-direction: column;
         pointer-events: none;
         z-index: 3;
       }
-      /* Заголовок — в normal flow под toolbar, не пересекает chapter-num. */
+      /* Заголовок — абсолютно top-left, поверх анимации (как было). */
       .tracks-info-header {
-        position: static;
-        max-width: 100%;
-        margin-top: clamp(14px, 3vh, 24px);
+        position: absolute;
+        top: clamp(20px, 5vh, 40px);
+        left: clamp(16px, 5vw, 24px);
+        max-width: 75%;
         pointer-events: none;
       }
       .tracks-info-label {
@@ -1336,15 +1337,16 @@
         inset: auto;
       }
 
-      /* Toolbar — первый в normal flow, выровнен слева (chapter-num в правом углу). */
+      /* Тулбар — absolute в правом верхнем углу, опущен ниже chapter-num "iii"
+         (font-size до 120px + top до 60px → low-y ~155px; ставим toolbar ниже этого). */
       .tracks-toolbar {
-        position: static;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: flex-start;
-        gap: clamp(14px, 4vw, 22px);
-        margin: 0;
+        position: absolute;
+        top: clamp(85px, 16vh, 145px);
+        right: clamp(16px, 5vw, 24px);
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        margin-bottom: 0;
         z-index: 4;
         pointer-events: auto;
       }
@@ -1938,7 +1940,10 @@
       font-size: clamp(36px, 4.5vw, 64px);
     }
     @media (min-width: 901px) {
-      .speakers-header .speakers-title { white-space: nowrap; }
+      .speakers-header .speakers-title {
+        white-space: nowrap;
+        font-size: clamp(48px, 5.5vw, 80px);  /* унификация с h2 других секций */
+      }
     }
 
     /* ============================================================
@@ -3489,8 +3494,8 @@ const evMap = Object.fromEntries(RAW.events.map(e=>[e.id,e]));
 
 const SPOTS = [
   // ---- Утро в библиотеке. Адреса [3] и [2] — два маленьких отростка у корня.
-  {id:'evdokimov',  address:[3], label:'Михаил Евдокимов',   subtitle:'Задачки «Квантика»', time:'14:00–15:00', venue:'библиотека', eventIds:['talk-evdokimov']},
-  {id:'tarasevich', address:[2], label:'Григорий Тарасевич', subtitle:'Научпоп-квиз',       time:'15:00–16:00', venue:'библиотека', eventIds:['talk-tarasevich']},
+  {id:'evdokimov',  address:[3], label:'Михаил Евдокимов',   subtitle:'Задачки «Квантика»', time:'14:00–15:00', venue:'Библиотека', eventIds:['talk-evdokimov']},
+  {id:'tarasevich', address:[2], label:'Григорий Тарасевич', subtitle:'Научпоп-квиз',       time:'15:00–16:00', venue:'Библиотека', eventIds:['talk-tarasevich']},
 
   // ---- Дневная программа: лекции на левой стороне стебля, блоки станций на правой.
   // БЛОКИ — clickThrough: true. Они НЕ кликабельны (на них нельзя «активироваться»),
@@ -3500,36 +3505,36 @@ const SPOTS = [
   // Сортировка зон в buildZones по убыванию площади гарантирует, что блоки лежат
   // в нижнем z-стеке, а мелкие саб-листы — сверху и перехватывают клики.
   {id:'station-block-1', address:[1,3],     label:'Первый блок станций',  subtitle:'4 параллельные станции', time:'16:30–17:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-fractal-3d','mc-calligraphy','obs-diagnostics','inst-squirrel']},
-  {id:'gelfand',         address:[1,2],     label:'Михаил Гельфанд',      subtitle:'Иерархия бесконечностей', time:'16:00–17:00', venue:'главная сцена', eventIds:['talk-gelfand']},
+  {id:'gelfand',         address:[1,2],     label:'Михаил Гельфанд',      subtitle:'Иерархия бесконечностей', time:'16:00–17:00', venue:'Мандельброт', eventIds:['talk-gelfand']},
   {id:'station-block-2', address:[1,1,3],   label:'Второй блок станций',  subtitle:'4 параллельные станции', time:'17:30–18:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-engineering-origami','mc-tie-dye','mc-theremin','inst-polyhedral']},
-  {id:'rajgorodski',     address:[1,1,2],   label:'Андрей Райгородский',  time:'17:30–18:30', venue:'главная сцена', eventIds:['talk-rajgorodski']},
+  {id:'rajgorodski',     address:[1,1,2],   label:'Андрей Райгородский',  time:'17:30–18:30', venue:'Мандельброт', eventIds:['talk-rajgorodski']},
   {id:'station-block-3', address:[1,1,1,3], label:'Третий блок станций', subtitle:'4 параллельные станции', time:'18:30–19:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-graphs-evolution','inst-plato','inst-fractal-projection']},
-  {id:'skripchenko',     address:[1,1,1,2], label:'Александра Скрипченко', time:'19:00–20:00', venue:'главная сцена', eventIds:['talk-skripchenko']},
+  {id:'skripchenko',     address:[1,1,1,2], label:'Александра Скрипченко', time:'19:00–20:00', venue:'Мандельброт', eventIds:['talk-skripchenko']},
 
   // ---- Переходный слой к ночи (один шаг f₂ выше последних лекций).
   {id:'station-block-4',   address:[1,1,1,1,3], label:'Четвёртый блок станций', subtitle:'4 параллельных слота', time:'19:30–20:30', venue:'бары и двор', clickThrough:true, placeholder:true, eventIds:[]},
-  {id:'music-extra-stage', address:[1,1,1,1,2], label:'место для музыканта',     time:'20:00–22:00', venue:'главная сцена', placeholder:true, eventIds:[]},
+  {id:'music-extra-stage', address:[1,1,1,1,2], label:'место для музыканта',     time:'20:00–22:00', venue:'Мандельброт', placeholder:true, eventIds:[]},
 
   // ---- Ночная музыка слева: четыре сета снизу вверх по хронологии.
-  {id:'music-termen',         address:[1,1,1,1,1,2],       label:'Пётр Термен',            time:'22:00–23:00',    venue:'главная сцена', eventIds:['music-termen']},
-  {id:'music-rap',            address:[1,1,1,1,1,1,2],     label:'Научно-технический рэп', time:'23:00–00:00',    venue:'главная сцена', eventIds:['music-rap']},
-  {id:'music-brinstar',       address:[1,1,1,1,1,1,1,2],   label:'Brinstar',               time:'после полуночи', venue:'главная сцена', eventIds:['music-brinstar']},
-  {id:'music-spiral-fractal', address:[1,1,1,1,1,1,1,1,2], label:'Spiral Fractal',         time:'после полуночи', venue:'главная сцена', eventIds:['music-spiral-fractal']},
+  {id:'music-termen',         address:[1,1,1,1,1,2],       label:'Пётр Термен',            time:'22:00–23:00',    venue:'Мандельброт', eventIds:['music-termen']},
+  {id:'music-rap',            address:[1,1,1,1,1,1,2],     label:'Научно-технический рэп', time:'23:00–00:00',    venue:'Мандельброт', eventIds:['music-rap']},
+  {id:'music-brinstar',       address:[1,1,1,1,1,1,1,2],   label:'Brinstar',               time:'после полуночи', venue:'Мандельброт', eventIds:['music-brinstar']},
+  {id:'music-spiral-fractal', address:[1,1,1,1,1,1,1,1,2], label:'Spiral Fractal',         time:'после полуночи', venue:'Мандельброт', eventIds:['music-spiral-fractal']},
 
   // ---- Ночная музыка справа: четыре резерва под параллельные сеты на малой сцене.
   // Симметрия с левыми музыкальными слотами: 4 слева (известные музыканты),
   // 4 справа (placeholder'ы), и хвост — танцевальная программа.
-  {id:'music-extra-1', address:[1,1,1,1,1,3],       label:'место для музыканта', time:'ночь', venue:'малая сцена', placeholder:true, eventIds:[]},
-  {id:'music-extra-2', address:[1,1,1,1,1,1,3],     label:'место для музыканта', time:'ночь', venue:'малая сцена', placeholder:true, eventIds:[]},
-  {id:'music-extra-3', address:[1,1,1,1,1,1,1,3],   label:'место для музыканта', time:'ночь', venue:'малая сцена', placeholder:true, eventIds:[]},
-  {id:'music-extra-4', address:[1,1,1,1,1,1,1,1,3], label:'место для музыканта', time:'ночь', venue:'малая сцена', placeholder:true, eventIds:[]},
+  {id:'music-extra-1', address:[1,1,1,1,1,3],       label:'место для музыканта', time:'ночь', venue:'Жюлиа', placeholder:true, eventIds:[]},
+  {id:'music-extra-2', address:[1,1,1,1,1,1,3],     label:'место для музыканта', time:'ночь', venue:'Жюлиа', placeholder:true, eventIds:[]},
+  {id:'music-extra-3', address:[1,1,1,1,1,1,1,3],   label:'место для музыканта', time:'ночь', venue:'Жюлиа', placeholder:true, eventIds:[]},
+  {id:'music-extra-4', address:[1,1,1,1,1,1,1,1,3], label:'место для музыканта', time:'ночь', venue:'Жюлиа', placeholder:true, eventIds:[]},
 ];
 
 // Хвост — не лист, а зона у самого кончика фрактала, через 9 принудительных f₂.
 // Идёт первым в ALL_SPOTS, чтобы его SVG-полигон лежал ниже листьев в z-стеке —
 // тогда мелкие листья на тех же глубинах остаются кликабельными поверх хвоста.
 const TAIL = {
-  id:'tail', label:'Танцевальная программа', time:'после 02:00', venue:'главная сцена',
+  id:'tail', label:'Танцевальная программа', time:'после 02:00', venue:'Мандельброт',
   isNight:true, placeholder:true, eventIds:[]
 };
 
@@ -3554,41 +3559,41 @@ const SUBSPOTS = [
   // ---- Блок 1 [1,3], 16:30–17:30
   {id:'sub-puzzle-fractal-3d', parentId:'station-block-1', address:[1,3,3],
    label:'Сделай 3D-фрактал из бумаги', subtitle:'Полина Романова',
-   time:'16:30–17:30', venue:'большой бар', eventIds:['puzzle-fractal-3d']},
+   time:'16:30–17:30', venue:'Кантор', eventIds:['puzzle-fractal-3d']},
   {id:'sub-mc-calligraphy', parentId:'station-block-1', address:[1,3,2],
    label:'Каллиграфия как фрактал', subtitle:'Наташа Евдокимова',
-   time:'16:30–17:30', venue:'большой бар', eventIds:['mc-calligraphy']},
+   time:'16:30–17:30', venue:'Кантор', eventIds:['mc-calligraphy']},
   {id:'sub-obs-diagnostics', parentId:'station-block-1', address:[1,3,1,3],
    label:'Эстетика в диагнозах', subtitle:'Дария',
-   time:'16:30–17:30', venue:'малый бар', eventIds:['obs-diagnostics']},
+   time:'16:30–17:30', venue:'Жюлиа', eventIds:['obs-diagnostics']},
   {id:'sub-inst-squirrel', parentId:'station-block-1', address:[1,3,1,2],
    label:'Squirrel Institute', subtitle:'Антон Сидько',
-   time:'16:30–17:30', venue:'большой бар', eventIds:['inst-squirrel']},
+   time:'16:30–17:30', venue:'Кантор', eventIds:['inst-squirrel']},
 
   // ---- Блок 2 [1,1,3], 17:30–18:30
   {id:'sub-puzzle-engineering-origami', parentId:'station-block-2', address:[1,1,3,3],
    label:'Инженерное оригами', subtitle:'Полина Романова',
-   time:'17:30–18:30', venue:'большой бар', eventIds:['puzzle-engineering-origami']},
+   time:'17:30–18:30', venue:'Кантор', eventIds:['puzzle-engineering-origami']},
   {id:'sub-mc-tie-dye', parentId:'station-block-2', address:[1,1,3,2],
    label:'Тай-дай: космические яйца', subtitle:'Ольга',
-   time:'17:30–18:30', venue:'двор', eventIds:['mc-tie-dye']},
+   time:'17:30–18:30', venue:'Серпинский', eventIds:['mc-tie-dye']},
   {id:'sub-mc-theremin', parentId:'station-block-2', address:[1,1,3,1,3],
    label:'Терменвокс: попробовать самому', subtitle:'Лора Заиконникова',
-   time:'17:30–18:30', venue:'малый бар', eventIds:['mc-theremin']},
+   time:'17:30–18:30', venue:'Жюлиа', eventIds:['mc-theremin']},
   {id:'sub-inst-polyhedral', parentId:'station-block-2', address:[1,1,3,1,2],
    label:'Полиэдральное цветение', subtitle:'Максимилиан Роганов',
-   time:'17:30–18:30', venue:'малый бар', eventIds:['inst-polyhedral']},
+   time:'17:30–18:30', venue:'Жюлиа', eventIds:['inst-polyhedral']},
 
   // ---- Блок 3 [1,1,1,3], 18:30–19:30 (3 события, 1 резерв)
   {id:'sub-puzzle-graphs-evolution', parentId:'station-block-3', address:[1,1,1,3,3],
    label:'Эволюция графов', subtitle:'Александр Николаичев',
-   time:'18:30–19:30', venue:'малый бар', eventIds:['puzzle-graphs-evolution']},
+   time:'18:30–19:30', venue:'Жюлиа', eventIds:['puzzle-graphs-evolution']},
   {id:'sub-inst-plato', parentId:'station-block-3', address:[1,1,1,3,2],
    label:'Артефакты Плато', subtitle:'Александр Солеев',
-   time:'18:30–19:30', venue:'большой бар', eventIds:['inst-plato']},
+   time:'18:30–19:30', venue:'Кантор', eventIds:['inst-plato']},
   {id:'sub-inst-fractal-projection', parentId:'station-block-3', address:[1,1,1,3,1,3],
    label:'Миры фракталов', subtitle:'Андрей',
-   time:'18:30–19:30', venue:'малый бар', eventIds:['inst-fractal-projection']},
+   time:'18:30–19:30', venue:'Жюлиа', eventIds:['inst-fractal-projection']},
   {id:'sub-block-3-extra', parentId:'station-block-3', address:[1,1,1,3,1,2],
    label:'место для станции', time:'18:30–19:30', venue:'бар',
    placeholder:true, eventIds:[]},
@@ -5215,29 +5220,69 @@ window.addEventListener('resize', ()=>{
       else if (c.tier === 1) { maxFont = 28; minFont = 11; }
       else                   { maxFont = 18; minFont = 9;  }
 
-      const hasTwoLines = !!labels.line2;
-      if (hasTwoLines) { maxFont = Math.round(maxFont * 0.72); }
+      // Имя/название — крупным шрифтом приоритет. Если в одну строку не вмещается,
+      // пытаемся word-wrap (например, "Михаил Гельфанд" → две строки) сохраняя крупный
+      // размер. В этом случае подзаголовок (тема лекции) жертвуем — приоритет у имени.
+      ctx.font = `italic ${maxFont}px 'Cormorant Garamond', Georgia, serif`;
+      const oneLineFitsAtMax = ctx.measureText(labels.line1).width <= maxWidth;
 
-      const size1 = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
-      const size2 = hasTwoLines
-        ? fitFontSize(labels.line2, Math.round(size1 * 0.78), minFont, maxWidth)
-        : 0;
+      let mainLines, mainSize, subText = '', subSize = 0;
+      if (oneLineFitsAtMax) {
+        // Помещается — одна строка крупным
+        mainLines = [labels.line1];
+        mainSize = maxFont;
+        if (labels.line2) {
+          subText = labels.line2;
+          subSize = fitFontSize(labels.line2, Math.round(maxFont * 0.78), minFont, maxWidth);
+        }
+      } else {
+        // Не помещается — пробуем word-wrap при том же шрифте
+        const words = labels.line1.split(' ');
+        if (words.length >= 2) {
+          // Пытаемся разбить на 2 строки максимально сбалансированно (greedy left→right)
+          ctx.font = `italic ${maxFont}px 'Cormorant Garamond', Georgia, serif`;
+          let l1 = words[0], l2 = '';
+          for (let i = 1; i < words.length; i++) {
+            const cand = l1 + ' ' + words[i];
+            if (ctx.measureText(cand).width <= maxWidth) l1 = cand;
+            else { l2 = words.slice(i).join(' '); break; }
+          }
+          if (l2 && ctx.measureText(l2).width <= maxWidth) {
+            mainLines = [l1, l2];
+            mainSize = maxFont;
+            // line2 жертвуем — имя на двух строках уже занимает круг
+          } else {
+            // Wrap не получился (одно слово слишком длинное) — уменьшаем шрифт
+            mainSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
+            mainLines = [labels.line1];
+          }
+        } else {
+          // Одно слово, не вмещается — уменьшаем шрифт
+          mainSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
+          mainLines = [labels.line1];
+        }
+      }
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      if (hasTwoLines) {
-        const gap = size1 * 0.6;
-        ctx.font = `italic ${size1}px 'Cormorant Garamond', Georgia, serif`;
-        ctx.fillStyle = `rgba(${COLOR_TEXT}, ${0.95 * alpha})`;
-        ctx.fillText(labels.line1, s.px, s.py - gap);
-        ctx.font = `italic ${size2}px 'Cormorant Garamond', Georgia, serif`;
+      const totalLines = mainLines.length + (subText ? 1 : 0);
+      const lineH = mainSize * 1.05;
+      const subLineH = subSize * 1.05;
+      const totalH = mainLines.length * lineH + (subText ? subLineH + lineH * 0.15 : 0);
+      let y = s.py - totalH / 2 + lineH / 2;
+
+      ctx.font = `italic ${mainSize}px 'Cormorant Garamond', Georgia, serif`;
+      ctx.fillStyle = `rgba(${COLOR_TEXT}, ${0.95 * alpha})`;
+      for (const line of mainLines) {
+        ctx.fillText(line, s.px, y);
+        y += lineH;
+      }
+      if (subText) {
+        y += lineH * 0.15;
+        ctx.font = `italic ${subSize}px 'Cormorant Garamond', Georgia, serif`;
         ctx.fillStyle = `rgba(${COLOR_TEXT}, ${0.7 * alpha})`;
-        ctx.fillText(labels.line2, s.px, s.py + gap);
-      } else {
-        ctx.font = `italic ${size1}px 'Cormorant Garamond', Georgia, serif`;
-        ctx.fillStyle = `rgba(${COLOR_TEXT}, ${0.95 * alpha})`;
-        ctx.fillText(labels.line1, s.px, s.py);
+        ctx.fillText(subText, s.px, y - lineH/2 + subLineH/2);
       }
     }
 
@@ -5516,7 +5561,8 @@ window.addEventListener('resize', ()=>{
       }[c]));
     }
 
-    // Показать данные события в правой info-panel (при клике на внутренний круг)
+    // Показать данные события в правой info-panel (при клике на внутренний круг).
+    // Структура: заголовок (имя/название) → meta (время · место) → подзаголовок-тема → описание.
     function showEventInPanel(ev) {
       const titleEl = document.getElementById('tracks-info-title');
       const descEl  = document.getElementById('tracks-info-desc');
@@ -5527,9 +5573,22 @@ window.addEventListener('resize', ()=>{
       const labels = labelForEvent(ev);
       titleEl.textContent = labels.line1 || (ev.speaker || ev.title || 'TBA');
 
+      // Meta: время + место. Берём display из FESTIVAL_DATA.venues, чтобы имена были
+      // консистентны с расписанием ("Кантор", "Жюлиа", "Мандельброт"…).
+      const slot = (ev.slot && FESTIVAL_DATA && FESTIVAL_DATA.time_slots) ? FESTIVAL_DATA.time_slots[ev.slot] : null;
+      const venue = (ev.venue && FESTIVAL_DATA && FESTIVAL_DATA.venues) ? FESTIVAL_DATA.venues[ev.venue] : null;
+      const metaParts = [];
+      if (slot && slot.start) metaParts.push(slot.start + (slot.end ? '–' + slot.end : ''));
+      if (venue && venue.display) metaParts.push(venue.display);
+
       let html = '';
-      // Если у нас полный title и он отличается от заголовка — добавим как подзаголовок.
-      // Кроме music: там сознательно показываем только имя.
+      if (metaParts.length) {
+        html += '<p style="color:var(--color-accent);font-family:var(--font-body);'
+             +  'font-size:0.9em;letter-spacing:0.05em;margin:0 0 0.7em 0;">'
+             +  escHtml(metaParts.join(' · ')) + '</p>';
+      }
+      // Подзаголовок-тема — если у нас есть полный title, отличный от заголовка панели,
+      // и категория это допускает (для music сознательно показываем только имя).
       if (ev.title && ev.title !== titleEl.textContent && ev.category !== 'music') {
         html += '<p style="font-style:italic;opacity:0.85;margin:0 0 0.6em 0;">'
              + escHtml(ev.title) + '</p>';
@@ -5689,11 +5748,11 @@ window.addEventListener('resize', ()=>{
         events: [
           { id:'evdokimov',  time:'14:00–15:00', name:'Михаил Евдокимов',
             speaker:'Михаил Евдокимов · автор задач, популяризатор математики',
-            venue:'библиотека',
+            venue:'Библиотека',
             detail:'Утренний пролог: классные задачи журнала «Квантик», которые решают вместе с залом.' },
           { id:'tarasevich', time:'15:00–16:00', name:'Григорий Тарасевич',
             speaker:'Григорий Тарасевич · научный журналист',
-            venue:'библиотека',
+            venue:'Библиотека',
             detail:'Командный квиз на математико-естественнонаучные темы. Семейная утренняя часть.' },
         ],
       },
@@ -5702,49 +5761,49 @@ window.addEventListener('resize', ()=>{
         events: [
           { id:'gelfand', time:'16:00–17:00', name:'Михаил Гельфанд',
             speaker:'Михаил Гельфанд · «Иерархия бесконечностей»',
-            venue:'главная сцена',
+            venue:'Мандельброт',
             detail:'О генетике, эволюции и о том, как устроена наука.' },
           { id:'station-block-1', time:'16:30–17:30', name:'Первый блок станций',
-            venue:'большой бар, малый бар',
+            venue:'Кантор, Жюлиа',
             detail:'Четыре параллельные станции. Заходишь в любую, остаёшься сколько хочется.',
             substations:[
-              { id:'sub-puzzle-fractal-3d', name:'Сделай 3D-фрактал из бумаги', who:'Полина Романова', where:'большой бар',
+              { id:'sub-puzzle-fractal-3d', name:'Сделай 3D-фрактал из бумаги', who:'Полина Романова', where:'Кантор',
                 detail:'Ножницы, лист A4, инструкция. За 5–10 минут — фрактальная модель в руках.' },
-              { id:'sub-mc-calligraphy', name:'Каллиграфия как фрактал', who:'Наташа Евдокимова', where:'большой бар',
+              { id:'sub-mc-calligraphy', name:'Каллиграфия как фрактал', who:'Наташа Евдокимова', where:'Кантор',
                 detail:'Базовые черты, точки, линии. Из них — иероглифы. Простота порождает сложность через повторение.' },
-              { id:'sub-obs-diagnostics', name:'Эстетика в диагнозах', who:'Дария', where:'малый бар',
+              { id:'sub-obs-diagnostics', name:'Эстетика в диагнозах', who:'Дария', where:'Жюлиа',
                 detail:'Рисуночные методики психиатрии. Самоподобие как клинический инструмент.' },
-              { id:'sub-inst-squirrel', name:'Squirrel Institute', who:'Антон Сидько', where:'большой бар',
+              { id:'sub-inst-squirrel', name:'Squirrel Institute', who:'Антон Сидько', where:'Кантор',
                 detail:'Фарфоровые цилиндры со свернувшимися в спирали белками. Ирония над автопереводом РАН.' },
             ]
           },
           { id:'rajgorodski', time:'17:30–18:30', name:'Андрей Райгородский',
             speaker:'Андрей Райгородский',
-            venue:'главная сцена',
+            venue:'Мандельброт',
             detail:'Математика, теория графов, комбинаторика.' },
           { id:'station-block-2', time:'17:30–18:30', name:'Второй блок станций',
-            venue:'большой бар, малый бар, двор',
+            venue:'Кантор, Жюлиа, Серпинский',
             detail:'Четыре параллельные станции.',
             substations:[
-              { id:'sub-puzzle-engineering-origami', name:'Инженерное оригами', who:'Полина Романова', where:'большой бар',
+              { id:'sub-puzzle-engineering-origami', name:'Инженерное оригами', who:'Полина Романова', where:'Кантор',
                 detail:'Подвижные модели солнечных панелей из бумаги. По дороге — как решали задачу инженеры NASA.' },
-              { id:'sub-mc-tie-dye', name:'Тай-дай: космические яйца', who:'Ольга', where:'двор',
+              { id:'sub-mc-tie-dye', name:'Тай-дай: космические яйца', who:'Ольга', where:'Серпинский',
                 detail:'Раскрашиваем футболку. При раскручивании рисунок повторяется на разных масштабах.' },
-              { id:'sub-mc-theremin', name:'Терменвокс: попробовать самому', who:'Лора Заиконникова', where:'малый бар',
+              { id:'sub-mc-theremin', name:'Терменвокс: попробовать самому', who:'Лора Заиконникова', where:'Жюлиа',
                 detail:'Мастер-класс игры на инструменте. Параллельно с программой.' },
-              { id:'sub-inst-polyhedral', name:'Полиэдральное цветение', who:'Максимилиан Роганов', where:'малый бар',
+              { id:'sub-inst-polyhedral', name:'Полиэдральное цветение', who:'Максимилиан Роганов', where:'Жюлиа',
                 detail:'Рекурсивная агрегация икосферических узлов. Модель самого процесса организации формы.' },
             ]
           },
           { id:'station-block-3', time:'18:30–19:30', name:'Третий блок станций',
-            venue:'большой бар, малый бар',
+            venue:'Кантор, Жюлиа',
             detail:'Три станции и один резерв.',
             substations:[
-              { id:'sub-puzzle-graphs-evolution', name:'Эволюция графов', who:'Александр Николаичев', where:'малый бар',
+              { id:'sub-puzzle-graphs-evolution', name:'Эволюция графов', who:'Александр Николаичев', where:'Жюлиа',
                 detail:'Локальная замена подграфов рождает фрактальные картины и тьюринг-полные системы. С визуализациями.' },
-              { id:'sub-inst-plato', name:'Артефакты Плато', who:'Александр Солеев', where:'большой бар',
+              { id:'sub-inst-plato', name:'Артефакты Плато', who:'Александр Солеев', where:'Кантор',
                 detail:'Скульптуры, в которых техногенные и природные паттерны соединяются в фрактальном объекте.' },
-              { id:'sub-inst-fractal-projection', name:'Миры фракталов', who:'Андрей', where:'малый бар',
+              { id:'sub-inst-fractal-projection', name:'Миры фракталов', who:'Андрей', where:'Жюлиа',
                 detail:'На большой проекции — потоком сменяющие друг друга фрактальные миры. Объект для медленного смотрения.' },
               { id:'sub-block-3-extra', name:'Место для станции', placeholder:true, where:'бар',
                 detail:'Резерв. Подробности к апрелю.' },
@@ -5752,7 +5811,7 @@ window.addEventListener('resize', ()=>{
           },
           { id:'skripchenko', time:'19:00–20:00', name:'Александра Скрипченко',
             speaker:'Александра Скрипченко',
-            venue:'главная сцена',
+            venue:'Мандельброт',
             detail:'Геометрия и динамические системы. Красивая математика без лишней техники.' },
           { id:'station-block-4', time:'19:30–20:30', name:'Четвёртый блок станций',
             placeholder:true,
@@ -5764,35 +5823,35 @@ window.addEventListener('resize', ()=>{
         id: 'evening', label: 'Вечер', sublabel: 'музыка и танцы', when: '20 — 04', where: 'Лахесис',
         events: [
           { id:'music-extra-stage', time:'20:00–21:00', name:'Место для музыканта',
-            placeholder:true, venue:'главная сцена',
+            placeholder:true, venue:'Мандельброт',
             detail:'Резерв на переход к ночной программе.' },
           { id:'music-extra-1', time:'20:30–21:30', name:'Малая сцена · слот 1',
-            placeholder:true, venue:'малая сцена',
+            placeholder:true, venue:'Жюлиа',
             detail:'Малая сцена идёт параллельно главной с нахлёстом 30 минут. Имена — к апрелю.' },
           { id:'music-extra-2', time:'21:30–22:30', name:'Малая сцена · слот 2',
-            placeholder:true, venue:'малая сцена',
+            placeholder:true, venue:'Жюлиа',
             detail:'Идёт пока Пётр Термен заканчивает на главной. Имена — к апрелю.' },
           { id:'music-termen', time:'22:00–23:00', name:'Пётр Термен',
             speaker:'Пётр Термен · терменвокс',
-            venue:'главная сцена',
+            venue:'Мандельброт',
             detail:'Музыкант играет руками в воздухе. Инструмент, которому больше ста лет. Музыка ближе к академической.' },
           { id:'music-extra-3', time:'22:30–23:30', name:'Малая сцена · слот 3',
-            placeholder:true, venue:'малая сцена',
+            placeholder:true, venue:'Жюлиа',
             detail:'Параллельно с Терменом. Имена — к апрелю.' },
           { id:'music-rap', time:'23:00–00:00', name:'Научно-технический рэп',
-            venue:'главная сцена',
+            venue:'Мандельброт',
             detail:'Музыкальная программа ближе к ночи.' },
           { id:'music-extra-4', time:'23:30–00:30', name:'Малая сцена · слот 4',
-            placeholder:true, venue:'малая сцена',
+            placeholder:true, venue:'Жюлиа',
             detail:'Последний параллельный слот малой сцены. Имена — к апрелю.' },
           { id:'music-brinstar', time:'00:00–01:00', name:'Brinstar',
-            venue:'главная сцена',
+            venue:'Мандельброт',
             detail:'Музыкальный сет в ночной части программы. Подробности уточняются.' },
           { id:'music-spiral-fractal', time:'01:00–02:00', name:'Spiral Fractal',
-            venue:'главная сцена',
+            venue:'Мандельброт',
             detail:'Музыкальный сет в поздней ночной части. Подробности уточняются.' },
           { id:'tail', time:'после 02:00', name:'Танцевальная программа',
-            placeholder:true, venue:'главная сцена',
+            placeholder:true, venue:'Мандельброт',
             detail:'Хвост папоротника. Танцы до утра.' },
         ],
       },
