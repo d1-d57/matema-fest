@@ -1244,6 +1244,10 @@
       outline-offset: 4px;
     }
 
+    /* Дубль текста заголовка: на desktop "Программа" большим + "Как устроен фестиваль" мелким сверху;
+       на mobile — только "Как устроен фестиваль" большим, "Программа" мелким сверху. */
+    .tracks-label-mobile, .tracks-title-mobile { display: none; }
+
     /* MOBILE (≤900px) — другая модель layout'a.
        Grid схлопывается, анимация идёт во всю ширину, info-col
        перестраивается: header абсолютно поверх анимации (как было
@@ -1264,8 +1268,9 @@
         height: min(100vmin, 100%);
       }
 
-      /* Информационная колонка перестаёт быть колонкой grid'a:
-         её содержимое раскладывается по странице через absolute. */
+      /* Информационная колонка перестаёт быть grid-колонкой и кладётся
+         absolute поверх анимации. Внутри — flex-column: toolbar → header → body.
+         Padding-top достаточный, чтобы не лезть на римскую цифру в углу. */
       .tracks-info-col {
         position: absolute;
         inset: 0;
@@ -1273,25 +1278,28 @@
         grid-row: 1;
         background: transparent;
         border-left: 0;
-        padding: 0;
+        padding: clamp(75px, 13vh, 130px) clamp(16px, 5vw, 24px) 0;
         gap: 0;
         max-height: none;
         min-height: 0;
         overflow: visible;
+        display: flex;
+        flex-direction: column;
         pointer-events: none;
         z-index: 3;
       }
-      /* Заголовок — абсолютно top-left, поверх анимации. */
+      /* Заголовок — в normal flow под toolbar, не пересекает chapter-num. */
       .tracks-info-header {
-        position: absolute;
-        top: clamp(20px, 5vh, 40px);
-        left: clamp(16px, 5vw, 24px);
-        max-width: 75%;
+        position: static;
+        max-width: 100%;
+        margin-top: clamp(14px, 3vh, 24px);
         pointer-events: none;
       }
       .tracks-info-label {
         text-shadow: 0 1px 12px rgba(22, 20, 15, 0.85);
       }
+      .tracks-label-desktop, .tracks-title-desktop { display: none; }
+      .tracks-label-mobile,  .tracks-title-mobile  { display: inline; }
       .tracks-info-title-main {
         font-size: clamp(24px, 6.5vw, 36px);
         text-shadow: 0 2px 16px rgba(22, 20, 15, 0.9),
@@ -1328,16 +1336,15 @@
         inset: auto;
       }
 
-      /* На mobile тулбар встаёт сверху-справа над анимацией —
-         компактные текстовые кнопки. Сидят между анимацией и заголовком. */
+      /* Toolbar — первый в normal flow, выровнен слева (chapter-num в правом углу). */
       .tracks-toolbar {
-        position: absolute;
-        top: clamp(20px, 5vh, 40px);
-        right: clamp(16px, 5vw, 24px);
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 8px;
-        margin-bottom: 0;
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-start;
+        gap: clamp(14px, 4vw, 22px);
+        margin: 0;
         z-index: 4;
         pointer-events: auto;
       }
@@ -2715,13 +2722,7 @@
         </div>
       </div>
       <aside class="tracks-info-col">
-        <div class="tracks-info-header">
-          <!-- Сохраняем .tracks-label / .tracks-title чтобы GSAP fade-in
-               (sectionAnimations.tracks) продолжал работать без правок. -->
-          <div class="tracks-info-label tracks-label">Программа</div>
-          <h2 class="tracks-info-title-main tracks-title">Как устроен<br>фестиваль</h2>
-        </div>
-        <!-- Тулбар: две кнопки управления панелью.
+        <!-- Тулбар сверху, как в расписании: две кнопки управления панелью.
              — К общему виду: возврат из зума внутрь круга. По умолчанию
                приглушённая (.is-disabled), активируется при зуме.
              — Карта локаций: открывает модал со схемой залов клуба. -->
@@ -2732,6 +2733,18 @@
           <button class="panel-map-btn" type="button" data-open-map aria-haspopup="dialog" aria-controls="map-modal">
             <span>Карта локаций</span><span class="arrow" aria-hidden="true">→</span>
           </button>
+        </div>
+        <div class="tracks-info-header">
+          <!-- Сохраняем .tracks-label / .tracks-title чтобы GSAP fade-in
+               (sectionAnimations.tracks) продолжал работать без правок. -->
+          <div class="tracks-info-label tracks-label">
+            <span class="tracks-label-desktop">Как устроен фестиваль</span>
+            <span class="tracks-label-mobile">Программа</span>
+          </div>
+          <h2 class="tracks-info-title-main tracks-title">
+            <span class="tracks-title-desktop">Программа</span>
+            <span class="tracks-title-mobile">Как устроен<br>фестиваль</span>
+          </h2>
         </div>
         <div class="tracks-info-body">
           <!-- info-panel — содержимое появляется при зуме внутрь круга.
@@ -4814,6 +4827,46 @@ window.addEventListener('resize', ()=>{
       }
     }
 
+    // Сколько ВСЕГО кругов показываем в каждой категории (confirmed + TBA-плейсхолдеры).
+    // popsci/social/cinema/music — без TBA: сколько подтверждено, столько и видно.
+    // art/workshop/experiment — допускают TBA: дополнительно дорисовываются круги
+    // в свободных позициях, чтобы зритель видел "будет ещё".
+    const TARGET_FILLED = {
+      popsci: 0, music: 0, cinema: 0, social: 0,
+      art: 6, workshop: 6, experiment: 6
+    };
+    // Порядок заполнения TBA-позиций — сначала с краю (mid-*), потом центр.
+    // Заголовок никогда не ставим в center, если есть свободный mid (визуально аккуратнее).
+    const TBA_FILL_ORDER = ['mid-1', 'mid-2', 'mid-3', 'center'];
+
+    // Для каждой категории собираем Set позиций которые должны рисоваться как TBA.
+    const tbaPositions = {};
+    if (FESTIVAL_DATA && FESTIVAL_DATA.categories) {
+      for (const catId of Object.keys(FESTIVAL_DATA.categories)) {
+        tbaPositions[catId] = new Set();
+        const target = TARGET_FILLED[catId] || 0;
+        if (!target) continue;
+
+        // Подтверждённые на конкретных позициях (не placeholder, есть title/speaker)
+        const confirmed = new Set();
+        for (const ev of FESTIVAL_DATA.events) {
+          if (ev.category !== catId) continue;
+          if (ev.status === 'placeholder') continue;
+          if (!ev.title && !ev.speaker) continue;
+          if (ev.apollo_slot) confirmed.add(ev.apollo_slot);
+        }
+
+        const tbaNeeded = Math.max(0, target - confirmed.size);
+        let added = 0;
+        for (const pos of TBA_FILL_ORDER) {
+          if (added >= tbaNeeded) break;
+          if (confirmed.has(pos)) continue;  // позиция занята реальным событием
+          tbaPositions[catId].add(pos);
+          added++;
+        }
+      }
+    }
+
     // Размечаем каждому структурному кругу его apollo_slot — позицию
     // внутри категории. Эта же разметка работает и на верхнем уровне,
     // и при рекурсивном зуме (геометрия одинаковая).
@@ -5140,17 +5193,20 @@ window.addEventListener('resize', ()=>{
       if (!c.apollo_slot) return;
       const ev = eventsByCatAndSlot[catId + ':' + c.apollo_slot];
 
-      // На базовых позициях (big-*, mid-*, center) показываем что-то всегда — TBA если нет события.
-      // На "ушках" (ear-*) — только если событие явно есть.
-      const isBasePos = !c.apollo_slot.startsWith('ear-');
-      if (!ev && !isBasePos) return;
+      // Решаем что показывать:
+      //   confirmed/tentative event с title или speaker → рисуем event
+      //   позиция в tbaPositions[catId] и нет confirmed event → рисуем "TBA"
+      //   иначе → ничего (круг остаётся пустой)
+      const hasConfirmedEvent = ev && ev.status !== 'placeholder' && (ev.title || ev.speaker);
+      const isTbaSlot = !hasConfirmedEvent && tbaPositions[catId] && tbaPositions[catId].has(c.apollo_slot);
+      if (!hasConfirmedEvent && !isTbaSlot) return;
 
       if (!isVisibleInViewport(wx, wy, wr)) return;
       const s = worldToScreen(wx, wy);
       const rPx = wr * s.scale;
       if (rPx < 16) return;
 
-      const labels = labelForEvent(ev);
+      const labels = hasConfirmedEvent ? labelForEvent(ev) : { line1: 'TBA', line2: '' };
       if (!labels.line1) return;
 
       const maxWidth = rPx * 1.7;  // диаметр с небольшим запасом по бокам
@@ -5287,7 +5343,8 @@ window.addEventListener('resize', ()=>{
             if (c.sign === -1) continue;
             if (!c.apollo_slot) continue;
             const ev = eventsByCatAndSlot[catId + ':' + c.apollo_slot];
-            if (!ev) continue;  // кликабельны только круги с подтверждённым событием
+            // Кликабельны только круги с подтверждённым событием (есть title или speaker, не placeholder)
+            if (!ev || ev.status === 'placeholder' || (!ev.title && !ev.speaker)) continue;
             const wx = px + c.x * pr;
             const wy = py + c.y * pr;
             const wr = Math.abs(c.r) * pr;
@@ -5463,7 +5520,9 @@ window.addEventListener('resize', ()=>{
     function showEventInPanel(ev) {
       const titleEl = document.getElementById('tracks-info-title');
       const descEl  = document.getElementById('tracks-info-desc');
+      const panelEl = document.getElementById('tracks-info-panel');
       if (!titleEl || !descEl) return;
+      if (panelEl) panelEl.classList.add('visible');  // на mobile подымает drawer
 
       const labels = labelForEvent(ev);
       titleEl.textContent = labels.line1 || (ev.speaker || ev.title || 'TBA');
