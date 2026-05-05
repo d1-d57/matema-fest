@@ -1076,9 +1076,9 @@
       font-family: var(--font-display);
       font-style: italic;
       font-weight: 500;
-      font-size: clamp(36px, 3.6vw, 56px);
-      line-height: 1.05;
-      letter-spacing: -0.01em;
+      font-size: clamp(48px, 5.5vw, 80px);
+      line-height: 0.95;
+      letter-spacing: -0.015em;
       color: var(--color-bg-light);
       margin: 0;
     }
@@ -1187,13 +1187,13 @@
        (плюс .is-disabled когда возвращаться некуда — приглушённое
        состояние, не клик). */
     .zoom-back {
-      padding: 6px 10px 6px 0;
+      padding: 6px 0;
       background: transparent;
       border: 0;
       text-align: left;
       cursor: pointer;
       font-family: var(--font-body);
-      font-size: 11px;
+      font-size: 13px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--color-bg-light);
@@ -1201,7 +1201,8 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      opacity: 0.25;          /* по умолчанию приглушённая (нечего сворачивать) */
+      line-height: 1.3;
+      opacity: 0.25;          /* default — нечего сворачивать */
       pointer-events: none;
     }
     .zoom-back.visible {
@@ -1219,13 +1220,13 @@
     /* Кнопка «Карта локаций» — открывает модал. Тот же визуальный язык,
        стрелка справа. Есть всегда (не зависит от состояния зума). */
     .panel-map-btn {
-      padding: 6px 0 6px 0;
+      padding: 6px 0;
       background: transparent;
       border: 0;
       text-align: left;
       cursor: pointer;
       font-family: var(--font-body);
-      font-size: 11px;
+      font-size: 13px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--color-bg-light);
@@ -1233,6 +1234,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      line-height: 1.3;
     }
     .panel-map-btn:hover { color: var(--color-accent); }
     .panel-map-btn .arrow { transition: transform 220ms ease; }
@@ -1426,22 +1428,13 @@
       gap: 12px;
       color: var(--color-bg-light);
     }
-    .map-modal-title {
-      font-family: var(--font-display);
-      font-style: italic;
-      font-weight: 500;
-      font-size: clamp(20px, 2.4vw, 28px);
-      letter-spacing: -0.005em;
-      margin: 0;
-    }
     .map-modal-subtitle {
-      display: block;
       font-family: var(--font-body);
-      font-size: 11px;
+      font-size: 13px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: rgba(236, 227, 208, 0.55);
-      margin-bottom: 4px;
+      color: rgba(236, 227, 208, 0.7);
+      margin: 0;
     }
 
     /* Кнопка закрытия — большая, простая, заметная.
@@ -1496,8 +1489,7 @@
     @media (max-width: 600px) {
       .map-modal { padding: 16px 12px; }
       .map-modal-frame { gap: 10px; }
-      .map-modal-title { font-size: 18px; }
-      .map-modal-subtitle { font-size: 10px; }
+      .map-modal-subtitle { font-size: 11px; }
     }
 
     /* Замок скролла страницы пока модал открыт. */
@@ -1522,12 +1514,15 @@
       padding: 6px 10px 6px 0;
     }
     /* Внутри тулбара кнопка .schedule-back перестаёт быть sticky
-       (тулбар сам sticky), padding и margin сбрасываются. */
+       (тулбар сам sticky), и приводится к тому же padding/font-size
+       что и .panel-map-btn — иначе кнопки уезжают по вертикали. */
     .schedule-toolbar .schedule-back {
       position: static;
       margin: 0;
-      padding: 0;
+      padding: 6px 0;
       background: transparent;
+      font-size: 13px;
+      line-height: 1.3;
     }
 
     /* Cursor defaults */
@@ -2442,6 +2437,10 @@
         font-size: clamp(13px, 3vw, 16px);
         gap: 4px;
       }
+      /* Декоративная стрелка «Дальше» внизу hero — на десктопе нужна,
+         на mobile не нужна и налезает на кнопку «Купить билет».
+         Скрываем целиком — её и так не видно из-за абсолютной позиции. */
+      .scroll-hint { display: none; }
 
       /* About: фоновая «50» на мобильном пересекалась с текстом
          манифеста — невозможно дочитать последний абзац. Скрываем. */
@@ -2732,7 +2731,7 @@
                Виден когда info-panel НЕ .visible (управляется через :has()). -->
           <div class="tracks-info-default">
             <p>Нажмите на любой круг — увидите, что внутри.</p>
-            <p class="tracks-info-hint">Состав ещё дополняется.</p>
+            <p class="tracks-info-hint">Программа собирается — до 23 мая список будет расти</p>
           </div>
         </div>
       </aside>
@@ -4190,10 +4189,7 @@ window.addEventListener('resize', ()=>{
     <div class="map-modal-backdrop" data-close-map></div>
     <div class="map-modal-frame" role="document">
       <div class="map-modal-header">
-        <div>
-          <span class="map-modal-subtitle">Карта локаций</span>
-          <h2 class="map-modal-title" id="map-modal-title">Залы клуба Лахесис</h2>
-        </div>
+        <span class="map-modal-subtitle" id="map-modal-title">Карта локаций</span>
         <button class="map-modal-close" type="button" data-close-map aria-label="Закрыть карту">
           <span aria-hidden="true">×</span>
         </button>
@@ -4909,13 +4905,23 @@ window.addEventListener('resize', ()=>{
 
     function strokeForCircle(c) {
       // tier: -1=external, 0=big, 1=primary, 2=ear, 3=detail
-      if (c.tier === -1 || c.tier === 0 || c.tier === 1) {
+      // Семантика цвета: ярко золотым рисуем то, на что имеет смысл
+      // тыкать — кликабельные круги (3 tier 0 + 3 tier 1 с тегом, кроме
+      // центра «общение») и внешнюю окружность как крупную композиционную
+      // рамку. Остальные структурные круги (центр и три «ушка» tier 2)
+      // приглушены — они декоративные, тянут глаз меньше, но всё ещё
+      // видны как часть карты.
+      if (c.tier === -1) {
         return { color: COLOR_MAIN, width: 1.6, alpha: 1.0 };
       }
-      if (c.tier === 2) {
-        return { color: COLOR_MAIN, width: 1.3, alpha: 1.0 };
+      if (c.tier === 0 || (c.tier === 1 && c.tag && c.tag !== 'общение')) {
+        return { color: COLOR_MAIN, width: 1.6, alpha: 1.0 };
       }
-      // detail — по размеру
+      // Центр «общение» (tier 1) и tier 2 «ушки» — приглушённые.
+      if (c.tier === 1 || c.tier === 2) {
+        return { color: COLOR_DIM, width: 1.1, alpha: 1.0 };
+      }
+      // detail (tier 3) — по размеру
       const r = Math.abs(c.r);
       if (r >= 0.025) return { color: COLOR_DIM, width: 1.1, alpha: 1.0 };
       if (r >= 0.012) return { color: COLOR_DIM, width: 0.7, alpha: 1.0 };
