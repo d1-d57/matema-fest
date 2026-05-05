@@ -4414,19 +4414,19 @@ window.addEventListener('resize', ()=>{
       title.appendChild(wordSpan);
     });
 
-    /* Show slogan early enough to be seen before preloader exit.
-       MIN_PRELOADER_MS = 1500, поэтому слоган должен появиться значительно раньше.
-       Раньше было letterIndex*60+800 = ~1880мс, что наступало уже после exit. */
+    /* Слоган проступает с задержкой. На мобиле — раньше (500мс), потому что окно
+       прелоадера длиннее (1800мс) и запас времени на чтение в 1300мс ощутимый.
+       На десктопе — 700мс при окне 1500мс, на чтение остаётся ~800мс. */
+    var sloganDelay = window.matchMedia('(max-width: 600px)').matches ? 500 : 700;
     setTimeout(function() {
       slogan.classList.add('visible');
-    }, 700);
+    }, sloganDelay);
 
-    /* Smart exit: ждём либо event 'load' (страница реально готова),
-       либо минимум 1500мс (чтобы анимация букв успела сложиться).
-       Что наступит позже — то и срабатывает. На быстром интернете
-       с закэшированными шрифтами выходим за 1.5с вместо 4.5с;
-       на медленном ждём окончания загрузки. */
-    var MIN_PRELOADER_MS = 1500;
+    /* Smart exit: ждём либо event 'load' (страница реально готова), либо
+       минимум MIN_PRELOADER_MS. На мобиле окно длиннее (1800мс) — пользователь
+       успевает прочитать слоган с категориями, и это компенсирует то, что
+       hero fade-in мы там убрали. На десктопе — 1500мс, hero fade-in остаётся. */
+    var MIN_PRELOADER_MS = window.matchMedia('(max-width: 600px)').matches ? 1800 : 1500;
     var startTime = performance.now();
     var exited = false;
 
@@ -4456,8 +4456,8 @@ window.addEventListener('resize', ()=>{
       window.addEventListener('load', tryExit);
       /* Жёсткий fallback на случай если 'load' никогда не сработает
          (заблокированный сторонний скрипт может подвесить window.load).
-         2500мс = MIN 1500 + 1000мс запаса. */
-      setTimeout(exitPreloader, 2500);
+         3000мс = MIN 1800 (mobile) + 1200мс запаса; для десктопа с MIN 1500 запас 1500. */
+      setTimeout(exitPreloader, 3000);
     }
   })();
 
@@ -4565,7 +4565,20 @@ window.addEventListener('resize', ()=>{
     }
     var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (reducedMotion) {
+    // На мобиле (≤600px) hero fade-in не запускаем. Это была главная причина почему
+    // Lighthouse считал LCP = 4.7с (4 секунды анимации opacity 0.05 → 1 на h1).
+    // ВАЖНО: hero-элементы скрыты через CSS (`opacity: 0`), поэтому ПРОСТОГО return
+    // недостаточно — нужно явно показать. Lighthouse увидит контент мгновенно.
+    // На десктопе анимация остаётся как была — там Lighthouse и так в зелёной зоне.
+    var isMobile = window.matchMedia('(max-width: 600px)').matches;
+
+    if (reducedMotion || isMobile) {
+      // Показываем все hero-элементы сразу, без анимации
+      var heroEls = ['#hero-title','#hero-label','#hero-meta','#hero-desc','.hero-opencall-hint','.hero-buttons','#scroll-hint'];
+      heroEls.forEach(function(sel) {
+        var el = document.querySelector(sel);
+        if (el) el.style.opacity = '1';
+      });
       return;
     }
 
