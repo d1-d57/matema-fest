@@ -1358,22 +1358,35 @@
       position: fixed;
       pointer-events: none;
       z-index: 8;
-      padding: 5px 10px;
-      background: rgba(22, 20, 15, 0.92);
-      border: 1px solid rgba(200, 154, 61, 0.35);
-      border-radius: 4px;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      font-family: var(--font-display);
-      font-style: italic;
-      font-size: clamp(13px, 1vw, 15px);
-      color: var(--color-bg-light);
-      white-space: nowrap;
+      padding: 14px 18px;
+      background: rgba(22, 20, 15, 0.95);
+      border: 1px solid rgba(200, 154, 61, 0.45);
+      border-radius: 6px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      max-width: 320px;
       opacity: 0;
-      transform: translate(-50%, -100%) translateY(-12px);
-      transition: opacity 160ms ease;
+      transform: translate(-50%, -100%) translateY(-14px);
+      transition: opacity 200ms ease;
     }
     .tracks-hover-tip.visible { opacity: 1; }
+    .tracks-hover-tip-title {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(18px, 1.6vw, 22px);
+      color: var(--color-accent);
+      margin: 0 0 6px 0;
+      line-height: 1.15;
+    }
+    .tracks-hover-tip-desc {
+      font-family: var(--font-body);
+      font-size: clamp(12px, 1vw, 13px);
+      line-height: 1.45;
+      color: var(--color-bg-light);
+      opacity: 0.85;
+      margin: 0;
+    }
+    .tracks-hover-tip-desc:empty { display: none; }
 
     /* ============================================
        MAP MODAL — карта залов клуба, открывается из программы
@@ -4181,7 +4194,10 @@ window.addEventListener('resize', ()=>{
 
   <!-- Hover-tooltip над Аполлонием. Управляется из IIFE анимации:
        при изменении hoveredCircle обновляется text и position. -->
-  <div class="tracks-hover-tip" id="tracks-hover-tip" aria-hidden="true"></div>
+  <div class="tracks-hover-tip" id="tracks-hover-tip" aria-hidden="true">
+    <div class="tracks-hover-tip-title" id="tracks-hover-tip-title"></div>
+    <div class="tracks-hover-tip-desc"  id="tracks-hover-tip-desc"></div>
+  </div>
 
   <!-- Map modal — схема залов клуба Лахесис. Открывается из программы
        и расписания через [data-open-map] кнопки. Esc / клик по фону /
@@ -5069,36 +5085,104 @@ window.addEventListener('resize', ()=>{
       }
     }
 
+    // labelForEvent — что показывать в круге события.
+    // Логика по категориям:
+    //   popsci  — имя + тема лекции (если тема не повторяет фамилию)
+    //   music   — только имя музыканта
+    //   workshop — название мастерской + имя ведущего во второй строке
+    //   art / experiment / social / cinema — только название
+    //   placeholder или пустое событие — TBA
+    function labelForEvent(ev) {
+      if (!ev) return { line1: 'TBA', line2: '' };
+      const isEmpty = ev.status === 'placeholder' || (!ev.title && !ev.speaker);
+      if (isEmpty) return { line1: 'TBA', line2: '' };
+
+      const cat = ev.category;
+      let line1 = '', line2 = '';
+      if (cat === 'popsci') {
+        line1 = ev.speaker || ev.title || 'TBA';
+        if (ev.speaker && ev.title) {
+          // Не показываем title, если он дублирует имя: "Лекция X" или
+          // содержит основу фамилии (slice(0,-2) — учёт русских падежей,
+          // "Райгородский" → "Райгородск" → находится в "Райгородского").
+          const titleL = ev.title.toLowerCase().trim();
+          const lastName = ev.speaker.split(' ').pop().toLowerCase();
+          const stem = lastName.length > 5 ? lastName.slice(0, -2) : lastName;
+          if (!titleL.startsWith('лекция ') && !titleL.includes(stem)) {
+            line2 = ev.title;
+          }
+        }
+      } else if (cat === 'music') {
+        line1 = ev.speaker || ev.title || 'TBA';
+      } else if (cat === 'workshop') {
+        line1 = ev.title || ev.speaker || 'TBA';
+        if (ev.speaker && ev.title) line2 = ev.speaker;
+      } else {
+        line1 = ev.title || ev.speaker || 'TBA';
+      }
+      return { line1, line2 };
+    }
+
+    // Подгонка fontSize под ширину круга: уменьшаем пока не вписывается.
+    function fitFontSize(text, maxFontSize, minFontSize, maxWidth) {
+      let size = maxFontSize;
+      while (size > minFontSize) {
+        ctx.font = `italic ${size}px 'Cormorant Garamond', Georgia, serif`;
+        if (ctx.measureText(text).width <= maxWidth) break;
+        size -= 1;
+      }
+      return size;
+    }
+
     // Подпись события на внутреннем круге при зуме внутрь категории.
-    // На внешнем уровне рисует drawCircleAt (он использует c.tag = название категории).
-    // Здесь мы рисуем event.title или event.speaker внутри тех же позиций после
-    // того как зум привёл нас в категорию — нашли event по (catId, apollo_slot).
+    // Шрифт крупный — подбирается под ширину каждого конкретного круга.
     function drawNestedEventLabel(c, wx, wy, wr, alpha, catId) {
       if (!c.apollo_slot) return;
       const ev = eventsByCatAndSlot[catId + ':' + c.apollo_slot];
-      if (!ev) return;
+
+      // На базовых позициях (big-*, mid-*, center) показываем что-то всегда — TBA если нет события.
+      // На "ушках" (ear-*) — только если событие явно есть.
+      const isBasePos = !c.apollo_slot.startsWith('ear-');
+      if (!ev && !isBasePos) return;
+
       if (!isVisibleInViewport(wx, wy, wr)) return;
       const s = worldToScreen(wx, wy);
       const rPx = wr * s.scale;
-      if (rPx < 14) return;  // слишком мелкий круг — текст не уместится
+      if (rPx < 16) return;
 
-      // Размер шрифта: меньше чем у внешних меток (длинные названия, нужно вместить)
-      let fontSize;
-      if (c.tier === 0)      fontSize = Math.min(22, Math.max(11, rPx * 0.16));
-      else if (c.tier === 1) fontSize = Math.min(17, Math.max(10, rPx * 0.18));
-      else                   fontSize = Math.min(13, Math.max(8,  rPx * 0.20));
+      const labels = labelForEvent(ev);
+      if (!labels.line1) return;
 
-      ctx.font = `italic ${fontSize}px 'Cormorant Garamond', Georgia, 'Times New Roman', serif`;
-      ctx.fillStyle = `rgba(${COLOR_TEXT}, ${0.9 * alpha})`;
+      const maxWidth = rPx * 1.7;  // диаметр с небольшим запасом по бокам
+      let maxFont, minFont;
+      if (c.tier === 0)      { maxFont = 38; minFont = 13; }
+      else if (c.tier === 1) { maxFont = 28; minFont = 11; }
+      else                   { maxFont = 18; minFont = 9;  }
+
+      const hasTwoLines = !!labels.line2;
+      if (hasTwoLines) { maxFont = Math.round(maxFont * 0.72); }
+
+      const size1 = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
+      const size2 = hasTwoLines
+        ? fitFontSize(labels.line2, Math.round(size1 * 0.78), minFont, maxWidth)
+        : 0;
+
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // Что показываем: speaker если есть (Гельфанд короче чем «Иерархия бесконечностей»),
-      // иначе title. Для placeholder — приглушённое многоточие.
-      let label;
-      if (ev.status === 'placeholder') label = '…';
-      else label = ev.speaker || ev.title || '';
-      ctx.fillText(label, s.px, s.py);
+      if (hasTwoLines) {
+        const gap = size1 * 0.6;
+        ctx.font = `italic ${size1}px 'Cormorant Garamond', Georgia, serif`;
+        ctx.fillStyle = `rgba(${COLOR_TEXT}, ${0.95 * alpha})`;
+        ctx.fillText(labels.line1, s.px, s.py - gap);
+        ctx.font = `italic ${size2}px 'Cormorant Garamond', Georgia, serif`;
+        ctx.fillStyle = `rgba(${COLOR_TEXT}, ${0.7 * alpha})`;
+        ctx.fillText(labels.line2, s.px, s.py + gap);
+      } else {
+        ctx.font = `italic ${size1}px 'Cormorant Garamond', Georgia, serif`;
+        ctx.fillStyle = `rgba(${COLOR_TEXT}, ${0.95 * alpha})`;
+        ctx.fillText(labels.line1, s.px, s.py);
+      }
     }
 
     // === Главный рендер ===
@@ -5178,11 +5262,51 @@ window.addEventListener('resize', ()=>{
     let hoveredCircle = null;
     let needsRedraw = true;
 
-    // Анимация рисования закончилась — можно начинать взаимодействовать
-    function isInteractive() { return progress >= 1; }
+    // Анимация рисования закончилась — можно начинать взаимодействовать.
+    // Не ждём progress=1 (полная анимация 18 секунд, в конце дорисовывается
+    // декоративная мелочь). Открываем клики как только закруглился последний
+    // кликабельный круг (3 крупных + 3 средних + центр) — это происходит
+    // примерно на 50–70% от общей длительности.
+    const INTERACTIVE_THRESHOLD = clickableCircles.reduce(
+      (m, c) => Math.max(m, (c.drawEnd != null ? c.drawEnd : 1)), 0
+    );
+    function isInteractive() { return progress >= INTERACTIVE_THRESHOLD; }
 
     function findHovered(mx, my) {
       if (!isInteractive()) return null;
+
+      // В зуме — ищем внутренние круги с событиями (только когда зум-анимация
+      // не идёт; во время transition взаимодействие гасим).
+      if (zoomedCircle && !zoomActive) {
+        const px = zoomedCircle.x;
+        const py = zoomedCircle.y;
+        const pr = Math.abs(zoomedCircle.r);
+        const catId = tagToCatId[zoomedCircle.tag];
+        if (catId) {
+          for (const c of CIRCLES) {
+            if (c.sign === -1) continue;
+            if (!c.apollo_slot) continue;
+            const ev = eventsByCatAndSlot[catId + ':' + c.apollo_slot];
+            if (!ev) continue;  // кликабельны только круги с подтверждённым событием
+            const wx = px + c.x * pr;
+            const wy = py + c.y * pr;
+            const wr = Math.abs(c.r) * pr;
+            const s = worldToScreen(wx, wy);
+            const rPx = wr * s.scale;
+            const dx = mx - s.px, dy = my - s.py;
+            if (dx*dx + dy*dy <= rPx*rPx) {
+              return {
+                tier: c.tier, apollo_slot: c.apollo_slot,
+                _wx: wx, _wy: wy, _wr: wr,
+                _event: ev, _isNested: true
+              };
+            }
+          }
+        }
+        return null;
+      }
+
+      // Верхний уровень
       for (const c of clickableCircles) {
         const s = worldToScreen(c.x, c.y);
         const rPx = Math.abs(c.r) * s.scale;
@@ -5192,18 +5316,41 @@ window.addEventListener('resize', ()=>{
       return null;
     }
 
-    // Hover-tooltip с названием круга. Полезен когда видны частичные
-    // обводки соседних кругов в зуме — пользователь хочет узнать
-    // что это, не кликая. Tip — fixed-элемент в DOM (#tracks-hover-tip),
-    // скрытый по умолчанию через opacity: 0.
-    const hoverTip = document.getElementById('tracks-hover-tip');
+    // Hover-tooltip — крупная плашка с заголовком + описанием.
+    // На верхнем уровне берёт SECTION_INFO[категории],
+    // в зуме — данные конкретного события.
+    const hoverTip      = document.getElementById('tracks-hover-tip');
+    const hoverTipTitle = document.getElementById('tracks-hover-tip-title');
+    const hoverTipDesc  = document.getElementById('tracks-hover-tip-desc');
 
     function updateHoverTip(e) {
       if (!hoverTip) return;
-      if (hoveredCircle && hoveredCircle.tag) {
-        hoverTip.textContent = hoveredCircle.tag;
+      let title = '', desc = '';
+
+      if (hoveredCircle) {
+        if (hoveredCircle._isNested && hoveredCircle._event) {
+          // Внутренний круг: показываем event
+          const ev = hoveredCircle._event;
+          const labels = labelForEvent(ev);
+          title = labels.line1 || '';
+          if (ev.description) desc = ev.description;
+          else if (labels.line2) desc = labels.line2;
+          else if (ev.status === 'placeholder' || ev.status === 'tentative') {
+            desc = 'Подробности уточняются.';
+          }
+        } else if (hoveredCircle.tag) {
+          // Верхний уровень: категория
+          const info = SECTION_INFO[hoveredCircle.tag];
+          if (info) { title = info.title; desc = info.desc; }
+          else      { title = hoveredCircle.tag; }
+        }
+      }
+
+      if (title) {
+        hoverTipTitle.textContent = title;
+        hoverTipDesc.textContent  = desc;
         hoverTip.style.left = e.clientX + 'px';
-        hoverTip.style.top = e.clientY + 'px';
+        hoverTip.style.top  = e.clientY + 'px';
         hoverTip.classList.add('visible');
       } else {
         hoverTip.classList.remove('visible');
@@ -5305,15 +5452,52 @@ window.addEventListener('resize', ()=>{
       startZoom(ROOT_VIEWPORT, null);
     }
 
+    // Простой XSS-escape на случай странных символов в JSON
+    function escHtml(s) {
+      return String(s).replace(/[<>&"']/g, c => ({
+        '<':'&lt;', '>':'&gt;', '&':'&amp;', '"':'&quot;', "'":'&#39;'
+      }[c]));
+    }
+
+    // Показать данные события в правой info-panel (при клике на внутренний круг)
+    function showEventInPanel(ev) {
+      const titleEl = document.getElementById('tracks-info-title');
+      const descEl  = document.getElementById('tracks-info-desc');
+      if (!titleEl || !descEl) return;
+
+      const labels = labelForEvent(ev);
+      titleEl.textContent = labels.line1 || (ev.speaker || ev.title || 'TBA');
+
+      let html = '';
+      // Если у нас полный title и он отличается от заголовка — добавим как подзаголовок.
+      // Кроме music: там сознательно показываем только имя.
+      if (ev.title && ev.title !== titleEl.textContent && ev.category !== 'music') {
+        html += '<p style="font-style:italic;opacity:0.85;margin:0 0 0.6em 0;">'
+             + escHtml(ev.title) + '</p>';
+      }
+      if (ev.description) {
+        html += '<p style="margin:0;">' + escHtml(ev.description) + '</p>';
+      } else if (ev.status === 'placeholder' || ev.status === 'tentative') {
+        html += '<p style="opacity:0.7;font-style:italic;margin:0;">Подробности уточняются.</p>';
+      }
+      descEl.innerHTML = html;
+    }
+
     cv.addEventListener('click', (e) => {
       if (zoomActive || !isInteractive()) return;
       const rect = cv.getBoundingClientRect();
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
       const found = findHovered(mx, my);
-      if (found && found !== zoomedCircle) {
+
+      if (found && found._isNested && found._event) {
+        // Клик на внутренний круг с событием: анонс справа, без зума
+        showEventInPanel(found._event);
+      } else if (found && !zoomedCircle) {
+        // Верхний уровень: зум внутрь категории
         zoomIntoCircle(found);
       } else if (zoomedCircle && !found) {
+        // В зуме, мимо кругов: zoomOut
         zoomOut();
       }
     });
@@ -5327,7 +5511,11 @@ window.addEventListener('resize', ()=>{
       const mx = t.clientX - rect.left;
       const my = t.clientY - rect.top;
       const found = findHovered(mx, my);
-      if (found && found !== zoomedCircle) {
+
+      if (found && found._isNested && found._event) {
+        e.preventDefault();
+        showEventInPanel(found._event);
+      } else if (found && !zoomedCircle) {
         e.preventDefault();
         zoomIntoCircle(found);
       } else if (zoomedCircle && !found) {
