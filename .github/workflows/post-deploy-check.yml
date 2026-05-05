@@ -26,7 +26,7 @@ jobs:
   pagespeed:
     runs-on: ubuntu-latest
     # Don't loop on our own commits.
-    if: ${{ !contains(github.event.head_commit.message, 'chore: post-deploy pagespeed report') }}
+    if: contains(github.event.head_commit.message, 'chore: post-deploy pagespeed report') == false
     steps:
       - uses: actions/checkout@v4
 
