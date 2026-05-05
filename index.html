@@ -25,14 +25,22 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔺</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+  <!-- preconnect для виджетов которые подгружаются по клику — ставит DNS+TLS заранее,
+       чтобы при первом клике на «Открыть карту»/«Билеты» не было +300мс задержки. -->
+  <link rel="preconnect" href="https://api-maps.yandex.ru" crossorigin>
+  <link rel="preconnect" href="https://timepad.ru" crossorigin>
+  <!-- Шрифты: уменьшено количество весов Cormorant с 9 до 4 (400/500 ital и regular)
+       и JetBrains Mono с 2 до 1. Это сокращает количество woff2 файлов для загрузки
+       примерно в 3 раза, экономя FCP/LCP на медленных мобильных. Если визуально
+       какой-то заголовок будет тоньше/толще — вернём нужные веса по одному. -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
 
-  <!-- Lenis smooth scroll -->
+  <!-- Lenis smooth scroll и GSAP — defer вместо синхронной загрузки.
+       Defer ждёт парсинг HTML (~250мс), потом грузит и выполняет в порядке объявления.
+       Раньше эти 35 КиБ блокировали FCP на 2.8 секунды. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.3.21/dist/lenis.css">
-  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.21/dist/lenis.min.js"></script>
-
-  <!-- GSAP (core only — no ScrollTrigger) -->
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.21/dist/lenis.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
 
   <style>
     /* ============================================
@@ -1635,6 +1643,44 @@
       width: 100% !important;
       border: none;
       display: block;
+    }
+    /* Кнопка lazy-загрузки внутри карточки — занимает всю площадь .cta-card-widget,
+       выглядит как часть карточки, при наведении/фокусе подсвечивается амбером. */
+    .cta-lazy-loader {
+      width: 100%;
+      height: 100%;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 24px;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 500;
+      font-size: clamp(18px, 2vw, 24px);
+      color: var(--color-bg-dark);
+      transition: background 220ms ease, color 220ms ease;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .cta-lazy-loader:hover,
+    .cta-lazy-loader:focus-visible {
+      background: rgba(200, 154, 61, 0.12);
+      color: var(--color-accent);
+      outline: none;
+    }
+    .cta-lazy-loader-hint {
+      font-family: var(--font-body);
+      font-style: normal;
+      font-size: clamp(11px, 0.85vw, 13px);
+      letter-spacing: 0.05em;
+      opacity: 0.55;
+      font-weight: 400;
     }
     /* Кастомный скроллбар внутри карточки — деликатный */
     .cta-card-widget::-webkit-scrollbar { width: 6px; }
@@ -4155,25 +4201,35 @@ window.addEventListener('resize', ()=>{
       <!-- Виджет TimePad + Карта Яндекс — две карточки рядом -->
       <div class="cta-action-grid reveal">
 
-        <!-- Виджет TimePad — регистрация на событие -->
+        <!-- Виджет TimePad — регистрация на событие.
+             Lazy-load: пока пользователь не нажал «Открыть форму регистрации»,
+             скрипт виджета (537мс CPU + 24 КиБ устаревшего JS) не подгружается.
+             Это экономит TBT для первой шторки. -->
         <div class="cta-card" id="cta-timepad-widget">
           <div class="cta-card-header">
             <span class="cta-card-label">Билеты</span>
             <span class="cta-card-title">Купить на TimePad</span>
           </div>
           <div class="cta-card-widget" data-lenis-prevent>
-            <script type="text/javascript" async="async" defer="defer" charset="UTF-8" src="https://timepad.ru/js/tpwf/loader/min/loader.js" data-timepad-customized="380810" data-twf2s-event--id="3952401" data-timepad-widget-v2="event_register"></script>
+            <button type="button" class="cta-lazy-loader" data-load-timepad>
+              Открыть форму регистрации
+            </button>
           </div>
         </div>
 
-        <!-- Виджет Яндекс Карт — две точки на Чистопрудном бульваре -->
+        <!-- Виджет Яндекс Карт — две точки на Чистопрудном бульваре.
+             Lazy-load: 1284мс CPU + 269 КиБ JS не нужны пока пользователь не нажал.
+             После клика подгружается полноценная интерактивная Яндекс-карта. -->
         <div class="cta-card" id="cta-map-widget">
           <div class="cta-card-header">
             <span class="cta-card-label">Где это</span>
             <span class="cta-card-title">Чистопрудный 23–25</span>
           </div>
           <div class="cta-card-widget" data-lenis-prevent>
-            <script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A9a6fc8dcf68c5551839d2646291ff443d3f14c9a8a00576169c77fe3ade51188&amp;width=520&amp;height=400&amp;lang=ru_RU&amp;scroll=true"></script>
+            <button type="button" class="cta-lazy-loader" data-load-yandex-map>
+              Открыть карту
+              <span class="cta-lazy-loader-hint">Чистые пруды, м. Чистопрудный бульвар</span>
+            </button>
           </div>
         </div>
 
@@ -4488,6 +4544,16 @@ window.addEventListener('resize', ()=>{
      HERO — Text-split word animation
      ============================================ */
   function startHeroAnimations() {
+    // Защита: если gsap не загрузился (CDN недоступен / медленная сеть после defer)
+    // — показываем все элементы сразу без анимации. На функциональность не влияет.
+    if (typeof gsap === 'undefined') {
+      var elsToShow = ['#hero-title','#hero-label','#hero-meta','#hero-desc','.hero-opencall-hint','.hero-buttons','#scroll-hint'];
+      elsToShow.forEach(function(sel) {
+        var el = document.querySelector(sel);
+        if (el) el.style.opacity = '1';
+      });
+      return;
+    }
     var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (reducedMotion) {
@@ -4788,6 +4854,64 @@ window.addEventListener('resize', ()=>{
     resize();
     window.addEventListener('resize', resize);
     render();
+  })();
+
+  /* ============================================
+     LAZY-LOAD виджетов CTA-секции (Timepad, Yandex Maps)
+     ============================================ */
+  (function() {
+    // Динамическое подключение скрипта виджета по клику.
+    // Используем createElement чтобы избежать HTML-парсер gotcha с закрывающим
+     // </'+'script> внутри строки. После подгрузки виджет сам себя инициализирует
+    // в данном контейнере.
+    function loadWidget(button, src, dataAttrs) {
+      var wrapper = button.parentNode;
+      if (!wrapper) return;
+      // Индикатор загрузки
+      button.disabled = true;
+      button.innerHTML = '<span style="opacity:0.5;font-style:italic;">Загружается…</span>';
+      requestAnimationFrame(function() {
+        // Удалить кнопку
+        wrapper.innerHTML = '';
+        // Создать новый script-тег с нужными атрибутами
+        var s = document.createElement('script');
+        s.type = 'text/javascript';
+        s.charset = 'utf-8';
+        s.async = true;
+        s.src = src;
+        if (dataAttrs) {
+          for (var k in dataAttrs) {
+            if (Object.prototype.hasOwnProperty.call(dataAttrs, k)) {
+              s.setAttribute(k, dataAttrs[k]);
+            }
+          }
+        }
+        wrapper.appendChild(s);
+      });
+    }
+
+    var timepadBtn = document.querySelector('[data-load-timepad]');
+    if (timepadBtn) {
+      timepadBtn.addEventListener('click', function() {
+        loadWidget(timepadBtn, 'https://timepad.ru/js/tpwf/loader/min/loader.js', {
+          'data-timepad-customized': '380810',
+          'data-twf2s-event--id': '3952401',
+          'data-timepad-widget-v2': 'event_register'
+        });
+      });
+    }
+
+    var mapBtn = document.querySelector('[data-load-yandex-map]');
+    if (mapBtn) {
+      mapBtn.addEventListener('click', function() {
+        loadWidget(mapBtn,
+          'https://api-maps.yandex.ru/services/constructor/1.0/js/' +
+          '?um=constructor%3A9a6fc8dcf68c5551839d2646291ff443d3f14c9a8a00576169c77fe3ade51188' +
+          '&width=520&height=400&lang=ru_RU&scroll=true',
+          null
+        );
+      });
+    }
   })();
 
   /* ============================================
