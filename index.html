@@ -39,8 +39,8 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
 
   <!-- Lenis smooth scroll и GSAP — defer вместо синхронной загрузки.
-       Defer ждёт парсинг HTML (~250мс), потом грузит и выполняет в порядке объявления.
-       Раньше эти 35 КиБ блокировали FCP на 2.8 секунды. -->
+       Lenis обслуживает только программную навигацию (стрелки клавиатуры,
+       клики по dot-nav сбоку). Wheel мыши идёт нативно (smoothWheel: false). -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.3.21/dist/lenis.css">
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.21/dist/lenis.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
@@ -87,10 +87,6 @@
        ============================================ */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { }
-    /* Lenis smooth scroll compatibility */
-    html.lenis, html.lenis body { height: auto; }
-    .lenis.lenis-smooth { scroll-behavior: auto !important; }
-    .lenis.lenis-stopped { overflow: hidden; }
     body {
       font-family: var(--font-body);
       font-size: var(--fs-body);
@@ -4255,7 +4251,7 @@ window.addEventListener('resize', ()=>{
         <!-- TimePad: вся карточка — единая большая кнопка с крупной фразой по
              центру, без отдельной шапки. Скрипт виджета подгружается lazy по клику. -->
         <div class="cta-card cta-card--button" id="cta-timepad-widget">
-          <div class="cta-card-widget" data-lenis-prevent>
+          <div class="cta-card-widget">
             <button type="button" class="cta-lazy-loader" data-load-timepad>
               <span class="cta-lazy-main">Купить билет</span>
               <span class="cta-lazy-sub">на TimePad</span>
@@ -4266,7 +4262,7 @@ window.addEventListener('resize', ()=>{
         <!-- Яндекс-карта: вся карточка — единая большая кнопка. Виджет 269 КиБ JS
              подгружается lazy по клику. -->
         <div class="cta-card cta-card--button" id="cta-map-widget">
-          <div class="cta-card-widget" data-lenis-prevent>
+          <div class="cta-card-widget">
             <button type="button" class="cta-lazy-loader" data-load-yandex-map>
               <span class="cta-lazy-main">Открыть карту</span>
               <span class="cta-lazy-sub">Чистые пруды, м. Чистопрудный бульвар</span>
@@ -4400,27 +4396,29 @@ window.addEventListener('resize', ()=>{
   var lenis;
   function initLenis() {
     if (typeof Lenis === 'undefined') {
-      console.warn('Lenis not loaded — smooth scroll disabled');
+      console.warn('Lenis not loaded — programmatic scroll will use native fallback');
       return;
     }
     lenis = new Lenis({
-      lerp: 0.1,             // дефолт Lenis — отзывчивая интерполяция
-      wheelMultiplier: 1.0,  // дефолт — было 0.7, на мышиной прокрутке выглядело «вязко»
-      smoothTouch: false     // тачпад идёт нативно (на ноуте всегда было хорошо)
+      smoothWheel: false,    // wheel мыши идёт нативно — пользователи мыши жаловались на «вязкость»
+      smoothTouch: false     // тачпад/тач-экраны идут нативно (там и так есть inertia)
     });
-
-    /* Drive Lenis from GSAP ticker for synchronized animation */
+    /* Lenis всё ещё нужен для программной навигации (стрелки клавиатуры,
+       клики по dot-nav сбоку): lenis.scrollTo с кастомным easing/duration
+       даёт более «киношный» переход чем нативный scroll-behavior:smooth.
+       RAF-цикл всё равно крутится — но без вмешательства в wheel. */
     gsap.ticker.add(function(time) {
       lenis.raf(time * 1000);
     });
     gsap.ticker.lagSmoothing(0);
+  }
 
-    /* Снэп секций отключён намеренно. Раньше после остановки скролла
-       (debounce 250ms) код тащил viewport к ближайшей секции — но мелкие
-       движения тачпада воспринимались как «остановка», и пользователя
-       дёргало назад. Естественный плавный скролл лучше навязчивого snap.
-       Переключение секций по стрелкам и клавишам работает через keyboard
-       navigation ниже (lenis.scrollTo) и не зависит от snap-логики. */
+  // Lenis init после полной загрузки страницы (как было раньше) —
+  // нужен загруженный GSAP для ticker'а
+  if (document.readyState === 'complete') {
+    initLenis();
+  } else {
+    window.addEventListener('load', initLenis);
   }
 
   /* ============================================
@@ -4473,7 +4471,6 @@ window.addEventListener('resize', ()=>{
       preloader.classList.add('exit');
       setTimeout(function() {
         preloader.style.display = 'none';
-        initLenis();
         startHeroAnimations();
         initSectionAnimations();
         document.getElementById('progress-bar').classList.add('visible');
@@ -4806,7 +4803,7 @@ window.addEventListener('resize', ()=>{
     if (!bar) return;
 
     // Кеш docHeight: было forced layout 100мс на каждое scroll-событие, потому что
-    // document.body.scrollHeight — layout-чтение, а Lenis даёт scroll плотно.
+    // document.body.scrollHeight — layout-чтение, а scroll-события идут плотно.
     // Пересчитываем только при resize и после load (когда DOM устаканился).
     var cachedDocHeight = 0;
     function recomputeDocHeight() {
