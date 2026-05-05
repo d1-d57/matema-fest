@@ -1,14 +1,9 @@
 name: post-deploy-check
 
-# Run PageSpeed Insights against the live Pages site after each meaningful
-# push to main, and commit the report under .pagespeed/.
-#
-# Required secret: PAGESPEED_API_KEY  (Settings → Secrets and variables →
-# Actions → New repository secret).
-
 on:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - 'index.html'
       - 'assets/**'
@@ -18,19 +13,13 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: post-deploy-check
-  cancel-in-progress: false
-
 jobs:
   pagespeed:
     runs-on: ubuntu-latest
-    # Don't loop on our own commits.
-    if: contains(github.event.head_commit.message, 'chore: post-deploy pagespeed report') == false
     steps:
       - uses: actions/checkout@v4
 
-      - name: Wait 90s for GitHub Pages to redeploy
+      - name: Wait for GitHub Pages redeploy
         run: sleep 90
 
       - name: Run pagespeed.sh
@@ -39,7 +28,6 @@ jobs:
         run: |
           if [ -z "${PAGESPEED_API_KEY:-}" ]; then
             echo "::error::PAGESPEED_API_KEY secret is not set."
-            echo "Add it under Settings → Secrets and variables → Actions."
             exit 1
           fi
           chmod +x scripts/pagespeed.sh
