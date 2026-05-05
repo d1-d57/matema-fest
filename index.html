@@ -1594,10 +1594,13 @@
       line-height: 1.55;
     }
 
-    /* CTA action grid: виджет TimePad + карта Яндекс */
+    /* CTA action grid: виджет TimePad + карта Яндекс.
+       align-items:start — карточки не вытягиваются до одинаковой высоты,
+       каждая держит натуральную высоту своего содержимого после загрузки. */
     .cta-action-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      align-items: start;
       gap: clamp(20px, 2.5vw, 32px);
       width: 100%;
       max-width: 1100px;
@@ -1608,19 +1611,31 @@
     }
 
     .cta-card {
-      background: var(--color-bg-light);
-      color: var(--color-bg-dark);
-      border: 1px solid rgba(22, 20, 15, 0.85);
-      border-radius: 4px;
+      background: transparent;
+      color: var(--color-bg-light);
+      border: 1.5px solid rgba(200, 154, 61, 0.40);
+      border-radius: 6px;
       padding: 0;
-      min-height: 380px;
-      max-height: 440px;
       display: flex;
       flex-direction: column;
       text-align: left;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 6px 20px rgba(22, 20, 15, 0.18);
+      transition: border-color 280ms ease, background 280ms ease;
+    }
+    /* Когда внутри виджет — добавляем светлый фон чтобы iframe был читаемым */
+    .cta-card.cta-card--loaded {
+      background: var(--color-bg-light);
+      color: var(--color-bg-dark);
+      border-color: rgba(200, 154, 61, 0.55);
+    }
+    /* После загрузки виджета карточка растёт под содержимое iframe */
+    #cta-timepad-widget.cta-card--loaded { min-height: 720px; }
+    #cta-timepad-widget.cta-card--loaded .cta-card-widget { min-height: 720px; }
+    #cta-map-widget.cta-card--loaded { min-height: 400px; }
+    #cta-map-widget.cta-card--loaded .cta-card-widget { min-height: 400px; }
+    #cta-map-widget.cta-card--loaded .cta-card-widget iframe {
+      width: 100% !important; height: 100% !important; min-height: 400px;
     }
     .cta-card-header {
       flex-shrink: 0;
@@ -1644,36 +1659,40 @@
       display: block;
     }
     /* Карточка-кнопка: вся карточка работает как единая большая кнопка.
-       Без шапки-плашки, текст по центру крупным шрифтом. */
+       Без шапки-плашки, текст по центру крупным шрифтом, в стиле страницы. */
     .cta-card--button {
-      min-height: 320px;
+      min-height: 280px;
     }
     .cta-card--button .cta-card-widget {
       display: flex;
       align-items: stretch;
       padding: 0;
+      background: transparent;
+    }
+    .cta-card--button:hover {
+      border-color: rgba(200, 154, 61, 0.85);
+      background: rgba(200, 154, 61, 0.04);
     }
     .cta-lazy-loader {
       width: 100%;
       height: 100%;
-      min-height: 320px;
+      min-height: 280px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 14px;
-      padding: 32px 24px;
+      gap: 12px;
+      padding: 36px 28px;
       background: transparent;
       border: 0;
       cursor: pointer;
-      color: var(--color-bg-dark);
-      transition: background 220ms ease, color 220ms ease;
+      color: var(--color-bg-light);
+      transition: color 220ms ease;
       text-align: center;
       line-height: 1.05;
     }
     .cta-lazy-loader:hover,
     .cta-lazy-loader:focus-visible {
-      background: rgba(200, 154, 61, 0.10);
       color: var(--color-accent);
       outline: none;
     }
@@ -1681,20 +1700,21 @@
       font-family: var(--font-display);
       font-style: italic;
       font-weight: 500;
-      font-size: clamp(36px, 4.5vw, 56px);
+      font-size: clamp(40px, 5.5vw, 64px);
       line-height: 1;
       display: block;
+      letter-spacing: -0.01em;
     }
     .cta-lazy-sub {
       font-family: var(--font-body);
       font-style: normal;
       font-weight: 400;
-      font-size: clamp(11px, 0.95vw, 14px);
-      letter-spacing: 0.18em;
+      font-size: clamp(11px, 0.95vw, 13px);
+      letter-spacing: 0.20em;
       text-transform: uppercase;
       opacity: 0.55;
       display: block;
-      margin-top: 2px;
+      margin-top: 6px;
     }
     /* Кастомный скроллбар внутри карточки — деликатный */
     .cta-card-widget::-webkit-scrollbar { width: 6px; }
@@ -4992,6 +5012,13 @@ window.addEventListener('resize', ()=>{
     function loadWidget(button, src, dataAttrs) {
       var wrapper = button.parentNode;
       if (!wrapper) return;
+      // Помечаем карточку как «с виджетом» — меняется фон, цвет рамки.
+      // Также убираем min-height «-button», чтобы карточка росла под содержимое iframe.
+      var card = wrapper.closest('.cta-card');
+      if (card) {
+        card.classList.add('cta-card--loaded');
+        card.classList.remove('cta-card--button');
+      }
       // Индикатор загрузки
       button.disabled = true;
       button.innerHTML = '<span style="opacity:0.5;font-style:italic;">Загружается…</span>';
