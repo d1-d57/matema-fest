@@ -2,21 +2,22 @@
 //
 // ЕДИНСТВЕННЫЙ источник правды о программе. Подключается синхронно через
 //     <script src="festival-data.js"></script>
-// в index.html и будет использоваться для админ-страницы.
+// в index.html и используется админ-страницей programmer.html.
 //
 // СТРУКТУРА:
 //   _meta          — версия, история изменений
 //   _howto         — правила редактирования (читай ПЕРЕД любыми правками)
-//   venues         — площадки (id → {display, short, note, apollo_label})
+//   venues         — площадки (id → {display, short, note, apollo_label, lanes})
 //   categories     — семь зафиксированных категорий
 //   subcategories  — для music/cinema/art (sub-уровень в Аполлонии)
 //   time_slots     — временные интервалы с адресом в папоротнике
 //   events         — список всех событий
+//   exhibits       — постоянные арт-объекты вне таймлайна (галерея, инсталляции, медиа-арт)
 //
 // КАК РЕДАКТИРОВАТЬ:
 //   - Меняй значения в объекте window.FESTIVAL_DATA.
 //   - Сохраняй валидный JS-синтаксис (двойные кавычки у строк, запятые между полями).
-//   - НЕ меняй id-поля площадок/категорий/событий — на них завязаны ссылки.
+//   - НЕ меняй id-поля площадок/категорий/событий — на них завязаны ссылки в index.html.
 //   - Display-поля (что видит пользователь) меняй свободно.
 //   - После правки достаточно перезагрузить страницу — никаких сборок не нужно.
 //
@@ -24,42 +25,52 @@
 
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-05-v3",
+    "version": "2026-05-06-v10",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.",
     "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.",
     "changes_v4": "Добавлен слой subcategories для music/cinema/art. venues получили поле apollo_label. events music/art получили поле subcategory.",
     "changes_v5": "Sub-cat music labels берутся из venue.display (Мандельброт/Кантор/Серпинский). music-rap (Влад Горелов) перемещён на courtyard.",
-    "changes_v6": "Кантор и Серпинский поменяны местами: big_bar=Серпинский (большой бар), courtyard=Кантор (двор). Mandelbrot (главная сцена) не тронут. _howto дополнен описанием поля subcategory."
+    "changes_v6": "Кантор и Серпинский поменяны местами: big_bar=Серпинский (большой бар), courtyard=Кантор (двор). Mandelbrot (главная сцена) не тронут. _howto дополнен описанием поля subcategory.",
+    "changes_v7": "Введён массив exhibits для постоянных арт-объектов вне таймлайна (галерея/инсталляции/медиа-арт). Добавлен interlude-слот на главной сцене 17:00-17:30. inst-plato перенесён из events в exhibits как галерея.",
+    "changes": " | v7: исправлена категоризация (Сидько→инсталляция, Андрей→experiment-станция). Добавлены: Зайцева (workshop), Алина (social), Явь подтверждено.",
+    "changes_v8": "mc-theremin → experiment без apollo_slot. media-yav привязан к app-28 (Анастасия Владычкина «Внутренняя спираль»).",
+    "changes_v9": "Добавлены slot-interlude-2 (18:30-19:00) и slot-interlude-3 (20:00-20:30) — потенциальные слоты для короткометражек между лекциями. Интерлюды теперь относятся к cinema-категории.",
+    "changes_v10": "Финальная версия для сегодняшнего deploy: добавлены Ася (Фрактальные витражи), TBA-плейсхолдеры на cinema-слоты, интерлюды и дискуссию. Размещены social-rosetka и social-tochka-nol. Восстановлены legacy id (inst-squirrel, inst-polyhedral, inst-plato, inst-fractal-projection) для совместимости с захардкоженным папоротником в index.html."
   },
   "venues": {
     "library": {
       "display": "Библиотека Достоевского",
       "short": "Библиотека",
-      "note": "Чистопрудный 23, малый зал"
+      "note": "Чистопрудный 23, малый зал",
+      "lanes": 1
     },
     "main_stage": {
       "display": "Мандельброт",
       "short": "Мандельброт",
       "note": "главная сцена клуба Лахесис",
-      "apollo_label": "главная сцена"
+      "apollo_label": "главная сцена",
+      "lanes": 1
     },
     "big_bar": {
       "display": "Серпинский",
       "short": "Серпинский",
       "note": "большой бар",
-      "apollo_label": "большой бар"
+      "apollo_label": "большой бар",
+      "lanes": 2
     },
     "small_bar": {
       "display": "Жюлиа",
       "short": "Жюлиа",
-      "note": "малый бар"
+      "note": "малый бар",
+      "lanes": 1
     },
     "courtyard": {
       "display": "Кантор",
       "short": "Кантор",
       "note": "общий двор",
-      "apollo_label": "двор"
+      "apollo_label": "двор",
+      "lanes": 1
     }
   },
   "categories": {
@@ -106,7 +117,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "14:00",
       "end": "15:00",
-      "label_for_zoom": "Михаил Евдокимов · 14:00"
+      "label_for_zoom": "Михаил Евдокимов · 14:00",
+      "tool_label": "Библиотека 1"
     },
     "slot-tarasevich": {
       "fern_address": [
@@ -114,7 +126,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "15:00",
       "end": "16:00",
-      "label_for_zoom": "Григорий Тарасевич · 15:00"
+      "label_for_zoom": "Григорий Тарасевич · 15:00",
+      "tool_label": "Библиотека 2"
     },
     "slot-gelfand": {
       "fern_address": [
@@ -123,7 +136,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "16:00",
       "end": "17:00",
-      "label_for_zoom": "Михаил Гельфанд · 16:00"
+      "label_for_zoom": "Михаил Гельфанд · 16:00",
+      "tool_label": "Лекция 1"
     },
     "slot-stations-1": {
       "fern_address": [
@@ -132,7 +146,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "16:30",
       "end": "17:30",
-      "label_for_zoom": "Первый блок · 16:30"
+      "label_for_zoom": "Первый блок · 16:30",
+      "tool_label": "Станции 1"
     },
     "slot-rajgorodski": {
       "fern_address": [
@@ -142,7 +157,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "17:30",
       "end": "18:30",
-      "label_for_zoom": "Андрей Райгородский · 17:30"
+      "label_for_zoom": "Андрей Райгородский · 17:30",
+      "tool_label": "Лекция 2"
     },
     "slot-stations-2": {
       "fern_address": [
@@ -152,7 +168,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "17:30",
       "end": "18:30",
-      "label_for_zoom": "Второй блок · 17:30"
+      "label_for_zoom": "Второй блок · 17:30",
+      "tool_label": "Станции 2"
     },
     "slot-skripchenko": {
       "fern_address": [
@@ -163,7 +180,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "19:00",
       "end": "20:00",
-      "label_for_zoom": "Александра Скрипченко · 19:00"
+      "label_for_zoom": "Александра Скрипченко · 19:00",
+      "tool_label": "Лекция 3"
     },
     "slot-stations-3": {
       "fern_address": [
@@ -174,19 +192,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "18:30",
       "end": "19:30",
-      "label_for_zoom": "Третий блок · 18:30"
-    },
-    "slot-stage-extra": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        2
-      ],
-      "start": "20:00",
-      "end": "22:00",
-      "label_for_zoom": "Главная сцена · 20:00"
+      "label_for_zoom": "Третий блок · 18:30",
+      "tool_label": "Станции 3"
     },
     "slot-stations-4": {
       "fern_address": [
@@ -198,7 +205,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "19:30",
       "end": "20:30",
-      "label_for_zoom": "Четвёртый блок · 19:30"
+      "label_for_zoom": "Четвёртый блок · 19:30",
+      "tool_label": "Станции 4"
     },
     "slot-music-1": {
       "fern_address": [
@@ -211,7 +219,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "22:00",
       "end": "23:00",
-      "label_for_zoom": "Главная сцена · 22:00"
+      "label_for_zoom": "Главная сцена · 22:00",
+      "tool_label": "Музыка 1"
     },
     "slot-music-2": {
       "fern_address": [
@@ -225,7 +234,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "23:00",
       "end": "00:00",
-      "label_for_zoom": "Главная сцена · 23:00"
+      "label_for_zoom": "Главная сцена · 23:00",
+      "tool_label": "Музыка 2"
     },
     "slot-music-3": {
       "fern_address": [
@@ -240,7 +250,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "00:00",
       "end": "01:00",
-      "label_for_zoom": "Главная сцена · 00:00"
+      "label_for_zoom": "Главная сцена · 00:00",
+      "tool_label": "Музыка 3"
     },
     "slot-music-4": {
       "fern_address": [
@@ -256,7 +267,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "01:00",
       "end": "02:00",
-      "label_for_zoom": "Главная сцена · 01:00"
+      "label_for_zoom": "Главная сцена · 01:00",
+      "tool_label": "Музыка 4"
     },
     "slot-music-parallel-1": {
       "fern_address": [
@@ -269,7 +281,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "22:00",
       "end": "23:00",
-      "label_for_zoom": "Малая сцена · 22:00"
+      "label_for_zoom": "Малая сцена · 22:00",
+      "tool_label": "Параллель 1"
     },
     "slot-music-parallel-2": {
       "fern_address": [
@@ -283,7 +296,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "23:00",
       "end": "00:00",
-      "label_for_zoom": "Малая сцена · 23:00"
+      "label_for_zoom": "Малая сцена · 23:00",
+      "tool_label": "Параллель 2"
     },
     "slot-music-parallel-3": {
       "fern_address": [
@@ -298,7 +312,8 @@ window.FESTIVAL_DATA = {
       ],
       "start": "00:00",
       "end": "01:00",
-      "label_for_zoom": "Малая сцена · 00:00"
+      "label_for_zoom": "Малая сцена · 00:00",
+      "tool_label": "Параллель 3"
     },
     "slot-music-parallel-4": {
       "fern_address": [
@@ -314,13 +329,84 @@ window.FESTIVAL_DATA = {
       ],
       "start": "01:00",
       "end": "02:00",
-      "label_for_zoom": "Малая сцена · 01:00"
+      "label_for_zoom": "Малая сцена · 01:00",
+      "tool_label": "Параллель 4"
     },
     "slot-dance": {
       "fern_address": "tail",
       "start": "02:00",
       "end": "04:00",
-      "label_for_zoom": "Танцпол · 02:00"
+      "label_for_zoom": "Танцпол · 02:00",
+      "tool_label": "Танцпол"
+    },
+    "slot-discussion": {
+      "fern_address": [
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "start": "20:30",
+      "end": "21:30",
+      "label_for_zoom": "Дискуссия · 20:30",
+      "tool_label": "Дискуссия"
+    },
+    "slot-cinema-1": {
+      "fern_address": [
+        3,
+        1
+      ],
+      "start": "19:00",
+      "end": "20:00",
+      "label_for_zoom": "Кино 1 · 19:00",
+      "tool_label": "Кино 1"
+    },
+    "slot-cinema-2": {
+      "fern_address": [
+        3,
+        2
+      ],
+      "start": "20:00",
+      "end": "21:00",
+      "label_for_zoom": "Кино 2 · 20:00",
+      "tool_label": "Кино 2"
+    },
+    "slot-interlude-1": {
+      "fern_address": [
+        1,
+        1,
+        4
+      ],
+      "start": "17:00",
+      "end": "17:30",
+      "label_for_zoom": "Перебив · 17:00",
+      "tool_label": "Короткометражки 1"
+    },
+    "slot-interlude-2": {
+      "fern_address": [
+        1,
+        1,
+        1,
+        4
+      ],
+      "start": "18:30",
+      "end": "19:00",
+      "label_for_zoom": "Перебив · 18:30",
+      "tool_label": "Короткометражки 2"
+    },
+    "slot-interlude-3": {
+      "fern_address": [
+        1,
+        1,
+        1,
+        1,
+        4
+      ],
+      "start": "20:00",
+      "end": "20:30",
+      "label_for_zoom": "Перебив · 20:00",
+      "tool_label": "Короткометражки 3"
     }
   },
   "events": [
@@ -360,9 +446,9 @@ window.FESTIVAL_DATA = {
       "speaker": "Бюро «Розетка»",
       "speaker_role": "образовательное бюро",
       "category": "social",
-      "apollo_slot": "big-3",
-      "venue": null,
-      "slot": null,
+      "apollo_slot": "mid-1",
+      "venue": "big_bar",
+      "slot": "slot-discussion",
       "duration_override": null,
       "description": "Программа знакомств и совместных активностей. Готовится бюро «Розетка». Время и место уточняются."
     },
@@ -451,21 +537,6 @@ window.FESTIVAL_DATA = {
       "description": "Рисуночные методики, которыми психиатрия выявляет психические расстройства. Самоподобие как клинический инструмент."
     },
     {
-      "id": "inst-squirrel",
-      "status": "confirmed",
-      "title": "Squirrel Institute",
-      "subtitle": null,
-      "speaker": "Антон Сидько",
-      "speaker_role": null,
-      "category": "art",
-      "apollo_slot": "big-1",
-      "venue": "big_bar",
-      "slot": "slot-stations-1",
-      "duration_override": null,
-      "description": "Фарфоровые цилиндры со свернувшимися в спирали белками — модель структуры канального белка. Лингвистическая петля «бЕлка / белкА» как ирония над автопереводом РАН в 2010 году.",
-      "subcategory": "installation"
-    },
-    {
       "id": "puzzle-engineering-origami",
       "status": "confirmed",
       "title": "Инженерное оригами",
@@ -500,27 +571,12 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Лора Заиконникова",
       "speaker_role": null,
-      "category": "workshop",
-      "apollo_slot": "mid-2",
+      "category": "experiment",
+      "apollo_slot": null,
       "venue": "small_bar",
       "slot": "slot-stations-2",
       "duration_override": null,
       "description": "Подойти к инструменту, поиграть руками в воздухе. К Петру Термену готовиться никак не нужно — просто можно попробовать."
-    },
-    {
-      "id": "inst-polyhedral",
-      "status": "confirmed",
-      "title": "Полиэдральное цветение",
-      "subtitle": null,
-      "speaker": "Максимилиан Роганов",
-      "speaker_role": null,
-      "category": "art",
-      "apollo_slot": "big-2",
-      "venue": "small_bar",
-      "slot": "slot-stations-2",
-      "duration_override": null,
-      "description": "Складные многогранники, разворачивающиеся как цветы. Геометрия, которая раскрывается во времени.",
-      "subcategory": "installation"
     },
     {
       "id": "puzzle-graphs-evolution",
@@ -537,47 +593,18 @@ window.FESTIVAL_DATA = {
       "description": "Интерактивная демонстрация — как графы растут, ломаются, перестраиваются. Игра с динамикой связей."
     },
     {
-      "id": "inst-plato",
+      "id": "mc-fractal-stained-glass",
       "status": "confirmed",
-      "title": "Артефакты Плато",
+      "title": "Фрактальные витражи",
       "subtitle": null,
-      "speaker": "Александр Солеев",
+      "speaker": "Ася",
       "speaker_role": null,
-      "category": "experiment",
-      "apollo_slot": "big-2",
+      "category": "workshop",
+      "apollo_slot": "mid-2",
       "venue": "big_bar",
       "slot": "slot-stations-3",
       "duration_override": null,
-      "description": "Мыльные плёнки на проволочных рамках — минимальные поверхности. Геометрия пузырей и пены, открытая Жозефом Плато."
-    },
-    {
-      "id": "inst-fractal-projection",
-      "status": "confirmed",
-      "title": "Миры фракталов",
-      "subtitle": null,
-      "speaker": "Андрей",
-      "speaker_role": null,
-      "category": "art",
-      "apollo_slot": "big-3",
-      "venue": "small_bar",
-      "slot": "slot-stations-3",
-      "duration_override": null,
-      "description": "Большие проекции с навигацией по множествам Мандельброта и Жюлиа. Можно подойти и побродить пальцем.",
-      "subcategory": "installation"
-    },
-    {
-      "id": "station-3-extra",
-      "status": "placeholder",
-      "title": "Станция 3.4",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "category": "experiment",
-      "apollo_slot": "mid-1",
-      "venue": "big_bar",
-      "slot": "slot-stations-3",
-      "duration_override": null,
-      "description": null
+      "description": "Витражи во фрактальной геометрии. Можно сделать свой и забрать."
     },
     {
       "id": "station-4-1",
@@ -601,35 +628,6 @@ window.FESTIVAL_DATA = {
       "speaker": null,
       "speaker_role": null,
       "category": "workshop",
-      "apollo_slot": "mid-3",
-      "venue": "small_bar",
-      "slot": "slot-stations-4",
-      "duration_override": null,
-      "description": null
-    },
-    {
-      "id": "station-4-3",
-      "status": "placeholder",
-      "title": "Станция 4.3",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "category": "art",
-      "apollo_slot": "center",
-      "venue": "courtyard",
-      "slot": "slot-stations-4",
-      "duration_override": null,
-      "description": null,
-      "subcategory": "art"
-    },
-    {
-      "id": "station-4-4",
-      "status": "placeholder",
-      "title": "Станция 4.4",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "category": "experiment",
       "apollo_slot": "mid-3",
       "venue": "small_bar",
       "slot": "slot-stations-4",
@@ -770,6 +768,177 @@ window.FESTIVAL_DATA = {
       "duration_override": null,
       "description": "Открытый танцпол, продолжается до закрытия фестиваля.",
       "subcategory": "main_stage"
+    },
+    {
+      "id": "mc-fractal-tiles",
+      "status": "confirmed",
+      "title": "Фрактал-Ателье: напечатай свой тайлинг",
+      "speaker": "Татьяна Зайцева",
+      "category": "workshop",
+      "apollo_slot": null,
+      "venue": "courtyard",
+      "slot": "slot-stations-4",
+      "description": "Печать на ткани/бумаге фрактальных замощений — разных тайлингов, сгенерированных аффинными растяжениями."
+    },
+    {
+      "id": "social-tochka-nol",
+      "status": "tentative",
+      "title": "Точка-ноль (по Хармсу)",
+      "speaker": "Алина Асомния",
+      "category": "social",
+      "apollo_slot": "mid-2",
+      "venue": null,
+      "slot": null,
+      "description": "Музыкальный спектакль с интерактивной возможностью для зрителей влиять на звук."
+    },
+    {
+      "id": "inst-squirrel",
+      "status": "tentative",
+      "title": "Squirrel Institute",
+      "subtitle": null,
+      "speaker": "Антон Сидько",
+      "speaker_role": null,
+      "category": "art",
+      "apollo_slot": "big-1",
+      "venue": "courtyard",
+      "slot": "slot-stations-1",
+      "duration_override": null,
+      "description": "Фарфоровые цилиндры со свернувшимися в спирали белками — модель структуры канального белка. Лингвистическая петля «бЕлка / белкА» как ирония над автопереводом РАН в 2010 году.",
+      "subcategory": "installation"
+    },
+    {
+      "id": "inst-polyhedral",
+      "status": "tentative",
+      "title": "Полиэдральное цветение",
+      "subtitle": null,
+      "speaker": "Максимилиан Роганов",
+      "speaker_role": null,
+      "category": "art",
+      "apollo_slot": "big-2",
+      "venue": "big_bar",
+      "slot": "slot-stations-2",
+      "duration_override": null,
+      "description": "Складные многогранники, разворачивающиеся как цветы. Геометрия, которая раскрывается во времени.",
+      "subcategory": "installation"
+    },
+    {
+      "id": "inst-plato",
+      "status": "tentative",
+      "title": "Артефакты Плато",
+      "subtitle": null,
+      "speaker": "Александр Солеев",
+      "speaker_role": null,
+      "category": "art",
+      "apollo_slot": "big-1",
+      "venue": "big_bar",
+      "slot": "slot-stations-3",
+      "duration_override": null,
+      "description": "Мыльные плёнки на проволочных рамках. Минимальные поверхности.",
+      "subcategory": "art"
+    },
+    {
+      "id": "inst-fractal-projection",
+      "status": "tentative",
+      "title": "Миры фракталов",
+      "subtitle": null,
+      "speaker": "Андрей",
+      "speaker_role": null,
+      "category": "art",
+      "apollo_slot": "big-3",
+      "venue": "small_bar",
+      "slot": "slot-stations-3",
+      "duration_override": null,
+      "description": "Большие проекции с навигацией по множествам Мандельброта и Жюлиа. Можно подойти и побродить пальцем.",
+      "subcategory": "installation"
+    },
+    {
+      "id": "cinema-tba-1",
+      "status": "tentative",
+      "title": "Кино · TBA",
+      "subtitle": null,
+      "speaker": null,
+      "speaker_role": null,
+      "category": "cinema",
+      "apollo_slot": "big-1",
+      "venue": "library",
+      "slot": "slot-cinema-1",
+      "duration_override": null,
+      "description": "Программа уточняется.",
+      "subcategory": "short"
+    },
+    {
+      "id": "cinema-tba-2",
+      "status": "tentative",
+      "title": "Кино · TBA",
+      "subtitle": null,
+      "speaker": null,
+      "speaker_role": null,
+      "category": "cinema",
+      "apollo_slot": "big-2",
+      "venue": "library",
+      "slot": "slot-cinema-2",
+      "duration_override": null,
+      "description": "Программа уточняется.",
+      "subcategory": "short"
+    },
+    {
+      "id": "cinema-interlude-1",
+      "status": "tentative",
+      "title": "Короткометражки · TBA",
+      "subtitle": null,
+      "speaker": null,
+      "speaker_role": null,
+      "category": "cinema",
+      "apollo_slot": "mid-1",
+      "venue": "main_stage",
+      "slot": "slot-interlude-1",
+      "duration_override": null,
+      "description": "Программа короткометражек уточняется.",
+      "subcategory": "short"
+    },
+    {
+      "id": "cinema-interlude-2",
+      "status": "tentative",
+      "title": "Короткометражки · TBA",
+      "subtitle": null,
+      "speaker": null,
+      "speaker_role": null,
+      "category": "cinema",
+      "apollo_slot": "mid-2",
+      "venue": "main_stage",
+      "slot": "slot-interlude-2",
+      "duration_override": null,
+      "description": "Программа короткометражек уточняется.",
+      "subcategory": "short"
+    },
+    {
+      "id": "cinema-interlude-3",
+      "status": "tentative",
+      "title": "Короткометражки · TBA",
+      "subtitle": null,
+      "speaker": null,
+      "speaker_role": null,
+      "category": "cinema",
+      "apollo_slot": "mid-3",
+      "venue": "main_stage",
+      "slot": "slot-interlude-3",
+      "duration_override": null,
+      "description": "Программа короткометражек уточняется.",
+      "subcategory": "short"
+    },
+    {
+      "id": "discussion-tba",
+      "status": "tentative",
+      "title": "Дискуссия · TBA",
+      "subtitle": null,
+      "speaker": null,
+      "speaker_role": null,
+      "category": "social",
+      "apollo_slot": "big-3",
+      "venue": "main_stage",
+      "slot": "slot-discussion",
+      "duration_override": null,
+      "description": "Тема дискуссии и состав участников будут объявлены."
     }
   ],
   "_howto": {
@@ -828,5 +997,136 @@ window.FESTIVAL_DATA = {
         "display": "медиа-арт"
       }
     }
-  }
+  },
+  "exhibits": [
+    {
+      "id": "media-arttech",
+      "kind": "media",
+      "status": "tentative",
+      "title": "ArtTech",
+      "speaker": "группа ArtTech",
+      "description": "Медиа-арт-группа, приглашение в процессе.",
+      "subcategory": "media",
+      "apollo_slot": "big-1"
+    },
+    {
+      "id": "media-shchelochi",
+      "kind": "media",
+      "status": "tentative",
+      "title": "Щелочь",
+      "speaker": "группа «Щелочь»",
+      "description": "Медиа-арт-группа, приглашение в процессе.",
+      "subcategory": "media",
+      "apollo_slot": "big-2"
+    },
+    {
+      "id": "media-yav",
+      "kind": "media",
+      "status": "confirmed",
+      "title": "Внутренняя спираль",
+      "speaker": "арт-группа Явь · Анастасия Владычкина",
+      "description": "Серия фрактальных видео — городская среда разворачивается внутрь самой себя. Деталь в заявке app-28 от Анастасии Владычкиной (фронтвумен арт-группы Явь).",
+      "subcategory": "media",
+      "apollo_slot": "big-3"
+    },
+    {
+      "id": "inst-tetraquark",
+      "kind": "installation",
+      "status": "tentative",
+      "title": "Очарование тетракварка",
+      "speaker": "Alex Mu",
+      "description": "Инсталляция о тетракварках, заявка app-5/6 от Alex Mu — детали в карточке заявки.",
+      "subcategory": "installation",
+      "apollo_slot": "big-1"
+    },
+    {
+      "id": "inst-polyhedral-exhibit",
+      "kind": "installation",
+      "status": "tentative",
+      "title": "Полиэдральное цветение",
+      "speaker": "Максимилиан Роганов",
+      "description": "Складные многогранники. Деталь в заявке app-14.",
+      "subcategory": "installation",
+      "apollo_slot": "big-2"
+    },
+    {
+      "id": "inst-element1",
+      "kind": "installation",
+      "status": "tentative",
+      "title": "Элемент 1",
+      "speaker": "Ира",
+      "description": "Инсталляция, заявка app-15 от автора Ира.",
+      "subcategory": "installation",
+      "apollo_slot": "big-3"
+    },
+    {
+      "id": "inst-mimesis",
+      "kind": "installation",
+      "status": "tentative",
+      "title": "Мимесис",
+      "speaker": "Евдокия Дергилёва, Ирина Сафонова",
+      "description": "Привязано к заявке app-20 («Объект из серии Детские иллюзии»). Авторы планируют другой объект — Мимесис. Детали — у них.",
+      "subcategory": "installation",
+      "apollo_slot": "mid-1"
+    },
+    {
+      "id": "art-plato",
+      "kind": "art",
+      "status": "tentative",
+      "title": "Артефакты Плато",
+      "speaker": "Александр Солеев",
+      "description": "Мыльные плёнки на проволочных рамках. Минимальные поверхности. Деталь в заявке app-9.",
+      "subcategory": "art",
+      "apollo_slot": "big-1"
+    },
+    {
+      "id": "art-fluoro",
+      "kind": "art",
+      "status": "tentative",
+      "title": "Андрей Флюоро",
+      "speaker": "Андрей Флюоро",
+      "description": "Художник, идея от команды. Заявки в OpenCall нет — нужно дозаполнить.",
+      "subcategory": "art",
+      "apollo_slot": "big-2"
+    },
+    {
+      "id": "art-string-1",
+      "kind": "art",
+      "status": "tentative",
+      "title": "String Art (художник 1)",
+      "speaker": "(уточнить)",
+      "description": "String Art, первый из двух художников. Идея от команды.",
+      "subcategory": "art",
+      "apollo_slot": "big-3"
+    },
+    {
+      "id": "art-string-2",
+      "kind": "art",
+      "status": "tentative",
+      "title": "String Art (художник 2)",
+      "speaker": "(уточнить)",
+      "description": "String Art, второй из двух художников. Идея от команды.",
+      "subcategory": "art",
+      "apollo_slot": "mid-1"
+    },
+    {
+      "id": "art-other-spaces",
+      "kind": "art",
+      "status": "tentative",
+      "title": "Свет иных пространств",
+      "speaker": "Пётр Николаев",
+      "description": "Картины. Идея от команды, заявки OpenCall нет.",
+      "subcategory": "art",
+      "apollo_slot": "mid-2"
+    },
+    {
+      "id": "inst-squirrel",
+      "status": "tentative",
+      "title": "Squirrel Institute",
+      "speaker": "Антон Сидько",
+      "subcategory": "installation",
+      "apollo_slot": null,
+      "description": "Светящиеся фарфоровые цилиндры — инсталляция из портфолио автора."
+    }
+  ]
 };
