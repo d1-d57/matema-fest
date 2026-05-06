@@ -6,26 +6,21 @@
 //
 // СТРУКТУРА:
 //   _meta          — версия, история изменений
-//   _howto         — правила редактирования (читай ПЕРЕД любыми правками)
-//   venues         — площадки (id → {display, short, note, apollo_label, lanes})
+//   _howto         — правила редактирования
+//   venues         — площадки
 //   categories     — семь зафиксированных категорий
 //   subcategories  — для music/cinema/art (sub-уровень в Аполлонии)
 //   time_slots     — временные интервалы с адресом в папоротнике
 //   events         — список всех событий
-//   exhibits       — постоянные арт-объекты вне таймлайна (галерея, инсталляции, медиа-арт)
+//   exhibits       — постоянные арт-объекты вне таймлайна
 //
-// КАК РЕДАКТИРОВАТЬ:
-//   - Меняй значения в объекте window.FESTIVAL_DATA.
-//   - Сохраняй валидный JS-синтаксис (двойные кавычки у строк, запятые между полями).
-//   - НЕ меняй id-поля площадок/категорий/событий — на них завязаны ссылки в index.html.
-//   - Display-поля (что видит пользователь) меняй свободно.
-//   - После правки достаточно перезагрузить страницу — никаких сборок не нужно.
-//
-// === ПРАВИЛА РАБОТЫ С БАЗОЙ — см. _howto в самом объекте ===
+// ВАЖНО: В этой версии 12 art-событий продублированы из exhibits в events
+// для совместимости с index.html (он читает только events, не exhibits).
+// Поэтому inst-tetraquark, art-plato и т.д. живут одновременно в обоих массивах.
 
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-06-v10",
+    "version": "2026-05-06-v11",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.",
     "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.",
@@ -36,7 +31,8 @@ window.FESTIVAL_DATA = {
     "changes": " | v7: исправлена категоризация (Сидько→инсталляция, Андрей→experiment-станция). Добавлены: Зайцева (workshop), Алина (social), Явь подтверждено.",
     "changes_v8": "mc-theremin → experiment без apollo_slot. media-yav привязан к app-28 (Анастасия Владычкина «Внутренняя спираль»).",
     "changes_v9": "Добавлены slot-interlude-2 (18:30-19:00) и slot-interlude-3 (20:00-20:30) — потенциальные слоты для короткометражек между лекциями. Интерлюды теперь относятся к cinema-категории.",
-    "changes_v10": "Финальная версия для сегодняшнего deploy: добавлены Ася (Фрактальные витражи), TBA-плейсхолдеры на cinema-слоты, интерлюды и дискуссию. Размещены social-rosetka и social-tochka-nol. Восстановлены legacy id (inst-squirrel, inst-polyhedral, inst-plato, inst-fractal-projection) для совместимости с захардкоженным папоротником в index.html."
+    "changes_v10": "Финальная версия для сегодняшнего deploy: добавлены Ася (Фрактальные витражи), TBA-плейсхолдеры на cinema-слоты, интерлюды и дискуссию. Размещены social-rosetka и social-tochka-nol. Восстановлены legacy id (inst-squirrel, inst-polyhedral, inst-plato, inst-fractal-projection) для совместимости с захардкоженным папоротником в index.html.",
+    "changes_v11": "Все 12 art-экспонатов вернулись в events с уникальными apollo_slot. Теперь круг ИСКУССТВО на сайте показывает 12 произведений. Squirrel получил kind=installation в exhibits."
   },
   "venues": {
     "library": {
@@ -792,66 +788,6 @@ window.FESTIVAL_DATA = {
       "description": "Музыкальный спектакль с интерактивной возможностью для зрителей влиять на звук."
     },
     {
-      "id": "inst-squirrel",
-      "status": "tentative",
-      "title": "Squirrel Institute",
-      "subtitle": null,
-      "speaker": "Антон Сидько",
-      "speaker_role": null,
-      "category": "art",
-      "apollo_slot": "big-1",
-      "venue": "courtyard",
-      "slot": "slot-stations-1",
-      "duration_override": null,
-      "description": "Фарфоровые цилиндры со свернувшимися в спирали белками — модель структуры канального белка. Лингвистическая петля «бЕлка / белкА» как ирония над автопереводом РАН в 2010 году.",
-      "subcategory": "installation"
-    },
-    {
-      "id": "inst-polyhedral",
-      "status": "tentative",
-      "title": "Полиэдральное цветение",
-      "subtitle": null,
-      "speaker": "Максимилиан Роганов",
-      "speaker_role": null,
-      "category": "art",
-      "apollo_slot": "big-2",
-      "venue": "big_bar",
-      "slot": "slot-stations-2",
-      "duration_override": null,
-      "description": "Складные многогранники, разворачивающиеся как цветы. Геометрия, которая раскрывается во времени.",
-      "subcategory": "installation"
-    },
-    {
-      "id": "inst-plato",
-      "status": "tentative",
-      "title": "Артефакты Плато",
-      "subtitle": null,
-      "speaker": "Александр Солеев",
-      "speaker_role": null,
-      "category": "art",
-      "apollo_slot": "big-1",
-      "venue": "big_bar",
-      "slot": "slot-stations-3",
-      "duration_override": null,
-      "description": "Мыльные плёнки на проволочных рамках. Минимальные поверхности.",
-      "subcategory": "art"
-    },
-    {
-      "id": "inst-fractal-projection",
-      "status": "tentative",
-      "title": "Миры фракталов",
-      "subtitle": null,
-      "speaker": "Андрей",
-      "speaker_role": null,
-      "category": "art",
-      "apollo_slot": "big-3",
-      "venue": "small_bar",
-      "slot": "slot-stations-3",
-      "duration_override": null,
-      "description": "Большие проекции с навигацией по множествам Мандельброта и Жюлиа. Можно подойти и побродить пальцем.",
-      "subcategory": "installation"
-    },
-    {
       "id": "cinema-tba-1",
       "status": "tentative",
       "title": "Кино · TBA",
@@ -939,6 +875,224 @@ window.FESTIVAL_DATA = {
       "slot": "slot-discussion",
       "duration_override": null,
       "description": "Тема дискуссии и состав участников будут объявлены."
+    },
+    {
+      "id": "art-plato",
+      "status": "tentative",
+      "title": "Артефакты Плато",
+      "subtitle": null,
+      "speaker": "Александр Солеев",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "art",
+      "apollo_slot": "big-1",
+      "venue": "big_bar",
+      "slot": "slot-stations-3",
+      "description": "Мыльные плёнки на проволочных рамках. Минимальные поверхности. Деталь в заявке app-9."
+    },
+    {
+      "id": "art-fluoro",
+      "status": "tentative",
+      "title": "Андрей Флюоро",
+      "subtitle": null,
+      "speaker": "Андрей Флюоро",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "art",
+      "apollo_slot": "big-2",
+      "venue": null,
+      "slot": null,
+      "description": "Художник, идея от команды. Заявки в OpenCall нет — нужно дозаполнить."
+    },
+    {
+      "id": "art-string-1",
+      "status": "tentative",
+      "title": "String Art (художник 1)",
+      "subtitle": null,
+      "speaker": "(уточнить)",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "art",
+      "apollo_slot": "big-3",
+      "venue": null,
+      "slot": null,
+      "description": "String Art, первый из двух художников. Идея от команды."
+    },
+    {
+      "id": "art-string-2",
+      "status": "tentative",
+      "title": "String Art (художник 2)",
+      "subtitle": null,
+      "speaker": "(уточнить)",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "art",
+      "apollo_slot": "mid-1",
+      "venue": null,
+      "slot": null,
+      "description": "String Art, второй из двух художников. Идея от команды."
+    },
+    {
+      "id": "art-other-spaces",
+      "status": "tentative",
+      "title": "Свет иных пространств",
+      "subtitle": null,
+      "speaker": "Пётр Николаев",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "art",
+      "apollo_slot": "mid-2",
+      "venue": null,
+      "slot": null,
+      "description": "Картины. Идея от команды, заявки OpenCall нет."
+    },
+    {
+      "id": "inst-tetraquark",
+      "status": "tentative",
+      "title": "Очарование тетракварка",
+      "subtitle": null,
+      "speaker": "Alex Mu",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "installation",
+      "apollo_slot": "big-1",
+      "venue": null,
+      "slot": null,
+      "description": "Инсталляция о тетракварках, заявка app-5/6 от Alex Mu — детали в карточке заявки."
+    },
+    {
+      "id": "inst-polyhedral-exhibit",
+      "status": "tentative",
+      "title": "Полиэдральное цветение",
+      "subtitle": null,
+      "speaker": "Максимилиан Роганов",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "installation",
+      "apollo_slot": "big-2",
+      "venue": "big_bar",
+      "slot": "slot-stations-2",
+      "description": "Складные многогранники. Деталь в заявке app-14."
+    },
+    {
+      "id": "inst-element1",
+      "status": "tentative",
+      "title": "Элемент 1",
+      "subtitle": null,
+      "speaker": "Ира",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "installation",
+      "apollo_slot": "big-3",
+      "venue": null,
+      "slot": null,
+      "description": "Инсталляция, заявка app-15 от автора Ира."
+    },
+    {
+      "id": "inst-mimesis",
+      "status": "tentative",
+      "title": "Мимесис",
+      "subtitle": null,
+      "speaker": "Евдокия Дергилёва, Ирина Сафонова",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "installation",
+      "apollo_slot": "mid-1",
+      "venue": null,
+      "slot": null,
+      "description": "Привязано к заявке app-20 («Объект из серии Детские иллюзии»). Авторы планируют другой объект — Мимесис. Детали — у них."
+    },
+    {
+      "id": "inst-squirrel",
+      "status": "tentative",
+      "title": "Squirrel Institute",
+      "subtitle": null,
+      "speaker": "Антон Сидько",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "installation",
+      "apollo_slot": null,
+      "venue": "courtyard",
+      "slot": "slot-stations-1",
+      "description": "Светящиеся фарфоровые цилиндры — инсталляция из портфолио автора."
+    },
+    {
+      "id": "media-arttech",
+      "status": "tentative",
+      "title": "ArtTech",
+      "subtitle": null,
+      "speaker": "группа ArtTech",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "media",
+      "apollo_slot": "big-1",
+      "venue": null,
+      "slot": null,
+      "description": "Медиа-арт-группа, приглашение в процессе."
+    },
+    {
+      "id": "media-shchelochi",
+      "status": "tentative",
+      "title": "Щелочь",
+      "subtitle": null,
+      "speaker": "группа «Щелочь»",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "media",
+      "apollo_slot": "big-2",
+      "venue": null,
+      "slot": null,
+      "description": "Медиа-арт-группа, приглашение в процессе."
+    },
+    {
+      "id": "media-yav",
+      "status": "confirmed",
+      "title": "Внутренняя спираль",
+      "subtitle": null,
+      "speaker": "арт-группа Явь · Анастасия Владычкина",
+      "speaker_role": null,
+      "category": "art",
+      "subcategory": "media",
+      "apollo_slot": "big-3",
+      "venue": null,
+      "slot": null,
+      "description": "Серия фрактальных видео — городская среда разворачивается внутрь самой себя. Деталь в заявке app-28 от Анастасии Владычкиной (фронтвумен арт-группы Явь)."
+    },
+    {
+      "id": "inst-polyhedral",
+      "status": "tentative",
+      "title": "Полиэдральное цветение",
+      "speaker": "Максимилиан Роганов",
+      "category": "art",
+      "subcategory": "installation",
+      "apollo_slot": null,
+      "venue": "big_bar",
+      "slot": "slot-stations-2",
+      "description": "Складные многогранники, разворачивающиеся как цветы. См. exhibit inst-polyhedral-exhibit."
+    },
+    {
+      "id": "inst-plato",
+      "status": "tentative",
+      "title": "Артефакты Плато",
+      "speaker": "Александр Солеев",
+      "category": "art",
+      "subcategory": "art",
+      "apollo_slot": null,
+      "venue": "big_bar",
+      "slot": "slot-stations-3",
+      "description": "Мыльные плёнки на проволочных рамках. См. exhibit art-plato."
+    },
+    {
+      "id": "inst-fractal-projection",
+      "status": "tentative",
+      "title": "Миры фракталов",
+      "speaker": "Андрей",
+      "category": "art",
+      "subcategory": "installation",
+      "apollo_slot": null,
+      "venue": "small_bar",
+      "slot": "slot-stations-3",
+      "description": "Большие проекции с навигацией по множествам Мандельброта и Жюлиа."
     }
   ],
   "_howto": {
@@ -1126,7 +1280,8 @@ window.FESTIVAL_DATA = {
       "speaker": "Антон Сидько",
       "subcategory": "installation",
       "apollo_slot": null,
-      "description": "Светящиеся фарфоровые цилиндры — инсталляция из портфолио автора."
+      "description": "Светящиеся фарфоровые цилиндры — инсталляция из портфолио автора.",
+      "kind": "installation"
     }
   ]
 };
