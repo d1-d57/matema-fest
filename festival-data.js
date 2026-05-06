@@ -13,14 +13,10 @@
 //   time_slots     — временные интервалы с адресом в папоротнике
 //   events         — список всех событий
 //   exhibits       — постоянные арт-объекты вне таймлайна
-//
-// ВАЖНО: В этой версии 12 art-событий продублированы из exhibits в events
-// для совместимости с index.html (он читает только events, не exhibits).
-// Поэтому inst-tetraquark, art-plato и т.д. живут одновременно в обоих массивах.
 
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-06-v11",
+    "version": "2026-05-06-v12",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.",
     "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.",
@@ -32,7 +28,8 @@ window.FESTIVAL_DATA = {
     "changes_v8": "mc-theremin → experiment без apollo_slot. media-yav привязан к app-28 (Анастасия Владычкина «Внутренняя спираль»).",
     "changes_v9": "Добавлены slot-interlude-2 (18:30-19:00) и slot-interlude-3 (20:00-20:30) — потенциальные слоты для короткометражек между лекциями. Интерлюды теперь относятся к cinema-категории.",
     "changes_v10": "Финальная версия для сегодняшнего deploy: добавлены Ася (Фрактальные витражи), TBA-плейсхолдеры на cinema-слоты, интерлюды и дискуссию. Размещены social-rosetka и social-tochka-nol. Восстановлены legacy id (inst-squirrel, inst-polyhedral, inst-plato, inst-fractal-projection) для совместимости с захардкоженным папоротником в index.html.",
-    "changes_v11": "Все 12 art-экспонатов вернулись в events с уникальными apollo_slot. Теперь круг ИСКУССТВО на сайте показывает 12 произведений. Squirrel получил kind=installation в exhibits."
+    "changes_v11": "Все 12 art-экспонатов вернулись в events с уникальными apollo_slot. Теперь круг ИСКУССТВО на сайте показывает 12 произведений. Squirrel получил kind=installation в exhibits.",
+    "changes_v12": "Кинопрограмма наполнена: 4 короткометражки в субкат short (3 поставлены в интерлюды, 4-я ждёт слота 1 ч), 10 анимаций в субкат animation (без timeline-слотов, заглушки лайнапа), 4 полнометражных в субкат feature (Pi + 3 документалки). Это первичный лайнап, конкретные названия и авторы уточняются."
   },
   "venues": {
     "library": {
@@ -788,81 +785,6 @@ window.FESTIVAL_DATA = {
       "description": "Музыкальный спектакль с интерактивной возможностью для зрителей влиять на звук."
     },
     {
-      "id": "cinema-tba-1",
-      "status": "tentative",
-      "title": "Кино · TBA",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "category": "cinema",
-      "apollo_slot": "big-1",
-      "venue": "library",
-      "slot": "slot-cinema-1",
-      "duration_override": null,
-      "description": "Программа уточняется.",
-      "subcategory": "short"
-    },
-    {
-      "id": "cinema-tba-2",
-      "status": "tentative",
-      "title": "Кино · TBA",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "category": "cinema",
-      "apollo_slot": "big-2",
-      "venue": "library",
-      "slot": "slot-cinema-2",
-      "duration_override": null,
-      "description": "Программа уточняется.",
-      "subcategory": "short"
-    },
-    {
-      "id": "cinema-interlude-1",
-      "status": "tentative",
-      "title": "Короткометражки · TBA",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "category": "cinema",
-      "apollo_slot": "mid-1",
-      "venue": "main_stage",
-      "slot": "slot-interlude-1",
-      "duration_override": null,
-      "description": "Программа короткометражек уточняется.",
-      "subcategory": "short"
-    },
-    {
-      "id": "cinema-interlude-2",
-      "status": "tentative",
-      "title": "Короткометражки · TBA",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "category": "cinema",
-      "apollo_slot": "mid-2",
-      "venue": "main_stage",
-      "slot": "slot-interlude-2",
-      "duration_override": null,
-      "description": "Программа короткометражек уточняется.",
-      "subcategory": "short"
-    },
-    {
-      "id": "cinema-interlude-3",
-      "status": "tentative",
-      "title": "Короткометражки · TBA",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "category": "cinema",
-      "apollo_slot": "mid-3",
-      "venue": "main_stage",
-      "slot": "slot-interlude-3",
-      "duration_override": null,
-      "description": "Программа короткометражек уточняется.",
-      "subcategory": "short"
-    },
-    {
       "id": "discussion-tba",
       "status": "tentative",
       "title": "Дискуссия · TBA",
@@ -1093,6 +1015,264 @@ window.FESTIVAL_DATA = {
       "venue": "small_bar",
       "slot": "slot-stations-3",
       "description": "Большие проекции с навигацией по множествам Мандельброта и Жюлиа."
+    },
+    {
+      "id": "cinema-short-1",
+      "status": "tentative",
+      "title": "Короткометражка №1",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "short",
+      "apollo_slot": "big-1",
+      "venue": "main_stage",
+      "slot": "slot-interlude-1",
+      "description": "Короткий метр, около 6 минут. Источник: YouTube (Sx_0cdogaZ8). Название и автор уточняются.",
+      "links": [
+        "https://www.youtube.com/watch?v=Sx_0cdogaZ8"
+      ]
+    },
+    {
+      "id": "cinema-short-2",
+      "status": "tentative",
+      "title": "Короткометражка №2",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "short",
+      "apollo_slot": "big-2",
+      "venue": "main_stage",
+      "slot": "slot-interlude-2",
+      "description": "Короткий метр, около 4 минут. Источник: Vimeo. Название и автор уточняются.",
+      "links": [
+        "https://vimeo.com/921612050"
+      ]
+    },
+    {
+      "id": "cinema-short-3",
+      "status": "tentative",
+      "title": "Короткометражка №3",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "short",
+      "apollo_slot": "big-3",
+      "venue": "main_stage",
+      "slot": "slot-interlude-3",
+      "description": "Короткий метр, около 10 минут. Источник: Vimeo channel 561739. Название и автор уточняются.",
+      "links": [
+        "https://vimeo.com/channels/561739/50924800"
+      ]
+    },
+    {
+      "id": "cinema-short-4",
+      "status": "tentative",
+      "title": "Короткометражка №4",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "short",
+      "apollo_slot": "mid-1",
+      "venue": null,
+      "slot": null,
+      "description": "Короткий метр, около 20 минут. Может пойти в Кино 1 или Кино 2 (часовой слот в библиотеке). Источник: YouTube (tN_eNQFcv5E).",
+      "links": [
+        "https://www.youtube.com/watch?v=tN_eNQFcv5E"
+      ]
+    },
+    {
+      "id": "cinema-anim-fraktaal",
+      "status": "tentative",
+      "title": "Fraktaal",
+      "speaker": "Julius Horsthuis",
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "big-1",
+      "venue": null,
+      "slot": null,
+      "description": "Sci-fi короткометражная анимация без сюжета. Путешествие по сгенерированным фрактальным мирам в эстетике научной фантастики. Используется Mandelbulb 3D.",
+      "links": [
+        "https://www.youtube.com/watch?v=WD0xC5PwFmw"
+      ]
+    },
+    {
+      "id": "cinema-anim-machina-1",
+      "status": "tentative",
+      "title": "Machina Infinitum",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "big-2",
+      "venue": null,
+      "slot": null,
+      "description": "3D-фрактальная анимация. Источник: YouTube.",
+      "links": [
+        "https://www.youtube.com/watch?v=dDBsPFk5nuQ"
+      ]
+    },
+    {
+      "id": "cinema-anim-machina-2",
+      "status": "tentative",
+      "title": "Machina Infinitum (2)",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "big-3",
+      "venue": null,
+      "slot": null,
+      "description": "3D-фрактальная анимация, продолжение/другая серия.",
+      "links": [
+        "https://www.youtube.com/watch?v=CUIaulVmmys"
+      ]
+    },
+    {
+      "id": "cinema-anim-cartoon-1",
+      "status": "tentative",
+      "title": "Анимационная короткометражка",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "mid-1",
+      "venue": null,
+      "slot": null,
+      "description": "Анимация рекомендованная как «!!». Авторство уточняется.",
+      "links": [
+        "https://www.youtube.com/watch?v=0C75vRVL5lE"
+      ]
+    },
+    {
+      "id": "cinema-anim-cartoon-2",
+      "status": "tentative",
+      "title": "Мультфильм",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "mid-2",
+      "venue": null,
+      "slot": null,
+      "description": "Анимация рекомендованная как «!!». Авторство уточняется.",
+      "links": [
+        "https://vimeo.com/channels/561739/36608074"
+      ]
+    },
+    {
+      "id": "cinema-anim-other-1",
+      "status": "tentative",
+      "title": "Фрактальная анимация",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "mid-3",
+      "venue": null,
+      "slot": null,
+      "description": "Фрактальная анимация другого автора. YouTube.",
+      "links": [
+        "https://www.youtube.com/watch?v=S530Vwa33G0"
+      ]
+    },
+    {
+      "id": "cinema-anim-vimeo-1",
+      "status": "tentative",
+      "title": "Фрактальная анимация (Vimeo)",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "center",
+      "venue": null,
+      "slot": null,
+      "description": "Фрактальная анимация. Источник: Vimeo channel 561739.",
+      "links": [
+        "https://vimeo.com/channels/561739/34544497"
+      ]
+    },
+    {
+      "id": "cinema-anim-vimeo-2",
+      "status": "tentative",
+      "title": "Фрактальная анимация (Vimeo, 2)",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "ear-1",
+      "venue": null,
+      "slot": null,
+      "description": "Фрактальная анимация. Источник: Vimeo channel 561739.",
+      "links": [
+        "https://vimeo.com/channels/561739/43351466"
+      ]
+    },
+    {
+      "id": "cinema-anim-simple-1",
+      "status": "tentative",
+      "title": "Простая фрактальная анимация",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "ear-2",
+      "venue": null,
+      "slot": null,
+      "description": "Простая анимация на тему фракталов. YouTube.",
+      "links": [
+        "https://www.youtube.com/watch?v=zXTpASSd9xE"
+      ]
+    },
+    {
+      "id": "cinema-anim-simple-2",
+      "status": "tentative",
+      "title": "Простая фрактальная анимация (2)",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "ear-3",
+      "venue": null,
+      "slot": null,
+      "description": "Простая анимация на тему фракталов. YouTube.",
+      "links": [
+        "https://www.youtube.com/watch?v=Hk_tHcJzTOo"
+      ]
+    },
+    {
+      "id": "cinema-feature-pi",
+      "status": "tentative",
+      "title": "Пи",
+      "speaker": "Даррен Аронофски",
+      "category": "cinema",
+      "subcategory": "feature",
+      "apollo_slot": "big-1",
+      "venue": "library",
+      "slot": "slot-cinema-1",
+      "description": "Художественный фильм 1998 года. Параноидальный математик в поисках универсальной формулы. Чёрно-белый, психоделический."
+    },
+    {
+      "id": "cinema-feature-doc-order",
+      "status": "tentative",
+      "title": "Фракталы: Порядок в хаосе",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "feature",
+      "apollo_slot": "big-2",
+      "venue": "library",
+      "slot": "slot-cinema-2",
+      "description": "«Fractals: Order in Chaos», 2008. Документальный фильм о фракталах в природе и в математике."
+    },
+    {
+      "id": "cinema-feature-doc-colors",
+      "status": "tentative",
+      "title": "Фракталы: Цвета бесконечности",
+      "speaker": "Артур Кларк",
+      "category": "cinema",
+      "subcategory": "feature",
+      "apollo_slot": "big-3",
+      "venue": null,
+      "slot": null,
+      "description": "«Colors of Infinity», 1995. Документальный фильм Артура Кларка о множестве Мандельброта. Альтернатива «Порядку в хаосе»."
+    },
+    {
+      "id": "cinema-feature-doc-hidden",
+      "status": "tentative",
+      "title": "Фракталы: Поиски скрытого измерения",
+      "speaker": null,
+      "category": "cinema",
+      "subcategory": "feature",
+      "apollo_slot": "mid-1",
+      "venue": null,
+      "slot": null,
+      "description": "«Hunting the Hidden Dimension», NOVA/PBS, 2008–2011. Документальный фильм о Бенуа Мандельброте. Альтернатива основной документалке."
     }
   ],
   "_howto": {
