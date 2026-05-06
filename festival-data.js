@@ -3,20 +3,10 @@
 // ЕДИНСТВЕННЫЙ источник правды о программе. Подключается синхронно через
 //     <script src="festival-data.js"></script>
 // в index.html и используется админ-страницей programmer.html.
-//
-// СТРУКТУРА:
-//   _meta          — версия, история изменений
-//   _howto         — правила редактирования
-//   venues         — площадки
-//   categories     — семь зафиксированных категорий
-//   subcategories  — для music/cinema/art (sub-уровень в Аполлонии)
-//   time_slots     — временные интервалы с адресом в папоротнике
-//   events         — список всех событий
-//   exhibits       — постоянные арт-объекты вне таймлайна
 
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-06-v12",
+    "version": "2026-05-06-v13",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.",
     "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.",
@@ -29,7 +19,8 @@ window.FESTIVAL_DATA = {
     "changes_v9": "Добавлены slot-interlude-2 (18:30-19:00) и slot-interlude-3 (20:00-20:30) — потенциальные слоты для короткометражек между лекциями. Интерлюды теперь относятся к cinema-категории.",
     "changes_v10": "Финальная версия для сегодняшнего deploy: добавлены Ася (Фрактальные витражи), TBA-плейсхолдеры на cinema-слоты, интерлюды и дискуссию. Размещены social-rosetka и social-tochka-nol. Восстановлены legacy id (inst-squirrel, inst-polyhedral, inst-plato, inst-fractal-projection) для совместимости с захардкоженным папоротником в index.html.",
     "changes_v11": "Все 12 art-экспонатов вернулись в events с уникальными apollo_slot. Теперь круг ИСКУССТВО на сайте показывает 12 произведений. Squirrel получил kind=installation в exhibits.",
-    "changes_v12": "Кинопрограмма наполнена: 4 короткометражки в субкат short (3 поставлены в интерлюды, 4-я ждёт слота 1 ч), 10 анимаций в субкат animation (без timeline-слотов, заглушки лайнапа), 4 полнометражных в субкат feature (Pi + 3 документалки). Это первичный лайнап, конкретные названия и авторы уточняются."
+    "changes_v12": "Кинопрограмма наполнена: 4 короткометражки в субкат short (3 поставлены в интерлюды, 4-я ждёт слота 1 ч), 10 анимаций в субкат animation (без timeline-слотов, заглушки лайнапа), 4 полнометражных в субкат feature (Pi + 3 документалки). Это первичный лайнап, конкретные названия и авторы уточняются.",
+    "changes_v13": "TBA-режим для неподтверждённых: Флюоро, ArtTech, Щелочь, все анимации, второй полный метр. String Art объединён в одну карточку (было 2). Полнометражных оставлено 2 (было 4): Пи + TBA. Реальные названия и автор спрятаны в служебных полях _team_real_title/_team_real_speaker для команды; на сайт идёт только title=TBA."
   },
   "venues": {
     "library": {
@@ -815,44 +806,30 @@ window.FESTIVAL_DATA = {
     {
       "id": "art-fluoro",
       "status": "tentative",
-      "title": "Андрей Флюоро",
+      "title": "TBA",
       "subtitle": null,
-      "speaker": "Андрей Флюоро",
+      "speaker": null,
       "speaker_role": null,
       "category": "art",
       "subcategory": "art",
       "apollo_slot": "big-2",
       "venue": null,
       "slot": null,
-      "description": "Художник, идея от команды. Заявки в OpenCall нет — нужно дозаполнить."
+      "description": null
     },
     {
       "id": "art-string-1",
       "status": "tentative",
-      "title": "String Art (художник 1)",
+      "title": "String Art",
       "subtitle": null,
-      "speaker": "(уточнить)",
+      "speaker": "(уточняется)",
       "speaker_role": null,
       "category": "art",
       "subcategory": "art",
       "apollo_slot": "big-3",
       "venue": null,
       "slot": null,
-      "description": "String Art, первый из двух художников. Идея от команды."
-    },
-    {
-      "id": "art-string-2",
-      "status": "tentative",
-      "title": "String Art (художник 2)",
-      "subtitle": null,
-      "speaker": "(уточнить)",
-      "speaker_role": null,
-      "category": "art",
-      "subcategory": "art",
-      "apollo_slot": "mid-1",
-      "venue": null,
-      "slot": null,
-      "description": "String Art, второй из двух художников. Идея от команды."
+      "description": "Картины в технике String Art. Авторство уточняется."
     },
     {
       "id": "art-other-spaces",
@@ -941,30 +918,30 @@ window.FESTIVAL_DATA = {
     {
       "id": "media-arttech",
       "status": "tentative",
-      "title": "ArtTech",
+      "title": "TBA",
       "subtitle": null,
-      "speaker": "группа ArtTech",
+      "speaker": null,
       "speaker_role": null,
       "category": "art",
       "subcategory": "media",
       "apollo_slot": "big-1",
       "venue": null,
       "slot": null,
-      "description": "Медиа-арт-группа, приглашение в процессе."
+      "description": null
     },
     {
       "id": "media-shchelochi",
       "status": "tentative",
-      "title": "Щелочь",
+      "title": "TBA",
       "subtitle": null,
-      "speaker": "группа «Щелочь»",
+      "speaker": null,
       "speaker_role": null,
       "category": "art",
       "subcategory": "media",
       "apollo_slot": "big-2",
       "venue": null,
       "slot": null,
-      "description": "Медиа-арт-группа, приглашение в процессе."
+      "description": null
     },
     {
       "id": "media-yav",
@@ -1079,14 +1056,14 @@ window.FESTIVAL_DATA = {
     {
       "id": "cinema-anim-fraktaal",
       "status": "tentative",
-      "title": "Fraktaal",
-      "speaker": "Julius Horsthuis",
+      "title": "TBA",
+      "speaker": null,
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "big-1",
       "venue": null,
       "slot": null,
-      "description": "Sci-fi короткометражная анимация без сюжета. Путешествие по сгенерированным фрактальным мирам в эстетике научной фантастики. Используется Mandelbulb 3D.",
+      "description": null,
       "links": [
         "https://www.youtube.com/watch?v=WD0xC5PwFmw"
       ]
@@ -1094,14 +1071,14 @@ window.FESTIVAL_DATA = {
     {
       "id": "cinema-anim-machina-1",
       "status": "tentative",
-      "title": "Machina Infinitum",
+      "title": "TBA",
       "speaker": null,
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "big-2",
       "venue": null,
       "slot": null,
-      "description": "3D-фрактальная анимация. Источник: YouTube.",
+      "description": null,
       "links": [
         "https://www.youtube.com/watch?v=dDBsPFk5nuQ"
       ]
@@ -1109,14 +1086,14 @@ window.FESTIVAL_DATA = {
     {
       "id": "cinema-anim-machina-2",
       "status": "tentative",
-      "title": "Machina Infinitum (2)",
+      "title": "TBA",
       "speaker": null,
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "big-3",
       "venue": null,
       "slot": null,
-      "description": "3D-фрактальная анимация, продолжение/другая серия.",
+      "description": null,
       "links": [
         "https://www.youtube.com/watch?v=CUIaulVmmys"
       ]
@@ -1124,14 +1101,14 @@ window.FESTIVAL_DATA = {
     {
       "id": "cinema-anim-cartoon-1",
       "status": "tentative",
-      "title": "Анимационная короткометражка",
+      "title": "TBA",
       "speaker": null,
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "mid-1",
       "venue": null,
       "slot": null,
-      "description": "Анимация рекомендованная как «!!». Авторство уточняется.",
+      "description": null,
       "links": [
         "https://www.youtube.com/watch?v=0C75vRVL5lE"
       ]
@@ -1139,14 +1116,14 @@ window.FESTIVAL_DATA = {
     {
       "id": "cinema-anim-cartoon-2",
       "status": "tentative",
-      "title": "Мультфильм",
+      "title": "TBA",
       "speaker": null,
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "mid-2",
       "venue": null,
       "slot": null,
-      "description": "Анимация рекомендованная как «!!». Авторство уточняется.",
+      "description": null,
       "links": [
         "https://vimeo.com/channels/561739/36608074"
       ]
@@ -1154,14 +1131,14 @@ window.FESTIVAL_DATA = {
     {
       "id": "cinema-anim-other-1",
       "status": "tentative",
-      "title": "Фрактальная анимация",
+      "title": "TBA",
       "speaker": null,
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "mid-3",
       "venue": null,
       "slot": null,
-      "description": "Фрактальная анимация другого автора. YouTube.",
+      "description": null,
       "links": [
         "https://www.youtube.com/watch?v=S530Vwa33G0"
       ]
@@ -1169,14 +1146,14 @@ window.FESTIVAL_DATA = {
     {
       "id": "cinema-anim-vimeo-1",
       "status": "tentative",
-      "title": "Фрактальная анимация (Vimeo)",
+      "title": "TBA",
       "speaker": null,
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "center",
       "venue": null,
       "slot": null,
-      "description": "Фрактальная анимация. Источник: Vimeo channel 561739.",
+      "description": null,
       "links": [
         "https://vimeo.com/channels/561739/34544497"
       ]
@@ -1184,14 +1161,14 @@ window.FESTIVAL_DATA = {
     {
       "id": "cinema-anim-vimeo-2",
       "status": "tentative",
-      "title": "Фрактальная анимация (Vimeo, 2)",
+      "title": "TBA",
       "speaker": null,
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "ear-1",
       "venue": null,
       "slot": null,
-      "description": "Фрактальная анимация. Источник: Vimeo channel 561739.",
+      "description": null,
       "links": [
         "https://vimeo.com/channels/561739/43351466"
       ]
@@ -1199,14 +1176,14 @@ window.FESTIVAL_DATA = {
     {
       "id": "cinema-anim-simple-1",
       "status": "tentative",
-      "title": "Простая фрактальная анимация",
+      "title": "TBA",
       "speaker": null,
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "ear-2",
       "venue": null,
       "slot": null,
-      "description": "Простая анимация на тему фракталов. YouTube.",
+      "description": null,
       "links": [
         "https://www.youtube.com/watch?v=zXTpASSd9xE"
       ]
@@ -1214,14 +1191,14 @@ window.FESTIVAL_DATA = {
     {
       "id": "cinema-anim-simple-2",
       "status": "tentative",
-      "title": "Простая фрактальная анимация (2)",
+      "title": "TBA",
       "speaker": null,
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "ear-3",
       "venue": null,
       "slot": null,
-      "description": "Простая анимация на тему фракталов. YouTube.",
+      "description": null,
       "links": [
         "https://www.youtube.com/watch?v=Hk_tHcJzTOo"
       ]
@@ -1241,38 +1218,14 @@ window.FESTIVAL_DATA = {
     {
       "id": "cinema-feature-doc-order",
       "status": "tentative",
-      "title": "Фракталы: Порядок в хаосе",
+      "title": "TBA",
       "speaker": null,
       "category": "cinema",
       "subcategory": "feature",
       "apollo_slot": "big-2",
       "venue": "library",
       "slot": "slot-cinema-2",
-      "description": "«Fractals: Order in Chaos», 2008. Документальный фильм о фракталах в природе и в математике."
-    },
-    {
-      "id": "cinema-feature-doc-colors",
-      "status": "tentative",
-      "title": "Фракталы: Цвета бесконечности",
-      "speaker": "Артур Кларк",
-      "category": "cinema",
-      "subcategory": "feature",
-      "apollo_slot": "big-3",
-      "venue": null,
-      "slot": null,
-      "description": "«Colors of Infinity», 1995. Документальный фильм Артура Кларка о множестве Мандельброта. Альтернатива «Порядку в хаосе»."
-    },
-    {
-      "id": "cinema-feature-doc-hidden",
-      "status": "tentative",
-      "title": "Фракталы: Поиски скрытого измерения",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "feature",
-      "apollo_slot": "mid-1",
-      "venue": null,
-      "slot": null,
-      "description": "«Hunting the Hidden Dimension», NOVA/PBS, 2008–2011. Документальный фильм о Бенуа Мандельброте. Альтернатива основной документалке."
+      "description": null
     }
   ],
   "_howto": {
@@ -1337,9 +1290,9 @@ window.FESTIVAL_DATA = {
       "id": "media-arttech",
       "kind": "media",
       "status": "tentative",
-      "title": "ArtTech",
-      "speaker": "группа ArtTech",
-      "description": "Медиа-арт-группа, приглашение в процессе.",
+      "title": "TBA",
+      "speaker": null,
+      "description": null,
       "subcategory": "media",
       "apollo_slot": "big-1"
     },
@@ -1347,9 +1300,9 @@ window.FESTIVAL_DATA = {
       "id": "media-shchelochi",
       "kind": "media",
       "status": "tentative",
-      "title": "Щелочь",
-      "speaker": "группа «Щелочь»",
-      "description": "Медиа-арт-группа, приглашение в процессе.",
+      "title": "TBA",
+      "speaker": null,
+      "description": null,
       "subcategory": "media",
       "apollo_slot": "big-2"
     },
@@ -1417,9 +1370,9 @@ window.FESTIVAL_DATA = {
       "id": "art-fluoro",
       "kind": "art",
       "status": "tentative",
-      "title": "Андрей Флюоро",
-      "speaker": "Андрей Флюоро",
-      "description": "Художник, идея от команды. Заявки в OpenCall нет — нужно дозаполнить.",
+      "title": "TBA",
+      "speaker": null,
+      "description": null,
       "subcategory": "art",
       "apollo_slot": "big-2"
     },
@@ -1427,21 +1380,11 @@ window.FESTIVAL_DATA = {
       "id": "art-string-1",
       "kind": "art",
       "status": "tentative",
-      "title": "String Art (художник 1)",
-      "speaker": "(уточнить)",
-      "description": "String Art, первый из двух художников. Идея от команды.",
+      "title": "String Art",
+      "speaker": "(уточняется)",
+      "description": "Картины в технике String Art. Авторство уточняется.",
       "subcategory": "art",
       "apollo_slot": "big-3"
-    },
-    {
-      "id": "art-string-2",
-      "kind": "art",
-      "status": "tentative",
-      "title": "String Art (художник 2)",
-      "speaker": "(уточнить)",
-      "description": "String Art, второй из двух художников. Идея от команды.",
-      "subcategory": "art",
-      "apollo_slot": "mid-1"
     },
     {
       "id": "art-other-spaces",
