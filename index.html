@@ -3609,11 +3609,11 @@ const SPOTS = [
   // видит, что тут параллельные станции, и может прицельно кликнуть в нужный.
   // Сортировка зон в buildZones по убыванию площади гарантирует, что блоки лежат
   // в нижнем z-стеке, а мелкие саб-листы — сверху и перехватывают клики.
-  {id:'station-block-1', address:[1,3],     label:'Первый блок станций',  subtitle:'4 параллельные станции', time:'16:30–17:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-fractal-3d','mc-calligraphy','obs-diagnostics','inst-squirrel']},
+  {id:'station-block-1', address:[1,3],     label:'Первый блок станций',  subtitle:'3 параллельные станции', time:'16:30–17:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-fractal-3d','mc-calligraphy','obs-diagnostics']},
   {id:'gelfand',         address:[1,2],     label:'Михаил Гельфанд',      subtitle:'Иерархия бесконечностей', time:'16:00–17:00', venue:'main_stage', eventIds:['talk-gelfand']},
-  {id:'station-block-2', address:[1,1,3],   label:'Второй блок станций',  subtitle:'4 параллельные станции', time:'17:30–18:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-engineering-origami','mc-tie-dye','mc-theremin','inst-polyhedral']},
+  {id:'station-block-2', address:[1,1,3],   label:'Второй блок станций',  subtitle:'3 параллельные станции', time:'17:30–18:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-engineering-origami','mc-tie-dye','mc-theremin']},
   {id:'rajgorodski',     address:[1,1,2],   label:'Андрей Райгородский',  time:'17:30–18:30', venue:'main_stage', eventIds:['talk-rajgorodski']},
-  {id:'station-block-3', address:[1,1,1,3], label:'Третий блок станций', subtitle:'4 параллельные станции', time:'18:30–19:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-graphs-evolution','inst-plato','inst-fractal-projection']},
+  {id:'station-block-3', address:[1,1,1,3], label:'Третий блок станций', subtitle:'1 станция', time:'18:30–19:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-graphs-evolution']},
   {id:'skripchenko',     address:[1,1,1,2], label:'Александра Скрипченко', time:'19:00–20:00', venue:'main_stage', eventIds:['talk-skripchenko']},
 
   // ---- Переходный слой к ночи (один шаг f₂ выше последних лекций).
@@ -3671,9 +3671,9 @@ const SUBSPOTS = [
   {id:'sub-obs-diagnostics', parentId:'station-block-1', address:[1,3,1,3],
    label:'Эстетика в диагнозах', subtitle:'Дария',
    time:'16:30–17:30', venue:'small_bar', eventIds:['obs-diagnostics']},
-  {id:'sub-inst-squirrel', parentId:'station-block-1', address:[1,3,1,2],
-   label:'Squirrel Institute', subtitle:'Антон Сидько',
-   time:'16:30–17:30', venue:'big_bar', eventIds:['inst-squirrel']},
+  {id:'sub-block-1-extra', parentId:'station-block-1', address:[1,3,1,2],
+   label:'место для станции', time:'16:30–17:30', venue:'бар',
+   placeholder:true, eventIds:[]},
 
   // ---- Блок 2 [1,1,3], 17:30–18:30
   {id:'sub-puzzle-engineering-origami', parentId:'station-block-2', address:[1,1,3,3],
@@ -3685,20 +3685,20 @@ const SUBSPOTS = [
   {id:'sub-mc-theremin', parentId:'station-block-2', address:[1,1,3,1,3],
    label:'Терменвокс: попробовать самому', subtitle:'Лора Заиконникова',
    time:'17:30–18:30', venue:'small_bar', eventIds:['mc-theremin']},
-  {id:'sub-inst-polyhedral', parentId:'station-block-2', address:[1,1,3,1,2],
-   label:'Полиэдральное цветение', subtitle:'Максимилиан Роганов',
-   time:'17:30–18:30', venue:'small_bar', eventIds:['inst-polyhedral']},
+  {id:'sub-block-2-extra', parentId:'station-block-2', address:[1,1,3,1,2],
+   label:'место для станции', time:'17:30–18:30', venue:'бар',
+   placeholder:true, eventIds:[]},
 
   // ---- Блок 3 [1,1,1,3], 18:30–19:30 (3 события, 1 резерв)
   {id:'sub-puzzle-graphs-evolution', parentId:'station-block-3', address:[1,1,1,3,3],
    label:'Эволюция графов', subtitle:'Александр Николаичев',
    time:'18:30–19:30', venue:'small_bar', eventIds:['puzzle-graphs-evolution']},
-  {id:'sub-inst-plato', parentId:'station-block-3', address:[1,1,1,3,2],
-   label:'Артефакты Плато', subtitle:'Александр Солеев',
-   time:'18:30–19:30', venue:'big_bar', eventIds:['inst-plato']},
-  {id:'sub-inst-fractal-projection', parentId:'station-block-3', address:[1,1,1,3,1,3],
-   label:'Миры фракталов', subtitle:'Андрей',
-   time:'18:30–19:30', venue:'small_bar', eventIds:['inst-fractal-projection']},
+  {id:'sub-block-3-extra-2', parentId:'station-block-3', address:[1,1,1,3,2],
+   label:'место для станции', time:'18:30–19:30', venue:'бар',
+   placeholder:true, eventIds:[]},
+  {id:'sub-block-3-extra-3', parentId:'station-block-3', address:[1,1,1,3,1,3],
+   label:'место для станции', time:'18:30–19:30', venue:'бар',
+   placeholder:true, eventIds:[]},
   {id:'sub-block-3-extra', parentId:'station-block-3', address:[1,1,1,3,1,2],
    label:'место для станции', time:'18:30–19:30', venue:'бар',
    placeholder:true, eventIds:[]},
@@ -4413,7 +4413,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-06d"></script>
+  <script src="festival-data.js?v=2026-05-06e"></script>
 
   <script>
   /* ============================================
@@ -5111,14 +5111,28 @@ window.addEventListener('resize', ()=>{
       }
     }
 
-    // Lookup: ключ "category:apollo_slot" → event. Пробегаем один раз
+    // === Объединённый поток: события + экспонаты ===
+    // Аполлоний показывает И events, И exhibits на своих позициях apollo_slot.
+    // events живут в расписании+папоротнике+Аполлонии (имеют slot+venue).
+    // exhibits живут ТОЛЬКО в Аполлонии (это арт без временного слота).
+    // Здесь мы их склеиваем в единый поток для построения lookup-таблиц.
+    const apolloItems = [];
+    if (FESTIVAL_DATA && FESTIVAL_DATA.events) {
+      for (const ev of FESTIVAL_DATA.events) apolloItems.push(ev);
+    }
+    if (FESTIVAL_DATA && FESTIVAL_DATA.exhibits) {
+      for (const ex of FESTIVAL_DATA.exhibits) {
+        // Экспонаты — всегда art-категория. Подставляем поле category для единого протокола.
+        apolloItems.push({ ...ex, category: ex.category || 'art' });
+      }
+    }
+
+    // Lookup: ключ "category:apollo_slot" → item (event или exhibit). Пробегаем один раз
     // на инициализации, потом O(1) на каждый внутренний круг при рендере.
     const eventsByCatAndSlot = {};
-    if (FESTIVAL_DATA && FESTIVAL_DATA.events) {
-      for (const ev of FESTIVAL_DATA.events) {
-        if (!ev.apollo_slot || !ev.category) continue;
-        eventsByCatAndSlot[ev.category + ':' + ev.apollo_slot] = ev;
-      }
+    for (const ev of apolloItems) {
+      if (!ev.apollo_slot || !ev.category) continue;
+      eventsByCatAndSlot[ev.category + ':' + ev.apollo_slot] = ev;
     }
 
     // === Sub-categories layer ===
@@ -5154,12 +5168,10 @@ window.addEventListener('resize', ()=>{
         }
       }
     }
-    // Раздаём события по (cat, sub, slot) для уровня sub-cat
-    if (FESTIVAL_DATA && FESTIVAL_DATA.events) {
-      for (const ev of FESTIVAL_DATA.events) {
-        if (!ev.apollo_slot || !ev.category || !ev.subcategory) continue;
-        eventsByCatSubAndSlot[ev.category + ':' + ev.subcategory + ':' + ev.apollo_slot] = ev;
-      }
+    // Раздаём события по (cat, sub, slot) для уровня sub-cat — из apolloItems (events+exhibits)
+    for (const ev of apolloItems) {
+      if (!ev.apollo_slot || !ev.category || !ev.subcategory) continue;
+      eventsByCatSubAndSlot[ev.category + ':' + ev.subcategory + ':' + ev.apollo_slot] = ev;
     }
 
     // Сколько ВСЕГО кругов показываем в каждой категории (confirmed + TBA-плейсхолдеры).
@@ -5184,7 +5196,7 @@ window.addEventListener('resize', ()=>{
 
         // Подтверждённые на конкретных позициях (не placeholder, есть title/speaker)
         const confirmed = new Set();
-        for (const ev of FESTIVAL_DATA.events) {
+        for (const ev of apolloItems) {
           if (ev.category !== catId) continue;
           if (ev.status === 'placeholder') continue;
           if (!ev.title && !ev.speaker) continue;
@@ -6495,8 +6507,6 @@ window.addEventListener('resize', ()=>{
                 detail:'Базовые черты, точки, линии. Из них — иероглифы. Простота порождает сложность через повторение.' },
               { id:'sub-obs-diagnostics', name:'Эстетика в диагнозах', who:'Дария', where:'small_bar',
                 detail:'Рисуночные методики психиатрии. Самоподобие как клинический инструмент.' },
-              { id:'sub-inst-squirrel', name:'Squirrel Institute', who:'Антон Сидько', where:'big_bar',
-                detail:'Фарфоровые цилиндры со свернувшимися в спирали белками. Ирония над автопереводом РАН.' },
             ]
           },
           { id:'rajgorodski', time:'17:30–18:30', name:'Андрей Райгородский',
@@ -6513,22 +6523,16 @@ window.addEventListener('resize', ()=>{
                 detail:'Раскрашиваем футболку. При раскручивании рисунок повторяется на разных масштабах.' },
               { id:'sub-mc-theremin', name:'Терменвокс: попробовать самому', who:'Лора Заиконникова', where:'small_bar',
                 detail:'Мастер-класс игры на инструменте. Параллельно с программой.' },
-              { id:'sub-inst-polyhedral', name:'Полиэдральное цветение', who:'Максимилиан Роганов', where:'small_bar',
-                detail:'Рекурсивная агрегация икосферических узлов. Модель самого процесса организации формы.' },
             ]
           },
           { id:'station-block-3', time:'18:30–19:30', name:'Третий блок станций',
             venue:['big_bar','small_bar'],
-            detail:'Три станции и один резерв.',
+            detail:'Одна станция, остальные слоты резерв.',
             substations:[
               { id:'sub-puzzle-graphs-evolution', name:'Эволюция графов', who:'Александр Николаичев', where:'small_bar',
                 detail:'Локальная замена подграфов рождает фрактальные картины и тьюринг-полные системы. С визуализациями.' },
-              { id:'sub-inst-plato', name:'Артефакты Плато', who:'Александр Солеев', where:'big_bar',
-                detail:'Скульптуры, в которых техногенные и природные паттерны соединяются в фрактальном объекте.' },
-              { id:'sub-inst-fractal-projection', name:'Миры фракталов', who:'Андрей', where:'small_bar',
-                detail:'На большой проекции — потоком сменяющие друг друга фрактальные миры. Объект для медленного смотрения.' },
               { id:'sub-block-3-extra', name:'Место для станции', placeholder:true, where:'бар',
-                detail:'Резерв. Подробности к апрелю.' },
+                detail:'Резерв.' },
             ]
           },
           { id:'skripchenko', time:'19:00–20:00', name:'Александра Скрипченко',
