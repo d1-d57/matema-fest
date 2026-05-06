@@ -3609,26 +3609,27 @@ const SPOTS = [
   // видит, что тут параллельные станции, и может прицельно кликнуть в нужный.
   // Сортировка зон в buildZones по убыванию площади гарантирует, что блоки лежат
   // в нижнем z-стеке, а мелкие саб-листы — сверху и перехватывают клики.
-  {id:'station-block-1', address:[1,3],     label:'Первый блок станций',  subtitle:'3 параллельные станции', time:'16:30–17:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-fractal-3d','mc-calligraphy','obs-diagnostics']},
+  {id:'station-block-1', address:[1,3],     label:'Первый блок станций',  subtitle:'станции + короткий метр', time:'16:30–17:30', venue:'бары и двор · главная сцена', clickThrough:true, eventIds:['puzzle-fractal-3d','mc-calligraphy','obs-diagnostics','cinema-short-1']},
   {id:'gelfand',         address:[1,2],     label:'Михаил Гельфанд',      subtitle:'Иерархия бесконечностей', time:'16:00–17:00', venue:'main_stage', eventIds:['talk-gelfand']},
-  {id:'station-block-2', address:[1,1,3],   label:'Второй блок станций',  subtitle:'3 параллельные станции', time:'17:30–18:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-engineering-origami','mc-tie-dye','mc-theremin']},
+  {id:'station-block-2', address:[1,1,3],   label:'Второй блок станций',  subtitle:'станции + короткий метр', time:'17:30–19:00', venue:'бары и двор · главная сцена', clickThrough:true, eventIds:['puzzle-engineering-origami','mc-tie-dye','mc-theremin','cinema-short-2']},
   {id:'rajgorodski',     address:[1,1,2],   label:'Андрей Райгородский',  time:'17:30–18:30', venue:'main_stage', eventIds:['talk-rajgorodski']},
-  {id:'station-block-3', address:[1,1,1,3], label:'Третий блок станций', subtitle:'1 станция', time:'18:30–19:30', venue:'бары и двор', clickThrough:true, eventIds:['puzzle-graphs-evolution']},
+  {id:'station-block-3', address:[1,1,1,3], label:'Третий блок станций', subtitle:'станции + кино + короткий метр', time:'18:30–20:30', venue:'бары · двор · библиотека', clickThrough:true, eventIds:['puzzle-graphs-evolution','mc-fractal-stained-glass','cinema-feature-pi','cinema-short-3']},
   {id:'skripchenko',     address:[1,1,1,2], label:'Александра Скрипченко', time:'19:00–20:00', venue:'main_stage', eventIds:['talk-skripchenko']},
 
-  // ---- Переходный слой к ночи (один шаг f₂ выше последних лекций).
-  {id:'station-block-4',   address:[1,1,1,1,3], label:'Четвёртый блок станций', subtitle:'4 параллельных слота', time:'19:30–20:30', venue:'бары и двор', clickThrough:true, placeholder:true, eventIds:[]},
-  {id:'music-extra-stage', address:[1,1,1,1,2], label:'место для музыканта',     time:'20:00–22:00', venue:'main_stage', placeholder:true, eventIds:[]},
+  // ---- Переходный слой к ночи. На [1,1,1,1,2] теперь Дискуссия (хедлайнер 20:30–22:00),
+  // а Нетворкинг и вечерний Рэп сидят как саб-листья на [1,1,1,1,2,2] и [1,1,1,1,2,3]
+  // (определены в SUBSPOTS). Старый music-extra-stage placeholder убран.
+  {id:'station-block-4', address:[1,1,1,1,3], label:'Четвёртый блок станций', subtitle:'станции + кино', time:'19:30–20:30', venue:'бары · двор · библиотека', clickThrough:true, eventIds:['station-4-1','station-4-2','mc-fractal-tiles','cinema-feature-doc-order']},
+  {id:'discussion',      address:[1,1,1,1,2], label:'Дискуссия',                time:'20:30–22:00', venue:'main_stage', eventIds:['discussion-tba']},
 
-  // ---- Ночная музыка слева: четыре сета снизу вверх по хронологии.
+  // ---- Ночная музыка слева: три сета снизу вверх по хронологии.
+  // (Научно-технический рэп переведён в вечер — он на саб-листе Дискуссии, не здесь.)
   {id:'music-termen',         address:[1,1,1,1,1,2],       label:'Пётр Термен',            time:'22:00–23:00',    venue:'main_stage', eventIds:['music-termen']},
-  {id:'music-rap',            address:[1,1,1,1,1,1,2],     label:'Научно-технический рэп', time:'23:00–00:00',    venue:'main_stage', eventIds:['music-rap']},
+  {id:'music-2-slot',         address:[1,1,1,1,1,1,2],     label:'место для музыканта',    time:'23:00–00:00',    venue:'main_stage', placeholder:true, eventIds:[]},
   {id:'music-brinstar',       address:[1,1,1,1,1,1,1,2],   label:'Brinstar',               time:'после полуночи', venue:'main_stage', eventIds:['music-brinstar']},
   {id:'music-spiral-fractal', address:[1,1,1,1,1,1,1,1,2], label:'Spiral Fractal',         time:'после полуночи', venue:'main_stage', eventIds:['music-spiral-fractal']},
 
   // ---- Ночная музыка справа: четыре резерва под параллельные сеты на малой сцене.
-  // Симметрия с левыми музыкальными слотами: 4 слева (известные музыканты),
-  // 4 справа (placeholder'ы), и хвост — танцевальная программа.
   {id:'music-extra-1', address:[1,1,1,1,1,3],       label:'место для музыканта', time:'ночь', venue:'small_bar', placeholder:true, eventIds:[]},
   {id:'music-extra-2', address:[1,1,1,1,1,1,3],     label:'место для музыканта', time:'ночь', venue:'small_bar', placeholder:true, eventIds:[]},
   {id:'music-extra-3', address:[1,1,1,1,1,1,1,3],   label:'место для музыканта', time:'ночь', venue:'small_bar', placeholder:true, eventIds:[]},
@@ -3661,7 +3662,7 @@ const TAIL = {
 // показан без подсветки, соседи остаются доступными для переключения.
 // ============================================================================
 const SUBSPOTS = [
-  // ---- Блок 1 [1,3], 16:30–17:30
+  // ---- Блок 1 [1,3], 16:30–17:30 (3 станции + короткометражка после)
   {id:'sub-puzzle-fractal-3d', parentId:'station-block-1', address:[1,3,3],
    label:'Сделай 3D-фрактал из бумаги', subtitle:'Полина Романова',
    time:'16:30–17:30', venue:'big_bar', eventIds:['puzzle-fractal-3d']},
@@ -3671,11 +3672,12 @@ const SUBSPOTS = [
   {id:'sub-obs-diagnostics', parentId:'station-block-1', address:[1,3,1,3],
    label:'Эстетика в диагнозах', subtitle:'Дария',
    time:'16:30–17:30', venue:'small_bar', eventIds:['obs-diagnostics']},
-  {id:'sub-block-1-extra', parentId:'station-block-1', address:[1,3,1,2],
-   label:'место для станции', time:'16:30–17:30', venue:'бар',
-   placeholder:true, eventIds:[]},
+  // Короткометражка 1 — глубже в блок 1, на главной сцене параллельно станциям
+  {id:'sub-cinema-interlude-1', parentId:'station-block-1', address:[1,3,1,1,2],
+   label:'Короткометражки', subtitle:'17:00–17:30',
+   time:'17:00–17:30', venue:'main_stage', eventIds:['cinema-short-1']},
 
-  // ---- Блок 2 [1,1,3], 17:30–18:30
+  // ---- Блок 2 [1,1,3], 17:30–19:00 (3 станции + короткометражка после)
   {id:'sub-puzzle-engineering-origami', parentId:'station-block-2', address:[1,1,3,3],
    label:'Инженерное оригами', subtitle:'Полина Романова',
    time:'17:30–18:30', venue:'big_bar', eventIds:['puzzle-engineering-origami']},
@@ -3685,37 +3687,51 @@ const SUBSPOTS = [
   {id:'sub-mc-theremin', parentId:'station-block-2', address:[1,1,3,1,3],
    label:'Терменвокс: попробовать самому', subtitle:'Лора Заиконникова',
    time:'17:30–18:30', venue:'small_bar', eventIds:['mc-theremin']},
-  {id:'sub-block-2-extra', parentId:'station-block-2', address:[1,1,3,1,2],
-   label:'место для станции', time:'17:30–18:30', venue:'бар',
-   placeholder:true, eventIds:[]},
+  // Короткометражка 2 — глубже в блок 2
+  {id:'sub-cinema-interlude-2', parentId:'station-block-2', address:[1,1,3,1,1,2],
+   label:'Короткометражки', subtitle:'18:30–19:00',
+   time:'18:30–19:00', venue:'main_stage', eventIds:['cinema-short-2']},
 
-  // ---- Блок 3 [1,1,1,3], 18:30–19:30 (3 события, 1 резерв)
+  // ---- Блок 3 [1,1,1,3], 18:30–20:30 (Графы, Витражи, Кино 1, Короткометражка 3)
   {id:'sub-puzzle-graphs-evolution', parentId:'station-block-3', address:[1,1,1,3,3],
    label:'Эволюция графов', subtitle:'Александр Николаичев',
    time:'18:30–19:30', venue:'small_bar', eventIds:['puzzle-graphs-evolution']},
-  {id:'sub-block-3-extra-2', parentId:'station-block-3', address:[1,1,1,3,2],
-   label:'место для станции', time:'18:30–19:30', venue:'бар',
-   placeholder:true, eventIds:[]},
-  {id:'sub-block-3-extra-3', parentId:'station-block-3', address:[1,1,1,3,1,3],
-   label:'место для станции', time:'18:30–19:30', venue:'бар',
-   placeholder:true, eventIds:[]},
-  {id:'sub-block-3-extra', parentId:'station-block-3', address:[1,1,1,3,1,2],
-   label:'место для станции', time:'18:30–19:30', venue:'бар',
-   placeholder:true, eventIds:[]},
+  {id:'sub-mc-fractal-stained-glass', parentId:'station-block-3', address:[1,1,1,3,2],
+   label:'Фрактальные витражи', subtitle:'Ася',
+   time:'18:30–19:30', venue:'big_bar', eventIds:['mc-fractal-stained-glass']},
+  // Кино 1 — глубже в блок 3, в библиотеке
+  {id:'sub-cinema-1', parentId:'station-block-3', address:[1,1,1,3,1,1,2],
+   label:'Кино 1', subtitle:'19:00–20:00',
+   time:'19:00–20:00', venue:'library', eventIds:['cinema-feature-pi']},
+  // Короткометражка 3 — параллельно концу блока, на главной сцене
+  {id:'sub-cinema-interlude-3', parentId:'station-block-3', address:[1,1,1,3,1,1,3],
+   label:'Короткометражки', subtitle:'20:00–20:30',
+   time:'20:00–20:30', venue:'main_stage', eventIds:['cinema-short-3']},
 
-  // ---- Блок 4 [1,1,1,1,3], 19:30–20:30 (все 4 — резервы)
-  {id:'sub-block-4-1', parentId:'station-block-4', address:[1,1,1,1,3,3],
-   label:'место для станции', time:'19:30–20:30', venue:'бар',
-   placeholder:true, eventIds:[]},
-  {id:'sub-block-4-2', parentId:'station-block-4', address:[1,1,1,1,3,2],
-   label:'место для станции', time:'19:30–20:30', venue:'бар',
-   placeholder:true, eventIds:[]},
-  {id:'sub-block-4-3', parentId:'station-block-4', address:[1,1,1,1,3,1,3],
-   label:'место для станции', time:'19:30–20:30', venue:'бар',
-   placeholder:true, eventIds:[]},
-  {id:'sub-block-4-4', parentId:'station-block-4', address:[1,1,1,1,3,1,2],
-   label:'место для станции', time:'19:30–20:30', venue:'бар',
-   placeholder:true, eventIds:[]},
+  // ---- Хедлайнер-зона 20:30–22:00 рядом с Дискуссией ([1,1,1,1,2])
+  // Дискуссия — главный лист (определена в SPOTS как 'discussion').
+  // Нетворкинг и вечерний Рэп — два саб-листа на этом же листе.
+  {id:'sub-networking', parentId:'discussion', address:[1,1,1,1,2,2],
+   label:'Нетворкинг «Розетка»', subtitle:'20:30–21:30',
+   time:'20:30–21:30', venue:'big_bar', eventIds:['social-rosetka']},
+  {id:'sub-rap-evening', parentId:'discussion', address:[1,1,1,1,2,3],
+   label:'Научно-технический рэп', subtitle:'20:30–22:00',
+   time:'20:30–22:00', venue:'courtyard', eventIds:['music-rap']},
+
+  // ---- Блок 4 [1,1,1,1,3], 19:30–22:00 (Станции 4 + Кино 2)
+  {id:'sub-station-4-1', parentId:'station-block-4', address:[1,1,1,1,3,3],
+   label:'Станция 4.1', subtitle:'TBA',
+   time:'19:30–20:30', venue:'big_bar', placeholder:true, eventIds:['station-4-1']},
+  {id:'sub-station-4-2', parentId:'station-block-4', address:[1,1,1,1,3,2],
+   label:'Станция 4.2', subtitle:'TBA',
+   time:'19:30–20:30', venue:'small_bar', placeholder:true, eventIds:['station-4-2']},
+  {id:'sub-mc-fractal-printing', parentId:'station-block-4', address:[1,1,1,1,3,1,3],
+   label:'Фрактал-Ателье: напечатай свой тайлинг', subtitle:'Татьяна Зайцева',
+   time:'19:30–20:30', venue:'courtyard', eventIds:['mc-fractal-tiles']},
+  // Кино 2 — глубже в блок 4, в библиотеке, длинное (20:00–22:00)
+  {id:'sub-cinema-2', parentId:'station-block-4', address:[1,1,1,1,3,1,1,2],
+   label:'Кино 2', subtitle:'20:00–22:00',
+   time:'20:00–22:00', venue:'library', eventIds:['cinema-feature-doc-order']},
 ];
 
 // Порядок в ALL_SPOTS = z-order в SVG: TAIL внизу стека (он самый «общий»),
@@ -4413,7 +4429,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-06e"></script>
+  <script src="festival-data.js?v=2026-05-07a"></script>
 
   <script>
   /* ============================================

@@ -1,12 +1,7 @@
 // === База событий фестиваля «Фрактальная Одиссея», 23 мая 2026 ===
-//
-// ЕДИНСТВЕННЫЙ источник правды о программе. Подключается синхронно через
-//     <script src="festival-data.js"></script>
-// в index.html и используется админ-страницей programmer.html.
-
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-06-v14",
+    "version": "2026-05-06-v15a",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.",
     "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.",
@@ -21,7 +16,9 @@ window.FESTIVAL_DATA = {
     "changes_v11": "Все 12 art-экспонатов вернулись в events с уникальными apollo_slot. Теперь круг ИСКУССТВО на сайте показывает 12 произведений. Squirrel получил kind=installation в exhibits.",
     "changes_v12": "Кинопрограмма наполнена: 4 короткометражки в субкат short (3 поставлены в интерлюды, 4-я ждёт слота 1 ч), 10 анимаций в субкат animation (без timeline-слотов, заглушки лайнапа), 4 полнометражных в субкат feature (Pi + 3 документалки). Это первичный лайнап, конкретные названия и авторы уточняются.",
     "changes_v13": "TBA-режим для неподтверждённых: Флюоро, ArtTech, Щелочь, все анимации, второй полный метр. String Art объединён в одну карточку (было 2). Полнометражных оставлено 2 (было 4): Пи + TBA. Реальные названия и автор спрятаны в служебных полях _team_real_title/_team_real_speaker для команды; на сайт идёт только title=TBA.",
-    "changes_v14": "УБРАНЫ ART-ДУБЛИ из events. Все 11 art-объектов теперь живут только в exhibits. Сайт научился читать exhibits через apolloItems в Аполлонии. Папоротник: art-id удалены из захардкоженных SPOTS/SUBSPOTS, заменены на placeholder-станции."
+    "changes_v14": "УБРАНЫ ART-ДУБЛИ из events. Все 11 art-объектов теперь живут только в exhibits. Сайт научился читать exhibits через apolloItems в Аполлонии. Папоротник: art-id удалены из захардкоженных SPOTS/SUBSPOTS, заменены на placeholder-станции.",
+    "changes_v15": "Раскладка папоротника по принципу \"час времени = блок\". Cinema/interlude слоты переадресованы внутрь соответствующих блоков станций. Кино 2 расширено до 22:00. Дискуссия расширена до 22:00. Научно-технический рэп переведён из ночной музыки в вечер: новый slot-rap-evening 20:30-22:00 на улице, на одном листе с Дискуссией и Нетворкингом (тройной хедлайнер).",
+    "changes_v15a": "Тройной хедлайнер реализован как три отдельных близких слота: slot-discussion [1,1,1,1,2], slot-rap-evening [1,1,1,1,2,3], slot-networking [1,1,1,1,2,2]. Будущая версия — лист с тремя зонами через polygon split."
   },
   "venues": {
     "library": {
@@ -333,14 +330,19 @@ window.FESTIVAL_DATA = {
         2
       ],
       "start": "20:30",
-      "end": "21:30",
+      "end": "22:00",
       "label_for_zoom": "Дискуссия · 20:30",
       "tool_label": "Дискуссия"
     },
     "slot-cinema-1": {
       "fern_address": [
+        1,
+        1,
+        1,
         3,
-        1
+        1,
+        1,
+        2
       ],
       "start": "19:00",
       "end": "20:00",
@@ -349,19 +351,27 @@ window.FESTIVAL_DATA = {
     },
     "slot-cinema-2": {
       "fern_address": [
+        1,
+        1,
+        1,
+        1,
         3,
+        1,
+        1,
         2
       ],
       "start": "20:00",
-      "end": "21:00",
+      "end": "22:00",
       "label_for_zoom": "Кино 2 · 20:00",
       "tool_label": "Кино 2"
     },
     "slot-interlude-1": {
       "fern_address": [
         1,
+        3,
         1,
-        4
+        1,
+        2
       ],
       "start": "17:00",
       "end": "17:30",
@@ -372,8 +382,10 @@ window.FESTIVAL_DATA = {
       "fern_address": [
         1,
         1,
+        3,
         1,
-        4
+        1,
+        2
       ],
       "start": "18:30",
       "end": "19:00",
@@ -385,13 +397,49 @@ window.FESTIVAL_DATA = {
         1,
         1,
         1,
+        3,
         1,
-        4
+        1,
+        3
       ],
       "start": "20:00",
       "end": "20:30",
       "label_for_zoom": "Перебив · 20:00",
       "tool_label": "Короткометражки 3"
+    },
+    "slot-rap-evening": {
+      "fern_address": [
+        1,
+        1,
+        1,
+        1,
+        2,
+        3
+      ],
+      "start": "20:30",
+      "end": "22:00",
+      "label_for_zoom": "Рэп · 20:30",
+      "tool_label": "Научно-технический рэп",
+      "allowed_venues": [
+        "courtyard"
+      ]
+    },
+    "slot-networking": {
+      "fern_address": [
+        1,
+        1,
+        1,
+        1,
+        2,
+        2
+      ],
+      "start": "20:30",
+      "end": "21:30",
+      "label_for_zoom": "Нетворкинг · 20:30",
+      "tool_label": "Нетворкинг «Розетка»",
+      "allowed_venues": [
+        "big_bar"
+      ]
     }
   },
   "events": [
@@ -433,7 +481,7 @@ window.FESTIVAL_DATA = {
       "category": "social",
       "apollo_slot": "mid-1",
       "venue": "big_bar",
-      "slot": "slot-discussion",
+      "slot": "slot-networking",
       "duration_override": null,
       "description": "Программа знакомств и совместных активностей. Готовится бюро «Розетка». Время и место уточняются."
     },
@@ -644,7 +692,7 @@ window.FESTIVAL_DATA = {
       "category": "music",
       "apollo_slot": "big-1",
       "venue": "courtyard",
-      "slot": "slot-music-2",
+      "slot": "slot-rap-evening",
       "duration_override": null,
       "description": "Музыкальная программа переходного интенсива между Терменом и ночной танцевальной частью.",
       "subcategory": "courtyard"
