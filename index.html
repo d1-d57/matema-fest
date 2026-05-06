@@ -3442,6 +3442,65 @@ function drawLeafBatch(ctx, n, address, vp, cssW, cssH, alpha, color, size){
   }
 }
 
+// Подсветка одной зоны делимого спота. Рисует точки на адресе листа-родителя,
+// но фильтрует только те что попадают в hull зоны через ray-casting.
+function drawZoneBatch(ctx, n, address, hull, vp, cssW, cssH, alpha, color, size){
+  if(!hull || hull.length < 3) return;
+  let zxMin=Infinity, zxMax=-Infinity, zyMin=Infinity, zyMax=-Infinity;
+  for(const [x,y] of hull){
+    if(x<zxMin)zxMin=x; if(x>zxMax)zxMax=x;
+    if(y<zyMin)zyMin=y; if(y>zyMax)zyMax=y;
+  }
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  const half = size / 2;
+  const vxMin = vp.xMin, vxSpan = vp.xMax - vp.xMin;
+  const vyMin = vp.yMin, vySpan = vp.yMax - vp.yMin;
+
+  function inHull(px, py){
+    let inside = false;
+    for(let i=0, j=hull.length-1; i<hull.length; j=i++){
+      const xi=hull[i][0], yi=hull[i][1];
+      const xj=hull[j][0], yj=hull[j][1];
+      const intersect = ((yi>py) !== (yj>py)) &amp;&amp;
+        (px < (xj-xi)*(py-yi)/(yj-yi+1e-12) + xi);
+      if(intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  let x = 0, y = 0;
+  for(let i = 0; i < 30; i++){
+    const t = TFS[pickIdx()];
+    const nx = t.a*x + t.b*y + t.e;
+    const ny = t.c*x + t.d*y + t.f;
+    x = nx; y = ny;
+  }
+  const aL = address.length;
+  for(let i = 0; i < n; i++){
+    const t0 = TFS[pickIdx()];
+    const nx = t0.a*x + t0.b*y + t0.e;
+    const ny = t0.c*x + t0.d*y + t0.f;
+    x = nx; y = ny;
+    let lx = x, ly = y;
+    for(let k = aL - 1; k >= 0; k--){
+      const tt = TFS[address[k]];
+      const lnx = tt.a*lx + tt.b*ly + tt.e;
+      const lny = tt.c*lx + tt.d*ly + tt.f;
+      lx = lnx; ly = lny;
+    }
+    const rx = lx*COSR - ly*SINR;
+    const ry = lx*SINR + ly*COSR;
+    if(rx < zxMin || rx > zxMax || ry < zyMin || ry > zyMax) continue;
+    if(!inHull(rx, ry)) continue;
+    const cx = ((rx - vxMin) / vxSpan) * cssW;
+    if(cx < -size || cx > cssW + size) continue;
+    const cy = cssH - ((ry - vyMin) / vySpan) * cssH;
+    if(cy < -size || cy > cssH + size) continue;
+    ctx.fillRect(cx - half, cy - half, size, size);
+  }
+}
+
 // Хвост папоротника: точки у самого кончика, через 9 принудительных f₂.
 // Глубина 9 выбрана так, чтобы зона хвоста не пересекалась ни с одним
 // из адресуемых музыкальных листьев (максимальный leading-f₂ среди них — 8).
@@ -3598,18 +3657,12 @@ function convexHull(pts){
 const evMap = Object.fromEntries(RAW.events.map(e=>[e.id,e]));
 
 const SPOTS = [
-  // ---- Утро в библиотеке. Лист [3] разделён на две зоны: внизу Евдокимов, вверху Тарасевич.
-  // Это два больших события подряд по часу, на одной площадке. По правилу
-  // «два больших одновременно — на одном листе» делим лист пополам.
-  {id:'morning-library', address:[3], label:'Утро в библиотеке', subtitle:'два квиза подряд', time:'14:00–16:00', venue:'library',
-   zones: [
-     {id:'evdokimov',  region:'lower',
-      label:'Михаил Евдокимов', subtitle:'Задачки «Квантика»',
-      time:'14:00–15:00', venue:'library', eventIds:['talk-evdokimov']},
-     {id:'tarasevich', region:'upper',
-      label:'Григорий Тарасевич', subtitle:'Научпоп-квиз',
-      time:'15:00–16:00', venue:'library', eventIds:['talk-tarasevich']},
-   ]},
+  // ---- Утро в библиотеке. Адреса [3] и [2] — два маленьких отростка у корня.
+  // Два события идут подряд по часу на одной площадке (библиотека Достоевского),
+  // но это РАЗНЫЕ лекции — каждая занимает свой лист. Так у пользователя
+  // не возникает ощущения, что у фестиваля где-то «пустое место».
+  {id:'evdokimov',  address:[3], label:'Михаил Евдокимов',   subtitle:'Задачки «Квантика»', time:'14:00–15:00', venue:'library', eventIds:['talk-evdokimov']},
+  {id:'tarasevich', address:[2], label:'Григорий Тарасевич', subtitle:'Научпоп-квиз',       time:'15:00–16:00', venue:'library', eventIds:['talk-tarasevich']},
 
   // ---- Дневная программа: лекции на левой стороне стебля, блоки станций на правой.
   // БЛОКИ — clickThrough: true. Они НЕ кликабельны (на них нельзя «активироваться»),
@@ -3649,11 +3702,11 @@ const SPOTS = [
 
   // ---- Ночная музыка справа: четыре резерва под параллельные сеты на малой сцене.
   // Симметрия с левыми музыкальными слотами: 4 слева (известные музыканты),
-  // 4 справа (placeholder'ы), и хвост — танцевальная программа.
-  {id:'music-extra-1', address:[1,1,1,1,1,3],       label:'место для музыканта', time:'ночь', venue:'small_bar', placeholder:true, eventIds:[]},
-  {id:'music-extra-2', address:[1,1,1,1,1,1,3],     label:'место для музыканта', time:'ночь', venue:'small_bar', placeholder:true, eventIds:[]},
-  {id:'music-extra-3', address:[1,1,1,1,1,1,1,3],   label:'место для музыканта', time:'ночь', venue:'small_bar', placeholder:true, eventIds:[]},
-  {id:'music-extra-4', address:[1,1,1,1,1,1,1,1,3], label:'место для музыканта', time:'ночь', venue:'small_bar', placeholder:true, eventIds:[]},
+  // 4 справа (параллельные на малой сцене), и хвост — танцевальная программа.
+  {id:'music-extra-1', address:[1,1,1,1,1,3],       label:'Малая сцена', subtitle:'22:00–23:00',    time:'22:00–23:00', venue:'small_bar', eventIds:['music-parallel-1']},
+  {id:'music-extra-2', address:[1,1,1,1,1,1,3],     label:'Малая сцена', subtitle:'23:00–00:00',    time:'23:00–00:00', venue:'small_bar', eventIds:['music-parallel-2']},
+  {id:'music-extra-3', address:[1,1,1,1,1,1,1,3],   label:'Малая сцена', subtitle:'00:00–01:00',    time:'00:00–01:00', venue:'small_bar', eventIds:['music-parallel-3']},
+  {id:'music-extra-4', address:[1,1,1,1,1,1,1,1,3], label:'Малая сцена', subtitle:'01:00–02:00',    time:'01:00–02:00', venue:'small_bar', eventIds:['music-parallel-4']},
 ];
 
 // Хвост — не лист, а зона у самого кончика фрактала, через 9 принудительных f₂.
@@ -3661,7 +3714,7 @@ const SPOTS = [
 // тогда мелкие листья на тех же глубинах остаются кликабельными поверх хвоста.
 const TAIL = {
   id:'tail', label:'Танцевальная программа', time:'после 02:00', venue:'main_stage',
-  isNight:true, placeholder:true, eventIds:[]
+  isNight:true, eventIds:['dance-program']
 };
 
 // ============================================================================
@@ -3734,7 +3787,8 @@ const SUBSPOTS = [
   {id:'sub-mc-fractal-tiles', parentId:'station-block-4', address:[1,1,1,1,3,1,3],
    label:'Фрактал-Ателье', subtitle:'Татьяна Зайцева',
    time:'19:30–20:30', venue:'courtyard', eventIds:['mc-fractal-tiles']},
-  {id:'sub-cinema-2', parentId:'station-block-4', address:[1,1,1,1,3,1,1,2],
+  // Кино 2 — на саб-стебле выше Фрактал-Ателье
+  {id:'sub-cinema-2', parentId:'station-block-4', address:[1,1,1,1,3,1,2],
    label:'Кино 2', subtitle:'20:00–22:00',
    time:'20:00–22:00', venue:'library', eventIds:['cinema-feature-doc-order']},
 ];
@@ -3903,34 +3957,75 @@ function repaintHl(){
   clearHl();
   const sz = Math.max(1.4, pointSize() * 1.2);
 
-  // Контекст активного саб-листа — подсветка сестёр
-  if(activeSpot &amp;&amp; activeSpot.parentId){
+  // ----------- Контекст active -----------
+  // Сёстры активного саб-листа (под clickThrough-блоком): тусклые
+  if(activeSpot &amp;&amp; activeSpot.parentId &amp;&amp; !activeSpot.isZone){
     for(const sib of ALL_SPOTS){
       if(sib.parentId !== activeSpot.parentId) continue;
       if(sib === activeSpot) continue;
+      if(sib.isZone) continue;
       drawLeafBatch(hctx, 7000, sib.address, currentVP, cssW, cssH, 0.72, '#C89A3D', sz);
     }
   }
 
+  // Активная ЗОНА: сама ярко-жёлтым, сёстры-зоны того же листа — приглушённо но видимо
+  if(activeSpot &amp;&amp; activeSpot.isZone &amp;&amp; activeSpot.parentSpot){
+    const container = activeSpot.parentSpot;
+    if(container.zoneHulls){
+      // Сёстры-зоны — янтарём (видимо)
+      for(const sibZone of container.zones){
+        if(sibZone.id === activeSpot.id) continue;
+        const sibHull = container.zoneHulls[sibZone.id];
+        if(!sibHull) continue;
+        drawZoneBatch(hctx, 7500, container.address, sibHull, currentVP, cssW, cssH, 0.7, '#C89A3D', sz);
+      }
+      // Сама активная зона — самая яркая
+      const myHull = container.zoneHulls[activeSpot.id];
+      if(myHull){
+        drawZoneBatch(hctx, 10000, container.address, myHull, currentVP, cssW, cssH, 1.0, '#FFD27A', sz * 1.15);
+      }
+    }
+  }
+
+  // ----------- Контекст hover -----------
   if(hoverSpot &amp;&amp; hoverSpot !== activeSpot){
     if(hoverSpot.clickThrough){
-      // Hover на блок — подсвечиваем всех 4 детей янтарём.
-      // Это превращает «мёртвую дыру» внутри визуальной массы блока
-      // в активную подсказку «вот четыре параллельных события».
+      // Hover на блок-станций — подсвечиваем всех детей.
       for(const child of ALL_SPOTS){
         if(child.parentId !== hoverSpot.id) continue;
+        if(child.isZone) continue;
         drawLeafBatch(hctx, 6500, child.address, currentVP, cssW, cssH, 0.78, '#C89A3D', sz * 1.05);
       }
+    } else if(hoverSpot.isZone &amp;&amp; hoverSpot.parentSpot){
+      const container = hoverSpot.parentSpot;
+      if(container.zoneHulls){
+        // Сёстры-зоны: видимо подсвечены янтарём (но тусклее активной),
+        // чтобы пользователь видел что лист поделён на N частей.
+        const sameContainerActive = activeSpot &amp;&amp; activeSpot.isZone &amp;&amp; activeSpot.parentSpot === container;
+        if(!sameContainerActive){
+          for(const sibZone of container.zones){
+            if(sibZone.id === hoverSpot.id) continue;
+            const sibHull = container.zoneHulls[sibZone.id];
+            if(!sibHull) continue;
+            drawZoneBatch(hctx, 7000, container.address, sibHull, currentVP, cssW, cssH, 0.65, '#C89A3D', sz);
+          }
+        }
+        // Сам hover — ярко
+        const myHull = container.zoneHulls[hoverSpot.id];
+        if(myHull){
+          drawZoneBatch(hctx, 9000, container.address, myHull, currentVP, cssW, cssH, 1.0, '#FFD27A', sz * 1.15);
+        }
+      }
     } else {
-      // Тусклое предчувствие сестёр — только когда нет активного спота
+      // Обычный спот (лекция/саб-лист)
       if(hoverSpot.parentId &amp;&amp; !activeSpot){
         for(const sib of ALL_SPOTS){
           if(sib.parentId !== hoverSpot.parentId) continue;
           if(sib === hoverSpot) continue;
+          if(sib.isZone) continue;
           drawLeafBatch(hctx, 4000, sib.address, currentVP, cssW, cssH, 0.42, '#C89A3D', sz);
         }
       }
-      // Сам hover — ярко
       if(hoverSpot.isNight){
         drawNightBatch(hctx, 8000, currentVP, cssW, cssH, 1.0, '#C89A3D', sz * 1.1);
       } else {
@@ -4510,7 +4605,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-07b"></script>
+  <script src="festival-data.js?v=2026-05-07c"></script>
 
   <script>
   /* ============================================
