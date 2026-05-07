@@ -3657,6 +3657,8 @@ function buildSpotsFromData(raw){
     const t = sl.type;
     if(t === 'talk' || t === 'discussion') return 'headline';
     if(t === 'dance') return 'tail';
+    // Главная сцена для музыки — хедлайнерская сторона.
+    if(t === 'music' &amp;&amp; sl.venue === 'main_stage') return 'headline';
     return 'side';
   }
 
@@ -4761,7 +4763,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-07j"></script>
+  <script src="festival-data.js?v=2026-05-07k"></script>
 
   <script>
   /* ============================================
@@ -6954,6 +6956,8 @@ window.addEventListener('resize', ()=>{
         var t = sl.type;
         if(t === 'talk' || t === 'discussion') return 'headline';
         if(t === 'dance') return 'tail';
+        // Главная сцена для музыки — хедлайнерская сторона.
+        if(t === 'music' && sl.venue === 'main_stage') return 'headline';
         return 'side';
       }
       function findLeafForSlot(sl){

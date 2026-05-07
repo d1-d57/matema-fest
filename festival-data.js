@@ -1,7 +1,7 @@
 // === База событий фестиваля «Фрактальная Одиссея», 23 мая 2026 ===
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-07-v18",
+    "version": "2026-05-07-v19",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.",
     "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.",
@@ -20,7 +20,8 @@ window.FESTIVAL_DATA = {
     "changes_v15": "Зоны: тройной хедлайнер (Дискуссия+Нетворкинг+Рэп) на одном листе [1,1,1,1,2]. Утренний блок (Евдокимов+Тарасевич) на одном листе [3]. Cinema/interlude переадресованы внутрь блоков станций. Кино 2 продлено до 22:00.",
     "changes_v16": "Короткометражки и кино перенесены на адреса блоков-листьев (было: подлисты [...,1,2]/[...,1,3], стало: тот же адрес что у блока станций). Это требуется новой логикой v19-B где SPOTS генерируется из time_slots по fern_address: все события одного адреса становятся зонами одного листа.",
     "changes_v17": "Разделение составных слотов: slot-stations-1..4 разбиты по событиям (slot-stations-1-1, -1-2, -1-3 и т.д.). Каждый слот теперь содержит максимум 1 событие. Поля category/apollo_slot/subcategory перенесены с событий на слоты (это атрибуты места, не карточки). У событий-сирот (banks: cinema/animation без слота) поля остались. Добавлено slot.type — короткий тип: talk/station/interlude/cinema/music/discussion/networking/dance/music-extra. Также перенесён venue с событий на слоты.",
-    "changes_v18": "Введена секция fern_leaves — явный список листьев папоротника с временами и сторонами (headline / side / tail). Поле fern_address удалено из всех слотов. Привязка слот→лист теперь делается алгоритмом в индексе по правилу: хедлайнерский слот (talk/discussion) → headline лист по времени; иначе → side лист. Изменены времена: cinema-1 (Пи) 19:30-21:00, cinema-2 21:00-22:00, dance 01-04. Музыкальная программа переразвязана: Brinstar 23-00, Spiral Fractal 00-01. Удалены slot-music-4 и slot-music-parallel-4. Переименована \"Малая сцена\" в \"Музыка (малая сцена)\"."
+    "changes_v18": "Введена секция fern_leaves — явный список листьев папоротника с временами и сторонами (headline / side / tail). Поле fern_address удалено из всех слотов. Привязка слот→лист теперь делается алгоритмом в индексе по правилу: хедлайнерский слот (talk/discussion) → headline лист по времени; иначе → side лист. Изменены времена: cinema-1 (Пи) 19:30-21:00, cinema-2 21:00-22:00, dance 01-04. Музыкальная программа переразвязана: Brinstar 23-00, Spiral Fractal 00-01. Удалены slot-music-4 и slot-music-parallel-4. Переименована \"Малая сцена\" в \"Музыка (малая сцена)\".",
+    "changes_v19": "Сдвиг всех хедлайнерских листьев на 1 уровень вниз (убрана пустота слева). Расширение музыкальной программы до 03:00: добавлены 4 новых слота (slot-music-5, slot-music-parallel-5, slot-music-6, slot-music-parallel-6) и 4 новых листа. Добавлены 7 новых музыкантов: Stropharia, Gonaitei, Hobboth, WOMBA, Rombix, Aensof, Darkest Supernova. Танцы (slot-dance) сжаты до 03:00-04:00."
   },
   "venues": {
     "library": {
@@ -319,7 +320,7 @@ window.FESTIVAL_DATA = {
       "venue": "small_bar"
     },
     "slot-dance": {
-      "start": "01:00",
+      "start": "03:00",
       "end": "04:00",
       "label_for_zoom": "Танцпол · 02:00",
       "tool_label": "Танцпол",
@@ -420,6 +421,46 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "big-1",
       "subcategory": "courtyard",
       "venue": "courtyard"
+    },
+    "slot-music-5": {
+      "venue": "main_stage",
+      "start": "01:00",
+      "end": "02:00",
+      "tool_label": "Музыка",
+      "type": "music",
+      "category": "music",
+      "apollo_slot": null,
+      "subcategory": "main_stage"
+    },
+    "slot-music-parallel-5": {
+      "venue": "small_bar",
+      "start": "01:00",
+      "end": "02:00",
+      "tool_label": "Музыка (малая сцена)",
+      "type": "music-extra",
+      "category": "music",
+      "apollo_slot": null,
+      "subcategory": "big_bar"
+    },
+    "slot-music-6": {
+      "venue": "main_stage",
+      "start": "02:00",
+      "end": "03:00",
+      "tool_label": "Музыка",
+      "type": "music",
+      "category": "music",
+      "apollo_slot": null,
+      "subcategory": "main_stage"
+    },
+    "slot-music-parallel-6": {
+      "venue": "small_bar",
+      "start": "02:00",
+      "end": "03:00",
+      "tool_label": "Музыка (малая сцена)",
+      "type": "music-extra",
+      "category": "music",
+      "apollo_slot": null,
+      "subcategory": "big_bar"
     }
   },
   "events": [
@@ -642,39 +683,6 @@ window.FESTIVAL_DATA = {
       "slot": "slot-music-3",
       "duration_override": null,
       "description": "Музыкальный сет в поздней ночной части. Подробности уточняются."
-    },
-    {
-      "id": "music-parallel-1",
-      "status": "placeholder",
-      "title": "Малая сцена 1",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "slot": "slot-music-parallel-1",
-      "duration_override": null,
-      "description": null
-    },
-    {
-      "id": "music-parallel-2",
-      "status": "placeholder",
-      "title": "Малая сцена 2",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "slot": "slot-music-parallel-2",
-      "duration_override": null,
-      "description": null
-    },
-    {
-      "id": "music-parallel-3",
-      "status": "placeholder",
-      "title": "Малая сцена 3",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "slot": "slot-music-parallel-3",
-      "duration_override": null,
-      "description": null
     },
     {
       "id": "dance-program",
@@ -930,6 +938,55 @@ window.FESTIVAL_DATA = {
       "speaker": null,
       "slot": "slot-cinema-2",
       "description": null
+    },
+    {
+      "id": "music-stropharia",
+      "title": "Stropharia",
+      "speaker": "Stropharia",
+      "description": "",
+      "slot": "slot-music-5"
+    },
+    {
+      "id": "music-gonaitei",
+      "title": "Gonaitei",
+      "speaker": "Gonaitei",
+      "description": "",
+      "slot": "slot-music-6"
+    },
+    {
+      "id": "music-hobboth",
+      "title": "Hobboth",
+      "speaker": "Hobboth",
+      "description": "",
+      "slot": "slot-music-parallel-1"
+    },
+    {
+      "id": "music-womba",
+      "title": "WOMBA",
+      "speaker": "WOMBA",
+      "description": "",
+      "slot": "slot-music-parallel-2"
+    },
+    {
+      "id": "music-rombix",
+      "title": "Rombix",
+      "speaker": "Rombix",
+      "description": "",
+      "slot": "slot-music-parallel-3"
+    },
+    {
+      "id": "music-aensof",
+      "title": "Aensof",
+      "speaker": "Aensof",
+      "description": "",
+      "slot": "slot-music-parallel-5"
+    },
+    {
+      "id": "music-darkest-supernova",
+      "title": "Darkest Supernova",
+      "speaker": "Darkest Supernova",
+      "description": "",
+      "slot": "slot-music-parallel-6"
     }
   ],
   "_howto": {
@@ -1124,7 +1181,6 @@ window.FESTIVAL_DATA = {
     {
       "id": "leaf-headline-1",
       "address": [
-        1,
         2
       ],
       "side": "headline",
@@ -1134,7 +1190,6 @@ window.FESTIVAL_DATA = {
     {
       "id": "leaf-headline-2",
       "address": [
-        1,
         1,
         2
       ],
@@ -1147,7 +1202,6 @@ window.FESTIVAL_DATA = {
       "address": [
         1,
         1,
-        1,
         2
       ],
       "side": "headline",
@@ -1157,7 +1211,6 @@ window.FESTIVAL_DATA = {
     {
       "id": "leaf-headline-4",
       "address": [
-        1,
         1,
         1,
         1,
@@ -1234,7 +1287,6 @@ window.FESTIVAL_DATA = {
         1,
         1,
         1,
-        1,
         2
       ],
       "side": "headline",
@@ -1259,7 +1311,6 @@ window.FESTIVAL_DATA = {
     {
       "id": "leaf-music-headline-2",
       "address": [
-        1,
         1,
         1,
         1,
@@ -1296,7 +1347,6 @@ window.FESTIVAL_DATA = {
         1,
         1,
         1,
-        1,
         2
       ],
       "side": "headline",
@@ -1321,10 +1371,76 @@ window.FESTIVAL_DATA = {
       "end": "01:00"
     },
     {
+      "id": "leaf-music-headline-4",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "side": "headline",
+      "start": "01:00",
+      "end": "02:00"
+    },
+    {
+      "id": "leaf-music-side-4",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "01:00",
+      "end": "02:00"
+    },
+    {
+      "id": "leaf-music-headline-5",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "side": "headline",
+      "start": "02:00",
+      "end": "03:00"
+    },
+    {
+      "id": "leaf-music-side-5",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "02:00",
+      "end": "03:00"
+    },
+    {
       "id": "leaf-tail",
       "address": "tail",
       "side": "tail",
-      "start": "01:00",
+      "start": "03:00",
       "end": "04:00"
     }
   ]
