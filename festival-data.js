@@ -1,7 +1,7 @@
 // === База событий фестиваля «Фрактальная Одиссея», 23 мая 2026 ===
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-07-v19",
+    "version": "2026-05-07-v21",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.",
     "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.",
@@ -21,7 +21,8 @@ window.FESTIVAL_DATA = {
     "changes_v16": "Короткометражки и кино перенесены на адреса блоков-листьев (было: подлисты [...,1,2]/[...,1,3], стало: тот же адрес что у блока станций). Это требуется новой логикой v19-B где SPOTS генерируется из time_slots по fern_address: все события одного адреса становятся зонами одного листа.",
     "changes_v17": "Разделение составных слотов: slot-stations-1..4 разбиты по событиям (slot-stations-1-1, -1-2, -1-3 и т.д.). Каждый слот теперь содержит максимум 1 событие. Поля category/apollo_slot/subcategory перенесены с событий на слоты (это атрибуты места, не карточки). У событий-сирот (banks: cinema/animation без слота) поля остались. Добавлено slot.type — короткий тип: talk/station/interlude/cinema/music/discussion/networking/dance/music-extra. Также перенесён venue с событий на слоты.",
     "changes_v18": "Введена секция fern_leaves — явный список листьев папоротника с временами и сторонами (headline / side / tail). Поле fern_address удалено из всех слотов. Привязка слот→лист теперь делается алгоритмом в индексе по правилу: хедлайнерский слот (talk/discussion) → headline лист по времени; иначе → side лист. Изменены времена: cinema-1 (Пи) 19:30-21:00, cinema-2 21:00-22:00, dance 01-04. Музыкальная программа переразвязана: Brinstar 23-00, Spiral Fractal 00-01. Удалены slot-music-4 и slot-music-parallel-4. Переименована \"Малая сцена\" в \"Музыка (малая сцена)\".",
-    "changes_v19": "Сдвиг всех хедлайнерских листьев на 1 уровень вниз (убрана пустота слева). Расширение музыкальной программы до 03:00: добавлены 4 новых слота (slot-music-5, slot-music-parallel-5, slot-music-6, slot-music-parallel-6) и 4 новых листа. Добавлены 7 новых музыкантов: Stropharia, Gonaitei, Hobboth, WOMBA, Rombix, Aensof, Darkest Supernova. Танцы (slot-dance) сжаты до 03:00-04:00."
+    "changes_v19": "Сдвиг всех хедлайнерских листьев на 1 уровень вниз (убрана пустота слева). Расширение музыкальной программы до 03:00: добавлены 4 новых слота (slot-music-5, slot-music-parallel-5, slot-music-6, slot-music-parallel-6) и 4 новых листа. Добавлены 7 новых музыкантов: Stropharia, Gonaitei, Hobboth, WOMBA, Rombix, Aensof, Darkest Supernova. Танцы (slot-dance) сжаты до 03:00-04:00.",
+    "changes_v21": "Добавлены 6 анимаций (cinema/animation) и 4 короткометражки (cinema/short). Из коротких 3 привязаны к существующим interlude-слотам в расписании, 4-я (длинное название Menger meets Eiffel) — сирота для ночного показа. Удалены 11 старых TBA-сирот."
   },
   "venues": {
     "library": {
@@ -729,204 +730,6 @@ window.FESTIVAL_DATA = {
       "description": "Тема дискуссии и состав участников будут объявлены."
     },
     {
-      "id": "cinema-short-1",
-      "status": "tentative",
-      "title": "Короткометражка №1",
-      "speaker": null,
-      "slot": "slot-interlude-1",
-      "description": "Короткий метр, около 6 минут. Источник: YouTube (Sx_0cdogaZ8). Название и автор уточняются.",
-      "links": [
-        "https://www.youtube.com/watch?v=Sx_0cdogaZ8"
-      ]
-    },
-    {
-      "id": "cinema-short-2",
-      "status": "tentative",
-      "title": "Короткометражка №2",
-      "speaker": null,
-      "slot": "slot-interlude-2",
-      "description": "Короткий метр, около 4 минут. Источник: Vimeo. Название и автор уточняются.",
-      "links": [
-        "https://vimeo.com/921612050"
-      ]
-    },
-    {
-      "id": "cinema-short-3",
-      "status": "tentative",
-      "title": "Короткометражка №3",
-      "speaker": null,
-      "slot": "slot-interlude-3",
-      "description": "Короткий метр, около 10 минут. Источник: Vimeo channel 561739. Название и автор уточняются.",
-      "links": [
-        "https://vimeo.com/channels/561739/50924800"
-      ]
-    },
-    {
-      "id": "cinema-short-4",
-      "status": "tentative",
-      "title": "Короткометражка №4",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "short",
-      "apollo_slot": "mid-1",
-      "venue": null,
-      "slot": null,
-      "description": "Короткий метр, около 20 минут. Может пойти в Кино 1 или Кино 2 (часовой слот в библиотеке). Источник: YouTube (tN_eNQFcv5E).",
-      "links": [
-        "https://www.youtube.com/watch?v=tN_eNQFcv5E"
-      ]
-    },
-    {
-      "id": "cinema-anim-fraktaal",
-      "status": "tentative",
-      "title": "TBA",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "animation",
-      "apollo_slot": "big-1",
-      "venue": null,
-      "slot": null,
-      "description": null,
-      "links": [
-        "https://www.youtube.com/watch?v=WD0xC5PwFmw"
-      ]
-    },
-    {
-      "id": "cinema-anim-machina-1",
-      "status": "tentative",
-      "title": "TBA",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "animation",
-      "apollo_slot": "big-2",
-      "venue": null,
-      "slot": null,
-      "description": null,
-      "links": [
-        "https://www.youtube.com/watch?v=dDBsPFk5nuQ"
-      ]
-    },
-    {
-      "id": "cinema-anim-machina-2",
-      "status": "tentative",
-      "title": "TBA",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "animation",
-      "apollo_slot": "big-3",
-      "venue": null,
-      "slot": null,
-      "description": null,
-      "links": [
-        "https://www.youtube.com/watch?v=CUIaulVmmys"
-      ]
-    },
-    {
-      "id": "cinema-anim-cartoon-1",
-      "status": "tentative",
-      "title": "TBA",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "animation",
-      "apollo_slot": "mid-1",
-      "venue": null,
-      "slot": null,
-      "description": null,
-      "links": [
-        "https://www.youtube.com/watch?v=0C75vRVL5lE"
-      ]
-    },
-    {
-      "id": "cinema-anim-cartoon-2",
-      "status": "tentative",
-      "title": "TBA",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "animation",
-      "apollo_slot": "mid-2",
-      "venue": null,
-      "slot": null,
-      "description": null,
-      "links": [
-        "https://vimeo.com/channels/561739/36608074"
-      ]
-    },
-    {
-      "id": "cinema-anim-other-1",
-      "status": "tentative",
-      "title": "TBA",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "animation",
-      "apollo_slot": "mid-3",
-      "venue": null,
-      "slot": null,
-      "description": null,
-      "links": [
-        "https://www.youtube.com/watch?v=S530Vwa33G0"
-      ]
-    },
-    {
-      "id": "cinema-anim-vimeo-1",
-      "status": "tentative",
-      "title": "TBA",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "animation",
-      "apollo_slot": "center",
-      "venue": null,
-      "slot": null,
-      "description": null,
-      "links": [
-        "https://vimeo.com/channels/561739/34544497"
-      ]
-    },
-    {
-      "id": "cinema-anim-vimeo-2",
-      "status": "tentative",
-      "title": "TBA",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "animation",
-      "apollo_slot": "ear-1",
-      "venue": null,
-      "slot": null,
-      "description": null,
-      "links": [
-        "https://vimeo.com/channels/561739/43351466"
-      ]
-    },
-    {
-      "id": "cinema-anim-simple-1",
-      "status": "tentative",
-      "title": "TBA",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "animation",
-      "apollo_slot": "ear-2",
-      "venue": null,
-      "slot": null,
-      "description": null,
-      "links": [
-        "https://www.youtube.com/watch?v=zXTpASSd9xE"
-      ]
-    },
-    {
-      "id": "cinema-anim-simple-2",
-      "status": "tentative",
-      "title": "TBA",
-      "speaker": null,
-      "category": "cinema",
-      "subcategory": "animation",
-      "apollo_slot": "ear-3",
-      "venue": null,
-      "slot": null,
-      "description": null,
-      "links": [
-        "https://www.youtube.com/watch?v=Hk_tHcJzTOo"
-      ]
-    },
-    {
       "id": "cinema-feature-pi",
       "status": "tentative",
       "title": "Пи",
@@ -990,6 +793,87 @@ window.FESTIVAL_DATA = {
       "speaker": "Darkest Supernova",
       "description": "",
       "slot": "slot-music-parallel-6"
+    },
+    {
+      "id": "cinema-anim-horsthuis",
+      "title": "Julius Horsthuis",
+      "description": "Цифровой художник из Нидерландов, известный своими завораживающими фрактальными анимациями, которые сочетают в себе абстрактную сложность с кинематографической красотой.",
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "big-1",
+      "venue": "main_stage"
+    },
+    {
+      "id": "cinema-anim-machina",
+      "title": "Machina Infinitum",
+      "description": "«Эти миры существовали всегда, Machina Infinitum интерпретирует их, позволяя вам их познать»",
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "big-2",
+      "venue": "main_stage"
+    },
+    {
+      "id": "cinema-anim-missing-fractals",
+      "title": "Missing fractals",
+      "description": "The case of the missing fractals. Частный детектив Мэнни Брот решает головокружительные геометрические загадки! Приготовьтесь к потрясающему раскрытию дела о пропавших фракталах!",
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "big-3",
+      "venue": "main_stage"
+    },
+    {
+      "id": "cinema-anim-fractal-baby",
+      "title": "Fractal baby",
+      "description": "Маленькая девочка разговаривает с младенцем, который пока находится в животе у матери. Она перечисляет все возможные причины, по которым ему следует выйти вовне...",
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "mid-1",
+      "venue": "main_stage"
+    },
+    {
+      "id": "cinema-anim-like-in-a-dream",
+      "title": "Like in a dream",
+      "description": "Анимация, посвящённая проекту «Атлас человека» Брайана Альвареса из Калифорнийского университета в Беркли и иллюстрирующая его идею о красоте живых организмов.",
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "mid-2",
+      "venue": "main_stage"
+    },
+    {
+      "id": "cinema-anim-worlds-within-worlds",
+      "title": "Worlds Within Worlds",
+      "description": "Worlds Within Worlds: Tanawha. Аудиовизуальное исследование пространства, времени, размерности, геометрии, сознания и биоразнообразия.",
+      "category": "cinema",
+      "subcategory": "animation",
+      "apollo_slot": "mid-3",
+      "venue": "main_stage"
+    },
+    {
+      "id": "cinema-short-big-brains",
+      "title": "Big Brains, Small Films",
+      "description": "Фильм основан на последнем интервью Бенуа Мандельброта, записанном в 2010 году всего за 19 дней до его смерти. В этом интервью «отец фракталов» делится воспоминаниями о своём пути в математике и о том, как его уникальный взгляд на мир привёл к открытию фрактальной геометрии.",
+      "slot": "slot-interlude-1"
+    },
+    {
+      "id": "cinema-short-fractal",
+      "title": "Fractal",
+      "description": "Как оплакивать потерю того, чего у тебя никогда не было? Грейс живёт воспоминаниями и мечтами о том, что могло бы быть, после потери того, чего у неё никогда и не было.",
+      "slot": "slot-interlude-2"
+    },
+    {
+      "id": "cinema-short-fractal-universe",
+      "title": "Fractal universe?",
+      "description": "Could our universe be fractal? Может ли простая математика создать целую вселенную? Что общего у брокколи с Большим взрывом? И какое отношение это имеет к таким видеоиграм, как «No Man's Sky» или «Minecraft»?",
+      "slot": "slot-interlude-3"
+    },
+    {
+      "id": "cinema-short-menger-eiffel",
+      "title": "Menger meets Eiffel",
+      "description": "Karl Menger meeting Gustave Eiffel in a Time Machine. Идея Машины Времени, позволяющей зрителю попеременно перемещаться с разной скоростью и в разных направлениях между различными частями этого бесконечного путешествия, демонстрируется в этом фильме на разных уровнях.",
+      "category": "cinema",
+      "subcategory": "short",
+      "apollo_slot": "mid-1",
+      "venue": "main_stage"
     }
   ],
   "_howto": {
