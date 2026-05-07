@@ -3625,7 +3625,7 @@ const SPOTS = [
   // видит, что тут параллельные станции, и может прицельно кликнуть в нужный.
   // Сортировка зон в buildZones по убыванию площади гарантирует, что блоки лежат
   // в нижнем z-стеке, а мелкие саб-листы — сверху и перехватывают клики.
-  {id:'station-block-1', address:[1,3], label:'Первый блок станций', subtitle:'3 параллельные станции', time:'16:30–17:30', venue:'бары и двор',
+  {id:'station-block-1', address:[1,3], label:'Первый блок станций', subtitle:'3 станции + короткий метр', time:'16:30–17:30', venue:'бары и двор',
    zones: [
      {id:'sub-puzzle-fractal-3d',
       label:'Сделай 3D-фрактал из бумаги', subtitle:'Полина Романова',
@@ -3636,9 +3636,12 @@ const SPOTS = [
      {id:'sub-obs-diagnostics',
       label:'Эстетика в диагнозах', subtitle:'Дария',
       time:'16:30–17:30', venue:'small_bar', eventIds:['obs-diagnostics']},
+     {id:'sub-cinema-short-1',
+      label:'Короткометражки 1', subtitle:'17:00–17:30',
+      time:'17:00–17:30', venue:'main_stage', eventIds:['cinema-short-1']},
    ]},
   {id:'gelfand',         address:[1,2],     label:'Михаил Гельфанд',      subtitle:'Иерархия бесконечностей', time:'16:00–17:00', venue:'main_stage', eventIds:['talk-gelfand']},
-  {id:'station-block-2', address:[1,1,3], label:'Второй блок станций', subtitle:'3 параллельные станции', time:'17:30–18:30', venue:'бары и двор',
+  {id:'station-block-2', address:[1,1,3], label:'Второй блок станций', subtitle:'3 станции + короткий метр', time:'17:30–18:30', venue:'бары и двор',
    zones: [
      {id:'sub-puzzle-engineering-origami',
       label:'Инженерное оригами', subtitle:'Полина Романова',
@@ -3649,9 +3652,12 @@ const SPOTS = [
      {id:'sub-mc-theremin',
       label:'Терменвокс: попробовать самому', subtitle:'Лора Заиконникова',
       time:'17:30–18:30', venue:'small_bar', eventIds:['mc-theremin']},
+     {id:'sub-cinema-short-2',
+      label:'Короткометражки 2', subtitle:'18:30–19:00',
+      time:'18:30–19:00', venue:'main_stage', eventIds:['cinema-short-2']},
    ]},
   {id:'rajgorodski',     address:[1,1,2],   label:'Андрей Райгородский',  time:'17:30–18:30', venue:'main_stage', eventIds:['talk-rajgorodski']},
-  {id:'station-block-3', address:[1,1,1,3], label:'Третий блок станций', subtitle:'2 параллельные станции', time:'18:30–19:30', venue:'бар',
+  {id:'station-block-3', address:[1,1,1,3], label:'Третий блок станций', subtitle:'2 станции + кино + короткий метр', time:'18:30–19:30', venue:'бары и библиотека',
    zones: [
      {id:'sub-puzzle-graphs-evolution',
       label:'Эволюция графов', subtitle:'Александр Николаичев',
@@ -3659,11 +3665,17 @@ const SPOTS = [
      {id:'sub-mc-fractal-stained-glass',
       label:'Фрактальный витраж', subtitle:'мастер-класс',
       time:'18:30–19:30', venue:'big_bar', eventIds:['mc-fractal-stained-glass']},
+     {id:'sub-cinema-feature-pi',
+      label:'Кино «π»', subtitle:'19:00–20:00',
+      time:'19:00–20:00', venue:'library', eventIds:['cinema-feature-pi']},
+     {id:'sub-cinema-short-3',
+      label:'Короткометражки 3', subtitle:'20:00–20:30',
+      time:'20:00–20:30', venue:'main_stage', eventIds:['cinema-short-3']},
    ]},
   {id:'skripchenko',     address:[1,1,1,2], label:'Александра Скрипченко', time:'19:00–20:00', venue:'main_stage', eventIds:['talk-skripchenko']},
 
   // ---- Переходный слой к ночи (один шаг f₂ выше последних лекций).
-  {id:'station-block-4', address:[1,1,1,1,3], label:'Четвёртый блок станций', subtitle:'3 параллельные станции', time:'19:30–20:30', venue:'бары',
+  {id:'station-block-4', address:[1,1,1,1,3], label:'Четвёртый блок станций', subtitle:'3 станции + документалка', time:'19:30–20:30', venue:'бары и библиотека',
    zones: [
      {id:'sub-station-4-1',
       label:'Станция 4.1', subtitle:'TBA',
@@ -3674,6 +3686,9 @@ const SPOTS = [
      {id:'sub-mc-fractal-tiles',
       label:'Фрактальные плитки', subtitle:'мастер-класс',
       time:'19:30–20:30', venue:'courtyard', eventIds:['mc-fractal-tiles']},
+     {id:'sub-cinema-feature-doc-order',
+      label:'Документальное кино', subtitle:'20:00–22:00',
+      time:'20:00–22:00', venue:'library', eventIds:['cinema-feature-doc-order']},
    ]},
   // Вечерний хедлайнер 20:30–22:00: лист [1,1,1,1,2] поделён на три зоны
   // через под-лепестки (K=3): левая часть листа = рэп, правая = дискуссия,
@@ -3732,32 +3747,7 @@ const TAIL = {
 // показан без подсветки, соседи остаются доступными для переключения.
 // ============================================================================
 const SUBSPOTS = [
-  // Короткометражки и кино — отдельные саб-споты на под-под-адресах внутри блоков.
-  // Параллельные станции теперь зоны блока (см. SPOTS), а эти — самостоятельные
-  // под-листы со своим временем (часто другим, чем у блока) и адресом из базы.
-
-  // ---- Внутри Блока 1 [1,3]: короткометражки 17:00–17:30
-  {id:'sub-cinema-short-1', parentId:'station-block-1', address:[1,3,1,2],
-   label:'Короткометражки 1', subtitle:'17:00–17:30',
-   time:'17:00–17:30', venue:'main_stage', eventIds:['cinema-short-1']},
-
-  // ---- Внутри Блока 2 [1,1,3]: короткометражки 18:30–19:00
-  {id:'sub-cinema-short-2', parentId:'station-block-2', address:[1,1,3,1,2],
-   label:'Короткометражки 2', subtitle:'18:30–19:00',
-   time:'18:30–19:00', venue:'main_stage', eventIds:['cinema-short-2']},
-
-  // ---- Внутри Блока 3 [1,1,1,3]: кино «π» 19:00–20:00 и короткометражки 20:00–20:30
-  {id:'sub-cinema-feature-pi', parentId:'station-block-3', address:[1,1,1,3,1,2],
-   label:'Кино «π»', subtitle:'19:00–20:00',
-   time:'19:00–20:00', venue:'library', eventIds:['cinema-feature-pi']},
-  {id:'sub-cinema-short-3', parentId:'station-block-3', address:[1,1,1,3,1,3],
-   label:'Короткометражки 3', subtitle:'20:00–20:30',
-   time:'20:00–20:30', venue:'main_stage', eventIds:['cinema-short-3']},
-
-  // ---- Внутри Блока 4 [1,1,1,1,3]: документалки 20:00–22:00
-  {id:'sub-cinema-feature-doc-order', parentId:'station-block-4', address:[1,1,1,1,3,1,1,2],
-   label:'Документальный сеанс', subtitle:'20:00–22:00',
-   time:'20:00–22:00', venue:'library', eventIds:['cinema-feature-doc-order']},
+  // Все cinema/short переехали в zones соответствующих блоков (K=4 на лист).
 ];
 
 // Порядок в ALL_SPOTS = z-order в SVG: TAIL внизу стека (он самый «общий»),
@@ -3995,10 +3985,33 @@ function repaintHl(){
   clearHl();
   const sz = Math.max(1.4, pointSize() * 1.2);
 
+  // Палитра для зон: 4 хорошо сочетающихся цвета. Соседним зонам контейнера
+  // присваиваются разные цвета, чтобы пользователь видел что лист поделён.
+  const ZONE_PALETTE = ['#FFD27A', '#E89B7A', '#C8A87A', '#7AB8C8'];
+  function zoneColor(container, zoneId){
+    if(!container || !container.zones) return ZONE_PALETTE[0];
+    const idx = container.zones.findIndex(z => z.id === zoneId);
+    if(idx < 0) return ZONE_PALETTE[0];
+    return ZONE_PALETTE[idx % ZONE_PALETTE.length];
+  }
+
+  // ===== ПОСТОЯННАЯ подсветка структуры делимых листов =====
+  // Без hover/active рисуем все зоны делимых листов очень тускло —
+  // в их собственных цветах. Так пользователь СРАЗУ видит, что лист
+  // поделён на N кликабельных частей. Зум-вид показывает это явнее
+  // (точек больше), общий вид — деликатнее.
+  if(!hoverSpot &amp;&amp; !activeSpot){
+    for(const container of ALL_SPOTS){
+      if(!container.zones || !container.zones.length) continue;
+      for(const z of container.zones){
+        if(!z.petalAddresses) continue;
+        const col = zoneColor(container, z.id);
+        drawPetalsBatch(hctx, 1800, z.petalAddresses, currentVP, cssW, cssH, 0.22, col, sz * 0.85);
+      }
+    }
+  }
+
   // ===== Зоны делимого листа =====
-  // Если активна или подсвечена зона, рисуем её под-лепестки ярко,
-  // а сёстры (другие зоны того же контейнера) — приглушённо. Это даёт
-  // визуальный сигнал что лист поделён на N частей.
   const hoverIsZone = hoverSpot &amp;&amp; hoverSpot.isZone &amp;&amp; hoverSpot !== activeSpot;
   const activeIsZone = activeSpot &amp;&amp; activeSpot.isZone;
   let zoneLeader = null, zoneContainer = null;
@@ -4010,21 +4023,17 @@ function repaintHl(){
     zoneContainer = activeSpot.parentSpot;
   }
   if(zoneLeader &amp;&amp; zoneContainer &amp;&amp; zoneContainer.zones){
-    // Сёстры-зоны контейнера — приглушённо
+    // Сёстры-зоны контейнера — заметно (своими цветами с пониженной альфой)
     for(const sibZone of zoneContainer.zones){
       if(sibZone.id === zoneLeader.id) continue;
       if(!sibZone.petalAddresses) continue;
-      drawPetalsBatch(hctx, 5500, sibZone.petalAddresses, currentVP, cssW, cssH, 0.45, '#C89A3D', sz);
+      const col = zoneColor(zoneContainer, sibZone.id);
+      drawPetalsBatch(hctx, 6500, sibZone.petalAddresses, currentVP, cssW, cssH, 0.7, col, sz);
     }
-    // Саб-споты контейнера (короткометражки, кино) — тоже приглушённо
-    for(const sub of ALL_SPOTS){
-      if(sub.parentId !== zoneContainer.id) continue;
-      if(sub.isZone) continue;
-      drawLeafBatch(hctx, 4500, sub.address, currentVP, cssW, cssH, 0.55, '#C89A3D', sz);
-    }
-    // Сама ведущая зона — ярко
+    // Сама ведущая зона — ярко в её цвете
     if(zoneLeader.petalAddresses){
-      drawPetalsBatch(hctx, 9000, zoneLeader.petalAddresses, currentVP, cssW, cssH, 1.0, '#FFD27A', sz * 1.15);
+      const col = zoneColor(zoneContainer, zoneLeader.id);
+      drawPetalsBatch(hctx, 9500, zoneLeader.petalAddresses, currentVP, cssW, cssH, 1.0, col, sz * 1.2);
     }
     return;
   }
@@ -4360,6 +4369,29 @@ function hideCard(){
 
 // ===== Зум =====
 function getZoomVP(spot){
+  // Зона делимого листа зумится на bbox всех зон контейнера, чтобы соседние
+  // зоны были видны и кликабельны для переключения между параллельными
+  // событиями того же тайм-слота.
+  if(spot.isZone &amp;&amp; spot.parentSpot){
+    const parent = spot.parentSpot;
+    let xMin=Infinity,xMax=-Infinity,yMin=Infinity,yMax=-Infinity;
+    for(const z of parent.zones){
+      if(!z.tightBbox) continue;
+      const tb = z.tightBbox;
+      if(tb.xMin < xMin) xMin = tb.xMin;
+      if(tb.xMax > xMax) xMax = tb.xMax;
+      if(tb.yMin < yMin) yMin = tb.yMin;
+      if(tb.yMax > yMax) yMax = tb.yMax;
+    }
+    if(xMin !== Infinity){
+      const cx = (xMin + xMax) / 2;
+      const cy = (yMin + yMax) / 2;
+      const targetSize = Math.max(xMax - xMin, yMax - yMin) / 0.78;
+      const half = targetSize / 2;
+      return fitVP({xMin:cx-half, xMax:cx+half, yMin:cy-half, yMax:cy+half});
+    }
+  }
+
   // Саб-лист зумится не на свой собственный bbox, а на bbox всех сиблингов
   // (то есть фактически на зону блока) — иначе соседние сабы оказались бы
   // за кадром и стали бы недоступны для переключения между параллельными
@@ -7014,9 +7046,13 @@ window.addEventListener('resize', ()=>{
     }
 
     // === postMessage to fern ===
-    var fernIframe = document.getElementById('schedule-fern');
+    // Ищем iframe лениво на каждом вызове: при создании через IntersectionObserver
+    // (lazy mount на мобиле) iframe может появиться позже, чем выполнится этот код.
+    // Кэширование ссылки здесь = регрессия v17, ломавшая кнопку «к общему виду».
     function postToFern(msg){
       if(!state.fernReady) return;
+      var fernIframe = document.getElementById('schedule-fern');
+      if(!fernIframe || !fernIframe.contentWindow) return;
       try { fernIframe.contentWindow.postMessage(msg, '*'); } catch(_){}
     }
 
