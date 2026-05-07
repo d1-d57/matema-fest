@@ -3699,9 +3699,10 @@ function buildSpotsFromData(raw){
 
     if(addr === 'tail'){
       // Особая зона: танцевальная программа у самого кончика. Не лист, а ночь.
-      const z = zones[0] || { id:'zone-tail', label:'Танцевальная программа', eventIds:[], time:'' };
+      const z = zones[0] || { id:'zone-tail', label:'Танцевальная программа', eventIds:[], time:'', slotId:null };
       TAIL = {
         id: 'tail',
+        slotId: z.slotId,  // для бриджа: расписание знает слот, не event.id
         label: z.label,
         time: z.time,
         venue: z.venue,
@@ -3724,136 +3725,16 @@ function buildSpotsFromData(raw){
   return { SPOTS, TAIL };
 }
 
-// Старый захардкоженный SPOTS — пока используем его. После проверки переключим
-// на результат buildSpotsFromData. Сохраняем как LEGACY для отката.
-window._buildSpotsFromData = buildSpotsFromData;
-window._RAW = RAW;
-
 // ============================================================================
 // SPOTS и TAIL генерируются из FESTIVAL_DATA через buildSpotsFromData.
-// Старая захардкоженная версия сохранена в LEGACY_SPOTS_BACKUP ниже —
-// для отладки/отката если что-то поломается. Удалить после стабилизации.
+// Никаких захардкоженных списков лекций/станций/слотов в коде нет —
+// весь контент берётся из RAW. Чтобы добавить событие или передвинуть
+// карточку между слотами — правится только festival-data.js.
 // ============================================================================
 const _generated = buildSpotsFromData(RAW);
 const SPOTS = _generated.SPOTS;
 const TAIL = _generated.TAIL;
 
-// LEGACY: старый захардкоженный SPOTS (до v19-B). Не используется в рантайме.
-// Оставлен как резерв на случай отката. Удалить после деплоя v19-B.
-const LEGACY_SPOTS_BACKUP = [
-  // ---- Утро в библиотеке. Адреса [3] и [2] — два маленьких отростка у корня.
-  // Утро в библиотеке: лист [3] поделён на две зоны через под-лепестки.
-  // Евдокимов = левая часть листа, Тарасевич = правая часть. Лист [2]
-  // (второй маленький отросток у корня) остаётся свободным.
-  // Утро в библиотеке: два отдельных листа у корня папоротника.
-  // Адреса [3] и [2] — два маленьких отростка у корня, по контракту базы.
-  // Лист [3] — Евдокимов (14:00), Лист [2] — Тарасевич (15:00).
-  {id:'talk-evdokimov',  address:[3], label:'Михаил Евдокимов',   subtitle:'Задачки «Квантика»', time:'14:00–15:00', venue:'library', eventIds:['talk-evdokimov']},
-  {id:'talk-tarasevich', address:[2], label:'Григорий Тарасевич', subtitle:'Научпоп-квиз',       time:'15:00–16:00', venue:'library', eventIds:['talk-tarasevich']},
-
-  // ---- Дневная программа: лекции на левой стороне стебля, блоки станций на правой.
-  // БЛОКИ — clickThrough: true. Они НЕ кликабельны (на них нельзя «активироваться»),
-  // но ловят hover в «дырах» между 4 саб-листьями и в общей массе своего «большого
-  // листа». При наведении на блок подсвечиваются все 4 саб-листочка — пользователь
-  // видит, что тут параллельные станции, и может прицельно кликнуть в нужный.
-  // Сортировка зон в buildZones по убыванию площади гарантирует, что блоки лежат
-  // в нижнем z-стеке, а мелкие саб-листы — сверху и перехватывают клики.
-  {id:'station-block-1', address:[1,3], label:'Первый блок станций', subtitle:'3 станции + короткий метр', time:'16:30–17:30', venue:'бары и двор',
-   zones: [
-     {id:'sub-puzzle-fractal-3d',
-      label:'Сделай 3D-фрактал из бумаги', subtitle:'Полина Романова',
-      time:'16:30–17:30', venue:'big_bar', eventIds:['puzzle-fractal-3d']},
-     {id:'sub-mc-calligraphy',
-      label:'Каллиграфия как фрактал', subtitle:'Наташа Евдокимова',
-      time:'16:30–17:30', venue:'big_bar', eventIds:['mc-calligraphy']},
-     {id:'sub-obs-diagnostics',
-      label:'Эстетика в диагнозах', subtitle:'Дария',
-      time:'16:30–17:30', venue:'small_bar', eventIds:['obs-diagnostics']},
-     {id:'sub-cinema-short-1',
-      label:'Короткометражки 1', subtitle:'17:00–17:30',
-      time:'17:00–17:30', venue:'main_stage', eventIds:['cinema-short-1']},
-   ]},
-  {id:'talk-gelfand',         address:[1,2],     label:'Михаил Гельфанд',      subtitle:'Иерархия бесконечностей', time:'16:00–17:00', venue:'main_stage', eventIds:['talk-gelfand']},
-  {id:'station-block-2', address:[1,1,3], label:'Второй блок станций', subtitle:'3 станции + короткий метр', time:'17:30–18:30', venue:'бары и двор',
-   zones: [
-     {id:'sub-puzzle-engineering-origami',
-      label:'Инженерное оригами', subtitle:'Полина Романова',
-      time:'17:30–18:30', venue:'big_bar', eventIds:['puzzle-engineering-origami']},
-     {id:'sub-mc-tie-dye',
-      label:'Тай-дай: космические яйца', subtitle:'Ольга',
-      time:'17:30–18:30', venue:'courtyard', eventIds:['mc-tie-dye']},
-     {id:'sub-mc-theremin',
-      label:'Терменвокс: попробовать самому', subtitle:'Лора Заиконникова',
-      time:'17:30–18:30', venue:'small_bar', eventIds:['mc-theremin']},
-     {id:'sub-cinema-short-2',
-      label:'Короткометражки 2', subtitle:'18:30–19:00',
-      time:'18:30–19:00', venue:'main_stage', eventIds:['cinema-short-2']},
-   ]},
-  {id:'talk-rajgorodski',     address:[1,1,2],   label:'Андрей Райгородский',  time:'17:30–18:30', venue:'main_stage', eventIds:['talk-rajgorodski']},
-  {id:'station-block-3', address:[1,1,1,3], label:'Третий блок станций', subtitle:'2 станции + кино + короткий метр', time:'18:30–19:30', venue:'бары и библиотека',
-   zones: [
-     {id:'sub-puzzle-graphs-evolution',
-      label:'Эволюция графов', subtitle:'Александр Николаичев',
-      time:'18:30–19:30', venue:'small_bar', eventIds:['puzzle-graphs-evolution']},
-     {id:'sub-mc-fractal-stained-glass',
-      label:'Фрактальный витраж', subtitle:'мастер-класс',
-      time:'18:30–19:30', venue:'big_bar', eventIds:['mc-fractal-stained-glass']},
-     {id:'sub-cinema-feature-pi',
-      label:'Кино «π»', subtitle:'19:00–20:00',
-      time:'19:00–20:00', venue:'library', eventIds:['cinema-feature-pi']},
-     {id:'sub-cinema-short-3',
-      label:'Короткометражки 3', subtitle:'20:00–20:30',
-      time:'20:00–20:30', venue:'main_stage', eventIds:['cinema-short-3']},
-   ]},
-  {id:'talk-skripchenko',     address:[1,1,1,2], label:'Александра Скрипченко', time:'19:00–20:00', venue:'main_stage', eventIds:['talk-skripchenko']},
-
-  // ---- Переходный слой к ночи (один шаг f₂ выше последних лекций).
-  {id:'station-block-4', address:[1,1,1,1,3], label:'Четвёртый блок станций', subtitle:'3 станции + документалка', time:'19:30–20:30', venue:'бары и библиотека',
-   zones: [
-     {id:'sub-station-4-1',
-      label:'Станция 4.1', subtitle:'TBA',
-      time:'19:30–20:30', venue:'bar', eventIds:['station-4-1']},
-     {id:'sub-station-4-2',
-      label:'Станция 4.2', subtitle:'TBA',
-      time:'19:30–20:30', venue:'bar', eventIds:['station-4-2']},
-     {id:'sub-mc-fractal-tiles',
-      label:'Фрактальные плитки', subtitle:'мастер-класс',
-      time:'19:30–20:30', venue:'courtyard', eventIds:['mc-fractal-tiles']},
-     {id:'sub-cinema-feature-doc-order',
-      label:'Документальное кино', subtitle:'20:00–22:00',
-      time:'20:00–22:00', venue:'library', eventIds:['cinema-feature-doc-order']},
-   ]},
-  // Вечерний хедлайнер 20:30–22:00: лист [1,1,1,1,2] поделён на три зоны
-  // через под-лепестки (K=3): левая часть листа = рэп, правая = дискуссия,
-  // кончик саб-стебля = нетворкинг.
-  {id:'evening-headliners', address:[1,1,1,1,2], label:'Вечерний блок', subtitle:'дискуссия · нетворкинг · рэп', time:'20:30–22:00', venue:'три сцены',
-   zones: [
-     {id:'music-rap',
-      label:'Научно-технический рэп', subtitle:'на улице',
-      time:'20:30–22:00', venue:'courtyard', eventIds:['music-rap']},
-     {id:'discussion-tba',
-      label:'Дискуссия', subtitle:'TBA',
-      time:'20:30–22:00', venue:'main_stage', eventIds:['discussion-tba']},
-     {id:'social-rosetka',
-      label:'Нетворкинг «Розетка»',
-      time:'20:30–21:30', venue:'big_bar', eventIds:['social-rosetka']},
-   ]},
-
-  // ---- Ночная музыка слева: четыре сета снизу вверх по хронологии.
-  {id:'music-termen',         address:[1,1,1,1,1,2],       label:'Пётр Термен',            time:'22:00–23:00',    venue:'main_stage', eventIds:['music-termen']},
-  {id:'music-2-slot',         address:[1,1,1,1,1,1,2],     label:'место для музыканта',    time:'23:00–00:00',    venue:'main_stage', placeholder:true, eventIds:[]},
-  {id:'music-brinstar',       address:[1,1,1,1,1,1,1,2],   label:'Brinstar',               time:'после полуночи', venue:'main_stage', eventIds:['music-brinstar']},
-  {id:'music-spiral-fractal', address:[1,1,1,1,1,1,1,1,2], label:'Spiral Fractal',         time:'после полуночи', venue:'main_stage', eventIds:['music-spiral-fractal']},
-
-  // ---- Ночная музыка справа: четыре резерва под параллельные сеты на малой сцене.
-  // Симметрия с левыми музыкальными слотами: 4 слева (известные музыканты),
-  // 4 справа (placeholder'ы), и хвост — танцевальная программа.
-  {id:'music-parallel-1', address:[1,1,1,1,1,3],       label:'Малая сцена', subtitle:'22:00–23:00',  time:'22:00–23:00', venue:'small_bar', eventIds:['music-parallel-1']},
-  {id:'music-parallel-2', address:[1,1,1,1,1,1,3],     label:'Малая сцена', subtitle:'23:00–00:00',  time:'23:00–00:00', venue:'small_bar', eventIds:['music-parallel-2']},
-  {id:'music-parallel-3', address:[1,1,1,1,1,1,1,3],   label:'Малая сцена', subtitle:'00:00–01:00',  time:'00:00–01:00', venue:'small_bar', eventIds:['music-parallel-3']},
-  {id:'music-parallel-4', address:[1,1,1,1,1,1,1,1,3], label:'Малая сцена', subtitle:'01:00–02:00',  time:'01:00–02:00', venue:'small_bar', eventIds:['music-parallel-4']},
-];
-// конец LEGACY_SPOTS_BACKUP
 
 // ============================================================================
 // ALL_SPOTS — все интерактивные споты в порядке z-order:
@@ -4380,13 +4261,14 @@ function attachEvents(el, spot){
 // и слушает обратные команды из родительского документа (списка слева). ===
 function postSpot(type, spot){
   if(window.parent === window) return;
-  // Снаружи (расписание) знает только id событий, не id зон-полигонов.
-  // Поэтому транслируем eventId (eventIds[0]), а не spot.id. Для зон с одним
-  // событием это однозначно. Для контейнеров без зон (TAIL) — eventIds[0] тоже.
+  // Снаружи (расписание) ищет пункты по slot.id. Зона знает свой slotId.
+  // Контейнер (clickThrough лист) — без slotId, но и не активируется снаружи.
+  // TAIL имеет один eventId — для совместимости берём первый, если slotId нет.
   let outId = null;
   if(spot){
-    if(spot.eventIds &amp;&amp; spot.eventIds.length) outId = spot.eventIds[0];
-    else outId = spot.id;  // fallback: TAIL/placeholder
+    if(spot.slotId) outId = spot.slotId;
+    else if(spot.eventIds &amp;&amp; spot.eventIds.length) outId = spot.eventIds[0];
+    else outId = spot.id;
   }
   try {
     window.parent.postMessage({type, spotId: outId}, '*');
@@ -4400,11 +4282,14 @@ window.addEventListener('message', ev=>{
     return;
   }
   if(d.type === 'fern-set-hover'){
-    // d.spotId здесь = eventId (см. postSpot). Ищем зону содержащую это событие.
-    const spot = d.spotId ? ALL_SPOTS.find(s => s.eventIds &amp;&amp; s.eventIds.includes(d.spotId)) : null;
+    // d.spotId здесь = slotId (или eventId как fallback для старых клиентов).
+    // Ищем зону по slotId; если не нашли — пробуем по eventIds (TAIL и т.д.).
+    const spot = d.spotId
+      ? (ALL_SPOTS.find(s => s.slotId === d.spotId)
+         || ALL_SPOTS.find(s => s.eventIds &amp;&amp; s.eventIds.includes(d.spotId)))
+      : null;
     hoverSpot = spot || null;
     if(spot) {
-      // показать карточку-плашку у листа (не у курсора — фейковая позиция)
       const z = svg.querySelector(`[data-spot-id=&quot;${spot.id}&quot;]`);
       if(z){
         const r = z.getBoundingClientRect();
@@ -4415,8 +4300,11 @@ window.addEventListener('message', ev=>{
     }
     repaintHl();
   } else if(d.type === 'fern-set-active'){
-    // d.spotId здесь = eventId.
-    const spot = d.spotId ? ALL_SPOTS.find(s => s.eventIds &amp;&amp; s.eventIds.includes(d.spotId)) : null;
+    // d.spotId здесь = slotId.
+    const spot = d.spotId
+      ? (ALL_SPOTS.find(s => s.slotId === d.spotId)
+         || ALL_SPOTS.find(s => s.eventIds &amp;&amp; s.eventIds.includes(d.spotId)))
+      : null;
     if(spot &amp;&amp; !spot.clickThrough){
       handleClick(spot);
     } else if(!spot &amp;&amp; activeSpot){
@@ -4837,7 +4725,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-07h"></script>
+  <script src="festival-data.js?v=2026-05-07i"></script>
 
   <script>
   /* ============================================
@@ -6940,139 +6828,181 @@ window.addEventListener('resize', ()=>{
     // ВАЖНО: id здесь = id в SPOTS/SUBSPOTS внутри iframe.
     // Если меняем там — меняем и тут. Время малой сцены и резерва
     // 20:00–22:00 присвоены условно, по принципу нахлёста ±30 мин.
-    var SCHEDULE = [
-      {
-        id: 'morning', label: 'Утро', sublabel: 'семейная программа', when: '14 — 16', where: 'library',
-        events: [
-          { id:'talk-evdokimov',  time:'14:00–15:00', name:'Михаил Евдокимов',
-            speaker:'Михаил Евдокимов · автор задач, популяризатор математики',
-            venue:'library',
-            detail:'Утренний пролог: классные задачи журнала «Квантик», которые решают вместе с залом.' },
-          { id:'talk-tarasevich', time:'15:00–16:00', name:'Григорий Тарасевич',
-            speaker:'Григорий Тарасевич · научный журналист',
-            venue:'library',
-            detail:'Командный квиз на математико-естественнонаучные темы. Семейная утренняя часть.' },
-        ],
-      },
-      {
-        id: 'day', label: 'День', sublabel: 'лекции и станции', when: '16 — 20', where: 'Лахесис',
-        events: [
-          { id:'talk-gelfand', time:'16:00–17:00', name:'Михаил Гельфанд',
-            speaker:'Михаил Гельфанд · «Иерархия бесконечностей»',
-            venue:'main_stage',
-            detail:'О генетике, эволюции и о том, как устроена наука.' },
-          { id:'station-block-1', time:'16:30–17:30', name:'Первый блок станций',
-            venue:['big_bar','small_bar'],
-            detail:'Параллельные станции на адресе [1,3]. Плюс короткий метр в 17:00.',
-            substations:[
-              { id:'puzzle-fractal-3d', name:'Сделай 3D-фрактал из бумаги', who:'Полина Романова', where:'big_bar',
-                detail:'Ножницы, лист A4, инструкция. За 5–10 минут — фрактальная модель в руках.' },
-              { id:'mc-calligraphy', name:'Каллиграфия как фрактал', who:'Наташа Евдокимова', where:'big_bar',
-                detail:'Базовые черты, точки, линии. Из них — иероглифы. Простота порождает сложность через повторение.' },
-              { id:'obs-diagnostics', name:'Эстетика в диагнозах', who:'Дария', where:'small_bar',
-                detail:'Рисуночные методики психиатрии. Самоподобие как клинический инструмент.' },
-              { id:'cinema-short-1', name:'Короткометражки 1', when:'17:00–17:30', where:'main_stage',
-                detail:'Подборка коротких фильмов, идёт параллельно с блоком станций.' },
-            ]
-          },
-          { id:'talk-rajgorodski', time:'17:30–18:30', name:'Андрей Райгородский',
-            speaker:'Андрей Райгородский',
-            venue:'main_stage',
-            detail:'Математика, теория графов, комбинаторика.' },
-          { id:'station-block-2', time:'17:30–18:30', name:'Второй блок станций',
-            venue:['big_bar','small_bar','courtyard'],
-            detail:'Три параллельные станции. Плюс короткий метр в 18:30.',
-            substations:[
-              { id:'puzzle-engineering-origami', name:'Инженерное оригами', who:'Полина Романова', where:'big_bar',
-                detail:'Подвижные модели солнечных панелей из бумаги. По дороге — как решали задачу инженеры NASA.' },
-              { id:'mc-tie-dye', name:'Тай-дай: космические яйца', who:'Ольга', where:'courtyard',
-                detail:'Раскрашиваем футболку. При раскручивании рисунок повторяется на разных масштабах.' },
-              { id:'mc-theremin', name:'Терменвокс: попробовать самому', who:'Лора Заиконникова', where:'small_bar',
-                detail:'Мастер-класс игры на инструменте. Параллельно с программой.' },
-              { id:'cinema-short-2', name:'Короткометражки 2', when:'18:30–19:00', where:'main_stage',
-                detail:'Вторая подборка коротких фильмов.' },
-            ]
-          },
-          { id:'station-block-3', time:'18:30–19:30', name:'Третий блок станций',
-            venue:['big_bar','small_bar','library','main_stage'],
-            detail:'Две станции + кино + короткий метр. Все параллельно.',
-            substations:[
-              { id:'puzzle-graphs-evolution', name:'Эволюция графов', who:'Александр Николаичев', where:'small_bar',
-                detail:'Локальная замена подграфов рождает фрактальные картины и тьюринг-полные системы. С визуализациями.' },
-              { id:'mc-fractal-stained-glass', name:'Фрактальный витраж', where:'big_bar',
-                detail:'Мастер-класс по созданию фрактальных витражей.' },
-              { id:'cinema-feature-pi', name:'Кино «π»', when:'19:00–20:00', where:'library',
-                detail:'Полнометражный фильм Аронофски в библиотеке.' },
-              { id:'cinema-short-3', name:'Короткометражки 3', when:'20:00–20:30', where:'main_stage',
-                detail:'Третья подборка коротких фильмов.' },
-            ]
-          },
-          { id:'talk-skripchenko', time:'19:00–20:00', name:'Александра Скрипченко',
-            speaker:'Александра Скрипченко',
-            venue:'main_stage',
-            detail:'Геометрия и динамические системы. Красивая математика без лишней техники.' },
-          { id:'station-block-4', time:'19:30–20:30', name:'Четвёртый блок станций',
-            venue:['big_bar','courtyard','library'],
-            detail:'Три параллельные станции + документальное кино.',
-            substations:[
-              { id:'station-4-1', name:'Станция 4.1', where:'bar',
-                detail:'Программа уточняется к маю.' },
-              { id:'station-4-2', name:'Станция 4.2', where:'bar',
-                detail:'Программа уточняется к маю.' },
-              { id:'mc-fractal-tiles', name:'Фрактальные плитки', where:'courtyard',
-                detail:'Мастер-класс по выкладыванию фрактальных мозаик.' },
-              { id:'cinema-feature-doc-order', name:'Документальное кино', when:'20:00–22:00', where:'library',
-                detail:'Документалка о порядке и хаосе.' },
-            ]
-          },
-        ],
-      },
-      {
-        id: 'evening', label: 'Вечер', sublabel: 'музыка и танцы', when: '20 — 04', where: 'Лахесис',
-        events: [
-          { id:'evening-headliners', time:'20:30–22:00', name:'Вечерний блок',
-            venue:['main_stage','courtyard','big_bar'],
-            detail:'Три параллельных события: дискуссия, нетворкинг и научно-технический рэп.',
-            substations:[
-              { id:'discussion-tba', name:'Дискуссия', when:'20:30–22:00', where:'main_stage',
-                detail:'Открытая дискуссия с участием выступавших.' },
-              { id:'social-rosetka', name:'Нетворкинг «Розетка»', when:'20:30–21:30', where:'big_bar',
-                detail:'Свободное общение, можно заряжать ноутбуки и идеи.' },
-              { id:'music-rap', name:'Научно-технический рэп', when:'20:30–22:00', where:'courtyard',
-                detail:'Программа на улице параллельно с дискуссией.' },
-            ]
-          },
-          { id:'music-termen', time:'22:00–23:00', name:'Пётр Термен',
-            speaker:'Пётр Термен · терменвокс',
-            venue:'main_stage',
-            detail:'Музыкант играет руками в воздухе. Инструмент, которому больше ста лет. Музыка ближе к академической.' },
-          { id:'music-parallel-1', time:'22:00–23:00', name:'Малая сцена',
-            venue:'small_bar',
-            detail:'Параллельный музыкальный сет на малой сцене.' },
-          { id:'music-2-slot', time:'23:00–00:00', name:'Место для музыканта',
-            placeholder:true, venue:'main_stage',
-            detail:'Резерв главной сцены 23:00–00:00.' },
-          { id:'music-parallel-2', time:'23:00–00:00', name:'Малая сцена',
-            venue:'small_bar',
-            detail:'Параллельный музыкальный сет на малой сцене.' },
-          { id:'music-brinstar', time:'00:00–01:00', name:'Brinstar',
-            venue:'main_stage',
-            detail:'Музыкальный сет в ночной части программы. Подробности уточняются.' },
-          { id:'music-parallel-3', time:'00:00–01:00', name:'Малая сцена',
-            venue:'small_bar',
-            detail:'Параллельный музыкальный сет на малой сцене.' },
-          { id:'music-spiral-fractal', time:'01:00–02:00', name:'Spiral Fractal',
-            venue:'main_stage',
-            detail:'Музыкальный сет в поздней ночной части. Подробности уточняются.' },
-          { id:'music-parallel-4', time:'01:00–02:00', name:'Малая сцена',
-            venue:'small_bar',
-            detail:'Финальный параллельный сет на малой сцене.' },
-          { id:'tail', time:'после 02:00', name:'Танцевальная программа',
-            venue:'main_stage',
-            detail:'Хвост папоротника. Танцы до утра.' },
-        ],
-      },
-    ];
+    // ============================================================
+    // SCHEDULE генерируется из FESTIVAL_DATA.
+    //
+    // Группируется в три блока (утро/день/вечер) по slot.start.
+    // Внутри блока: слоты на одном fern_address объединяются в один пункт
+    // с substations. Если на адресе один слот — простой пункт.
+    //
+    // Бридж с папоротником работает через slot.id (не event.id):
+    //   - postSpot отправляет slotId
+    //   - render помечает is-active по pt.id (= slotId)
+    // Перемещение карточки между слотами не ломает связь.
+    // ============================================================
+    function buildScheduleFromData(data){
+      var slots = data.time_slots || {};
+      var events = data.events || [];
+      var evBySlot = {};
+      for(var i = 0; i < events.length; i++){
+        if(events[i].slot) evBySlot[events[i].slot] = events[i];
+      }
+
+      // Время в «фестивальных минутах» от 14:00. Часы 0..11 означают «после
+      // полуночи» — продолжение вечера. 14:00 = 0, 23:00 = 540, 02:00 = 720.
+      function festMin(t){
+        var p = String(t).split(':');
+        var h = parseInt(p[0], 10), m = parseInt(p[1], 10) || 0;
+        if(h < 12) h += 24;
+        return (h - 14) * 60 + m;
+      }
+      function blockOf(start){
+        var h = parseInt(String(start).split(':')[0], 10);
+        if(h >= 14 && h < 16) return 'morning';
+        if(h >= 16 && h < 20) return 'day';
+        return 'evening'; // 20+ или ночь
+      }
+
+      var BLOCKS_DEFS = [
+        { id:'morning', label:'Утро',  sublabel:'семейная программа', when:'14 — 16', where:'library' },
+        { id:'day',     label:'День',  sublabel:'лекции и станции',   when:'16 — 20', where:'Лахесис' },
+        { id:'evening', label:'Вечер', sublabel:'музыка и танцы',     when:'20 — 04', where:'Лахесис' },
+      ];
+
+      // Подписи групп (слотов на одном листе): по типу слота.
+      var TYPE_LABELS = {
+        'station':     'Блок станций',
+        'cinema':      'Кино',
+        'music':       'Музыка',
+        'discussion':  'Дискуссия',
+        'networking':  'Нетворкинг',
+        'dance':       'Танцевальная программа',
+        'talk':        'Лекция',
+        'interlude':   'Короткометражки',
+        'music-extra': 'Малая сцена',
+      };
+      function groupLabel(slotIds){
+        var types = slotIds.map(function(s){ return slots[s].type; });
+        var uniq = {}; for(var i=0;i<types.length;i++) uniq[types[i]] = true;
+        var keys = Object.keys(uniq);
+        if(keys.length === 1) return TYPE_LABELS[keys[0]] || 'Блок';
+        if(types.indexOf('station') >= 0) return 'Блок станций';
+        return 'Параллельные события';
+      }
+
+      // Группировка слотов по (block_id, fern_address)
+      var groups = {}; // 'block:addr' → [slotId, ...]
+      for(var sid in slots){
+        var sl = slots[sid];
+        if(!sl.start) continue;
+        var bid = blockOf(sl.start);
+        var addr = sl.fern_address;
+        var addrKey = Array.isArray(addr) ? addr.join(',') : String(addr);
+        var key = bid + '|' + addrKey;
+        if(!groups[key]) groups[key] = { block: bid, addr: addr, addrKey: addrKey, slotIds: [] };
+        groups[key].slotIds.push(sid);
+      }
+
+      var result = [];
+      for(var bi = 0; bi < BLOCKS_DEFS.length; bi++){
+        var blockDef = BLOCKS_DEFS[bi];
+        var blockGroups = [];
+        for(var k in groups){
+          if(groups[k].block === blockDef.id) blockGroups.push(groups[k]);
+        }
+        if(!blockGroups.length) continue;
+        // Сортировка групп по самому раннему festMin
+        blockGroups.sort(function(a, b){
+          var aMin = Math.min.apply(null, a.slotIds.map(function(s){ return festMin(slots[s].start); }));
+          var bMin = Math.min.apply(null, b.slotIds.map(function(s){ return festMin(slots[s].start); }));
+          return aMin - bMin;
+        });
+
+        var blockOut = {
+          id: blockDef.id, label: blockDef.label, sublabel: blockDef.sublabel,
+          when: blockDef.when, where: blockDef.where,
+          events: []
+        };
+
+        for(var gi = 0; gi < blockGroups.length; gi++){
+          var grp = blockGroups[gi];
+          grp.slotIds.sort(function(a, b){ return festMin(slots[a].start) - festMin(slots[b].start); });
+
+          if(grp.slotIds.length === 1){
+            var sid2 = grp.slotIds[0];
+            var sl2 = slots[sid2];
+            var ev = evBySlot[sid2];
+            var pt = {
+              id: sid2, // = slotId, для бриджа
+              slot: sid2,
+              time: sl2.start + '–' + sl2.end,
+              name: ev ? ev.title : (sl2.tool_label || TYPE_LABELS[sl2.type] || 'TBA'),
+              venue: sl2.venue,
+              detail: ev ? (ev.description || '') : 'Слот зарезервирован, программа уточняется.',
+              placeholder: !ev,
+            };
+            if(ev && ev.speaker) pt.speaker = ev.speaker;
+            blockOut.events.push(pt);
+          } else {
+            // Объединённый пункт: substations
+            var minStart = grp.slotIds.reduce(function(acc, s){
+              return (acc === null || festMin(slots[s].start) < festMin(slots[acc].start)) ? s : acc;
+            }, null);
+            var maxEnd = grp.slotIds.reduce(function(acc, s){
+              var endH = parseInt(String(slots[s].end).split(':')[0], 10);
+              if(endH < 12) endH += 24;
+              var endM = parseInt(String(slots[s].end).split(':')[1], 10) || 0;
+              var fm = (endH - 14) * 60 + endM;
+              if(acc === null) return { sid: s, fm: fm };
+              return fm > acc.fm ? { sid: s, fm: fm } : acc;
+            }, null);
+
+            var subs = [];
+            for(var si = 0; si < grp.slotIds.length; si++){
+              var ssid = grp.slotIds[si];
+              var ssl = slots[ssid];
+              var sev = evBySlot[ssid];
+              var sub = {
+                id: ssid,
+                slot: ssid,
+                name: sev ? sev.title : (ssl.tool_label || TYPE_LABELS[ssl.type] || 'TBA'),
+                where: ssl.venue,
+                detail: sev ? (sev.description || '') : 'Слот зарезервирован, программа уточняется.',
+                placeholder: !sev,
+              };
+              // Время substation если отличается от рамок группы
+              if(ssl.start !== slots[minStart].start || ssl.end !== slots[maxEnd.sid].end){
+                sub.when = ssl.start + '–' + ssl.end;
+              }
+              if(sev && sev.speaker) sub.who = sev.speaker;
+              subs.push(sub);
+            }
+
+            // Список venue в группе (deduplicated)
+            var venueSet = {};
+            for(var si2 = 0; si2 < grp.slotIds.length; si2++){
+              var v = slots[grp.slotIds[si2]].venue;
+              if(v) venueSet[v] = true;
+            }
+            var venues = Object.keys(venueSet);
+
+            blockOut.events.push({
+              id: 'addr-' + grp.addrKey.replace(/,/g, '-'),
+              slot: null, // составной пункт не имеет одного слота
+              time: slots[minStart].start + '–' + slots[maxEnd.sid].end,
+              name: groupLabel(grp.slotIds),
+              venue: venues.length === 1 ? venues[0] : venues,
+              detail: '',
+              substations: subs,
+            });
+          }
+        }
+        result.push(blockOut);
+      }
+      return result;
+    }
+
+    var SCHEDULE = buildScheduleFromData(window.FESTIVAL_DATA);
 
     // Состояние UI: какие интервалы открыты, что подсвечено / выбрано.
     var state = {
