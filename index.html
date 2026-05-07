@@ -2437,27 +2437,26 @@
 
     /* Под-станции */
     .sch-substations {
-      margin-top: 8px;
-      margin-left: 96px;
-      padding: 6px 12px;
+      margin-top: 12px;
+      margin-left: 16px;
+      padding: 8px 0 8px 16px;
       border-left: 1px solid rgba(200, 154, 61, 0.30);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
     .sch-substations-intro {
       font-family: var(--font-body);
-      font-size: 11px;
+      font-size: 12px;
       line-height: 1.6;
       color: rgba(236, 227, 208, 0.65);
       margin-bottom: 4px;
     }
     .sch-sub {
       cursor: pointer;
-      padding: 6px 4px;
+      padding: 10px 14px;
       border-left: 2px solid transparent;
       margin-left: -16px;
-      padding-left: 14px;
       transition: background-color 200ms ease, border-color 200ms ease;
     }
     .sch-sub:hover,
@@ -2474,20 +2473,31 @@
       justify-content: space-between;
       align-items: baseline;
       gap: 12px;
+      flex-wrap: wrap;
+    }
+    .sch-sub-time {
+      font-family: var(--font-mono, ui-monospace, monospace);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: #C89A3D;
+      margin-right: 10px;
+      white-space: nowrap;
     }
     .sch-sub-name {
       font-family: var(--font-display);
       font-style: italic;
       font-weight: 500;
-      font-size: 16px;
+      font-size: 20px;
       color: var(--color-bg-light);
-      line-height: 1.2;
+      line-height: 1.25;
     }
     .sch-sub-who {
+      display: block;
       font-family: var(--font-body);
-      font-size: 11px;
-      color: rgba(236, 227, 208, 0.65);
-      margin-left: 8px;
+      font-size: 14px;
+      color: rgba(236, 227, 208, 0.85);
+      margin-top: 4px;
+      letter-spacing: 0.02em;
     }
     .sch-sub-where {
       font-family: var(--font-body);
@@ -2506,11 +2516,11 @@
     }
     .sch-sub.is-active .sch-sub-chev { color: #C89A3D; }
     .sch-sub-detail {
-      margin-top: 8px;
+      margin-top: 10px;
       font-family: var(--font-body);
-      font-size: 11px;
-      line-height: 1.6;
-      color: rgba(236, 227, 208, 0.70);
+      font-size: 14px;
+      line-height: 1.65;
+      color: rgba(236, 227, 208, 0.85);
     }
     .sch-sub.placeholder .sch-sub-name { color: rgba(236, 227, 208, 0.5); }
     .sch-sub.placeholder .sch-sub-detail { font-style: italic; opacity: 0.7; }
@@ -3738,8 +3748,8 @@ const LEGACY_SPOTS_BACKUP = [
   // Утро в библиотеке: два отдельных листа у корня папоротника.
   // Адреса [3] и [2] — два маленьких отростка у корня, по контракту базы.
   // Лист [3] — Евдокимов (14:00), Лист [2] — Тарасевич (15:00).
-  {id:'evdokimov',  address:[3], label:'Михаил Евдокимов',   subtitle:'Задачки «Квантика»', time:'14:00–15:00', venue:'library', eventIds:['talk-evdokimov']},
-  {id:'tarasevich', address:[2], label:'Григорий Тарасевич', subtitle:'Научпоп-квиз',       time:'15:00–16:00', venue:'library', eventIds:['talk-tarasevich']},
+  {id:'talk-evdokimov',  address:[3], label:'Михаил Евдокимов',   subtitle:'Задачки «Квантика»', time:'14:00–15:00', venue:'library', eventIds:['talk-evdokimov']},
+  {id:'talk-tarasevich', address:[2], label:'Григорий Тарасевич', subtitle:'Научпоп-квиз',       time:'15:00–16:00', venue:'library', eventIds:['talk-tarasevich']},
 
   // ---- Дневная программа: лекции на левой стороне стебля, блоки станций на правой.
   // БЛОКИ — clickThrough: true. Они НЕ кликабельны (на них нельзя «активироваться»),
@@ -3763,7 +3773,7 @@ const LEGACY_SPOTS_BACKUP = [
       label:'Короткометражки 1', subtitle:'17:00–17:30',
       time:'17:00–17:30', venue:'main_stage', eventIds:['cinema-short-1']},
    ]},
-  {id:'gelfand',         address:[1,2],     label:'Михаил Гельфанд',      subtitle:'Иерархия бесконечностей', time:'16:00–17:00', venue:'main_stage', eventIds:['talk-gelfand']},
+  {id:'talk-gelfand',         address:[1,2],     label:'Михаил Гельфанд',      subtitle:'Иерархия бесконечностей', time:'16:00–17:00', venue:'main_stage', eventIds:['talk-gelfand']},
   {id:'station-block-2', address:[1,1,3], label:'Второй блок станций', subtitle:'3 станции + короткий метр', time:'17:30–18:30', venue:'бары и двор',
    zones: [
      {id:'sub-puzzle-engineering-origami',
@@ -3779,7 +3789,7 @@ const LEGACY_SPOTS_BACKUP = [
       label:'Короткометражки 2', subtitle:'18:30–19:00',
       time:'18:30–19:00', venue:'main_stage', eventIds:['cinema-short-2']},
    ]},
-  {id:'rajgorodski',     address:[1,1,2],   label:'Андрей Райгородский',  time:'17:30–18:30', venue:'main_stage', eventIds:['talk-rajgorodski']},
+  {id:'talk-rajgorodski',     address:[1,1,2],   label:'Андрей Райгородский',  time:'17:30–18:30', venue:'main_stage', eventIds:['talk-rajgorodski']},
   {id:'station-block-3', address:[1,1,1,3], label:'Третий блок станций', subtitle:'2 станции + кино + короткий метр', time:'18:30–19:30', venue:'бары и библиотека',
    zones: [
      {id:'sub-puzzle-graphs-evolution',
@@ -3795,7 +3805,7 @@ const LEGACY_SPOTS_BACKUP = [
       label:'Короткометражки 3', subtitle:'20:00–20:30',
       time:'20:00–20:30', venue:'main_stage', eventIds:['cinema-short-3']},
    ]},
-  {id:'skripchenko',     address:[1,1,1,2], label:'Александра Скрипченко', time:'19:00–20:00', venue:'main_stage', eventIds:['talk-skripchenko']},
+  {id:'talk-skripchenko',     address:[1,1,1,2], label:'Александра Скрипченко', time:'19:00–20:00', venue:'main_stage', eventIds:['talk-skripchenko']},
 
   // ---- Переходный слой к ночи (один шаг f₂ выше последних лекций).
   {id:'station-block-4', address:[1,1,1,1,3], label:'Четвёртый блок станций', subtitle:'3 станции + документалка', time:'19:30–20:30', venue:'бары и библиотека',
@@ -3818,13 +3828,13 @@ const LEGACY_SPOTS_BACKUP = [
   // кончик саб-стебля = нетворкинг.
   {id:'evening-headliners', address:[1,1,1,1,2], label:'Вечерний блок', subtitle:'дискуссия · нетворкинг · рэп', time:'20:30–22:00', venue:'три сцены',
    zones: [
-     {id:'rap-evening',
+     {id:'music-rap',
       label:'Научно-технический рэп', subtitle:'на улице',
       time:'20:30–22:00', venue:'courtyard', eventIds:['music-rap']},
-     {id:'discussion-spot',
+     {id:'discussion-tba',
       label:'Дискуссия', subtitle:'TBA',
       time:'20:30–22:00', venue:'main_stage', eventIds:['discussion-tba']},
-     {id:'networking-spot',
+     {id:'social-rosetka',
       label:'Нетворкинг «Розетка»',
       time:'20:30–21:30', venue:'big_bar', eventIds:['social-rosetka']},
    ]},
@@ -3838,10 +3848,10 @@ const LEGACY_SPOTS_BACKUP = [
   // ---- Ночная музыка справа: четыре резерва под параллельные сеты на малой сцене.
   // Симметрия с левыми музыкальными слотами: 4 слева (известные музыканты),
   // 4 справа (placeholder'ы), и хвост — танцевальная программа.
-  {id:'music-extra-1', address:[1,1,1,1,1,3],       label:'Малая сцена', subtitle:'22:00–23:00',  time:'22:00–23:00', venue:'small_bar', eventIds:['music-parallel-1']},
-  {id:'music-extra-2', address:[1,1,1,1,1,1,3],     label:'Малая сцена', subtitle:'23:00–00:00',  time:'23:00–00:00', venue:'small_bar', eventIds:['music-parallel-2']},
-  {id:'music-extra-3', address:[1,1,1,1,1,1,1,3],   label:'Малая сцена', subtitle:'00:00–01:00',  time:'00:00–01:00', venue:'small_bar', eventIds:['music-parallel-3']},
-  {id:'music-extra-4', address:[1,1,1,1,1,1,1,1,3], label:'Малая сцена', subtitle:'01:00–02:00',  time:'01:00–02:00', venue:'small_bar', eventIds:['music-parallel-4']},
+  {id:'music-parallel-1', address:[1,1,1,1,1,3],       label:'Малая сцена', subtitle:'22:00–23:00',  time:'22:00–23:00', venue:'small_bar', eventIds:['music-parallel-1']},
+  {id:'music-parallel-2', address:[1,1,1,1,1,1,3],     label:'Малая сцена', subtitle:'23:00–00:00',  time:'23:00–00:00', venue:'small_bar', eventIds:['music-parallel-2']},
+  {id:'music-parallel-3', address:[1,1,1,1,1,1,1,3],   label:'Малая сцена', subtitle:'00:00–01:00',  time:'00:00–01:00', venue:'small_bar', eventIds:['music-parallel-3']},
+  {id:'music-parallel-4', address:[1,1,1,1,1,1,1,1,3], label:'Малая сцена', subtitle:'01:00–02:00',  time:'01:00–02:00', venue:'small_bar', eventIds:['music-parallel-4']},
 ];
 // конец LEGACY_SPOTS_BACKUP
 
@@ -4827,7 +4837,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-07g"></script>
+  <script src="festival-data.js?v=2026-05-07h"></script>
 
   <script>
   /* ============================================
@@ -5527,12 +5537,52 @@ window.addEventListener('resize', ()=>{
 
     // === Объединённый поток: события + экспонаты ===
     // Аполлоний показывает И events, И exhibits на своих позициях apollo_slot.
-    // events живут в расписании+папоротнике+Аполлонии (имеют slot+venue).
+    // events живут в расписании+папоротнике+Аполлонии.
     // exhibits живут ТОЛЬКО в Аполлонии (это арт без временного слота).
     // Здесь мы их склеиваем в единый поток для построения lookup-таблиц.
+    //
+    // ВАЖНО: с v17 атрибуты места (category, apollo_slot, subcategory, venue)
+    // живут на time_slot, а не на event. У события-сироты (без slot, например
+    // банк cinema-animation) эти поля остаются прямо на нём — это исключение.
+    // Здесь обогащаем каждое событие данными из его слота, чтобы ниже логика
+    // Аполлония работала по-старому (читала ev.category/apollo_slot и т.д.).
     const apolloItems = [];
     if (FESTIVAL_DATA && FESTIVAL_DATA.events) {
-      for (const ev of FESTIVAL_DATA.events) apolloItems.push(ev);
+      const slots = FESTIVAL_DATA.time_slots || {};
+      for (const ev of FESTIVAL_DATA.events) {
+        const slot = ev.slot ? slots[ev.slot] : null;
+        if (slot) {
+          // Привязанное к слоту событие — атрибуты места берём со слота.
+          apolloItems.push({
+            ...ev,
+            category: slot.category,
+            apollo_slot: slot.apollo_slot,
+            subcategory: slot.subcategory,
+            venue: slot.venue,
+          });
+        } else {
+          // Событие-сирота (банк cinema/animation) — поля прямо на нём.
+          apolloItems.push(ev);
+        }
+      }
+      // Пустые слоты (без события) тоже нужны Аполлонию — рисуются как TBA.
+      // У них есть category и apollo_slot, но нет event-полей.
+      const slotsWithEvents = new Set(
+        FESTIVAL_DATA.events.filter(e => e.slot).map(e => e.slot)
+      );
+      for (const [slotId, slot] of Object.entries(slots)) {
+        if (slotsWithEvents.has(slotId)) continue;
+        if (!slot.category || !slot.apollo_slot) continue;
+        apolloItems.push({
+          id: 'tba-' + slotId,
+          title: slot.tool_label || 'TBA',
+          category: slot.category,
+          apollo_slot: slot.apollo_slot,
+          subcategory: slot.subcategory,
+          venue: slot.venue,
+          placeholder: true,
+        });
+      }
     }
     if (FESTIVAL_DATA && FESTIVAL_DATA.exhibits) {
       for (const ex of FESTIVAL_DATA.exhibits) {
@@ -6894,11 +6944,11 @@ window.addEventListener('resize', ()=>{
       {
         id: 'morning', label: 'Утро', sublabel: 'семейная программа', when: '14 — 16', where: 'library',
         events: [
-          { id:'evdokimov',  time:'14:00–15:00', name:'Михаил Евдокимов',
+          { id:'talk-evdokimov',  time:'14:00–15:00', name:'Михаил Евдокимов',
             speaker:'Михаил Евдокимов · автор задач, популяризатор математики',
             venue:'library',
             detail:'Утренний пролог: классные задачи журнала «Квантик», которые решают вместе с залом.' },
-          { id:'tarasevich', time:'15:00–16:00', name:'Григорий Тарасевич',
+          { id:'talk-tarasevich', time:'15:00–16:00', name:'Григорий Тарасевич',
             speaker:'Григорий Тарасевич · научный журналист',
             venue:'library',
             detail:'Командный квиз на математико-естественнонаучные темы. Семейная утренняя часть.' },
@@ -6907,7 +6957,7 @@ window.addEventListener('resize', ()=>{
       {
         id: 'day', label: 'День', sublabel: 'лекции и станции', when: '16 — 20', where: 'Лахесис',
         events: [
-          { id:'gelfand', time:'16:00–17:00', name:'Михаил Гельфанд',
+          { id:'talk-gelfand', time:'16:00–17:00', name:'Михаил Гельфанд',
             speaker:'Михаил Гельфанд · «Иерархия бесконечностей»',
             venue:'main_stage',
             detail:'О генетике, эволюции и о том, как устроена наука.' },
@@ -6925,7 +6975,7 @@ window.addEventListener('resize', ()=>{
                 detail:'Подборка коротких фильмов, идёт параллельно с блоком станций.' },
             ]
           },
-          { id:'rajgorodski', time:'17:30–18:30', name:'Андрей Райгородский',
+          { id:'talk-rajgorodski', time:'17:30–18:30', name:'Андрей Райгородский',
             speaker:'Андрей Райгородский',
             venue:'main_stage',
             detail:'Математика, теория графов, комбинаторика.' },
@@ -6957,7 +7007,7 @@ window.addEventListener('resize', ()=>{
                 detail:'Третья подборка коротких фильмов.' },
             ]
           },
-          { id:'skripchenko', time:'19:00–20:00', name:'Александра Скрипченко',
+          { id:'talk-skripchenko', time:'19:00–20:00', name:'Александра Скрипченко',
             speaker:'Александра Скрипченко',
             venue:'main_stage',
             detail:'Геометрия и динамические системы. Красивая математика без лишней техники.' },
@@ -6984,11 +7034,11 @@ window.addEventListener('resize', ()=>{
             venue:['main_stage','courtyard','big_bar'],
             detail:'Три параллельных события: дискуссия, нетворкинг и научно-технический рэп.',
             substations:[
-              { id:'discussion-spot', name:'Дискуссия', when:'20:30–22:00', where:'main_stage',
+              { id:'discussion-tba', name:'Дискуссия', when:'20:30–22:00', where:'main_stage',
                 detail:'Открытая дискуссия с участием выступавших.' },
-              { id:'networking-spot', name:'Нетворкинг «Розетка»', when:'20:30–21:30', where:'big_bar',
+              { id:'social-rosetka', name:'Нетворкинг «Розетка»', when:'20:30–21:30', where:'big_bar',
                 detail:'Свободное общение, можно заряжать ноутбуки и идеи.' },
-              { id:'rap-evening', name:'Научно-технический рэп', when:'20:30–22:00', where:'courtyard',
+              { id:'music-rap', name:'Научно-технический рэп', when:'20:30–22:00', where:'courtyard',
                 detail:'Программа на улице параллельно с дискуссией.' },
             ]
           },
@@ -6996,25 +7046,25 @@ window.addEventListener('resize', ()=>{
             speaker:'Пётр Термен · терменвокс',
             venue:'main_stage',
             detail:'Музыкант играет руками в воздухе. Инструмент, которому больше ста лет. Музыка ближе к академической.' },
-          { id:'music-extra-1', time:'22:00–23:00', name:'Малая сцена',
+          { id:'music-parallel-1', time:'22:00–23:00', name:'Малая сцена',
             venue:'small_bar',
             detail:'Параллельный музыкальный сет на малой сцене.' },
           { id:'music-2-slot', time:'23:00–00:00', name:'Место для музыканта',
             placeholder:true, venue:'main_stage',
             detail:'Резерв главной сцены 23:00–00:00.' },
-          { id:'music-extra-2', time:'23:00–00:00', name:'Малая сцена',
+          { id:'music-parallel-2', time:'23:00–00:00', name:'Малая сцена',
             venue:'small_bar',
             detail:'Параллельный музыкальный сет на малой сцене.' },
           { id:'music-brinstar', time:'00:00–01:00', name:'Brinstar',
             venue:'main_stage',
             detail:'Музыкальный сет в ночной части программы. Подробности уточняются.' },
-          { id:'music-extra-3', time:'00:00–01:00', name:'Малая сцена',
+          { id:'music-parallel-3', time:'00:00–01:00', name:'Малая сцена',
             venue:'small_bar',
             detail:'Параллельный музыкальный сет на малой сцене.' },
           { id:'music-spiral-fractal', time:'01:00–02:00', name:'Spiral Fractal',
             venue:'main_stage',
             detail:'Музыкальный сет в поздней ночной части. Подробности уточняются.' },
-          { id:'music-extra-4', time:'01:00–02:00', name:'Малая сцена',
+          { id:'music-parallel-4', time:'01:00–02:00', name:'Малая сцена',
             venue:'small_bar',
             detail:'Финальный параллельный сет на малой сцене.' },
           { id:'tail', time:'после 02:00', name:'Танцевальная программа',
@@ -7123,8 +7173,9 @@ window.addEventListener('resize', ()=>{
                   + (s.placeholder ? ' placeholder' : '')
                   + '" data-action="select-sub" data-sub-id="'+s.id+'" tabindex="0" role="button" aria-expanded="'+(subActive?'true':'false')+'">';
                 html += '<div class="sch-sub-head"><div>';
+                if(s.when) html += '<span class="sch-sub-time">'+esc(s.when)+'</span>';
                 html += '<span class="sch-sub-name">'+esc(s.name)+'</span>';
-                if(s.who) html += '<span class="sch-sub-who">· '+esc(s.who)+'</span>';
+                if(s.who) html += '<span class="sch-sub-who">'+esc(s.who)+'</span>';
                 html += '</div>';
                 if(s.where) html += '<span class="sch-sub-where">'+esc(resolveVenue(s.where))+' <span class="sch-sub-chev">'+(subActive?'—':'+')+'</span></span>';
                 else html += '<span class="sch-sub-where"><span class="sch-sub-chev">'+(subActive?'—':'+')+'</span></span>';

@@ -1,7 +1,7 @@
 // === База событий фестиваля «Фрактальная Одиссея», 23 мая 2026 ===
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-07-v16",
+    "version": "2026-05-07-v17",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.",
     "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.",
@@ -18,7 +18,8 @@ window.FESTIVAL_DATA = {
     "changes_v13": "TBA-режим для неподтверждённых: Флюоро, ArtTech, Щелочь, все анимации, второй полный метр. String Art объединён в одну карточку (было 2). Полнометражных оставлено 2 (было 4): Пи + TBA. Реальные названия и автор спрятаны в служебных полях _team_real_title/_team_real_speaker для команды; на сайт идёт только title=TBA.",
     "changes_v14": "УБРАНЫ ART-ДУБЛИ из events. Все 11 art-объектов теперь живут только в exhibits. Сайт научился читать exhibits через apolloItems в Аполлонии. Папоротник: art-id удалены из захардкоженных SPOTS/SUBSPOTS, заменены на placeholder-станции.",
     "changes_v15": "Зоны: тройной хедлайнер (Дискуссия+Нетворкинг+Рэп) на одном листе [1,1,1,1,2]. Утренний блок (Евдокимов+Тарасевич) на одном листе [3]. Cinema/interlude переадресованы внутрь блоков станций. Кино 2 продлено до 22:00.",
-    "changes_v16": "Короткометражки и кино перенесены на адреса блоков-листьев (было: подлисты [...,1,2]/[...,1,3], стало: тот же адрес что у блока станций). Это требуется новой логикой v19-B где SPOTS генерируется из time_slots по fern_address: все события одного адреса становятся зонами одного листа."
+    "changes_v16": "Короткометражки и кино перенесены на адреса блоков-листьев (было: подлисты [...,1,2]/[...,1,3], стало: тот же адрес что у блока станций). Это требуется новой логикой v19-B где SPOTS генерируется из time_slots по fern_address: все события одного адреса становятся зонами одного листа.",
+    "changes_v17": "Разделение составных слотов: slot-stations-1..4 разбиты по событиям (slot-stations-1-1, -1-2, -1-3 и т.д.). Каждый слот теперь содержит максимум 1 событие. Поля category/apollo_slot/subcategory перенесены с событий на слоты (это атрибуты места, не карточки). У событий-сирот (banks: cinema/animation без слота) поля остались. Добавлено slot.type — короткий тип: talk/station/interlude/cinema/music/discussion/networking/dance/music-extra. Также перенесён venue с событий на слоты."
   },
   "venues": {
     "library": {
@@ -100,7 +101,11 @@ window.FESTIVAL_DATA = {
       "start": "14:00",
       "end": "15:00",
       "label_for_zoom": "Михаил Евдокимов · 14:00",
-      "tool_label": "Библиотека 1"
+      "tool_label": "Библиотека 1",
+      "type": "talk",
+      "category": "social",
+      "apollo_slot": "big-1",
+      "venue": "library"
     },
     "slot-tarasevich": {
       "fern_address": [
@@ -109,7 +114,11 @@ window.FESTIVAL_DATA = {
       "start": "15:00",
       "end": "16:00",
       "label_for_zoom": "Григорий Тарасевич · 15:00",
-      "tool_label": "Библиотека 2"
+      "tool_label": "Библиотека 2",
+      "type": "talk",
+      "category": "social",
+      "apollo_slot": "big-2",
+      "venue": "library"
     },
     "slot-gelfand": {
       "fern_address": [
@@ -119,9 +128,13 @@ window.FESTIVAL_DATA = {
       "start": "16:00",
       "end": "17:00",
       "label_for_zoom": "Михаил Гельфанд · 16:00",
-      "tool_label": "Лекция 1"
+      "tool_label": "Лекция 1",
+      "type": "talk",
+      "category": "popsci",
+      "apollo_slot": "big-1",
+      "venue": "main_stage"
     },
-    "slot-stations-1": {
+    "slot-stations-1-1": {
       "fern_address": [
         1,
         3
@@ -129,7 +142,39 @@ window.FESTIVAL_DATA = {
       "start": "16:30",
       "end": "17:30",
       "label_for_zoom": "Первый блок · 16:30",
-      "tool_label": "Станции 1"
+      "tool_label": "Станции 1",
+      "type": "station",
+      "category": "workshop",
+      "apollo_slot": "big-1",
+      "venue": "big_bar"
+    },
+    "slot-stations-1-2": {
+      "fern_address": [
+        1,
+        3
+      ],
+      "start": "16:30",
+      "end": "17:30",
+      "label_for_zoom": "Первый блок · 16:30",
+      "tool_label": "Станции 1",
+      "type": "station",
+      "category": "workshop",
+      "apollo_slot": "big-3",
+      "venue": "big_bar"
+    },
+    "slot-stations-1-3": {
+      "fern_address": [
+        1,
+        3
+      ],
+      "start": "16:30",
+      "end": "17:30",
+      "label_for_zoom": "Первый блок · 16:30",
+      "tool_label": "Станции 1",
+      "type": "station",
+      "category": "experiment",
+      "apollo_slot": "big-1",
+      "venue": "small_bar"
     },
     "slot-rajgorodski": {
       "fern_address": [
@@ -140,9 +185,13 @@ window.FESTIVAL_DATA = {
       "start": "17:30",
       "end": "18:30",
       "label_for_zoom": "Андрей Райгородский · 17:30",
-      "tool_label": "Лекция 2"
+      "tool_label": "Лекция 2",
+      "type": "talk",
+      "category": "popsci",
+      "apollo_slot": "big-2",
+      "venue": "main_stage"
     },
-    "slot-stations-2": {
+    "slot-stations-2-1": {
       "fern_address": [
         1,
         1,
@@ -151,7 +200,40 @@ window.FESTIVAL_DATA = {
       "start": "17:30",
       "end": "18:30",
       "label_for_zoom": "Второй блок · 17:30",
-      "tool_label": "Станции 2"
+      "tool_label": "Станции 2",
+      "type": "station",
+      "category": "workshop",
+      "apollo_slot": "big-2",
+      "venue": "big_bar"
+    },
+    "slot-stations-2-2": {
+      "fern_address": [
+        1,
+        1,
+        3
+      ],
+      "start": "17:30",
+      "end": "18:30",
+      "label_for_zoom": "Второй блок · 17:30",
+      "tool_label": "Станции 2",
+      "type": "station",
+      "category": "workshop",
+      "apollo_slot": "mid-1",
+      "venue": "courtyard"
+    },
+    "slot-stations-2-3": {
+      "fern_address": [
+        1,
+        1,
+        3
+      ],
+      "start": "17:30",
+      "end": "18:30",
+      "label_for_zoom": "Второй блок · 17:30",
+      "tool_label": "Станции 2",
+      "type": "station",
+      "category": "experiment",
+      "venue": "small_bar"
     },
     "slot-skripchenko": {
       "fern_address": [
@@ -163,9 +245,13 @@ window.FESTIVAL_DATA = {
       "start": "19:00",
       "end": "20:00",
       "label_for_zoom": "Александра Скрипченко · 19:00",
-      "tool_label": "Лекция 3"
+      "tool_label": "Лекция 3",
+      "type": "talk",
+      "category": "popsci",
+      "apollo_slot": "big-3",
+      "venue": "main_stage"
     },
-    "slot-stations-3": {
+    "slot-stations-3-1": {
       "fern_address": [
         1,
         1,
@@ -175,9 +261,29 @@ window.FESTIVAL_DATA = {
       "start": "18:30",
       "end": "19:30",
       "label_for_zoom": "Третий блок · 18:30",
-      "tool_label": "Станции 3"
+      "tool_label": "Станции 3",
+      "type": "station",
+      "category": "experiment",
+      "apollo_slot": "big-3",
+      "venue": "small_bar"
     },
-    "slot-stations-4": {
+    "slot-stations-3-2": {
+      "fern_address": [
+        1,
+        1,
+        1,
+        3
+      ],
+      "start": "18:30",
+      "end": "19:30",
+      "label_for_zoom": "Третий блок · 18:30",
+      "tool_label": "Станции 3",
+      "type": "station",
+      "category": "workshop",
+      "apollo_slot": "mid-2",
+      "venue": "big_bar"
+    },
+    "slot-stations-4-1": {
       "fern_address": [
         1,
         1,
@@ -188,7 +294,44 @@ window.FESTIVAL_DATA = {
       "start": "19:30",
       "end": "20:30",
       "label_for_zoom": "Четвёртый блок · 19:30",
-      "tool_label": "Станции 4"
+      "tool_label": "Станции 4",
+      "type": "station",
+      "category": "experiment",
+      "apollo_slot": "mid-2",
+      "venue": "big_bar"
+    },
+    "slot-stations-4-2": {
+      "fern_address": [
+        1,
+        1,
+        1,
+        1,
+        3
+      ],
+      "start": "19:30",
+      "end": "20:30",
+      "label_for_zoom": "Четвёртый блок · 19:30",
+      "tool_label": "Станции 4",
+      "type": "station",
+      "category": "workshop",
+      "apollo_slot": "mid-3",
+      "venue": "small_bar"
+    },
+    "slot-stations-4-3": {
+      "fern_address": [
+        1,
+        1,
+        1,
+        1,
+        3
+      ],
+      "start": "19:30",
+      "end": "20:30",
+      "label_for_zoom": "Четвёртый блок · 19:30",
+      "tool_label": "Станции 4",
+      "type": "station",
+      "category": "workshop",
+      "venue": "courtyard"
     },
     "slot-music-1": {
       "fern_address": [
@@ -202,7 +345,12 @@ window.FESTIVAL_DATA = {
       "start": "22:00",
       "end": "23:00",
       "label_for_zoom": "Главная сцена · 22:00",
-      "tool_label": "Музыка 1"
+      "tool_label": "Музыка 1",
+      "type": "music",
+      "category": "music",
+      "apollo_slot": "big-1",
+      "subcategory": "main_stage",
+      "venue": "main_stage"
     },
     "slot-music-2": {
       "fern_address": [
@@ -217,7 +365,8 @@ window.FESTIVAL_DATA = {
       "start": "23:00",
       "end": "00:00",
       "label_for_zoom": "Главная сцена · 23:00",
-      "tool_label": "Музыка 2"
+      "tool_label": "Музыка 2",
+      "type": "music"
     },
     "slot-music-3": {
       "fern_address": [
@@ -233,7 +382,12 @@ window.FESTIVAL_DATA = {
       "start": "00:00",
       "end": "01:00",
       "label_for_zoom": "Главная сцена · 00:00",
-      "tool_label": "Музыка 3"
+      "tool_label": "Музыка 3",
+      "type": "music",
+      "category": "music",
+      "apollo_slot": "big-3",
+      "subcategory": "main_stage",
+      "venue": "main_stage"
     },
     "slot-music-4": {
       "fern_address": [
@@ -250,7 +404,12 @@ window.FESTIVAL_DATA = {
       "start": "01:00",
       "end": "02:00",
       "label_for_zoom": "Главная сцена · 01:00",
-      "tool_label": "Музыка 4"
+      "tool_label": "Музыка 4",
+      "type": "music",
+      "category": "music",
+      "apollo_slot": "center",
+      "subcategory": "main_stage",
+      "venue": "main_stage"
     },
     "slot-music-parallel-1": {
       "fern_address": [
@@ -264,7 +423,12 @@ window.FESTIVAL_DATA = {
       "start": "22:00",
       "end": "23:00",
       "label_for_zoom": "Малая сцена · 22:00",
-      "tool_label": "Параллель 1"
+      "tool_label": "Параллель 1",
+      "type": "music-extra",
+      "category": "music",
+      "apollo_slot": "mid-1",
+      "subcategory": "big_bar",
+      "venue": "small_bar"
     },
     "slot-music-parallel-2": {
       "fern_address": [
@@ -279,7 +443,12 @@ window.FESTIVAL_DATA = {
       "start": "23:00",
       "end": "00:00",
       "label_for_zoom": "Малая сцена · 23:00",
-      "tool_label": "Параллель 2"
+      "tool_label": "Параллель 2",
+      "type": "music-extra",
+      "category": "music",
+      "apollo_slot": "mid-2",
+      "subcategory": "big_bar",
+      "venue": "small_bar"
     },
     "slot-music-parallel-3": {
       "fern_address": [
@@ -295,7 +464,12 @@ window.FESTIVAL_DATA = {
       "start": "00:00",
       "end": "01:00",
       "label_for_zoom": "Малая сцена · 00:00",
-      "tool_label": "Параллель 3"
+      "tool_label": "Параллель 3",
+      "type": "music-extra",
+      "category": "music",
+      "apollo_slot": "mid-3",
+      "subcategory": "big_bar",
+      "venue": "small_bar"
     },
     "slot-music-parallel-4": {
       "fern_address": [
@@ -312,14 +486,24 @@ window.FESTIVAL_DATA = {
       "start": "01:00",
       "end": "02:00",
       "label_for_zoom": "Малая сцена · 01:00",
-      "tool_label": "Параллель 4"
+      "tool_label": "Параллель 4",
+      "type": "music-extra",
+      "category": "music",
+      "apollo_slot": "ear-1",
+      "subcategory": "big_bar",
+      "venue": "small_bar"
     },
     "slot-dance": {
       "fern_address": "tail",
       "start": "02:00",
       "end": "04:00",
       "label_for_zoom": "Танцпол · 02:00",
-      "tool_label": "Танцпол"
+      "tool_label": "Танцпол",
+      "type": "dance",
+      "category": "music",
+      "apollo_slot": "ear-2",
+      "subcategory": "main_stage",
+      "venue": "main_stage"
     },
     "slot-discussion": {
       "fern_address": [
@@ -332,7 +516,11 @@ window.FESTIVAL_DATA = {
       "start": "20:30",
       "end": "22:00",
       "label_for_zoom": "Дискуссия · 20:30",
-      "tool_label": "Дискуссия"
+      "tool_label": "Дискуссия",
+      "type": "discussion",
+      "category": "social",
+      "apollo_slot": "big-3",
+      "venue": "main_stage"
     },
     "slot-cinema-1": {
       "fern_address": [
@@ -344,7 +532,12 @@ window.FESTIVAL_DATA = {
       "start": "19:00",
       "end": "20:00",
       "label_for_zoom": "Кино 1 · 19:00",
-      "tool_label": "Кино 1"
+      "tool_label": "Кино 1",
+      "type": "cinema",
+      "category": "cinema",
+      "apollo_slot": "big-1",
+      "subcategory": "feature",
+      "venue": "library"
     },
     "slot-cinema-2": {
       "fern_address": [
@@ -357,7 +550,12 @@ window.FESTIVAL_DATA = {
       "start": "20:00",
       "end": "22:00",
       "label_for_zoom": "Кино 2 · 20:00",
-      "tool_label": "Кино 2"
+      "tool_label": "Кино 2",
+      "type": "cinema",
+      "category": "cinema",
+      "apollo_slot": "big-2",
+      "subcategory": "feature",
+      "venue": "library"
     },
     "slot-interlude-1": {
       "fern_address": [
@@ -367,7 +565,12 @@ window.FESTIVAL_DATA = {
       "start": "17:00",
       "end": "17:30",
       "label_for_zoom": "Перебив · 17:00",
-      "tool_label": "Короткометражки 1"
+      "tool_label": "Короткометражки 1",
+      "type": "interlude",
+      "category": "cinema",
+      "apollo_slot": "big-1",
+      "subcategory": "short",
+      "venue": "main_stage"
     },
     "slot-interlude-2": {
       "fern_address": [
@@ -378,7 +581,12 @@ window.FESTIVAL_DATA = {
       "start": "18:30",
       "end": "19:00",
       "label_for_zoom": "Перебив · 18:30",
-      "tool_label": "Короткометражки 2"
+      "tool_label": "Короткометражки 2",
+      "type": "interlude",
+      "category": "cinema",
+      "apollo_slot": "big-2",
+      "subcategory": "short",
+      "venue": "main_stage"
     },
     "slot-interlude-3": {
       "fern_address": [
@@ -390,7 +598,12 @@ window.FESTIVAL_DATA = {
       "start": "20:00",
       "end": "20:30",
       "label_for_zoom": "Перебив · 20:00",
-      "tool_label": "Короткометражки 3"
+      "tool_label": "Короткометражки 3",
+      "type": "interlude",
+      "category": "cinema",
+      "apollo_slot": "big-3",
+      "subcategory": "short",
+      "venue": "main_stage"
     },
     "slot-networking": {
       "fern_address": [
@@ -406,7 +619,11 @@ window.FESTIVAL_DATA = {
       "tool_label": "Нетворкинг «Розетка»",
       "allowed_venues": [
         "big_bar"
-      ]
+      ],
+      "type": "networking",
+      "category": "social",
+      "apollo_slot": "mid-1",
+      "venue": "big_bar"
     },
     "slot-rap-evening": {
       "fern_address": [
@@ -422,7 +639,12 @@ window.FESTIVAL_DATA = {
       "tool_label": "Научно-технический рэп",
       "allowed_venues": [
         "courtyard"
-      ]
+      ],
+      "type": "music",
+      "category": "music",
+      "apollo_slot": "big-1",
+      "subcategory": "courtyard",
+      "venue": "courtyard"
     }
   },
   "events": [
@@ -433,9 +655,6 @@ window.FESTIVAL_DATA = {
       "subtitle": "решаем задачи вместе с залом",
       "speaker": "Михаил Евдокимов",
       "speaker_role": "автор задач, популяризатор математики",
-      "category": "social",
-      "apollo_slot": "big-1",
-      "venue": "library",
       "slot": "slot-evdokimov",
       "duration_override": null,
       "description": "Утренний пролог в библиотеке: классные задачи журнала «Квантик», которые решаются всем залом совместно. Можно прийти с детьми — это семейная часть программы."
@@ -447,9 +666,6 @@ window.FESTIVAL_DATA = {
       "subtitle": "командный квиз",
       "speaker": "Григорий Тарасевич",
       "speaker_role": "научный журналист",
-      "category": "social",
-      "apollo_slot": "big-2",
-      "venue": "library",
       "slot": "slot-tarasevich",
       "duration_override": null,
       "description": "Командный квиз на математико-естественнонаучные темы — играют команды зала. Семейная утренняя часть в библиотеке Достоевского."
@@ -461,9 +677,6 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Бюро «Розетка»",
       "speaker_role": "образовательное бюро",
-      "category": "social",
-      "apollo_slot": "mid-1",
-      "venue": "big_bar",
       "slot": "slot-networking",
       "duration_override": null,
       "description": "Программа знакомств и совместных активностей. Готовится бюро «Розетка». Время и место уточняются."
@@ -475,9 +688,6 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Михаил Гельфанд",
       "speaker_role": "биоинформатик",
-      "category": "popsci",
-      "apollo_slot": "big-1",
-      "venue": "main_stage",
       "slot": "slot-gelfand",
       "duration_override": null,
       "description": "О генетике, эволюции и о том, как устроена наука."
@@ -489,9 +699,6 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Андрей Райгородский",
       "speaker_role": "математик, директор ФПМИ МФТИ",
-      "category": "popsci",
-      "apollo_slot": "big-2",
-      "venue": "main_stage",
       "slot": "slot-rajgorodski",
       "duration_override": null,
       "description": "Теория графов, комбинаторика. Тема будет уточнена ближе к фестивалю."
@@ -503,9 +710,6 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Александра Скрипченко",
       "speaker_role": "математик",
-      "category": "popsci",
-      "apollo_slot": "big-3",
-      "venue": "main_stage",
       "slot": "slot-skripchenko",
       "duration_override": null,
       "description": "О том, как простые правила могут породить бесконечно сложную структуру. Динамические системы."
@@ -517,10 +721,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Полина Романова",
       "speaker_role": null,
-      "category": "workshop",
-      "apollo_slot": "big-1",
-      "venue": "big_bar",
-      "slot": "slot-stations-1",
+      "slot": "slot-stations-1-1",
       "duration_override": null,
       "description": "Ножницы, лист А4, инструкция. За 5–10 минут — фрактальная модель в руках. Можно собрать дома ещё."
     },
@@ -531,10 +732,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Наташа Евдокимова",
       "speaker_role": null,
-      "category": "workshop",
-      "apollo_slot": "big-3",
-      "venue": "big_bar",
-      "slot": "slot-stations-1",
+      "slot": "slot-stations-1-2",
       "duration_override": null,
       "description": "Базовые черты, точки, линии. Из них — иероглифы. Простота порождает сложность через повторение."
     },
@@ -545,10 +743,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Дария",
       "speaker_role": null,
-      "category": "experiment",
-      "apollo_slot": "big-1",
-      "venue": "small_bar",
-      "slot": "slot-stations-1",
+      "slot": "slot-stations-1-3",
       "duration_override": null,
       "description": "Рисуночные методики, которыми психиатрия выявляет психические расстройства. Самоподобие как клинический инструмент."
     },
@@ -559,10 +754,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Полина Романова",
       "speaker_role": null,
-      "category": "workshop",
-      "apollo_slot": "big-2",
-      "venue": "big_bar",
-      "slot": "slot-stations-2",
+      "slot": "slot-stations-2-1",
       "duration_override": null,
       "description": "Складные конструкции из бумаги, использующиеся в инженерии — солнечные панели, медицинские стенты. Складывание по математическим правилам."
     },
@@ -573,10 +765,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Ольга",
       "speaker_role": null,
-      "category": "workshop",
-      "apollo_slot": "mid-1",
-      "venue": "courtyard",
-      "slot": "slot-stations-2",
+      "slot": "slot-stations-2-2",
       "duration_override": null,
       "description": "Окрашивание тканей с фрактальными разводами. На выходе — узор, никогда не повторяющийся."
     },
@@ -587,10 +776,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Лора Заиконникова",
       "speaker_role": null,
-      "category": "experiment",
-      "apollo_slot": null,
-      "venue": "small_bar",
-      "slot": "slot-stations-2",
+      "slot": "slot-stations-2-3",
       "duration_override": null,
       "description": "Подойти к инструменту, поиграть руками в воздухе. К Петру Термену готовиться никак не нужно — просто можно попробовать."
     },
@@ -601,10 +787,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Александр Николаичев",
       "speaker_role": null,
-      "category": "experiment",
-      "apollo_slot": "big-3",
-      "venue": "small_bar",
-      "slot": "slot-stations-3",
+      "slot": "slot-stations-3-1",
       "duration_override": null,
       "description": "Интерактивная демонстрация — как графы растут, ломаются, перестраиваются. Игра с динамикой связей."
     },
@@ -615,10 +798,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Ася",
       "speaker_role": null,
-      "category": "workshop",
-      "apollo_slot": "mid-2",
-      "venue": "big_bar",
-      "slot": "slot-stations-3",
+      "slot": "slot-stations-3-2",
       "duration_override": null,
       "description": "Витражи во фрактальной геометрии. Можно сделать свой и забрать."
     },
@@ -629,10 +809,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": null,
       "speaker_role": null,
-      "category": "experiment",
-      "apollo_slot": "mid-2",
-      "venue": "big_bar",
-      "slot": "slot-stations-4",
+      "slot": "slot-stations-4-1",
       "duration_override": null,
       "description": null
     },
@@ -643,10 +820,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": null,
       "speaker_role": null,
-      "category": "workshop",
-      "apollo_slot": "mid-3",
-      "venue": "small_bar",
-      "slot": "slot-stations-4",
+      "slot": "slot-stations-4-2",
       "duration_override": null,
       "description": null
     },
@@ -657,13 +831,9 @@ window.FESTIVAL_DATA = {
       "subtitle": "терменвокс",
       "speaker": "Пётр Термен",
       "speaker_role": "музыкант, терменвокс",
-      "category": "music",
-      "apollo_slot": "big-1",
-      "venue": "main_stage",
       "slot": "slot-music-1",
       "duration_override": null,
-      "description": "Музыкант играет руками в воздухе. Инструмент, которому больше ста лет (его прадед — Лев Термен — изобретатель). Музыка ближе к академической.",
-      "subcategory": "main_stage"
+      "description": "Музыкант играет руками в воздухе. Инструмент, которому больше ста лет (его прадед — Лев Термен — изобретатель). Музыка ближе к академической."
     },
     {
       "id": "music-rap",
@@ -672,13 +842,9 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Влад Горелов",
       "speaker_role": "музыкант, научно-технический рэп",
-      "category": "music",
-      "apollo_slot": "big-1",
-      "venue": "courtyard",
       "slot": "slot-rap-evening",
       "duration_override": null,
-      "description": "Музыкальная программа переходного интенсива между Терменом и ночной танцевальной частью.",
-      "subcategory": "courtyard"
+      "description": "Музыкальная программа переходного интенсива между Терменом и ночной танцевальной частью."
     },
     {
       "id": "music-brinstar",
@@ -687,13 +853,9 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Brinstar",
       "speaker_role": "музыкант",
-      "category": "music",
-      "apollo_slot": "big-3",
-      "venue": "main_stage",
       "slot": "slot-music-3",
       "duration_override": null,
-      "description": "Музыкальный сет в ночной части программы. Подробности уточняются.",
-      "subcategory": "main_stage"
+      "description": "Музыкальный сет в ночной части программы. Подробности уточняются."
     },
     {
       "id": "music-spiral-fractal",
@@ -702,13 +864,9 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Spiral Fractal",
       "speaker_role": "музыкант",
-      "category": "music",
-      "apollo_slot": "center",
-      "venue": "main_stage",
       "slot": "slot-music-4",
       "duration_override": null,
-      "description": "Музыкальный сет в поздней ночной части. Подробности уточняются.",
-      "subcategory": "main_stage"
+      "description": "Музыкальный сет в поздней ночной части. Подробности уточняются."
     },
     {
       "id": "music-parallel-1",
@@ -717,13 +875,9 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": null,
       "speaker_role": null,
-      "category": "music",
-      "apollo_slot": "mid-1",
-      "venue": "small_bar",
       "slot": "slot-music-parallel-1",
       "duration_override": null,
-      "description": null,
-      "subcategory": "big_bar"
+      "description": null
     },
     {
       "id": "music-parallel-2",
@@ -732,13 +886,9 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": null,
       "speaker_role": null,
-      "category": "music",
-      "apollo_slot": "mid-2",
-      "venue": "small_bar",
       "slot": "slot-music-parallel-2",
       "duration_override": null,
-      "description": null,
-      "subcategory": "big_bar"
+      "description": null
     },
     {
       "id": "music-parallel-3",
@@ -747,13 +897,9 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": null,
       "speaker_role": null,
-      "category": "music",
-      "apollo_slot": "mid-3",
-      "venue": "small_bar",
       "slot": "slot-music-parallel-3",
       "duration_override": null,
-      "description": null,
-      "subcategory": "big_bar"
+      "description": null
     },
     {
       "id": "music-parallel-4",
@@ -762,13 +908,9 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": null,
       "speaker_role": null,
-      "category": "music",
-      "apollo_slot": "ear-1",
-      "venue": "small_bar",
       "slot": "slot-music-parallel-4",
       "duration_override": null,
-      "description": null,
-      "subcategory": "big_bar"
+      "description": null
     },
     {
       "id": "dance-program",
@@ -777,23 +919,16 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": null,
       "speaker_role": null,
-      "category": "music",
-      "apollo_slot": "ear-2",
-      "venue": "main_stage",
       "slot": "slot-dance",
       "duration_override": null,
-      "description": "Открытый танцпол, продолжается до закрытия фестиваля.",
-      "subcategory": "main_stage"
+      "description": "Открытый танцпол, продолжается до закрытия фестиваля."
     },
     {
       "id": "mc-fractal-tiles",
       "status": "confirmed",
       "title": "Фрактал-Ателье: напечатай свой тайлинг",
       "speaker": "Татьяна Зайцева",
-      "category": "workshop",
-      "apollo_slot": null,
-      "venue": "courtyard",
-      "slot": "slot-stations-4",
+      "slot": "slot-stations-4-3",
       "description": "Печать на ткани/бумаге фрактальных замощений — разных тайлингов, сгенерированных аффинными растяжениями."
     },
     {
@@ -814,9 +949,6 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": null,
       "speaker_role": null,
-      "category": "social",
-      "apollo_slot": "big-3",
-      "venue": "main_stage",
       "slot": "slot-discussion",
       "duration_override": null,
       "description": "Тема дискуссии и состав участников будут объявлены."
@@ -826,10 +958,6 @@ window.FESTIVAL_DATA = {
       "status": "tentative",
       "title": "Короткометражка №1",
       "speaker": null,
-      "category": "cinema",
-      "subcategory": "short",
-      "apollo_slot": "big-1",
-      "venue": "main_stage",
       "slot": "slot-interlude-1",
       "description": "Короткий метр, около 6 минут. Источник: YouTube (Sx_0cdogaZ8). Название и автор уточняются.",
       "links": [
@@ -841,10 +969,6 @@ window.FESTIVAL_DATA = {
       "status": "tentative",
       "title": "Короткометражка №2",
       "speaker": null,
-      "category": "cinema",
-      "subcategory": "short",
-      "apollo_slot": "big-2",
-      "venue": "main_stage",
       "slot": "slot-interlude-2",
       "description": "Короткий метр, около 4 минут. Источник: Vimeo. Название и автор уточняются.",
       "links": [
@@ -856,10 +980,6 @@ window.FESTIVAL_DATA = {
       "status": "tentative",
       "title": "Короткометражка №3",
       "speaker": null,
-      "category": "cinema",
-      "subcategory": "short",
-      "apollo_slot": "big-3",
-      "venue": "main_stage",
       "slot": "slot-interlude-3",
       "description": "Короткий метр, около 10 минут. Источник: Vimeo channel 561739. Название и автор уточняются.",
       "links": [
@@ -1036,10 +1156,6 @@ window.FESTIVAL_DATA = {
       "status": "tentative",
       "title": "Пи",
       "speaker": "Даррен Аронофски",
-      "category": "cinema",
-      "subcategory": "feature",
-      "apollo_slot": "big-1",
-      "venue": "library",
       "slot": "slot-cinema-1",
       "description": "Художественный фильм 1998 года. Параноидальный математик в поисках универсальной формулы. Чёрно-белый, психоделический."
     },
@@ -1048,10 +1164,6 @@ window.FESTIVAL_DATA = {
       "status": "tentative",
       "title": "TBA",
       "speaker": null,
-      "category": "cinema",
-      "subcategory": "feature",
-      "apollo_slot": "big-2",
-      "venue": "library",
       "slot": "slot-cinema-2",
       "description": null
     }
