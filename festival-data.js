@@ -273,7 +273,10 @@ window.FESTIVAL_DATA = {
       "label_for_zoom": "Главная сцена · 23:00",
       "tool_label": "Музыка",
       "type": "music",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "category": "music",
+      "subcategory": "main_stage",
+      "apollo_slot": "big-2"
     },
     "slot-music-3": {
       "start": "00:00",
@@ -429,7 +432,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка",
       "type": "music",
       "category": "music",
-      "apollo_slot": null,
+      "apollo_slot": "mid-1",
       "subcategory": "main_stage"
     },
     "slot-music-parallel-5": {
@@ -439,7 +442,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
-      "apollo_slot": null,
+      "apollo_slot": "big-1",
       "subcategory": "big_bar"
     },
     "slot-music-6": {
@@ -449,7 +452,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка",
       "type": "music",
       "category": "music",
-      "apollo_slot": null,
+      "apollo_slot": "mid-2",
       "subcategory": "main_stage"
     },
     "slot-music-parallel-6": {
@@ -459,7 +462,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
-      "apollo_slot": null,
+      "apollo_slot": "big-2",
       "subcategory": "big_bar"
     }
   },

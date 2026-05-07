@@ -4763,7 +4763,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-07k"></script>
+  <script src="festival-data.js?v=2026-05-07l"></script>
 
   <script>
   /* ============================================
@@ -5905,31 +5905,46 @@ window.addEventListener('resize', ()=>{
       return result;
     }
     function _labelForEventImpl(ev) {
-      const isEmpty = ev.status === 'placeholder' || (!ev.title && !ev.speaker);
+      // Для exhibits author используется как speaker — нормализуем сюда.
+      const author = ev.speaker || ev.author || '';
+
+      const isEmpty = ev.status === 'placeholder' || (!ev.title && !author);
       if (isEmpty) return { line1: 'TBA', line2: '' };
 
       const cat = ev.category;
       let line1 = '', line2 = '';
       if (cat === 'popsci') {
-        line1 = ev.speaker || ev.title || 'TBA';
-        if (ev.speaker && ev.title) {
+        line1 = author || ev.title || 'TBA';
+        if (author && ev.title) {
           // Не показываем title, если он дублирует имя: "Лекция X" или
           // содержит основу фамилии (slice(0,-2) — учёт русских падежей,
           // "Райгородский" → "Райгородск" → находится в "Райгородского").
           const titleL = ev.title.toLowerCase().trim();
-          const lastName = ev.speaker.split(' ').pop().toLowerCase();
+          const lastName = author.split(' ').pop().toLowerCase();
           const stem = lastName.length > 5 ? lastName.slice(0, -2) : lastName;
           if (!titleL.startsWith('лекция ') && !titleL.includes(stem)) {
             line2 = ev.title;
           }
         }
       } else if (cat === 'music') {
-        line1 = ev.speaker || ev.title || 'TBA';
+        // Music: основная подпись — название группы/исполнителя (или title).
+        // Если title и author разные (как у "Научно-технический рэп" / "Влад Горелов") —
+        // показываем оба: название первым, имя автора второй строкой.
+        line1 = ev.title || author || 'TBA';
+        if (author && ev.title && author !== ev.title) {
+          // Не дублируем если title содержит имя автора или наоборот.
+          const a = author.toLowerCase(), t = ev.title.toLowerCase();
+          if (!t.includes(a) && !a.includes(t)) {
+            line2 = author;
+          }
+        }
       } else if (cat === 'workshop') {
-        line1 = ev.title || ev.speaker || 'TBA';
-        if (ev.speaker && ev.title) line2 = ev.speaker;
+        line1 = ev.title || author || 'TBA';
+        if (author && ev.title) line2 = author;
       } else {
-        line1 = ev.title || ev.speaker || 'TBA';
+        // art/social/cinema/experiment: title + author.
+        line1 = ev.title || author || 'TBA';
+        if (author && ev.title && author !== ev.title) line2 = author;
       }
       return { line1, line2 };
     }
@@ -6669,11 +6684,20 @@ window.addEventListener('resize', ()=>{
              +  'font-size:0.9em;letter-spacing:0.05em;margin:0 0 0.7em 0;">'
              +  escHtml(metaParts.join(' · ')) + '</p>';
       }
-      // Подзаголовок-тема — если у нас есть полный title, отличный от заголовка панели,
-      // и категория это допускает (для music сознательно показываем только имя).
-      if (ev.title && ev.title !== titleEl.textContent && ev.category !== 'music') {
+      // Подзаголовок: для большинства категорий — это title (если он отличается
+      // от подписи панели). Для music — это author/speaker (название группы =
+      // titleEl, имя автора → подзаголовок). Для exhibits author лежит в
+      // ev.author, для events — в ev.speaker.
+      const subAuthor = ev.speaker || ev.author || '';
+      let subLine = '';
+      if (ev.category === 'music') {
+        if (subAuthor && subAuthor !== titleEl.textContent) subLine = subAuthor;
+      } else {
+        if (ev.title && ev.title !== titleEl.textContent) subLine = ev.title;
+      }
+      if (subLine) {
         html += '<p style="font-style:italic;opacity:0.85;margin:0 0 0.6em 0;">'
-             + escHtml(ev.title) + '</p>';
+             + escHtml(subLine) + '</p>';
       }
       if (ev.description) {
         html += '<p style="margin:0;">' + escHtml(ev.description) + '</p>';
