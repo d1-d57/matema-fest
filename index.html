@@ -3758,7 +3758,7 @@ const ALL_SPOTS = [TAIL, ...SPOTS, ...SUBSPOTS];
 // ============================================================================
 // ЗОНЫ через под-лепестки (см. документацию).
 // ============================================================================
-const ZONE_PETAL_DEPTH = 5;
+const ZONE_PETAL_DEPTH = 18;
 
 function petalAddresses(prefix, depth){
   const left = [], right = [];
@@ -3771,43 +3771,84 @@ function petalAddresses(prefix, depth){
   return { left, right, tail: cur };
 }
 
+// Кэш площадей под-лепестков (грубая оценка по bbox после сэмплирования).
+const _petalAreaCache = {};
+function petalArea(addr){
+  const key = addr.join(',');
+  if(key in _petalAreaCache) return _petalAreaCache[key];
+  const pts = sampleLeafPoints(addr, 200);
+  let xMin=Infinity, xMax=-Infinity, yMin=Infinity, yMax=-Infinity;
+  for(const [x,y] of pts){
+    if(x<xMin) xMin=x; if(x>xMax) xMax=x;
+    if(y<yMin) yMin=y; if(y>yMax) yMax=y;
+  }
+  const area = (xMax-xMin) * (yMax-yMin);
+  _petalAreaCache[key] = area;
+  return area;
+}
+
 function partitionPetals(petals, K){
   const { left, right, tail } = petals;
-  if(K === 2){
-    return [
-      { addresses: left.slice() },
-      { addresses: right.slice().concat([tail]) },
-    ];
+  // Делит массив адресов на n групп с примерно равной СУММАРНОЙ площадью.
+  // Верхние мелкие лепестки получают БОЛЬШЕ адресов чтобы визуально занимать
+  // столько же места что и нижние крупные.
+  function splitByArea(addrs, n){
+    if(n <= 1) return [addrs.slice()];
+    if(!addrs.length) return [];
+    const areas = addrs.map(petalArea);
+    const total = areas.reduce((s,a) => s+a, 0);
+    const target = total / n;
+    const groups = [];
+    for(let i = 0; i < n; i++) groups.push([]);
+    let cg = 0, cs = 0;
+    for(let i = 0; i < addrs.length; i++){
+      if(cg < n - 1 && cs + areas[i]/2 > target){ cg++; cs = 0; }
+      groups[cg].push(addrs[i]);
+      cs += areas[i];
+    }
+    return groups.filter(g => g.length > 0);
   }
-  if(K === 3){
-    return [
-      { addresses: left.slice() },
-      { addresses: right.slice() },
-      { addresses: [tail] },
-    ];
+  // Отнимает с верхушки массива столько лепестков, чтобы их площадь была >= target.
+  function takeTopByArea(addrs, target){
+    if(!addrs.length) return { top: [], rest: [] };
+    const areas = addrs.map(petalArea);
+    let taken = 0;
+    let cut = addrs.length;
+    for(let i = addrs.length - 1; i >= 0; i--){
+      if(taken + areas[i]/2 < target){ taken += areas[i]; cut = i; }
+      else break;
+    }
+    return { top: addrs.slice(cut), rest: addrs.slice(0, cut) };
   }
-  if(K === 4){
-    const Lh = Math.floor(left.length / 2);
-    const Rh = Math.floor(right.length / 2);
-    return [
-      { addresses: left.slice(0, Lh) },
-      { addresses: right.slice(0, Rh) },
-      { addresses: left.slice(Lh) },
-      { addresses: right.slice(Rh).concat([tail]) },
-    ];
+  if(K === 1){
+    return [{ addresses: left.concat(right).concat([tail]), side: 'ALL' }];
   }
-  if(K === 5){
-    const Lh = Math.floor(left.length / 2);
-    const Rh = Math.floor(right.length / 2);
-    return [
-      { addresses: left.slice(0, Lh) },
-      { addresses: right.slice(0, Rh) },
-      { addresses: left.slice(Lh) },
-      { addresses: right.slice(Rh) },
-      { addresses: [tail] },
-    ];
+  if(K % 2 === 0){
+    const half = K / 2;
+    const Lg = splitByArea(left, half);
+    const Rg = splitByArea(right, half);
+    if(Rg.length) Rg[Rg.length-1] = Rg[Rg.length-1].concat([tail]);
+    const out = [];
+    for(let i = 0; i < Lg.length; i++) out.push({ addresses: Lg[i], side: 'L', depthIdx: i });
+    for(let i = 0; i < Rg.length; i++) out.push({ addresses: Rg[i], side: 'R', depthIdx: i });
+    return out;
   }
-  return [{ addresses: left.concat(right).concat([tail]) }];
+  // Нечётное: вершина забирает верхушку обеих сторон + хвост, площадь ~1/K.
+  const sideParts = (K - 1) / 2;
+  const totalArea = left.reduce((s,a) => s + petalArea(a), 0)
+                  + right.reduce((s,a) => s + petalArea(a), 0)
+                  + petalArea(tail);
+  const tipTarget = totalArea / K;
+  const tipPerSide = Math.max(0, (tipTarget - petalArea(tail)) / 2);
+  const Lt = takeTopByArea(left, tipPerSide);
+  const Rt = takeTopByArea(right, tipPerSide);
+  const Lg = sideParts > 0 ? splitByArea(Lt.rest, sideParts) : [];
+  const Rg = sideParts > 0 ? splitByArea(Rt.rest, sideParts) : [];
+  const out = [];
+  for(let i = 0; i < Lg.length; i++) out.push({ addresses: Lg[i], side: 'L', depthIdx: i });
+  for(let i = 0; i < Rg.length; i++) out.push({ addresses: Rg[i], side: 'R', depthIdx: i });
+  out.push({ addresses: Lt.top.concat(Rt.top).concat([tail]), side: 'TIP' });
+  return out;
 }
 
 function sampleGroupPoints(addresses, perAddress){
@@ -3875,6 +3916,8 @@ function computeZoneGeom(spot){
     const zone = spot.zones[i];
     const group = groups[i];
     zone.petalAddresses = group.addresses;
+    zone.side = group.side;
+    zone.depthIdx = group.depthIdx;
     const groupPts = sampleGroupPoints(group.addresses, 400);
     if(groupPts.length < 3){
       zone.hull = spot.hull;
@@ -3985,14 +4028,21 @@ function repaintHl(){
   clearHl();
   const sz = Math.max(1.4, pointSize() * 1.2);
 
-  // Палитра для зон: 4 хорошо сочетающихся цвета. Соседним зонам контейнера
-  // присваиваются разные цвета, чтобы пользователь видел что лист поделён.
-  const ZONE_PALETTE = ['#FFD27A', '#E89B7A', '#C8A87A', '#7AB8C8'];
+  // Палитра: A (ваниль) и B (фисташка) чередуются на боковых группах.
+  // C (сухой лист) — только для зоны 'TIP' (вершина) на нечётных K≥3.
+  // Левая сторона depthIdx=0 → A, depthIdx=1 → B, ...; правая зеркально.
+  const PAL_A = '#F0D090';
+  const PAL_B = '#BCB060';
+  const PAL_C = '#A07840';
   function zoneColor(container, zoneId){
-    if(!container || !container.zones) return ZONE_PALETTE[0];
-    const idx = container.zones.findIndex(z => z.id === zoneId);
-    if(idx < 0) return ZONE_PALETTE[0];
-    return ZONE_PALETTE[idx % ZONE_PALETTE.length];
+    if(!container || !container.zones) return PAL_A;
+    const zone = container.zones.find(z => z.id === zoneId);
+    if(!zone) return PAL_A;
+    if(zone.side === 'ALL' || !zone.side) return PAL_A;
+    if(zone.side === 'TIP') return PAL_C;
+    const i = zone.depthIdx || 0;
+    if(zone.side === 'L') return (i % 2 === 0) ? PAL_A : PAL_B;
+    return (i % 2 === 0) ? PAL_B : PAL_A;
   }
 
   // ===== ПОСТОЯННАЯ подсветка структуры делимых листов =====
@@ -4670,7 +4720,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-07d"></script>
+  <script src="festival-data.js?v=2026-05-07e"></script>
 
   <script>
   /* ============================================
