@@ -3620,31 +3620,59 @@ const evMap = Object.fromEntries(RAW.events.map(e=>[e.id,e]));
 // ============================================================================
 // buildSpotsFromData: генерирует SPOTS из FESTIVAL_DATA.
 //
-// Группирует все time_slots по их fern_address. Каждая группа = один лист
-// (контейнер). Каждый слот в группе = одна зона на этом листе.
-// События слота находятся через event.slot. Если слот пустой — placeholder.
+// АРХИТЕКТУРА (v18):
+//   1. Источник истины о геометрии — RAW.fern_leaves (список листьев папоротника).
+//      Лист = {id, address, side: 'headline'|'side'|'tail', start, end}.
+//      Листья имеют фиксированные временные окна (без пересечений).
+//   2. Слот не знает на какой лист его положить — это решает алгоритм:
+//      - У слота есть явный slot.leaf — кладём туда (override).
+//      - Иначе по правилу: side определяется типом слота (talk/discussion → headline;
+//        dance → tail; всё остальное → side); затем выбирается лист этой стороны,
+//        окно которого содержит slot.start.
 //
-// Сортировка зон: по start времени восходящая (ранние ближе к основанию,
-// поздние к верхушке). partitionPetals потом раскрашивает их через side/depthIdx.
+// Это позволяет легко менять расписание: подвинул time у слота — он автоматически
+// переезжает на нужный лист. Подвинул границы листа в fern_leaves — слоты тоже
+// перераспределятся.
 //
-// Для зоны: label = event.title, subtitle = event.speaker.
-// Если в слоте нет событий: label = slot.tool_label || slot.label_for_zoom.
-//
-// fern_address === 'tail' выделяется в TAIL (особая ночная зона, не лист).
+// Генерация SPOTS: для каждого листа создаётся один контейнер (clickThrough)
+// со всеми зонами слотов на нём. Зона = одно событие (или placeholder для пустого
+// слота). Сортировка зон по start.
 // ============================================================================
 function buildSpotsFromData(raw){
   const slots = raw.time_slots || {};
   const events = raw.events || [];
+  const leaves = raw.fern_leaves || [];
 
-  // Слоты, сгруппированные по fern_address (строковый ключ).
-  const byAddr = {};
-  for(const slotId of Object.keys(slots)){
-    const sl = slots[slotId];
-    const fa = sl.fern_address;
-    if(!fa) continue;
-    const key = Array.isArray(fa) ? fa.join(',') : String(fa);
-    if(!byAddr[key]) byAddr[key] = { addr: fa, slotIds: [] };
-    byAddr[key].slotIds.push(slotId);
+  // Хелпер: time HH:MM → минут от 14:00. После полуночи (00:00..11:59) — добавляем 24ч.
+  function festMin(t){
+    if(!t) return 0;
+    const p = String(t).split(':');
+    let h = parseInt(p[0], 10), m = parseInt(p[1], 10) || 0;
+    if(h < 12) h += 24;
+    return (h - 14) * 60 + m;
+  }
+
+  // Какая сторона у слота по его типу.
+  function sideOfSlot(sl){
+    const t = sl.type;
+    if(t === 'talk' || t === 'discussion') return 'headline';
+    if(t === 'dance') return 'tail';
+    return 'side';
+  }
+
+  // Найти лист для слота. Возвращает leaf или null.
+  function findLeafForSlot(sl){
+    if(sl.leaf){
+      return leaves.find(l => l.id === sl.leaf) || null;
+    }
+    const wantSide = sideOfSlot(sl);
+    const fm = festMin(sl.start);
+    return leaves.find(l => {
+      if(l.side !== wantSide) return false;
+      const lStart = festMin(l.start);
+      const lEnd = festMin(l.end);
+      return fm >= lStart &amp;&amp; fm < lEnd;
+    }) || null;
   }
 
   // События по slot.
@@ -3655,54 +3683,64 @@ function buildSpotsFromData(raw){
     evBySlot[ev.slot].push(ev);
   }
 
-  // Преобразование слота в зону (одна или несколько зон на лист).
-  function slotToZones(slotId){
+  // Распределить слоты по листьям.
+  const slotsByLeaf = {};
+  for(const slotId of Object.keys(slots)){
+    const sl = slots[slotId];
+    if(!sl.start) continue;
+    const leaf = findLeafForSlot(sl);
+    if(!leaf){
+      console.warn('Слот без листа:', slotId, sl);
+      continue;
+    }
+    if(!slotsByLeaf[leaf.id]) slotsByLeaf[leaf.id] = [];
+    slotsByLeaf[leaf.id].push(slotId);
+  }
+
+  // Преобразование слота в зону. Один слот = одна зона (placeholder если событий нет).
+  function slotToZone(slotId){
     const sl = slots[slotId];
     const slotEvents = evBySlot[slotId] || [];
-    const time = (sl.start && sl.end) ? (sl.start + '–' + sl.end) : '';
+    const time = (sl.start &amp;&amp; sl.end) ? (sl.start + '–' + sl.end) : '';
     if(slotEvents.length === 0){
-      // Placeholder слот — резерв под будущую карточку.
-      return [{
+      return {
         id: 'zone-' + slotId,
         slotId: slotId,
         start: sl.start || '',
         time: time,
         label: sl.tool_label || sl.label_for_zoom || 'место для события',
         subtitle: '',
-        venue: null,
+        venue: sl.venue || null,
         eventIds: [],
         placeholder: true,
-      }];
+      };
     }
-    return slotEvents.map(ev => ({
+    const ev = slotEvents[0];
+    return {
       id: 'zone-' + ev.id,
       slotId: slotId,
       start: sl.start || '',
       time: time,
-      label: ev.title || '',
+      label: ev.title || sl.tool_label || '',
       subtitle: ev.speaker || '',
-      venue: ev.venue || null,
+      venue: sl.venue || ev.venue || null,
       eventIds: [ev.id],
-    }));
+    };
   }
 
   const SPOTS = [];
   let TAIL = null;
 
-  for(const key of Object.keys(byAddr)){
-    const { addr, slotIds } = byAddr[key];
-    // Все зоны (event-уровня) для этого листа.
-    let zones = [];
-    for(const sid of slotIds) zones = zones.concat(slotToZones(sid));
-    // Сортировка по времени старта восходящая (ранние первыми = ближе к основанию).
-    zones.sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+  for(const leaf of leaves){
+    const slotIds = slotsByLeaf[leaf.id] || [];
+    const zones = slotIds.map(slotToZone)
+      .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
 
-    if(addr === 'tail'){
-      // Особая зона: танцевальная программа у самого кончика. Не лист, а ночь.
-      const z = zones[0] || { id:'zone-tail', label:'Танцевальная программа', eventIds:[], time:'', slotId:null };
+    if(leaf.side === 'tail'){
+      const z = zones[0] || { id:'zone-tail', label:'Танцевальная программа', eventIds:[], time:'', slotId:null, venue:null };
       TAIL = {
         id: 'tail',
-        slotId: z.slotId,  // для бриджа: расписание знает слот, не event.id
+        slotId: z.slotId,
         label: z.label,
         time: z.time,
         venue: z.venue,
@@ -3712,11 +3750,9 @@ function buildSpotsFromData(raw){
       continue;
     }
 
-    // Обычный лист: контейнер с zones.
-    const containerId = 'leaf-' + (Array.isArray(addr) ? addr.join('-') : String(addr));
     SPOTS.push({
-      id: containerId,
-      address: addr,
+      id: leaf.id,
+      address: leaf.address,
       clickThrough: true,
       zones: zones,
     });
@@ -4725,7 +4761,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-07i"></script>
+  <script src="festival-data.js?v=2026-05-07j"></script>
 
   <script>
   /* ============================================
@@ -6840,36 +6876,53 @@ window.addEventListener('resize', ()=>{
     //   - render помечает is-active по pt.id (= slotId)
     // Перемещение карточки между слотами не ломает связь.
     // ============================================================
+    // ============================================================
+    // buildScheduleFromData: SCHEDULE из RAW.
+    //
+    // АРХИТЕКТУРА (v18):
+    //   - Источник истины — RAW.fern_leaves. Каждый лист = один пункт расписания.
+    //   - Слоты распределяются по листьям тем же алгоритмом что в фрактале:
+    //     по типу (talk/discussion → headline; dance → tail; иначе → side)
+    //     и по времени (start попадает в окно листа).
+    //   - Один лист = один пункт; если на листе несколько слотов — substations.
+    //   - Блок (утро/день/вечер) определяется по времени листа.
+    //   - Бридж работает через slot.id (id пункта = id первого слота на листе).
+    //
+    // Чтобы изменить расписание: меняем festival-data.js. Индекс не трогается.
+    // ============================================================
     function buildScheduleFromData(data){
       var slots = data.time_slots || {};
       var events = data.events || [];
+      var leaves = data.fern_leaves || [];
       var evBySlot = {};
       for(var i = 0; i < events.length; i++){
         if(events[i].slot) evBySlot[events[i].slot] = events[i];
       }
 
-      // Время в «фестивальных минутах» от 14:00. Часы 0..11 означают «после
-      // полуночи» — продолжение вечера. 14:00 = 0, 23:00 = 540, 02:00 = 720.
+      // Время в фестивальных минутах от 14:00. Часы 0..11 = после полуночи.
       function festMin(t){
         var p = String(t).split(':');
         var h = parseInt(p[0], 10), m = parseInt(p[1], 10) || 0;
         if(h < 12) h += 24;
         return (h - 14) * 60 + m;
       }
+
+      // К какому блоку (утро/день/вечер) относится время.
+      // Утро 14-16, День 16-20:30, Вечер 20:30 и далее.
       function blockOf(start){
-        var h = parseInt(String(start).split(':')[0], 10);
-        if(h >= 14 && h < 16) return 'morning';
-        if(h >= 16 && h < 20) return 'day';
-        return 'evening'; // 20+ или ночь
+        var fm = festMin(start);
+        if(fm < 120) return 'morning';   // < 16:00
+        if(fm < 390) return 'day';       // < 20:30
+        return 'evening';
       }
 
       var BLOCKS_DEFS = [
-        { id:'morning', label:'Утро',  sublabel:'семейная программа', when:'14 — 16', where:'library' },
-        { id:'day',     label:'День',  sublabel:'лекции и станции',   when:'16 — 20', where:'Лахесис' },
-        { id:'evening', label:'Вечер', sublabel:'музыка и танцы',     when:'20 — 04', where:'Лахесис' },
+        { id:'morning', label:'Утро',  sublabel:'семейная программа', when:'14 — 16',    where:'library' },
+        { id:'day',     label:'День',  sublabel:'лекции и станции',   when:'16 — 20:30', where:'Лахесис' },
+        { id:'evening', label:'Вечер', sublabel:'музыка и танцы',     when:'20:30 — 04', where:'Лахесис' },
       ];
 
-      // Подписи групп (слотов на одном листе): по типу слота.
+      // Подписи групп слотов по типу.
       var TYPE_LABELS = {
         'station':     'Блок станций',
         'cinema':      'Кино',
@@ -6879,61 +6932,95 @@ window.addEventListener('resize', ()=>{
         'dance':       'Танцевальная программа',
         'talk':        'Лекция',
         'interlude':   'Короткометражки',
-        'music-extra': 'Малая сцена',
+        'music-extra': 'Музыка (малая сцена)',
       };
       function groupLabel(slotIds){
         var types = slotIds.map(function(s){ return slots[s].type; });
         var uniq = {}; for(var i=0;i<types.length;i++) uniq[types[i]] = true;
         var keys = Object.keys(uniq);
         if(keys.length === 1) return TYPE_LABELS[keys[0]] || 'Блок';
+        // Только музыкальные типы — общая подпись «Музыка».
+        var allMusic = keys.every(function(k){ return k === 'music' || k === 'music-extra'; });
+        if(allMusic) return 'Музыка';
         if(types.indexOf('station') >= 0) return 'Блок станций';
+        // Утренний лист: 2 talk слота → подпись «Лекции»
+        var allTalk = keys.every(function(k){ return k === 'talk'; });
+        if(allTalk) return 'Лекции';
         return 'Параллельные события';
       }
 
-      // Группировка слотов по (block_id, fern_address)
-      var groups = {}; // 'block:addr' → [slotId, ...]
+      // ----- Алгоритм привязки слотов к листьям (тот же что в buildSpotsFromData) -----
+      function sideOfSlot(sl){
+        var t = sl.type;
+        if(t === 'talk' || t === 'discussion') return 'headline';
+        if(t === 'dance') return 'tail';
+        return 'side';
+      }
+      function findLeafForSlot(sl){
+        if(sl.leaf){
+          for(var i = 0; i < leaves.length; i++){
+            if(leaves[i].id === sl.leaf) return leaves[i];
+          }
+          return null;
+        }
+        var wantSide = sideOfSlot(sl);
+        var fm = festMin(sl.start);
+        for(var i = 0; i < leaves.length; i++){
+          var l = leaves[i];
+          if(l.side !== wantSide) continue;
+          var lStart = festMin(l.start);
+          var lEnd = festMin(l.end);
+          if(fm >= lStart && fm < lEnd) return l;
+        }
+        return null;
+      }
+
+      // Распределяем слоты по листьям.
+      var slotsByLeaf = {};
       for(var sid in slots){
         var sl = slots[sid];
         if(!sl.start) continue;
-        var bid = blockOf(sl.start);
-        var addr = sl.fern_address;
-        var addrKey = Array.isArray(addr) ? addr.join(',') : String(addr);
-        var key = bid + '|' + addrKey;
-        if(!groups[key]) groups[key] = { block: bid, addr: addr, addrKey: addrKey, slotIds: [] };
-        groups[key].slotIds.push(sid);
+        var leaf = findLeafForSlot(sl);
+        if(!leaf) continue;
+        if(!slotsByLeaf[leaf.id]) slotsByLeaf[leaf.id] = [];
+        slotsByLeaf[leaf.id].push(sid);
       }
 
+      // Сортируем слоты внутри каждого листа по start.
+      for(var lid in slotsByLeaf){
+        slotsByLeaf[lid].sort(function(a, b){ return festMin(slots[a].start) - festMin(slots[b].start); });
+      }
+
+      // Собираем результат — листья по блокам (утро/день/вечер).
       var result = [];
       for(var bi = 0; bi < BLOCKS_DEFS.length; bi++){
         var blockDef = BLOCKS_DEFS[bi];
-        var blockGroups = [];
-        for(var k in groups){
-          if(groups[k].block === blockDef.id) blockGroups.push(groups[k]);
-        }
-        if(!blockGroups.length) continue;
-        // Сортировка групп по самому раннему festMin
-        blockGroups.sort(function(a, b){
-          var aMin = Math.min.apply(null, a.slotIds.map(function(s){ return festMin(slots[s].start); }));
-          var bMin = Math.min.apply(null, b.slotIds.map(function(s){ return festMin(slots[s].start); }));
-          return aMin - bMin;
-        });
-
         var blockOut = {
           id: blockDef.id, label: blockDef.label, sublabel: blockDef.sublabel,
           when: blockDef.when, where: blockDef.where,
           events: []
         };
 
-        for(var gi = 0; gi < blockGroups.length; gi++){
-          var grp = blockGroups[gi];
-          grp.slotIds.sort(function(a, b){ return festMin(slots[a].start) - festMin(slots[b].start); });
+        // Какие листья попадают в этот блок (по времени листа).
+        var blockLeaves = [];
+        for(var li = 0; li < leaves.length; li++){
+          if(blockOf(leaves[li].start) === blockDef.id) blockLeaves.push(leaves[li]);
+        }
+        // Сортировка по времени.
+        blockLeaves.sort(function(a, b){ return festMin(a.start) - festMin(b.start); });
 
-          if(grp.slotIds.length === 1){
-            var sid2 = grp.slotIds[0];
+        for(var li = 0; li < blockLeaves.length; li++){
+          var leaf = blockLeaves[li];
+          var slotIds = slotsByLeaf[leaf.id] || [];
+          if(slotIds.length === 0) continue; // лист пустой — пропускаем
+
+          if(slotIds.length === 1){
+            // Один слот — простой пункт. Показываем время слота, не листа.
+            var sid2 = slotIds[0];
             var sl2 = slots[sid2];
             var ev = evBySlot[sid2];
             var pt = {
-              id: sid2, // = slotId, для бриджа
+              id: sid2,
               slot: sid2,
               time: sl2.start + '–' + sl2.end,
               name: ev ? ev.title : (sl2.tool_label || TYPE_LABELS[sl2.type] || 'TBA'),
@@ -6944,22 +7031,10 @@ window.addEventListener('resize', ()=>{
             if(ev && ev.speaker) pt.speaker = ev.speaker;
             blockOut.events.push(pt);
           } else {
-            // Объединённый пункт: substations
-            var minStart = grp.slotIds.reduce(function(acc, s){
-              return (acc === null || festMin(slots[s].start) < festMin(slots[acc].start)) ? s : acc;
-            }, null);
-            var maxEnd = grp.slotIds.reduce(function(acc, s){
-              var endH = parseInt(String(slots[s].end).split(':')[0], 10);
-              if(endH < 12) endH += 24;
-              var endM = parseInt(String(slots[s].end).split(':')[1], 10) || 0;
-              var fm = (endH - 14) * 60 + endM;
-              if(acc === null) return { sid: s, fm: fm };
-              return fm > acc.fm ? { sid: s, fm: fm } : acc;
-            }, null);
-
+            // Несколько слотов на листе — пункт с substations. Время — рамки листа.
             var subs = [];
-            for(var si = 0; si < grp.slotIds.length; si++){
-              var ssid = grp.slotIds[si];
+            for(var si = 0; si < slotIds.length; si++){
+              var ssid = slotIds[si];
               var ssl = slots[ssid];
               var sev = evBySlot[ssid];
               var sub = {
@@ -6970,34 +7045,35 @@ window.addEventListener('resize', ()=>{
                 detail: sev ? (sev.description || '') : 'Слот зарезервирован, программа уточняется.',
                 placeholder: !sev,
               };
-              // Время substation если отличается от рамок группы
-              if(ssl.start !== slots[minStart].start || ssl.end !== slots[maxEnd.sid].end){
+              // Если слот не занимает весь лист — показываем его собственное время.
+              if(ssl.start !== leaf.start || ssl.end !== leaf.end){
                 sub.when = ssl.start + '–' + ssl.end;
               }
               if(sev && sev.speaker) sub.who = sev.speaker;
               subs.push(sub);
             }
 
-            // Список venue в группе (deduplicated)
+            // venue листа — список уникальных площадок.
             var venueSet = {};
-            for(var si2 = 0; si2 < grp.slotIds.length; si2++){
-              var v = slots[grp.slotIds[si2]].venue;
+            for(var si2 = 0; si2 < slotIds.length; si2++){
+              var v = slots[slotIds[si2]].venue;
               if(v) venueSet[v] = true;
             }
             var venues = Object.keys(venueSet);
 
             blockOut.events.push({
-              id: 'addr-' + grp.addrKey.replace(/,/g, '-'),
-              slot: null, // составной пункт не имеет одного слота
-              time: slots[minStart].start + '–' + slots[maxEnd.sid].end,
-              name: groupLabel(grp.slotIds),
+              id: leaf.id,
+              slot: null, // составной пункт. selectId перенаправит на slot первой substation.
+              time: leaf.start + '–' + leaf.end,
+              name: groupLabel(slotIds),
               venue: venues.length === 1 ? venues[0] : venues,
               detail: '',
               substations: subs,
             });
           }
         }
-        result.push(blockOut);
+
+        if(blockOut.events.length) result.push(blockOut);
       }
       return result;
     }

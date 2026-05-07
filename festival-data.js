@@ -1,7 +1,7 @@
 // === База событий фестиваля «Фрактальная Одиссея», 23 мая 2026 ===
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-07-v17",
+    "version": "2026-05-07-v18",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.",
     "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.",
@@ -19,7 +19,8 @@ window.FESTIVAL_DATA = {
     "changes_v14": "УБРАНЫ ART-ДУБЛИ из events. Все 11 art-объектов теперь живут только в exhibits. Сайт научился читать exhibits через apolloItems в Аполлонии. Папоротник: art-id удалены из захардкоженных SPOTS/SUBSPOTS, заменены на placeholder-станции.",
     "changes_v15": "Зоны: тройной хедлайнер (Дискуссия+Нетворкинг+Рэп) на одном листе [1,1,1,1,2]. Утренний блок (Евдокимов+Тарасевич) на одном листе [3]. Cinema/interlude переадресованы внутрь блоков станций. Кино 2 продлено до 22:00.",
     "changes_v16": "Короткометражки и кино перенесены на адреса блоков-листьев (было: подлисты [...,1,2]/[...,1,3], стало: тот же адрес что у блока станций). Это требуется новой логикой v19-B где SPOTS генерируется из time_slots по fern_address: все события одного адреса становятся зонами одного листа.",
-    "changes_v17": "Разделение составных слотов: slot-stations-1..4 разбиты по событиям (slot-stations-1-1, -1-2, -1-3 и т.д.). Каждый слот теперь содержит максимум 1 событие. Поля category/apollo_slot/subcategory перенесены с событий на слоты (это атрибуты места, не карточки). У событий-сирот (banks: cinema/animation без слота) поля остались. Добавлено slot.type — короткий тип: talk/station/interlude/cinema/music/discussion/networking/dance/music-extra. Также перенесён venue с событий на слоты."
+    "changes_v17": "Разделение составных слотов: slot-stations-1..4 разбиты по событиям (slot-stations-1-1, -1-2, -1-3 и т.д.). Каждый слот теперь содержит максимум 1 событие. Поля category/apollo_slot/subcategory перенесены с событий на слоты (это атрибуты места, не карточки). У событий-сирот (banks: cinema/animation без слота) поля остались. Добавлено slot.type — короткий тип: talk/station/interlude/cinema/music/discussion/networking/dance/music-extra. Также перенесён venue с событий на слоты.",
+    "changes_v18": "Введена секция fern_leaves — явный список листьев папоротника с временами и сторонами (headline / side / tail). Поле fern_address удалено из всех слотов. Привязка слот→лист теперь делается алгоритмом в индексе по правилу: хедлайнерский слот (talk/discussion) → headline лист по времени; иначе → side лист. Изменены времена: cinema-1 (Пи) 19:30-21:00, cinema-2 21:00-22:00, dance 01-04. Музыкальная программа переразвязана: Brinstar 23-00, Spiral Fractal 00-01. Удалены slot-music-4 и slot-music-parallel-4. Переименована \"Малая сцена\" в \"Музыка (малая сцена)\"."
   },
   "venues": {
     "library": {
@@ -95,9 +96,6 @@ window.FESTIVAL_DATA = {
   },
   "time_slots": {
     "slot-evdokimov": {
-      "fern_address": [
-        3
-      ],
       "start": "14:00",
       "end": "15:00",
       "label_for_zoom": "Михаил Евдокимов · 14:00",
@@ -105,12 +103,10 @@ window.FESTIVAL_DATA = {
       "type": "talk",
       "category": "social",
       "apollo_slot": "big-1",
-      "venue": "library"
+      "venue": "library",
+      "leaf": "leaf-side-morning"
     },
     "slot-tarasevich": {
-      "fern_address": [
-        2
-      ],
       "start": "15:00",
       "end": "16:00",
       "label_for_zoom": "Григорий Тарасевич · 15:00",
@@ -118,13 +114,10 @@ window.FESTIVAL_DATA = {
       "type": "talk",
       "category": "social",
       "apollo_slot": "big-2",
-      "venue": "library"
+      "venue": "library",
+      "leaf": "leaf-side-morning"
     },
     "slot-gelfand": {
-      "fern_address": [
-        1,
-        2
-      ],
       "start": "16:00",
       "end": "17:00",
       "label_for_zoom": "Михаил Гельфанд · 16:00",
@@ -135,10 +128,6 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage"
     },
     "slot-stations-1-1": {
-      "fern_address": [
-        1,
-        3
-      ],
       "start": "16:30",
       "end": "17:30",
       "label_for_zoom": "Первый блок · 16:30",
@@ -149,10 +138,6 @@ window.FESTIVAL_DATA = {
       "venue": "big_bar"
     },
     "slot-stations-1-2": {
-      "fern_address": [
-        1,
-        3
-      ],
       "start": "16:30",
       "end": "17:30",
       "label_for_zoom": "Первый блок · 16:30",
@@ -163,10 +148,6 @@ window.FESTIVAL_DATA = {
       "venue": "big_bar"
     },
     "slot-stations-1-3": {
-      "fern_address": [
-        1,
-        3
-      ],
       "start": "16:30",
       "end": "17:30",
       "label_for_zoom": "Первый блок · 16:30",
@@ -177,11 +158,6 @@ window.FESTIVAL_DATA = {
       "venue": "small_bar"
     },
     "slot-rajgorodski": {
-      "fern_address": [
-        1,
-        1,
-        2
-      ],
       "start": "17:30",
       "end": "18:30",
       "label_for_zoom": "Андрей Райгородский · 17:30",
@@ -192,11 +168,6 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage"
     },
     "slot-stations-2-1": {
-      "fern_address": [
-        1,
-        1,
-        3
-      ],
       "start": "17:30",
       "end": "18:30",
       "label_for_zoom": "Второй блок · 17:30",
@@ -207,11 +178,6 @@ window.FESTIVAL_DATA = {
       "venue": "big_bar"
     },
     "slot-stations-2-2": {
-      "fern_address": [
-        1,
-        1,
-        3
-      ],
       "start": "17:30",
       "end": "18:30",
       "label_for_zoom": "Второй блок · 17:30",
@@ -222,11 +188,6 @@ window.FESTIVAL_DATA = {
       "venue": "courtyard"
     },
     "slot-stations-2-3": {
-      "fern_address": [
-        1,
-        1,
-        3
-      ],
       "start": "17:30",
       "end": "18:30",
       "label_for_zoom": "Второй блок · 17:30",
@@ -236,12 +197,6 @@ window.FESTIVAL_DATA = {
       "venue": "small_bar"
     },
     "slot-skripchenko": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        2
-      ],
       "start": "19:00",
       "end": "20:00",
       "label_for_zoom": "Александра Скрипченко · 19:00",
@@ -252,12 +207,6 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage"
     },
     "slot-stations-3-1": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        3
-      ],
       "start": "18:30",
       "end": "19:30",
       "label_for_zoom": "Третий блок · 18:30",
@@ -268,12 +217,6 @@ window.FESTIVAL_DATA = {
       "venue": "small_bar"
     },
     "slot-stations-3-2": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        3
-      ],
       "start": "18:30",
       "end": "19:30",
       "label_for_zoom": "Третий блок · 18:30",
@@ -284,13 +227,6 @@ window.FESTIVAL_DATA = {
       "venue": "big_bar"
     },
     "slot-stations-4-1": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        3
-      ],
       "start": "19:30",
       "end": "20:30",
       "label_for_zoom": "Четвёртый блок · 19:30",
@@ -301,13 +237,6 @@ window.FESTIVAL_DATA = {
       "venue": "big_bar"
     },
     "slot-stations-4-2": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        3
-      ],
       "start": "19:30",
       "end": "20:30",
       "label_for_zoom": "Четвёртый блок · 19:30",
@@ -318,13 +247,6 @@ window.FESTIVAL_DATA = {
       "venue": "small_bar"
     },
     "slot-stations-4-3": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        3
-      ],
       "start": "19:30",
       "end": "20:30",
       "label_for_zoom": "Четвёртый блок · 19:30",
@@ -334,14 +256,6 @@ window.FESTIVAL_DATA = {
       "venue": "courtyard"
     },
     "slot-music-1": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        2
-      ],
       "start": "22:00",
       "end": "23:00",
       "label_for_zoom": "Главная сцена · 22:00",
@@ -353,77 +267,29 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage"
     },
     "slot-music-2": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2
-      ],
       "start": "23:00",
       "end": "00:00",
       "label_for_zoom": "Главная сцена · 23:00",
-      "tool_label": "Музыка 2",
-      "type": "music"
+      "tool_label": "Музыка",
+      "type": "music",
+      "venue": "main_stage"
     },
     "slot-music-3": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2
-      ],
       "start": "00:00",
       "end": "01:00",
       "label_for_zoom": "Главная сцена · 00:00",
-      "tool_label": "Музыка 3",
+      "tool_label": "Музыка",
       "type": "music",
       "category": "music",
       "apollo_slot": "big-3",
       "subcategory": "main_stage",
       "venue": "main_stage"
     },
-    "slot-music-4": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        2
-      ],
-      "start": "01:00",
-      "end": "02:00",
-      "label_for_zoom": "Главная сцена · 01:00",
-      "tool_label": "Музыка 4",
-      "type": "music",
-      "category": "music",
-      "apollo_slot": "center",
-      "subcategory": "main_stage",
-      "venue": "main_stage"
-    },
     "slot-music-parallel-1": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        3
-      ],
       "start": "22:00",
       "end": "23:00",
       "label_for_zoom": "Малая сцена · 22:00",
-      "tool_label": "Параллель 1",
+      "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
       "apollo_slot": "mid-1",
@@ -431,19 +297,10 @@ window.FESTIVAL_DATA = {
       "venue": "small_bar"
     },
     "slot-music-parallel-2": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        3
-      ],
       "start": "23:00",
       "end": "00:00",
       "label_for_zoom": "Малая сцена · 23:00",
-      "tool_label": "Параллель 2",
+      "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
       "apollo_slot": "mid-2",
@@ -451,51 +308,18 @@ window.FESTIVAL_DATA = {
       "venue": "small_bar"
     },
     "slot-music-parallel-3": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        3
-      ],
       "start": "00:00",
       "end": "01:00",
       "label_for_zoom": "Малая сцена · 00:00",
-      "tool_label": "Параллель 3",
+      "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
       "apollo_slot": "mid-3",
       "subcategory": "big_bar",
       "venue": "small_bar"
     },
-    "slot-music-parallel-4": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        3
-      ],
-      "start": "01:00",
-      "end": "02:00",
-      "label_for_zoom": "Малая сцена · 01:00",
-      "tool_label": "Параллель 4",
-      "type": "music-extra",
-      "category": "music",
-      "apollo_slot": "ear-1",
-      "subcategory": "big_bar",
-      "venue": "small_bar"
-    },
     "slot-dance": {
-      "fern_address": "tail",
-      "start": "02:00",
+      "start": "01:00",
       "end": "04:00",
       "label_for_zoom": "Танцпол · 02:00",
       "tool_label": "Танцпол",
@@ -506,13 +330,6 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage"
     },
     "slot-discussion": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        2
-      ],
       "start": "20:30",
       "end": "22:00",
       "label_for_zoom": "Дискуссия · 20:30",
@@ -523,14 +340,8 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage"
     },
     "slot-cinema-1": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        3
-      ],
-      "start": "19:00",
-      "end": "20:00",
+      "start": "19:30",
+      "end": "21:00",
       "label_for_zoom": "Кино 1 · 19:00",
       "tool_label": "Кино 1",
       "type": "cinema",
@@ -540,14 +351,7 @@ window.FESTIVAL_DATA = {
       "venue": "library"
     },
     "slot-cinema-2": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        3
-      ],
-      "start": "20:00",
+      "start": "21:00",
       "end": "22:00",
       "label_for_zoom": "Кино 2 · 20:00",
       "tool_label": "Кино 2",
@@ -558,10 +362,6 @@ window.FESTIVAL_DATA = {
       "venue": "library"
     },
     "slot-interlude-1": {
-      "fern_address": [
-        1,
-        3
-      ],
       "start": "17:00",
       "end": "17:30",
       "label_for_zoom": "Перебив · 17:00",
@@ -573,11 +373,6 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage"
     },
     "slot-interlude-2": {
-      "fern_address": [
-        1,
-        1,
-        3
-      ],
       "start": "18:30",
       "end": "19:00",
       "label_for_zoom": "Перебив · 18:30",
@@ -589,12 +384,6 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage"
     },
     "slot-interlude-3": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        3
-      ],
       "start": "20:00",
       "end": "20:30",
       "label_for_zoom": "Перебив · 20:00",
@@ -606,13 +395,6 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage"
     },
     "slot-networking": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        2
-      ],
       "start": "20:30",
       "end": "21:30",
       "label_for_zoom": "Нетворкинг",
@@ -626,13 +408,6 @@ window.FESTIVAL_DATA = {
       "venue": "big_bar"
     },
     "slot-rap-evening": {
-      "fern_address": [
-        1,
-        1,
-        1,
-        1,
-        2
-      ],
       "start": "20:30",
       "end": "22:00",
       "label_for_zoom": "Научно-технический рэп",
@@ -853,7 +628,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Brinstar",
       "speaker_role": "музыкант",
-      "slot": "slot-music-3",
+      "slot": "slot-music-2",
       "duration_override": null,
       "description": "Музыкальный сет в ночной части программы. Подробности уточняются."
     },
@@ -864,7 +639,7 @@ window.FESTIVAL_DATA = {
       "subtitle": null,
       "speaker": "Spiral Fractal",
       "speaker_role": "музыкант",
-      "slot": "slot-music-4",
+      "slot": "slot-music-3",
       "duration_override": null,
       "description": "Музыкальный сет в поздней ночной части. Подробности уточняются."
     },
@@ -898,17 +673,6 @@ window.FESTIVAL_DATA = {
       "speaker": null,
       "speaker_role": null,
       "slot": "slot-music-parallel-3",
-      "duration_override": null,
-      "description": null
-    },
-    {
-      "id": "music-parallel-4",
-      "status": "placeholder",
-      "title": "Малая сцена 4",
-      "subtitle": null,
-      "speaker": null,
-      "speaker_role": null,
-      "slot": "slot-music-parallel-4",
       "duration_override": null,
       "description": null
     },
@@ -1345,6 +1109,223 @@ window.FESTIVAL_DATA = {
       "apollo_slot": null,
       "description": "Светящиеся фарфоровые цилиндры — инсталляция из портфолио автора.",
       "kind": "installation"
+    }
+  ],
+  "fern_leaves": [
+    {
+      "id": "leaf-side-morning",
+      "address": [
+        3
+      ],
+      "side": "side",
+      "start": "14:00",
+      "end": "16:00"
+    },
+    {
+      "id": "leaf-headline-1",
+      "address": [
+        1,
+        2
+      ],
+      "side": "headline",
+      "start": "16:00",
+      "end": "17:30"
+    },
+    {
+      "id": "leaf-headline-2",
+      "address": [
+        1,
+        1,
+        2
+      ],
+      "side": "headline",
+      "start": "17:30",
+      "end": "19:00"
+    },
+    {
+      "id": "leaf-headline-3",
+      "address": [
+        1,
+        1,
+        1,
+        2
+      ],
+      "side": "headline",
+      "start": "19:00",
+      "end": "20:30"
+    },
+    {
+      "id": "leaf-headline-4",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "side": "headline",
+      "start": "20:30",
+      "end": "22:00"
+    },
+    {
+      "id": "leaf-side-1",
+      "address": [
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "16:30",
+      "end": "17:30"
+    },
+    {
+      "id": "leaf-side-2",
+      "address": [
+        1,
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "17:30",
+      "end": "18:30"
+    },
+    {
+      "id": "leaf-side-3",
+      "address": [
+        1,
+        1,
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "18:30",
+      "end": "19:30"
+    },
+    {
+      "id": "leaf-side-4",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "19:30",
+      "end": "20:30"
+    },
+    {
+      "id": "leaf-side-5",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "20:30",
+      "end": "22:00"
+    },
+    {
+      "id": "leaf-music-headline-1",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "side": "headline",
+      "start": "22:00",
+      "end": "23:00"
+    },
+    {
+      "id": "leaf-music-side-1",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "22:00",
+      "end": "23:00"
+    },
+    {
+      "id": "leaf-music-headline-2",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "side": "headline",
+      "start": "23:00",
+      "end": "00:00"
+    },
+    {
+      "id": "leaf-music-side-2",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "23:00",
+      "end": "00:00"
+    },
+    {
+      "id": "leaf-music-headline-3",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "side": "headline",
+      "start": "00:00",
+      "end": "01:00"
+    },
+    {
+      "id": "leaf-music-side-3",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "00:00",
+      "end": "01:00"
+    },
+    {
+      "id": "leaf-tail",
+      "address": "tail",
+      "side": "tail",
+      "start": "01:00",
+      "end": "04:00"
     }
   ]
 };
