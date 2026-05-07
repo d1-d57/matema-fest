@@ -1843,6 +1843,9 @@ function getTotalMinutes() {
 
 function getAllowedVenues(sid, slot) {
   if (slot.allowed_venues && slot.allowed_venues.length) return slot.allowed_venues;
+  // v17+: у каждого слота явный venue → это и есть единственная разрешённая площадка.
+  // (Старая логика по kind остаётся как fallback для слотов без venue/allowed_venues.)
+  if (slot.venue) return [slot.venue];
   const kind = slotKind(sid);
   if (kind === 'library' || kind === 'cinema') return ['library'];
   if (kind === 'stations') return ['big_bar', 'small_bar', 'courtyard'];
@@ -1852,17 +1855,65 @@ function getAllowedVenues(sid, slot) {
 }
 
 // Какую lane занимает событие (auto-определение по индексу, либо по полю ev.lane)
-function getEventLanePosition(ev, allEventsInCell, lanes) {
+function getEventLanePosition(ev, allEventsInCell, lanes, slotLane) {
   if (lanes === 1) return { start: 0, span: 1 };
-  // Явно указано
+  // Явно указано на event
   if (ev.lane === 'left') return { start: 0, span: 1 };
   if (ev.lane === 'right') return { start: 1, span: 1 };
   if (ev.lane === 'both') return { start: 0, span: lanes };
-  // Авто: по индексу события
+  // Slot занимает не нулевую lane (несколько слотов конкурируют за venue+время) —
+  // все его события идут в эту lane. Это ситуация v17+ блок «Станции 1»:
+  // три отдельных слота 1-1, 1-2, 1-3, в каждом одно событие, на разных lanes.
+  if (slotLane != null && slotLane > 0) {
+    return { start: slotLane % lanes, span: 1 };
+  }
+  // Slot первый среди конкурентов (или единственный) — события распределяются как
+  // раньше, по индексу внутри cellEvents (это поддерживает v9-стиль с несколькими
+  // events на одном слоте).
   const idx = allEventsInCell.indexOf(ev);
   if (idx === -1) return { start: 0, span: 1 };
-  // Если событий больше чем lanes — впихиваем как можем
   return { start: idx % lanes, span: 1 };
+}
+
+// Группировка слотов в «блоки» по совпадающему tool_label + time-окну.
+// Используется и для отрисовки общего band-баннера (placeBandLabels), и для
+// подавления индивидуальных slot-label у слотов внутри группы (renderTimeline).
+// Возвращает: { groups: Map<key,entries[]>, bandedSids: Set, bandedKeys: Set }.
+function getSlotBandGroups() {
+  const groups = new Map();
+  Object.entries(state.data.time_slots).forEach(([sid, s]) => {
+    const key = (s.tool_label || s.label_for_zoom || sid) + '|' + s.start + '|' + s.end;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ sid, s });
+  });
+  const bandedSids = new Set();
+  groups.forEach((entries, key) => {
+    if (entries.length < 2) return;
+    const allVenues = new Set();
+    entries.forEach(({ sid, s }) => {
+      getAllowedVenues(sid, s).forEach(v => allVenues.add(v));
+    });
+    if (allVenues.size < 2) return;
+    entries.forEach(({ sid }) => bandedSids.add(sid));
+  });
+  return { groups, bandedSids };
+}
+
+// Вычисляет «lane слота» среди слотов, конкурирующих за ту же venue в пересекающемся
+// времени. Нужно для v17+, где блок («Станции 1») состоит из нескольких отдельных
+// слотов, каждый с одним событием — без этого все события встают в lane 0 и наложатся.
+function getSlotLaneInVenue(sid, slot, vid) {
+  if (slot.lane != null) return slot.lane;
+  const a1 = timeToMin(slot.start), b1 = timeToMin(slot.end);
+  const competing = Object.entries(state.data.time_slots)
+    .filter(([sid2, s2]) => {
+      if (!getAllowedVenues(sid2, s2).includes(vid)) return false;
+      const a2 = timeToMin(s2.start), b2 = timeToMin(s2.end);
+      return a2 < b1 && a1 < b2; // overlap
+    })
+    .map(([sid2]) => sid2)
+    .sort();
+  return competing.indexOf(sid);
 }
 
 function renderTimeline() {
@@ -1899,6 +1950,7 @@ function renderTimeline() {
   html += `</div>`;
 
   // Колонки площадок
+  const { bandedSids } = getSlotBandGroups();
   VENUE_ORDER.forEach(vid => {
     const lanes = getVenueLanes(vid);
     html += `<div class="tl-venue-col" data-venue="${vid}" data-lanes="${lanes}" style="height:${totalPx}px;position:relative">`;
@@ -1913,18 +1965,25 @@ function renderTimeline() {
       const dimClass = slotIsRelevant(sid) ? '' : ' dim';
       html += `<div class="slot-bg kind-${k}${dimClass}" style="top:${startPx}px;height:${heightPx}px"></div>`;
       const firstAllowed = VENUE_ORDER.find(v => allowed.includes(v));
-      // Лейбл слота — рисуем только если слот живёт в одной колонке (или в первой из нескольких)
-      // Для multi-venue слотов (stations, music-par) баннер потом нарисуется поверх
-      if (firstAllowed === vid && allowed.length === 1) {
+      const inBand = bandedSids.has(sid);
+      // Индивидуальный slot-label рисуем только если слот не накрыт band-баннером
+      // (band нарисуется поверх в placeBandLabels) и живёт в одной venue.
+      if (firstAllowed === vid && allowed.length === 1 && !inBand) {
         const label = s.tool_label || s.label_for_zoom || sid;
         html += `<div class="slot-label" style="top:${startPx + 3}px">${esc(label)} · ${esc(s.start)}–${esc(s.end)}</div>`;
       }
 
       const cellEvents = state.data.events.filter(e => e.slot === sid && e.venue === vid);
-      const isMultiVenue = allowed.length > 1;
+      // labelOffset увеличиваем если над клеткой будет band-баннер (мульти-venue из v9
+      // или группа однотипных слотов из v17+) — карточка не должна налезать на baner.
+      const isMultiVenue = allowed.length > 1 || inBand;
       const labelOffset = isMultiVenue ? 34 : 22;
       const bottomPad = isMultiVenue ? 4 : 4; // в нижней части тоже немного резерва
       const innerHeight = heightPx - labelOffset - bottomPad;
+
+      // Lane слота: для blocked-style группы (v17+) — индекс среди конкурирующих слотов
+      // в этой venue. Для одиночного slot lane=0 и события распределяются по idx внутри.
+      const slotLane = getSlotLaneInVenue(sid, s, vid);
 
       // Дроп-зоны для каждой lane (если lanes > 1, иначе одна на всю ширину)
       for (let laneIdx = 0; laneIdx < lanes; laneIdx++) {
@@ -1932,7 +1991,7 @@ function renderTimeline() {
         const widthPct = 100 / lanes;
         // Заполнено? Считаем какие lanes уже заняты
         const occupied = cellEvents.some(e => {
-          const pos = getEventLanePosition(e, cellEvents, lanes);
+          const pos = getEventLanePosition(e, cellEvents, lanes, slotLane);
           return pos.start <= laneIdx && (pos.start + pos.span) > laneIdx;
         });
         html += `<div class="lane-dropzone ${occupied?'full':''}"
@@ -1943,10 +2002,15 @@ function renderTimeline() {
 
       // События
       cellEvents.forEach(ev => {
-        const pos = getEventLanePosition(ev, cellEvents, lanes);
+        const pos = getEventLanePosition(ev, cellEvents, lanes, slotLane);
         const cat = state.data.categories[ev.category];
-        const subcat = ev.subcategory && state.data.subcategories?.[ev.category]?.[ev.subcategory];
-        const subcatLabel = subcat?.display || (subcat?.label_from_venue && state.data.venues[subcat.label_from_venue]?.display);
+        // Подпись подкатегории: только если у subcategory есть semantic display (cinema/art).
+        // Для music subcategory — это псевдоним площадки (main_stage/big_bar/courtyard),
+        // и вытягивать display через label_from_venue нельзя: для slot-music-parallel-*
+        // venue=small_bar, а subcategory=big_bar, и подпись «Серпинский» в колонке Малого
+        // бара вводит в заблуждение. Площадка и так понятна по venue-колонке.
+        const subcatDef = ev.subcategory && state.data.subcategories?.[ev.category]?.[ev.subcategory];
+        const subcatLabel = subcatDef?.display || null;
         const leftPct = (pos.start / lanes) * 100;
         const widthPct = (pos.span / lanes) * 100;
         const dimClass = eventIsRelevant(ev) ? '' : ' dim';
@@ -2105,13 +2169,25 @@ function placeBandLabels(ppm) {
     venueColTopOffset = r.top - tlRect.top;
   });
 
-  Object.entries(state.data.time_slots).forEach(([sid, s]) => {
-    const allowed = getAllowedVenues(sid, s);
-    if (allowed.length < 2) return;
+  // Все группы из getSlotBandGroups: одно из двух подходит для band-баннера —
+  // (а) одиночный слот с allowed_venues>=2 (v9-стиль multi-venue, например slot-stations-1),
+  // (б) группа из нескольких слотов с одинаковым tool_label+временем, охватывающих >1 venue (v17+).
+  const { groups } = getSlotBandGroups();
+
+  groups.forEach(entries => {
+    const allVenues = new Set();
+    entries.forEach(({ sid, s }) => {
+      getAllowedVenues(sid, s).forEach(v => allVenues.add(v));
+    });
+    if (allVenues.size < 2) return; // одна площадка — баннер не нужен
+
+    const first = entries[0];
+    const sid = first.sid;
+    const s = first.s;
     const startPx = timeToMin(s.start) * ppm;
 
-    const firstV = VENUE_ORDER.find(v => allowed.includes(v));
-    const lastV = [...VENUE_ORDER].reverse().find(v => allowed.includes(v));
+    const firstV = VENUE_ORDER.find(v => allVenues.has(v));
+    const lastV = [...VENUE_ORDER].reverse().find(v => allVenues.has(v));
     if (!firstV || !lastV || !venueCols[firstV] || !venueCols[lastV]) return;
     const left = venueCols[firstV].left;
     const right = venueCols[lastV].right;
@@ -2121,7 +2197,7 @@ function placeBandLabels(ppm) {
     const banner = document.createElement('div');
     const dimClass = slotIsRelevant(sid) ? '' : ' dim';
     banner.className = `stations-band-label kind-${k}${dimClass}`;
-    // Воздух 4px от каждого края колонки, чтобы баннер не упирался в соседние venue
+    // Воздух 4px от каждого края, чтобы баннер не упирался в соседние venue
     const PAD = 4;
     banner.style.cssText = `position:absolute;top:${venueColTopOffset + startPx}px;left:${left + PAD}px;width:${right - left - PAD * 2}px;`;
     banner.textContent = `${label} · ${s.start}–${s.end}`;
@@ -2298,12 +2374,13 @@ function handleDrop(slotId, venueId, laneIdx, e) {
 
   pushHistory();
   const lanes = getVenueLanes(venueId);
+  const slotLane = slot ? getSlotLaneInVenue(slotId, slot, venueId) : 0;
 
   // Какая lane свободна
   const cellEvents = state.data.events.filter(e2 => e2.slot === slotId && e2.venue === venueId);
   const occupiedLanes = new Set();
   cellEvents.forEach(e2 => {
-    const pos = getEventLanePosition(e2, cellEvents, lanes);
+    const pos = getEventLanePosition(e2, cellEvents, lanes, slotLane);
     for (let i = pos.start; i < pos.start + pos.span; i++) occupiedLanes.add(i);
   });
   if (occupiedLanes.has(laneIdx)) {

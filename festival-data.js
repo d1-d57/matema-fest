@@ -1,7 +1,7 @@
 // === База событий фестиваля «Фрактальная Одиссея», 23 мая 2026 ===
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-07-v21",
+    "version": "2026-05-07-v22",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.",
     "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.",
@@ -22,7 +22,8 @@ window.FESTIVAL_DATA = {
     "changes_v17": "Разделение составных слотов: slot-stations-1..4 разбиты по событиям (slot-stations-1-1, -1-2, -1-3 и т.д.). Каждый слот теперь содержит максимум 1 событие. Поля category/apollo_slot/subcategory перенесены с событий на слоты (это атрибуты места, не карточки). У событий-сирот (banks: cinema/animation без слота) поля остались. Добавлено slot.type — короткий тип: talk/station/interlude/cinema/music/discussion/networking/dance/music-extra. Также перенесён venue с событий на слоты.",
     "changes_v18": "Введена секция fern_leaves — явный список листьев папоротника с временами и сторонами (headline / side / tail). Поле fern_address удалено из всех слотов. Привязка слот→лист теперь делается алгоритмом в индексе по правилу: хедлайнерский слот (talk/discussion) → headline лист по времени; иначе → side лист. Изменены времена: cinema-1 (Пи) 19:30-21:00, cinema-2 21:00-22:00, dance 01-04. Музыкальная программа переразвязана: Brinstar 23-00, Spiral Fractal 00-01. Удалены slot-music-4 и slot-music-parallel-4. Переименована \"Малая сцена\" в \"Музыка (малая сцена)\".",
     "changes_v19": "Сдвиг всех хедлайнерских листьев на 1 уровень вниз (убрана пустота слева). Расширение музыкальной программы до 03:00: добавлены 4 новых слота (slot-music-5, slot-music-parallel-5, slot-music-6, slot-music-parallel-6) и 4 новых листа. Добавлены 7 новых музыкантов: Stropharia, Gonaitei, Hobboth, WOMBA, Rombix, Aensof, Darkest Supernova. Танцы (slot-dance) сжаты до 03:00-04:00.",
-    "changes_v21": "Добавлены 6 анимаций (cinema/animation) и 4 короткометражки (cinema/short). Из коротких 3 привязаны к существующим interlude-слотам в расписании, 4-я (длинное название Menger meets Eiffel) — сирота для ночного показа. Удалены 11 старых TBA-сирот."
+    "changes_v21": "Добавлены 6 анимаций (cinema/animation) и 4 короткометражки (cinema/short). Из коротких 3 привязаны к существующим interlude-слотам в расписании, 4-я (длинное название Menger meets Eiffel) — сирота для ночного показа. Удалены 11 старых TBA-сирот.",
+    "changes_v22": "venue музыки на малой сцене (slot-music-parallel-1/2/3/5/6) перенесён с small_bar на big_bar — параллельная музыка идёт в Большом баре, в lane 2; малый бар освобождается. Восстановлены связи _source_app между событиями/экспонатами и заявками open call (были утеряны при миграции v9->v17). 10 events + 7 exhibits получили ссылки на свои заявки."
   },
   "venues": {
     "library": {
@@ -299,7 +300,7 @@ window.FESTIVAL_DATA = {
       "category": "music",
       "apollo_slot": "mid-1",
       "subcategory": "big_bar",
-      "venue": "small_bar"
+      "venue": "big_bar"
     },
     "slot-music-parallel-2": {
       "start": "23:00",
@@ -310,7 +311,7 @@ window.FESTIVAL_DATA = {
       "category": "music",
       "apollo_slot": "mid-2",
       "subcategory": "big_bar",
-      "venue": "small_bar"
+      "venue": "big_bar"
     },
     "slot-music-parallel-3": {
       "start": "00:00",
@@ -321,7 +322,7 @@ window.FESTIVAL_DATA = {
       "category": "music",
       "apollo_slot": "mid-3",
       "subcategory": "big_bar",
-      "venue": "small_bar"
+      "venue": "big_bar"
     },
     "slot-dance": {
       "start": "03:00",
@@ -437,7 +438,7 @@ window.FESTIVAL_DATA = {
       "subcategory": "main_stage"
     },
     "slot-music-parallel-5": {
-      "venue": "small_bar",
+      "venue": "big_bar",
       "start": "01:00",
       "end": "02:00",
       "tool_label": "Музыка (малая сцена)",
@@ -457,7 +458,7 @@ window.FESTIVAL_DATA = {
       "subcategory": "main_stage"
     },
     "slot-music-parallel-6": {
-      "venue": "small_bar",
+      "venue": "big_bar",
       "start": "02:00",
       "end": "03:00",
       "tool_label": "Музыка (малая сцена)",
@@ -543,7 +544,8 @@ window.FESTIVAL_DATA = {
       "speaker_role": null,
       "slot": "slot-stations-1-1",
       "duration_override": null,
-      "description": "Ножницы, лист А4, инструкция. За 5–10 минут — фрактальная модель в руках. Можно собрать дома ещё."
+      "description": "Ножницы, лист А4, инструкция. За 5–10 минут — фрактальная модель в руках. Можно собрать дома ещё.",
+      "_source_app": "app-15"
     },
     {
       "id": "mc-calligraphy",
@@ -554,7 +556,8 @@ window.FESTIVAL_DATA = {
       "speaker_role": null,
       "slot": "slot-stations-1-2",
       "duration_override": null,
-      "description": "Базовые черты, точки, линии. Из них — иероглифы. Простота порождает сложность через повторение."
+      "description": "Базовые черты, точки, линии. Из них — иероглифы. Простота порождает сложность через повторение.",
+      "_source_app": "app-9"
     },
     {
       "id": "obs-diagnostics",
@@ -565,7 +568,8 @@ window.FESTIVAL_DATA = {
       "speaker_role": null,
       "slot": "slot-stations-1-3",
       "duration_override": null,
-      "description": "Рисуночные методики, которыми психиатрия выявляет психические расстройства. Самоподобие как клинический инструмент."
+      "description": "Рисуночные методики, которыми психиатрия выявляет психические расстройства. Самоподобие как клинический инструмент.",
+      "_source_app": "app-11"
     },
     {
       "id": "puzzle-engineering-origami",
@@ -576,7 +580,8 @@ window.FESTIVAL_DATA = {
       "speaker_role": null,
       "slot": "slot-stations-2-1",
       "duration_override": null,
-      "description": "Складные конструкции из бумаги, использующиеся в инженерии — солнечные панели, медицинские стенты. Складывание по математическим правилам."
+      "description": "Складные конструкции из бумаги, использующиеся в инженерии — солнечные панели, медицинские стенты. Складывание по математическим правилам.",
+      "_source_app": "app-16"
     },
     {
       "id": "mc-tie-dye",
@@ -587,7 +592,8 @@ window.FESTIVAL_DATA = {
       "speaker_role": null,
       "slot": "slot-stations-2-2",
       "duration_override": null,
-      "description": "Окрашивание тканей с фрактальными разводами. На выходе — узор, никогда не повторяющийся."
+      "description": "Окрашивание тканей с фрактальными разводами. На выходе — узор, никогда не повторяющийся.",
+      "_source_app": "app-17"
     },
     {
       "id": "mc-theremin",
@@ -598,7 +604,8 @@ window.FESTIVAL_DATA = {
       "speaker_role": null,
       "slot": "slot-stations-2-3",
       "duration_override": null,
-      "description": "Подойти к инструменту, поиграть руками в воздухе. К Петру Термену готовиться никак не нужно — просто можно попробовать."
+      "description": "Подойти к инструменту, поиграть руками в воздухе. К Петру Термену готовиться никак не нужно — просто можно попробовать.",
+      "_source_app": "app-19"
     },
     {
       "id": "puzzle-graphs-evolution",
@@ -609,7 +616,8 @@ window.FESTIVAL_DATA = {
       "speaker_role": null,
       "slot": "slot-stations-3-1",
       "duration_override": null,
-      "description": "Интерактивная демонстрация — как графы растут, ломаются, перестраиваются. Игра с динамикой связей."
+      "description": "Интерактивная демонстрация — как графы растут, ломаются, перестраиваются. Игра с динамикой связей.",
+      "_source_app": "app-22"
     },
     {
       "id": "mc-fractal-stained-glass",
@@ -620,7 +628,8 @@ window.FESTIVAL_DATA = {
       "speaker_role": null,
       "slot": "slot-stations-3-2",
       "duration_override": null,
-      "description": "Витражи во фрактальной геометрии. Можно сделать свой и забрать."
+      "description": "Витражи во фрактальной геометрии. Можно сделать свой и забрать.",
+      "_source_app": "app-27"
     },
     {
       "id": "station-4-1",
@@ -705,7 +714,8 @@ window.FESTIVAL_DATA = {
       "title": "Фрактал-Ателье: напечатай свой тайлинг",
       "speaker": "Татьяна Зайцева",
       "slot": "slot-stations-4-3",
-      "description": "Печать на ткани/бумаге фрактальных замощений — разных тайлингов, сгенерированных аффинными растяжениями."
+      "description": "Печать на ткани/бумаге фрактальных замощений — разных тайлингов, сгенерированных аффинными растяжениями.",
+      "_source_app": "app-24"
     },
     {
       "id": "social-tochka-nol",
@@ -716,7 +726,8 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "mid-2",
       "venue": null,
       "slot": null,
-      "description": "Музыкальный спектакль с интерактивной возможностью для зрителей влиять на звук."
+      "description": "Музыкальный спектакль с интерактивной возможностью для зрителей влиять на звук.",
+      "_source_app": "app-26"
     },
     {
       "id": "discussion-tba",
@@ -962,7 +973,8 @@ window.FESTIVAL_DATA = {
       "speaker": "арт-группа Явь · Анастасия Владычкина",
       "description": "Серия фрактальных видео — городская среда разворачивается внутрь самой себя. Деталь в заявке app-28 от Анастасии Владычкиной (фронтвумен арт-группы Явь).",
       "subcategory": "media",
-      "apollo_slot": "big-3"
+      "apollo_slot": "big-3",
+      "_source_app": "app-28"
     },
     {
       "id": "inst-tetraquark",
@@ -972,7 +984,8 @@ window.FESTIVAL_DATA = {
       "speaker": "Alex Mu",
       "description": "Инсталляция о тетракварках, заявка app-5/6 от Alex Mu — детали в карточке заявки.",
       "subcategory": "installation",
-      "apollo_slot": "big-1"
+      "apollo_slot": "big-1",
+      "_source_app": "app-4"
     },
     {
       "id": "inst-polyhedral-exhibit",
@@ -982,7 +995,8 @@ window.FESTIVAL_DATA = {
       "speaker": "Максимилиан Роганов",
       "description": "Складные многогранники. Деталь в заявке app-14.",
       "subcategory": "installation",
-      "apollo_slot": "big-2"
+      "apollo_slot": "big-2",
+      "_source_app": "app-12"
     },
     {
       "id": "inst-element1",
@@ -992,7 +1006,8 @@ window.FESTIVAL_DATA = {
       "speaker": "Ира",
       "description": "Инсталляция, заявка app-15 от автора Ира.",
       "subcategory": "installation",
-      "apollo_slot": "big-3"
+      "apollo_slot": "big-3",
+      "_source_app": "app-13"
     },
     {
       "id": "inst-mimesis",
@@ -1002,7 +1017,8 @@ window.FESTIVAL_DATA = {
       "speaker": "Евдокия Дергилёва, Ирина Сафонова",
       "description": "Привязано к заявке app-20 («Объект из серии Детские иллюзии»). Авторы планируют другой объект — Мимесис. Детали — у них.",
       "subcategory": "installation",
-      "apollo_slot": "mid-1"
+      "apollo_slot": "mid-1",
+      "_source_app": "app-18"
     },
     {
       "id": "art-plato",
@@ -1012,7 +1028,8 @@ window.FESTIVAL_DATA = {
       "speaker": "Александр Солеев",
       "description": "Мыльные плёнки на проволочных рамках. Минимальные поверхности. Деталь в заявке app-9.",
       "subcategory": "art",
-      "apollo_slot": "big-1"
+      "apollo_slot": "big-1",
+      "_source_app": "app-7"
     },
     {
       "id": "art-fluoro",
@@ -1052,7 +1069,8 @@ window.FESTIVAL_DATA = {
       "subcategory": "installation",
       "apollo_slot": null,
       "description": "Светящиеся фарфоровые цилиндры — инсталляция из портфолио автора.",
-      "kind": "installation"
+      "kind": "installation",
+      "_source_app": "app-3"
     }
   ],
   "fern_leaves": [
