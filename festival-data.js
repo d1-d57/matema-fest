@@ -1,7 +1,7 @@
 // === База событий фестиваля «Фрактальная Одиссея», 23 мая 2026 ===
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-08-v24",
+    "version": "2026-05-08-v25",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v17": "Разделение составных слотов: slot-stations-1..4 разбиты по событиям (slot-stations-1-1, -1-2, -1-3 и т.д.). Каждый слот теперь содержит максимум 1 событие. Поля category/apollo_slot/subcategory перенесены с событий на слоты (это атрибуты места, не карточки). У событий-сирот (banks: cinema/animation без слота) поля остались. Добавлено slot.type — короткий тип: talk/station/interlude/cinema/music/discussion/networking/dance/music-extra. Также перенесён venue с событий на слоты.",
     "changes_v18": "Введена секция fern_leaves — явный список листьев папоротника с временами и сторонами (headline / side / tail). Поле fern_address удалено из всех слотов. Привязка слот→лист теперь делается алгоритмом в индексе по правилу: хедлайнерский слот (talk/discussion) → headline лист по времени; иначе → side лист. Изменены времена: cinema-1 (Пи) 19:30-21:00, cinema-2 21:00-22:00, dance 01-04. Музыкальная программа переразвязана: Brinstar 23-00, Spiral Fractal 00-01. Удалены slot-music-4 и slot-music-parallel-4. Переименована \"Малая сцена\" в \"Музыка (малая сцена)\".",
@@ -9,7 +9,8 @@ window.FESTIVAL_DATA = {
     "changes_v21": "Добавлены 6 анимаций (cinema/animation) и 4 короткометражки (cinema/short). Из коротких 3 привязаны к существующим interlude-слотам в расписании, 4-я (длинное название Menger meets Eiffel) — сирота для ночного показа. Удалены 11 старых TBA-сирот.",
     "changes_v22": "venue музыки на малой сцене (slot-music-parallel-1/2/3/5/6) перенесён с small_bar на big_bar — параллельная музыка идёт в Большом баре, в lane 2; малый бар освобождается. Восстановлены связи _source_app между событиями/экспонатами и заявками open call (были утеряны при миграции v9->v17). 10 events + 7 exhibits получили ссылки на свои заявки.",
     "changes_v23": "Добавлены slot-stations-1-4 (workshop, courtyard) и slot-stations-3-3 (workshop, courtyard) — двор не должен пустовать днём. Раньше Станции 1 и Станции 3 были только на big_bar+small_bar, теперь как Станции 2 и 4 — на трёх площадках включая двор.",
-    "changes_v24": "Чистка данных: status=tentative проставлен у 17 событий (новые музыканты + анимации + короткометражки). label_for_zoom сгенерирован у 4 ночных music-слотов. Закрыты apollo_slot пропуски у slot-stations-2-3 и -4-3. Резолвлены дубли apollo_slot в workshop (slot-stations-1-4 и -3-3 переведены в experiment). Теперь экспериментов столько же сколько мастерских."
+    "changes_v24": "Чистка данных: status=tentative проставлен у 17 событий (новые музыканты + анимации + короткометражки). label_for_zoom сгенерирован у 4 ночных music-слотов. Закрыты apollo_slot пропуски у slot-stations-2-3 и -4-3. Резолвлены дубли apollo_slot в workshop (slot-stations-1-4 и -3-3 переведены в experiment). Теперь экспериментов столько же сколько мастерских.",
+    "changes_v25": "Растянут slot-networking до 22:00 (90 минут вместо 60). Placeholder events station-4-1 и station-4-2 переименованы в \"Станция TBA\" — нумерация по индексу была визуальным шумом, статус остался placeholder. Раздел _howto обновлён: документировано поле apollo_slot и связь с subcategory."
   },
   "venues": {
     "library": {
@@ -410,7 +411,7 @@ window.FESTIVAL_DATA = {
     },
     "slot-networking": {
       "start": "20:30",
-      "end": "21:30",
+      "end": "22:00",
       "label_for_zoom": "Нетворкинг",
       "tool_label": "Нетворкинг «Розетка»",
       "allowed_venues": [
@@ -646,7 +647,7 @@ window.FESTIVAL_DATA = {
     {
       "id": "station-4-1",
       "status": "placeholder",
-      "title": "Станция 4.1",
+      "title": "Станция TBA",
       "subtitle": null,
       "speaker": null,
       "speaker_role": null,
@@ -657,7 +658,7 @@ window.FESTIVAL_DATA = {
     {
       "id": "station-4-2",
       "status": "placeholder",
-      "title": "Станция 4.2",
+      "title": "Станция TBA",
       "subtitle": null,
       "speaker": null,
       "speaker_role": null,
@@ -924,7 +925,7 @@ window.FESTIVAL_DATA = {
     "change_status": "placeholder → tentative → confirmed. confirmed подразумевает заполненные speaker, title, description.",
     "categories": "Семь фиксированных: popsci, music, art, workshop, experiment, cinema, social. art только в exhibits, не на слотах.",
     "category_choice_rule": "По доминанте: что человек делает. Слушает → popsci. Делает руками → workshop. Наблюдает интерактивный объект → experiment (опыт) или art (произведение). Делает с другими → social.",
-    "apollo_slot": "Позиция в круге-категории: big-1/2/3 (крупные), mid-1/2/3 (средние), center, ear-1/2/3 (мелкие, для переполнения). Один apollo_slot не должен повторяться внутри одной категории+subcategory.",
+    "apollo_slot": "apollo_slot — позиция события на круге Аполлония внутри его категории. На сайте index.html события находятся по ключу category:subcategory:apollo_slot. Значения: big-1, big-2, big-3 (большие позиции), mid-1, mid-2, mid-3 (средние), ear-1, ear-2, ear-3 (маленькие декоративные), center (центр, для общения). Позиция должна быть уникальной в пределах одной (category, subcategory) — иначе на круге второе событие перетрёт первое. Пара (category, subcategory) разносит события по подкругам внутри категории; например для music: main_stage / big_bar / courtyard, у каждого свой набор позиций. apollo_slot живёт на slot (а не на event), event получает его через enrichEventsFromSlots при загрузке.",
     "subcategory": "Только для music/cinema/art. music → main_stage/big_bar/courtyard (= venue). cinema → feature/short/animation. art → art/installation/media.",
     "fern_leaves": "Массив из 21 листа фрактала. Поля: id, start, end, side (headline/side/tail), address (координаты в SVG, не трогать). Привязка слот→лист: алгоритм в index.html и в programmer.html (findLeafForSlot). По slot.type определяется side (talk/discussion+music на main_stage → headline; dance → tail; остальное → side). Лист выбирается по slot.start: первый лист этой стороны, чьё окно [start, end) содержит slot.start. Для override — slot.leaf.",
     "exhibits_vs_events": "events — те что в таймлайне (имеют slot). exhibits — постоянные арт-объекты, висят весь вечер. Оба попадают в Аполлонию.",

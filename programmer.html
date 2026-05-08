@@ -486,7 +486,8 @@ body {
 .event-pill:hover { border-color: var(--ink); }
 .event-pill.s-confirmed { background: rgba(74, 107, 58, 0.10); border-color: rgba(74, 107, 58, 0.4); }
 .event-pill.s-tentative { background: var(--accent-dim); border-color: var(--accent-line); }
-.event-pill.s-placeholder { background: rgba(45, 48, 40, 0.05); border-color: var(--rule-soft); color: var(--ink-soft); }
+.event-pill.s-placeholder { background: rgba(45, 48, 40, 0.05); border-color: var(--rule-soft); border-style: dashed; color: var(--ink-soft); }
+.event-pill.s-placeholder .ev-title { font-style: italic; }
 .event-pill .ev-title {
   font-family: var(--font-body);
   font-weight: 600; line-height: 1.25; font-size: 13px;
@@ -2185,7 +2186,7 @@ function renderCandCard(c) {
     <div class="cand-meta">
       <span class="tag kind-${c.kind}">${kindLabel(c.kind)}</span>
       ${c.format ? `<span class="tag format">${esc(c.format)}</span>` : ''}
-      ${c.indoor_outdoor ? `<span class="tag ${/улиц/i.test(c.indoor_outdoor)?'outdoor':'indoor'}">${esc(c.indoor_outdoor.slice(0,20))}</span>` : ''}
+      ${c.indoor_outdoor ? `<span class="tag ${/улиц/i.test(c.indoor_outdoor)?'outdoor':'indoor'}">${esc(c.indoor_outdoor.slice(0,20).replace(/[,;\s]+$/, ''))}</span>` : ''}
       ${placed ? `<span class="tag placed">в программе</span>` : ''}
       ${c.kind === 'app' && c.status === 'rejected' ? `<span class="tag">отказ</span>` : ''}
       ${c.kind === 'app' && c.status === 'considering' ? `<span class="tag">думаем</span>` : ''}
@@ -2832,11 +2833,16 @@ function renderConflicts() {
     if (!s.apollo_slot) issues.push(`Слот ${sid} — нет apollo_slot`);
     if (!s.label_for_zoom) issues.push(`Слот ${sid} — нет label_for_zoom`);
   });
-  // Дубли apollo_slot на уровне слотов (внутри одной category)
+  // Дубли apollo_slot на уровне слотов (внутри одной category, с учётом subcategory).
+  // На сайте позиции на круге Аполлония определяются ключом category:subcategory:apollo_slot.
+  // Subcategory разносит слоты по подкругам внутри категории
+  // (например music: main_stage / big_bar / courtyard — каждый со своим набором позиций).
   const slotApollo = {};
   Object.entries(state.data.time_slots).forEach(([sid, s]) => {
     if (!s.apollo_slot || !s.category) return;
-    const k = s.category + '::' + s.apollo_slot;
+    let k = s.category;
+    if (s.subcategory) k += '/' + s.subcategory;
+    k += '::' + s.apollo_slot;
     (slotApollo[k] = slotApollo[k] || []).push(sid);
   });
   Object.entries(slotApollo).forEach(([k, list]) => {
@@ -2884,7 +2890,16 @@ function renderConflicts() {
 function renderUnassigned() {
   // Фильтруем по активной вкладке (eventIsRelevant) — иначе на КИНО видны все
   // короткометражки + музыка + всё подряд, что нерелевантно.
-  const u = state.data.events.filter(e => (!e.slot || !e.venue) && eventIsRelevant(e));
+  // Также исключаем события категорий cinema и art: для них «без слота» — нормальное
+  // состояние (короткометражки идут фоном в промежутках, инсталляции — весь вечер,
+  // им не нужно конкретное время в расписании). Для остальных категорий
+  // (popsci, music, social, workshop, experiment) отсутствие слота — это сигнал
+  // «утвердили, но не разместили», и такие события должны быть видны как orphan.
+  const u = state.data.events.filter(e => {
+    if (e.slot && e.venue) return false;
+    if (e.category === 'cinema' || e.category === 'art') return false;
+    return eventIsRelevant(e);
+  });
   const box = document.getElementById('unassigned');
   if (u.length === 0) { box.style.display = 'none'; return; }
   box.style.display = 'block';
