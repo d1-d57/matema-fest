@@ -1282,6 +1282,7 @@ body {
     <button class="icon-only" onclick="toggleMenu(event)" title="Ещё">⋯</button>
     <div class="menu-dropdown" id="extra-menu">
       <button onclick="addNewEvent(); closeMenu()">+ Новое событие</button>
+      <button onclick="syncNewApplicationsFromSheets(); closeMenu()">📥 Новые заявки из Sheets</button>
       <button onclick="openStructureView(); closeMenu()">Слоты и папоротник…</button>
       <div style="height:1px;background:#ddd;margin:4px 0"></div>
       <button onclick="openPrintView(); closeMenu()">🖨 Расписание для печати…</button>
@@ -2037,19 +2038,185 @@ function enrichEventsFromSlots(data) {
   }
 }
 
+// localStorage ключ для подтянутых из Sheets заявок (мерджится с FALLBACK при загрузке)
+const APPS_SYNCED_KEY = 'programmer.applications.synced';
+
+function _loadSyncedApps() {
+  try { return JSON.parse(localStorage.getItem(APPS_SYNCED_KEY) || '[]'); }
+  catch { return []; }
+}
+function _saveSyncedApps(arr) {
+  try { localStorage.setItem(APPS_SYNCED_KEY, JSON.stringify(arr)); } catch {}
+}
+
 async function loadApplications() {
+  // База — захардкоженный FALLBACK (заявки 1-28 разобранные вручную).
+  // Поверх — все заявки которые когда-либо подтягивались из Sheets (29+).
+  // Синканутые сохраняются отдельно в localStorage чтобы не теряться при «↻ Обновить».
+  let base;
   if (!CONFIG.appsUrl) {
-    state.applications = JSON.parse(JSON.stringify(APPLICATIONS_FALLBACK));
+    base = JSON.parse(JSON.stringify(APPLICATIONS_FALLBACK));
+  } else {
+    try {
+      const resp = await fetch(CONFIG.appsUrl + '?action=list&_t=' + Date.now());
+      const data = await resp.json();
+      base = Array.isArray(data) ? data : (data.rows || []);
+    } catch(e) {
+      console.warn('apps load failed', e);
+      base = JSON.parse(JSON.stringify(APPLICATIONS_FALLBACK));
+    }
+  }
+  // Мерджим с синканутыми из Sheets — но НЕ перезатираем то что уже в base
+  const synced = _loadSyncedApps();
+  const baseIds = new Set(base.map(a => a.id));
+  for (const s of synced) {
+    if (!baseIds.has(s.id)) base.push(s);
+  }
+  state.applications = base;
+}
+
+// ============================================================
+// SYNC NEW APPLICATIONS FROM GOOGLE SHEETS
+// ============================================================
+//
+// Аддитивная синхронизация: подтягивает только заявки, которые пришли в Sheets
+// после последней синхронизации. Никакие существующие заявки в state.applications
+// не трогает (статусы rejected/duplicate, ручные правки сохраняются).
+//
+// Порог хранится в localStorage. По умолчанию 28 — это последний app-N в
+// захардкоженном APPLICATIONS_FALLBACK (заявки 1-28 разобраны вручную и не
+// должны подтягиваться повторно).
+//
+// Источник: публичный CSV-экспорт Google Sheets (Anyone with the link · Viewer).
+// Без API-ключей, без auth.
+// ============================================================
+const APPLICATIONS_CSV_URL = 'https://docs.google.com/spreadsheets/d/1D8ogWQnBsLLf0FqXOCwcZxndraWxEXmxRzbgtktxJnk/export?format=csv&gid=0';
+const APPS_LAST_SYNCED_KEY = 'programmer.applications.lastSyncedAppN';
+
+async function syncNewApplicationsFromSheets() {
+  let threshold;
+  try { threshold = parseInt(localStorage.getItem(APPS_LAST_SYNCED_KEY) || '28', 10); }
+  catch { threshold = 28; }
+
+  let csv;
+  try {
+    const resp = await fetch(APPLICATIONS_CSV_URL + '&_t=' + Date.now(), { cache: 'no-store' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    csv = await resp.text();
+  } catch (e) {
+    alert('Не удалось загрузить Google Sheets: ' + (e.message || e) +
+          '\n\nПроверь что доступ к таблице открыт (Anyone with the link · Viewer).');
     return;
   }
-  try {
-    const resp = await fetch(CONFIG.appsUrl + '?action=list&_t=' + Date.now());
-    const data = await resp.json();
-    state.applications = Array.isArray(data) ? data : (data.rows || []);
-  } catch(e) {
-    console.warn('apps load failed', e);
-    state.applications = JSON.parse(JSON.stringify(APPLICATIONS_FALLBACK));
+
+  let rows;
+  try { rows = _parseCSV(csv); }
+  catch (e) { alert('Не удалось разобрать CSV: ' + (e.message || e)); return; }
+  if (rows.length < 2) { alert('Таблица пуста или нет заголовков.'); return; }
+
+  const headers = rows[0].map(h => h.trim());
+  const newApps = [];
+  const skipped = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r || r.every(x => !x || !x.trim())) continue;
+    const N = i; // app-N: первая заявка в row 2 (i=1) → N=1
+    if (N <= threshold) continue;
+    const id = 'app-' + N;
+    if (state.applications.some(a => a.id === id)) {
+      skipped.push(id);
+      continue;
+    }
+    const obj = {};
+    headers.forEach((h, idx) => obj[h] = (r[idx] || '').trim());
+    newApps.push({
+      id,
+      status: 'new',
+      _suggested_category: null,
+      _suggested_subcategory: null,
+      submitted_at: obj['Дата'] || '',
+      name: obj['Имя'] || '',
+      contact: obj['Контакт'] || '',
+      about: obj['О себе'] || '',
+      title: obj['Название'] || '',
+      description: obj['Описание идеи'] || '',
+      visual: obj['Визуальная ось'] || '',
+      materials: obj['Материалы'] || '',
+      volunteers: obj['Волонтёры'] || '',
+      source: obj['Откуда узнали'] || '',
+      format: obj['Формат'] || '',
+      place: obj['Место'] || '',
+      indoor_outdoor: obj['Помещение/улица'] || '',
+      topic: obj['Тема'] || '',
+      time: obj['Время'] || '',
+      slot_ok: obj['Слот 1 час — подходит?'] || '',
+      bring: obj['Что привезёте сами'] || '',
+      org: obj['Проект/организация'] || '',
+      links: obj['Ссылки'] || '',
+      capacity: obj['Вместимость станции'] || '',
+      speech_details: obj['Детали выступления'] || '',
+      fractal_link: obj['Связь с фракталами'] || '',
+      special: obj['Особые требования'] || '',
+      time_constraints: obj['Ограничения по времени'] || '',
+      duration: obj['Длительность выступления'] || '',
+      source_detail: obj['Откуда узнали — уточнение'] || '',
+      extra: obj['Что ещё'] || '',
+      inst_size: obj['Размер инсталляции'] || '',
+      inst_duration: obj['Длительность инсталляции'] || '',
+      author_presence: obj['Присутствие автора'] || ''
+    });
   }
+
+  if (newApps.length === 0) {
+    alert('Новых заявок нет. Последняя синхронизация: app-' + threshold);
+    return;
+  }
+
+  // Добавляем — НЕ перезаписываем существующие
+  state.applications.push(...newApps);
+
+  // Сохраняем подтянутые в отдельный localStorage чтобы они не пропадали при reload
+  const synced = _loadSyncedApps();
+  const syncedIds = new Set(synced.map(a => a.id));
+  for (const a of newApps) {
+    if (!syncedIds.has(a.id)) synced.push(a);
+  }
+  _saveSyncedApps(synced);
+
+  // Обновляем порог
+  const maxN = Math.max(...newApps.map(a => parseInt(a.id.replace('app-', ''), 10)));
+  try { localStorage.setItem(APPS_LAST_SYNCED_KEY, String(maxN)); } catch {}
+
+  // Перерисовка
+  persistState();
+  rerenderAll();
+
+  // Сообщение
+  const summary = newApps.map(a => `  ${a.id} · ${a.name || '?'} · ${a.title || '?'}`).join('\n');
+  alert(`Подтянуто новых заявок: ${newApps.length}\n\n${summary}\n\nПорог обновлён: app-${maxN}`);
+}
+
+// Минимальный CSV-парсер с поддержкой кавычек и многострочных значений
+function _parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c === '\r') { /* skip */ }
+      else field += c;
+    }
+  }
+  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+  return rows;
 }
 
 async function reloadAll() {
