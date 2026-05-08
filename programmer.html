@@ -991,6 +991,279 @@ body {
   border-bottom: 1px solid var(--rule-faint);
   flex-shrink: 0;
 }
+
+/* ============================================================
+   PRINT VIEW (расписание для печати)
+   ============================================================ */
+.print-modal-bg.active { display: flex !important; padding: 0; }
+.print-modal {
+  background: #f5f1e6; width: 100vw; height: 100vh;
+  max-width: none; max-height: none; border-radius: 0;
+  display: flex; flex-direction: column;
+}
+.print-toolbar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 10px 16px; border-bottom: 1px solid var(--rule-soft);
+  flex-shrink: 0; background: white;
+}
+.print-title-mini { font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.16em; }
+.print-toolbar-hint { color: #888; font-size: 11px; flex: 1; }
+.print-action {
+  background: #1a1814; color: #f1f3e2; border: none;
+  padding: 8px 16px; border-radius: 4px; cursor: pointer;
+  font-size: 13px; font-family: inherit; font-weight: 600;
+}
+.print-action:hover { background: #2a2218; }
+.print-canvas {
+  flex: 1; overflow-y: auto; padding: 24px 32px;
+  background: #f5f1e6;
+}
+.print-page {
+  background: white; padding: 24px 28px;
+  margin: 0 auto 24px; max-width: 760px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  font-family: var(--font-sans); color: #1a1814;
+}
+.print-fest-header {
+  text-align: center; padding-bottom: 16px;
+  border-bottom: 1px solid #1a1814;
+  margin-bottom: 16px;
+}
+.print-fest-title {
+  font-size: 22px; font-weight: 600; letter-spacing: 0.04em; margin: 0 0 4px;
+}
+.print-fest-subtitle {
+  font-family: var(--font-mono); font-size: 11px; color: #555;
+  text-transform: uppercase; letter-spacing: 0.18em; margin: 0;
+}
+.print-section-title {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.18em;
+  margin: 18px 0 10px; padding-bottom: 4px;
+  border-bottom: 1px solid #ddd; color: #5d4d3a;
+}
+.print-table {
+  width: 100%; border-collapse: collapse; font-size: 11px;
+  margin-bottom: 8px;
+}
+.print-table th {
+  text-align: left; padding: 5px 6px; vertical-align: top;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: #555; border-bottom: 1px solid #1a1814;
+}
+.print-table td {
+  padding: 6px 6px; vertical-align: top;
+  border-bottom: 1px solid #eee;
+}
+.print-table .ptime {
+  font-family: var(--font-mono); font-size: 10px; color: #888;
+  white-space: nowrap; padding-right: 10px;
+}
+.print-table .pslot-label {
+  font-family: var(--font-mono); font-size: 9px; color: #888;
+  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;
+}
+.print-table .pevent-title {
+  font-weight: 600; font-size: 11px; line-height: 1.3;
+}
+.print-table .pevent-speaker {
+  font-size: 10px; color: #555; line-height: 1.3;
+}
+.print-table .pevent-pending {
+  color: #999; font-style: italic; font-size: 10px;
+}
+.print-venue-col { width: 18%; }
+.print-time-col { width: 10%; }
+.print-exhibits-list {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px;
+  font-size: 11px;
+}
+.print-exhibit-item {
+  padding: 4px 0; border-bottom: 1px dotted #ccc;
+}
+.print-exhibit-item .pexh-title { font-weight: 600; }
+.print-exhibit-item .pexh-speaker { color: #555; font-size: 10px; }
+
+@media print {
+  /* Прячем интерфейс программера, оставляем только print-canvas */
+  body > *:not(.print-modal-bg.active) { display: none !important; }
+  .print-modal-bg.active { display: block !important; padding: 0; }
+  .print-modal { box-shadow: none; height: auto; background: white; }
+  .print-toolbar { display: none !important; }
+  .print-canvas {
+    overflow: visible; padding: 0; background: white;
+  }
+  .print-page {
+    box-shadow: none; max-width: none; margin: 0;
+    padding: 0; page-break-after: always;
+  }
+  .print-page:last-child { page-break-after: auto; }
+  @page { size: A4 portrait; margin: 16mm 14mm; }
+}
+.structure-modal-bg.active { display: flex !important; padding: 0; }
+.structure-modal {
+  background: var(--bg);
+  width: 100vw; height: 100vh;
+  max-width: none; max-height: none;
+  border-radius: 0;
+  display: flex; flex-direction: column;
+  font-family: var(--font-sans);
+}
+.structure-topbar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 10px 16px; border-bottom: 1px solid var(--rule-soft);
+  flex-shrink: 0; background: var(--bg);
+}
+.structure-title { font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.16em; }
+.structure-hint { color: #888; font-size: 11px; flex: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.structure-close {
+  background: transparent; border: 1px solid var(--rule-soft);
+  width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+  font-size: 14px; line-height: 1; display: flex; align-items: center; justify-content: center;
+}
+.structure-close:hover { background: rgba(0,0,0,0.05); }
+.structure-add-btn {
+  background: transparent; border: 1px solid var(--rule-soft);
+  padding: 5px 12px; border-radius: 14px; cursor: pointer;
+  font-size: 11px; font-family: var(--font-mono);
+  text-transform: uppercase; letter-spacing: 0.1em;
+}
+.structure-add-btn:hover { background: rgba(0,0,0,0.05); border-color: var(--ink); }
+.structure-body {
+  flex: 1; display: grid;
+  grid-template-columns: 300px 1fr 340px;
+  overflow: hidden;
+}
+.structure-left, .structure-right {
+  border: 1px solid var(--rule-soft);
+  border-top: none; border-bottom: none;
+  overflow-y: auto; padding: 12px 14px;
+  background: var(--bg);
+}
+.structure-left { border-left: none; }
+.structure-right { border-right: none; }
+.structure-center {
+  background: rgba(0,0,0,0.02);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  overflow: hidden; padding: 12px;
+}
+#structure-fern-svg { width: 100%; flex: 1; min-height: 0; max-width: 600px; }
+.structure-legend {
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  padding: 8px 12px; max-width: 600px;
+  font-family: var(--font-mono); font-size: 10px; color: #555;
+  flex-shrink: 0;
+}
+.structure-legend-item { display: flex; align-items: center; gap: 5px; }
+.structure-legend-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  border: 1px solid #faf8ed;
+}
+
+/* Левый список */
+.structure-group { margin-bottom: 14px; }
+.structure-group-title {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.18em; color: #888;
+  padding: 4px 0 6px;
+}
+.structure-slot-row {
+  display: flex; gap: 6px; align-items: baseline;
+  padding: 5px 8px; margin: 1px -8px;
+  border-radius: 3px; cursor: pointer; font-size: 12px;
+  transition: background 0.1s;
+}
+.structure-slot-row:hover { background: rgba(0,0,0,0.04); }
+.structure-slot-row.related-hover { background: rgba(184, 118, 61, 0.18); }
+.structure-slot-row.selected { background: rgba(95, 75, 50, 0.14); }
+.structure-slot-row .time { color: #888; font-family: var(--font-mono); font-size: 11px;
+  flex-shrink: 0; min-width: 76px; }
+.structure-slot-row .label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.structure-slot-row .marker {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  background: #c4a878; margin-top: 5px;
+}
+.structure-slot-row .marker.headline { background: #b8763d; }
+.structure-slot-row .marker.tail { background: #5d4d3a; }
+
+/* SVG листья */
+.fern-leaf-area {
+  fill: rgba(196, 168, 120, 0.10); stroke: #c4a878; stroke-width: 1;
+  cursor: pointer; transition: fill 0.12s, stroke 0.12s;
+}
+.fern-leaf-area.headline { fill: rgba(184, 118, 61, 0.10); stroke: #b8763d; }
+.fern-leaf-area.tail { fill: rgba(93, 77, 58, 0.12); stroke: #5d4d3a; }
+.fern-leaf-area:hover { fill-opacity: 0.30; }
+.fern-leaf-area.selected { fill-opacity: 0.45; stroke-width: 2; }
+.fern-leaf-label {
+  font-family: var(--font-mono); font-size: 8px; fill: #555;
+  pointer-events: none; user-select: none;
+}
+.fern-leaf-time { font-family: var(--font-mono); font-size: 7px; fill: #888;
+  pointer-events: none; user-select: none; }
+
+.fern-slot-dot {
+  stroke: #faf8ed; stroke-width: 1;
+  cursor: grab; transition: r 0.1s, stroke-width 0.1s;
+}
+.fern-slot-dot:hover { r: 5.5; }
+.fern-slot-dot.selected { stroke: #1a1814; stroke-width: 2.5; }
+.fern-slot-dot.dragging { opacity: 0.4; cursor: grabbing; }
+.fern-slot-dot.related-hover { stroke: #1a1814; stroke-width: 2; }
+.fern-leaf-area.drop-target { fill-opacity: 0.55; stroke-width: 2.5; stroke-dasharray: 3 2; }
+
+/* Правая панель */
+.structure-right h3 {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.16em;
+  margin: 0 0 8px; color: #555;
+}
+.structure-right .empty-hint {
+  color: #888; font-size: 13px; padding: 30px 8px; text-align: center;
+}
+.structure-field { margin-bottom: 10px; }
+.structure-field label {
+  display: block; font-size: 11px; color: #777;
+  margin-bottom: 3px; font-weight: 600;
+}
+.structure-field input, .structure-field select {
+  width: 100%; padding: 5px 8px; font-size: 12px;
+  border: 1px solid #ccc; border-radius: 3px;
+  font-family: inherit; background: white; box-sizing: border-box;
+}
+.structure-field input:disabled { background: #f5f5f5; color: #888; }
+.structure-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.structure-divider { height: 1px; background: var(--rule-soft); margin: 12px 0; }
+.structure-mini-list {
+  font-size: 12px; max-height: 200px; overflow-y: auto;
+  background: rgba(241, 243, 226, 0.4); padding: 6px 8px; border-radius: 3px;
+}
+.structure-mini-list-row {
+  padding: 3px 0; cursor: pointer; border-radius: 2px;
+  padding: 3px 4px; margin: 0 -4px;
+}
+.structure-mini-list-row:hover { background: rgba(0,0,0,0.05); }
+.structure-full-edit-btn {
+  width: 100%; margin-top: 12px; padding: 8px;
+  background: rgba(184, 118, 61, 0.1); border: 1px solid #b8763d;
+  color: #5a3f1f; cursor: pointer; border-radius: 3px;
+  font-size: 12px; font-weight: 600;
+}
+.structure-full-edit-btn:hover { background: rgba(184, 118, 61, 0.2); }
+
+/* Tooltip */
+.structure-tooltip {
+  position: fixed; z-index: 99999;
+  background: #1a1814; color: #f1f3e2;
+  padding: 5px 9px; border-radius: 3px;
+  font-size: 11px; font-family: var(--font-mono);
+  pointer-events: none; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
 </style>
 </head>
 <body>
@@ -1008,9 +1281,9 @@ body {
     <button class="icon-only" onclick="toggleMenu(event)" title="Ещё">⋯</button>
     <div class="menu-dropdown" id="extra-menu">
       <button onclick="addNewEvent(); closeMenu()">+ Новое событие</button>
-      <button onclick="addNewSlot(); closeMenu()">+ Новый слот</button>
+      <button onclick="openStructureView(); closeMenu()">Слоты и папоротник…</button>
       <div style="height:1px;background:#ddd;margin:4px 0"></div>
-      <button onclick="openSlotEditor(); closeMenu()">Слоты — общий список…</button>
+      <button onclick="openPrintView(); closeMenu()">🖨 Расписание для печати…</button>
       <button onclick="openConfig(); closeMenu()">Настройки подключения…</button>
       <button onclick="exportJSON(); closeMenu()">Скачать festival-data.js</button>
     </div>
@@ -1232,10 +1505,84 @@ body {
     </div>
     <h3 style="font-size:14px;margin-top:14px">Привязанные события</h3>
     <div id="se-events-list" style="font-size:13px;background:#faf8ed;padding:10px;border-left:2px solid #ddd"></div>
+    <h3 style="font-size:14px;margin-top:14px">Покрытие папоротником</h3>
+    <p style="font-size:11px;color:#888;margin:4px 0">Лист — это «ячейка» во фрактальной визуализации, в которой слот окажется на сайте. Если ни один лист не покрывает слот по времени — он не отобразится во фрактале (только в текстовом расписании).</p>
+    <div id="se-fern-coverage" style="font-size:13px;background:#faf8ed;padding:10px;border-left:2px solid #ddd"></div>
     <div class="modal-actions">
       <button onclick="closeSlotEditModal()">Отмена</button>
       <button class="danger" onclick="deleteSlotFromEdit()">Удалить</button>
       <button class="primary" onclick="saveSlotEdit()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LEAF EDIT MODAL (минимальный редактор листа фрактала) ===== -->
+<div class="modal-bg" id="leaf-edit-modal">
+  <div class="modal" style="max-width:480px">
+    <h2 id="leaf-edit-modal-title">Лист</h2>
+    <p style="font-size:11px;color:#888;margin:4px 0 12px">Правится только время начала и конца. id, side и address привязаны к фрактальному SVG в index.html — не трогаем.</p>
+    <input type="hidden" id="le-id">
+    <label>id (read-only)</label>
+    <input id="le-id-display" disabled style="color:#888;font-family:var(--font-mono);font-size:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <div>
+        <label>Сторона (read-only)</label>
+        <input id="le-side-display" disabled style="color:#888">
+      </div>
+      <div>
+        <label>address (read-only)</label>
+        <input id="le-address-display" disabled style="color:#888;font-family:var(--font-mono);font-size:12px">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <div>
+        <label>Начало</label>
+        <input type="time" id="le-start">
+      </div>
+      <div>
+        <label>Конец</label>
+        <input type="time" id="le-end">
+      </div>
+    </div>
+    <div id="le-affected-slots" style="font-size:12px;color:#666;background:#faf8ed;padding:10px;border-left:2px solid #ddd;margin-top:14px"></div>
+    <div class="modal-actions">
+      <button onclick="closeLeafEditModal()">Отмена</button>
+      <button class="primary" onclick="saveLeafEdit()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PRINT VIEW (расписание для печати/Telegram) ===== -->
+<div class="modal-bg print-modal-bg" id="print-modal">
+  <div class="print-modal">
+    <div class="print-toolbar">
+      <div class="print-title-mini">Расписание для печати</div>
+      <div class="print-toolbar-hint">A4 portrait · день и ночь на отдельных страницах · экспонаты в подвале</div>
+      <button class="print-action" onclick="window.print()">🖨 Печать / Сохранить PDF</button>
+      <button class="structure-close" onclick="closePrintView()" title="Закрыть (Esc)">✕</button>
+    </div>
+    <div class="print-canvas" id="print-canvas"></div>
+  </div>
+</div>
+
+<!-- ===== STRUCTURE VIEW (Слоты и папоротник — единая большая панель) ====================================================
+     Три колонки: список слотов слева | карта папоротника в центре | детали справа.
+     Открывается из меню «Слоты и папоротник…». Esc закрывает. -->
+<div class="modal-bg structure-modal-bg" id="structure-modal">
+  <div class="structure-modal">
+    <div class="structure-topbar">
+      <div class="structure-title">Слоты и папоротник</div>
+      <div class="structure-hint">кликни лист — увидишь его параметры справа · перетащи слот между листьями чтобы зафиксировать привязку через slot.leaf · Esc закрывает</div>
+      <button class="structure-add-btn" onclick="addNewSlotFromStructure()" title="Создать новый слот">+ слот</button>
+      <button class="structure-close" onclick="closeStructureView()" title="Закрыть (Esc)">✕</button>
+    </div>
+    <div class="structure-body">
+      <aside class="structure-left" id="structure-left"></aside>
+      <main class="structure-center">
+        <svg id="structure-fern-svg" viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="structure-legend" id="structure-legend"></div>
+      </main>
+      <aside class="structure-right" id="structure-right"></aside>
     </div>
   </div>
 </div>
@@ -1344,11 +1691,57 @@ body {
 </div>
 
 <script>
+// ============================================================================
+// PROGRAMMER — UI-инструмент для редактирования festival-data.js
+// ============================================================================
+//
+// Это ОДНОФАЙЛОВОЕ приложение (HTML + CSS + JS вместе). Никаких сборщиков.
+// Работает прямо в браузере: загружает festival-data.js с GitHub Pages,
+// даёт UI для правки, экспортирует обновлённый файл.
+//
+// Архитектура данных (схема v17+):
+//   time_slots — где и когда. Поля venue/category/apollo_slot/subcategory/type
+//                живут НА СЛОТАХ (не на events). Слот привязывается к листу
+//                фрактала по slot.start через алгоритм findLeafForSlot.
+//   events     — что (название, спикер, описание, ссылки). Привязываются к
+//                слоту через ev.slot. Наследуют поля слота через
+//                enrichEventsFromSlots при загрузке (см. ниже).
+//   exhibits   — постоянные арт-объекты, вне таймлайна.
+//   fern_leaves — 21 лист папоротника с временами и сторонами (headline /
+//                side / tail). Источник правды о геометрии фрактала.
+//
+// Ключевая мысль: enrichEventsFromSlots читает данные ИЗ слота и временно
+// проставляет поля прямо на event'е, чтобы старый UI (master-detail в
+// правой панели) видел category/venue. cleanEvents при экспорте снимает
+// их обратно (через _enriched_fields). Это адаптер между схемой v9 и v17+.
+//
+// Главные UI-блоки:
+//   topbar — статус, обновить/опубликовать, фильтр-вкладки
+//   workspace — три колонки: пул заявок | таймлайн | детали
+//   structure-modal — большая панель «Слоты и папоротник»
+//   slot-edit-modal / event-modal / exhibit-modal / leaf-edit-modal — формы
+//   print-modal — расписание для печати/Telegram
+//
+// Связь с index.html:
+//   programmer НЕ дублирует логику index.html. Алгоритм слот→лист
+//   (findLeafForSlotInProgrammer) — единственное исключение, и он
+//   выверен по реальному коду из index.html (см. итерация 7 в дневнике).
+//
+// ВАЖНО про правки:
+//   - Все 37 слотов (после v23) имеют slot.type и slot.venue/allowed_venues.
+//     Если что-то не имеет — это сигнал о неполных данных.
+//   - Поле leaf на слоте — override. Если не задано, лист вычисляется
+//     по type+start. Через drag&drop в structure view можно зафиксировать
+//     явный override.
+//   - Listener изменений: markDirty + persistState (в localStorage) +
+//     rerenderAll. Любая правка = эти три действия.
+// ============================================================================
+
 // ============================================================
 // EMBEDDED FALLBACK
 // ============================================================
 const APPLICATIONS_FALLBACK = [{"id": "app-1", "status": "rejected", "_suggested_category": null, "_suggested_subcategory": null, "submitted_at": "2026-04-25T21:57:12.705Z", "name": "Руслан", "contact": 79153950549, "about": "Выпускник НГТУ, прикладная математика, три диплома. Но очень люблю теоретическую математику.", "title": "Поиск решения трансцендентных чисел", "description": "Есть наброски в решении транседентых чисел", "visual": "Решение числа Пи", "materials": "Ок", "volunteers": "Ноль", "source": "От знакомых", "format": "Пока не уверен(а)", "place": "Стол и 2–4 стула", "indoor_outdoor": "Предпочту помещение, можно и на улице", "topic": "Математика", "time": "Могу весь интервал 15:00–20:00", "bring": "Все обсуждаемо", "org": "Решение трансцендентных чисел"}, {"id": "app-2", "status": "rejected", "_suggested_category": null, "_suggested_subcategory": null, "submitted_at": "2026-04-27T08:11:47.056Z", "name": "Надежда", "contact": "@nadezhda_dvornikova тг, 89106736913", "about": "Художник сакральной геометрии, создаю энергокартины - с символами сакральной геометрии , проводила персональную выставку с передачей опыты взаимодействия с символами и  материалами о том, как они помогают настраивать сознание и состояние на баланс и сотворение своей жизни.\nСайт: https://энергокартина.online/", "title": "Символ - инструмент соединения со своим даром.", "description": "Мастер -класс создания энергосимвола с мини-лекцией о его значении \nС нейромедитацией настройкой", "visual": "Я приношу на стенд свои созданные картины с сакральными символами геометрии - это и есть ваша заявленнная тема - и ее отражение в визуальном кода и смыслах о чем эти символы .", "materials": "Да, листы бумаги или мини холсты ( 30/30см) как пожелаете , циркули , набор простых карандашей , ластиков, акварельные краски , акриловые маркеры , линейки , стоимость зависит от количества участников , которые предполагается что будут участвовать в процессе , до 3-5 тыс уложимся", "volunteers": "Да, желательно , количество зависит от количество участников , я могу объять до 7 человек одновременно, если больше то нужно 1-2 человека в помощь, поясню что делать , просто помогать участникам подходить в их процессе рисования, если они не успевают или не поняли , я покажу все.\nВозможно , будут и мои волонтеры, еще нужно обсудить с ними .", "source": "Из телеграм-канала", "format": "Станция", "place": "Большая зона 3×3 м+", "indoor_outdoor": "Без разницы", "topic": "Математика; Искусство", "time": "Могу весь интервал 15:00–20:00", "slot_ok": "Да, час подходит", "bring": "Свои картины, линейки, материалы для показа символов и  демонстрации, декор для украшения столов", "links": "https://энергокартина.online/\n\nВидео выступлений по запросу отправлю \nСоц сети: https://www.instagram.com/vselennay_art?igsh=NjFqbmljYXlvcHo2\n\nЮтуб https://youtube.com/@vselennay_art?si=VCKlu5Aqjq7uytbN", "capacity": "До 5", "speech_details": "На сцене достаточно меня - как ведущего процесс,  классно если будет экран, где я могу показать что мы будем создавать", "fractal_link": "Сакральная геометрия. Это древние геометрические символы, в которых запакована энергия, цифровой код — из которого создано всё видимое и невидимое во Вселенной. И эти символы работают с нашим сознанием и подсознанием, переписывая информацию в клетках ДНК.взаимодействие с символом открывает внутри человека узнавание себя, вспоминание этих кодов - талантов, которыми он наделен.\nКаждый символ сакральной геометрии структурирует и гармонизирует пространство, в котором есть его изображение на невидимом глазу тонком уровне.", "special": "Тишина, колонка - возможность включить медитативную музыку , которую я использую - можно живой ханг - вообще супер будет для погружения в процесс", "time_constraints": "Естественные отлучения перекусить и в туалет )", "duration": "Больше 45 минут", "_warning": "Эзотерика — отказ"}, {"id": "app-3", "status": "new", "_suggested_category": "art", "_suggested_subcategory": "installation", "submitted_at": "2026-04-27T08:12:27.274Z", "name": "Антон Сидько", "contact": "#ERROR!", "about": "Я занимаюсь современной керамикой и имею естественно-научное образование, опыт исследователя (биомедицина).\nCV: https://docs.google.com/document/d/1ntdqHbShOPdhqXokj44O8K7VWE8Z6GKnthF8q80cJyA/edit?usp=sharing", "title": "Squirrel Institute", "description": "Хочу показать свою инсталляцию \"Squirrel Institute\". (представлена в портфолио)\nРабота представляет из себя светящиеся фарфоровые цилиндры со свернувшимися на них в спирали бЕлками - модель структуры канального белкА. Она иронизирует над анекдотичным применением машинных алгоритмов при обработке информации (автоперевод сайтов РАН в 2010 году). \nНо через свой медиум (мое изобретение - композитный фарфор ПОРФИР) демонстрирует плодотворность внедрения новых технических средств и мультидисциплинарного подхода. \nРассеивающий пучки света хоровод из бЕлковых субъединиц, отсылает зрителя к методам анализа структуры вещества с помощью ядерно-физических методов анализа (рентген, нейтроны и т.д.).", "visual": "Работа создана из фарфора в технике слоистого композита, применение такого материаловедческого подхода позволяет выйти за пределы форм используемые художниками и создать новую визуальность на стыке искусства и науки. За ярким и торжественным арт-объектом прячется и модель канального белкА и научный мем про институт белКи.", "materials": "Печать плаката-постера (~2500р), подиум с верхней площадкой 50*50 см - 100*100 см, место для постера и точечная подсветка постера.", "volunteers": 1.0, "source": "Из телеграм-канала", "format": "Инсталляция", "place": "Уголок для тихой инсталляции", "indoor_outdoor": "Только в помещении", "topic": "Естественные науки; Искусство", "time": "Могу весь интервал 15:00–20:00", "bring": "Могу привезти работу и точечный свет для постера, при наличии волонтера с машиной (приехать-уехать) могу привезти подиум для работы.", "links": "Сайт: https://antonsidko.tilda.ws/\nПортфолио: https://docs.google.com/presentation/d/1W6UHcvxkgJ6zz81FXrZcI8zePGyrI1Wv4yJJRQooeCA/edit?usp=sharing", "fractal_link": "Подобие бЕлка и белкИ - лингвистическая петля. Она может вести в совершенно ошибочном направлении.\nБелкИ", "special": "Затемнение, розетка (потребление ~50 Вт), точечный светильник", "source_detail": "канал с open call", "extra": "Работу не трогать)", "inst_size": "Помещается на столе", "inst_duration": "Весь вечер", "_warning": "Не станция, а экспонат-инсталляция"}, {"id": "app-4", "status": "new", "_suggested_category": "art", "_suggested_subcategory": "installation", "submitted_at": "2026-04-27T11:24:08.820Z", "name": "Alex Mu", "contact": "alexsonyplay@gmail.com", "about": "https://docs.google.com/document/d/1UigaCvD6AabUjhew_f7UWihcaoIl7hL8/edit?usp=sharing&ouid=102046487677928376812&rtpof=true&sd=true", "title": "\"Очарование тетракварка\"", "description": "Работой хотел показать фигуру Тетракварк на основе буквы его написания T его внутреннее устройство, очарование и внутреннюю энергию как очаровательный тетракварк выглядит в моей художественной интерпретации. \n\nhttps://drive.google.com/drive/folders/1QgQbPxO7WpcukdLR0nv3oKL0ApJEvEN3?usp=sharing", "visual": "Симметрия, Фракталы, Гармония чисел и форм", "materials": "инсталляция изготовлена", "volunteers": "-", "source": "Из телеграм-канала", "format": "Инсталляция", "place": "Уголок для тихой инсталляции", "indoor_outdoor": "Предпочту помещение, можно и на улице", "topic": "Естественные науки", "time": "19:00–20:00", "bring": "объект", "org": "-", "links": "https://drive.google.com/file/d/1ZFEbqGAUF7VocsTY0LsssYR_PK_OCUWh/view?usp=sharing", "fractal_link": "в объекте заложено самоподобие структуры.", "special": "-", "time_constraints": "не смогу быть все время", "source_detail": "-", "extra": "-", "inst_size": "Отдельный угол ~2×2 м", "inst_duration": "Весь вечер", "author_presence": "Нет, объект справится сам"}, {"id": "app-5", "status": "new", "_suggested_category": "experiment", "_suggested_subcategory": null, "submitted_at": "2026-04-27T12:01:22.831Z", "name": "Андрей", "contact": "@AndreyKuzmin_artist2019, ekokuzmineko@gmail.com ,    +79859259455", "about": "Фотография с 6 лет;\nцифровая живопись с 2015 года \nhttps://drive.google.com/file/d/11cOZDEMJ7H9OAxD2e7-2Q7Vz2iImeNND/view?usp=drivesdk", "title": "\"Мир Фракталов\" или \"Порталы в Миры Паттернов\"", "description": "Демонстрация на большом экране (монитор или проекция) в потоке несколько переходящих друг в друга фрактальных миров. Они возникают и переходят друг в друга, демонстрируя бесконечность нашей Вселенной и нашего существования.", "visual": "Портал математизированное представление окружающего нас мира, квзи образ принципа Метавселенной, проходя по серии разнообразных фракталов понимаешь их математическое многообразие, визуализированное с помощью искусства", "materials": "монитор или проекционный аппарат", "volunteers": "1 Волонтер, который наладит изображение", "source": "Из телеграм-канала", "format": "Инсталляция", "place": "Другое", "indoor_outdoor": "Предпочту помещение, можно и на улице", "topic": "Другое", "time": "Могу весь интервал 15:00–20:00", "bring": "флешку с инсталляцией", "links": "https://vk.com/andreykuzminartist2019", "fractal_link": "визуализированы сами фракталы", "special": "затемнение", "extra": "Нужен кусок стены от 1х1,5 м до  без ограничений и проекционный аппарат или один крупный монитор (телевизор)", "inst_size": "Отдельный угол ~2×2 м", "inst_duration": "Весь вечер", "author_presence": "Я буду рядом весь вечер", "_warning": "Совместное создание фрактальных миров — кандидат на станцию"}, {"id": "app-6", "status": "new", "_suggested_category": "social", "_suggested_subcategory": null, "submitted_at": "2026-04-27T12:22:46.083Z", "name": "Макарова Мария Викторовна", "contact": "https://t.me/Mariamakart    \tmariamakarova82@gmail.com   89267890779", "about": "https://drive.google.com/file/d/1lmtshaGLixPY5yvRggjFeIvoRQJUO3ye/view?usp=sharing\n\nМария МакАрт (Мария Макарова) — художник, работающий в области абстрактной живописи. С 2023 года ведёт последовательную студийную практику, формируя авторскую серию работ, исследующих взаимодействие цвета, слоя и ритма. Профессиональная художественная деятельность с 1999 года.\n\nИмеет 25-летний опыт работы как художник-живописец, \n20 лет в сфере дизайна интерьера и 15 лет преподавательской практики.\n\nОкончила МГХПУ им. С.Г. Строганова (1999–2005), Профессиональный художественный лицей №303 (1995–1999), проходила обучение в МГУ им. М.В. Ломоносова (2008–2009, дизайн ландшафта).\n\nВ 2010–2019 годах основала и руководила художественной студией на о. Самуи (Таиланд), преподавала рисунок и живопись детям и взрослым.\n2019 - 2026  Собственная Художественная студия в Москве.            \nИндивидуальные занятия и мастер классы до 30 человек, в различных \nтехниках и материалах.\n\nРаботы по живописи находятся в частных коллекциях. \nПредставлена на платформе Artmajeur.", "title": "\"Бесконечная живопись в поле всех возможностей\". Или \"Упорядоченный хаос живописи\". Или \"Арт Фрактал\"", "description": "Предлагаю создать интерактивный арт-перформанс, где живописный процесс становится главным исследованием. \nНа большом холсте\\картоне (120х90см) художник, вместе с участниками, создаёт живописное абстрактное полотно, а на отдельных форматах (А4-А8) каждый создает свои цветовые выкрасы, вступая в диалог с работами других, через отпечатки по сырой краске. \nЭти отпечатки выкрасов переносятся на общее полотно, формируя визуальный эффект самоподобия и фрактальной структуры. \nУчастники наблюдают, как из хаотичных действий рождается закономерность, а цвет и форма бесконечно трансформируются. \nВ итоге, каждый уносит с собой личный фрагмент этого процесса и опыт соприкосновения с современным искусством, в частности абстрактной живописью, как исследованием и арт-терапией.", "visual": "Красота математики здесь появляется прямо в процессе. Когда участники делают отпечатки по сырой краске, один и тот же элемент повторяется и создаёт эффект самоподобия, как фрактал. Из простых действий постепенно возникает  ритм и структура, бесконечная многослойность. В итоге человек не просто видит это, а сам участвует и проживает, как из хаоса появляется система.", "materials": "Расходы 4-5тыс. Зависит от утвержденных вами материалов. Готова обсудить.  Высылаю чек лист:\nЧек лист на МК\n1.\tСтол(ы) \n2.\tХолст или гофрированный картон + обои под покраску, или только обои\n3.\tОбои под\\пок., порезанные на малый формат \n4.\tКраски акрил\n5.\tКисти \n6.\tВалики, шпатели \n7.\tМастихины \n8.\tПоролоновые губки д/рисования\n9.\tГотовые выкрасы.\n10.\tФартуки одноразовые\n11.\tТарелки одноразовые\n12.\tСтаканчики бумажные\n13.\tСалфетки влажные \n14.\tСалфетки бумажные \n15.\tКлеенка \n16.\tМолярный скотч  \n17.\tМешки для мусора\n18.\tПерчатки одноразовые \n\nДополнительно \n1.\tНапольный мольберт\n2.\tШтатив для телефона  \n3.\tТрафареты\n4.\tКолонка для музыки\n5.\tВедерко", "volunteers": "1 мужчина для разгрузки и погрузки материалов. Искать\nЖелательно + 1 человек в помощи подготовки и уборки. Возможно найду.", "source": "Из телеграм-канала", "format": "Станция", "place": "Стол и люди вокруг стоя", "indoor_outdoor": "Только в помещении", "topic": "Искусство", "time": "18:00–19:00; 19:00–20:00", "slot_ok": "Да, час подходит", "bring": "Все. Мне важно, чтоб материалы были профессиональные, по моему чек-листу. В нужном кол-ве и качестве.", "org": "Основатель художественной студии \"МарияМакАрт\"", "links": "Художественная студия https://www.instagram.com/mariamak_teacher/\nИсследование/высказывание https://www.instagram.com/mariamakart/\nЛичный блог/коммерческая живопись  https://www.instagram.com/mariamakmax/", "capacity": "5–15", "fractal_link": "Отпечатки выкрасов друг от друга прямая связь с фракталами и самоподобием.", "special": "Хорошее освещение. \nЖелательно стена, на которую можно будет повесить основной холст (картон). \nЕсли не будет возможности, то он будет расположен на полу или треноге. \nНужна бесплатная парковка, т.к. планирую привезти все материалы свои. \nПомощь в разгрузке и загрузке материалов. \nЖелательно, помощь в подготовке и уборке.", "time_constraints": "Зависит от наличия и кол-ва помощников подготовки.", "source_detail": "@opencallfortheartist"}, {"id": "app-7", "status": "new", "_suggested_category": "art", "_suggested_subcategory": "gallery", "submitted_at": "2026-04-27T17:13:41.669Z", "name": "Александр Солеев", "contact": "#ERROR!", "about": "Живу и работаю в Нижнем Новгороде. Начиная с 2008 работаю в сфере IT, занимаюсь разработкой сложных высоконагруженных систем. В 2015 году начал работу над проектом на стыке науки и искусства - “Плато”. Это попытка эмулирования и визуализации процессов развития искусственной жизни, эволюционных алгоритмов, хаотических процессов происходящих в разных сферах жизни. Одним из результатов проекта стали артефакты перенесенные с помощью прикладных практик из виртуальных миров в реальный. На сегодняшний день работаю над серией абстрактных скульптур из камня, гипса, пластика и других материалов.", "title": "\"Артефакты Плато\"", "description": "Серия скульптур, где идея фрактального объекта сочетает в себе техногенные и природные паттерны. Это размышления на тему какие объекты флоры могла бы создать искусственная жизнь, если бы мы предоставили ей огромный виртуальный полигон. Сможет ли хаос создать формы гармоничные с точки зрения человеческих эстетических установок или они будут вызывать отторжение?", "visual": "Привожу выдержку из , так как она как раз объясняет концепцию.\n\nОдна из концепций когда-то сильно захвативших меня - теория хаоса, открытие скрытой красоты порядка в, казалось бы, совершенно непредсказуемых процессах. Аттракторы Эдварда Лоренца найденные при прогнозировании погоды или фракталы Бенуа Мандельброта увиденные в береговой линии острова - это по своей сути сложнейшие математические концепции, но при этом через них для человека стала возможной визуализация этих явлений и осмысление их через художественные формы.\n\nДля того чтобы играть с Хаосом я изобретаю собственный искусственный мир - “Плато”. Это пространство для мысленного, числового, игрового экспериментов. В то же время Плато это карта и территория, каждая клетка которой подчиняется определенному набору правил и хранит историю своих изменений. На подобной сцене мы можем наблюдать драму - рождение, расцвет и гибель колоний крипто жизни, создание и разрушений континентов, непреодолимую силу стихии. Иногда на Плато удается захватить форму и перенести в виде объекта в наш мир. Это как игра в крипто археологию.\n\nПеренос объектов из искусственного мира в реальный это целенаправленное смешение техник - сочетание работы математики, алгоритмов, хаоса и рук человека. Первичная форма исследуется в 3d средах. Далее работа с классическими материалами такими как керамика, гипс, искусственный камень, воск это - сторона человека, сторона мастера искажающего форму через свое восприятие. \n\nМоя художественная практика это рефлексия страха и восхищения перед сегодняшней технологической революцией. На мой взгляд, осознать происходящие перемены и предсказать ближайшее будущее объективно невозможно. При этом все стремительнее растет разрыв между зависимостью человека от технологий и пониманием - как это работает. В своем творчестве я пытаюсь формализовать эти ощущения создавая искусственный мир - убежище, в котором можно остановиться и попытаться осмыслить происходящее.", "materials": "Нет, готов предоставить готовые объекты.", "volunteers": "Возможно понадобится помощь в случае развески на стене. Объекты также могут быть установлены на напольных мольбертах.", "source": "Из телеграм-канала", "format": "Инсталляция", "place": "Большая зона 3×3 м+", "indoor_outdoor": "Только в помещении", "topic": "Математика; Искусство", "time": "Могу весь интервал 15:00–20:00", "bring": "Некоторое количество объектов, представленных в портфолио. Объекты достаточно массивные, буду ограничен вместимостью машины.", "links": "Портфолио https://drive.google.com/file/d/111KCJ1p7Uq2uT9Qa01avVv5qs8e1PEWF/view?usp=drive_link\nФото работ в высоком разрешении https://drive.google.com/drive/folders/13Wk4OzRGC1yYMGaiaSOVdKGUAkbJMGDy?usp=drive_link", "fractal_link": "Мои объекты это попытка перенести фракталы из виртуальных сред в реальный мир.", "inst_size": "Отдельный угол ~2×2 м", "inst_duration": "Весь вечер", "author_presence": "Я буду рядом весь вечер"}, {"id": "app-8", "status": "new", "_suggested_category": "popsci", "_suggested_subcategory": null, "submitted_at": "2026-04-28T07:15:22.580Z", "name": "Тримонов Николай Леонидович", "contact": "https://t.me/N_Trimonov, tnl83@mail.ru", "about": "15 лет руководитель проектов в ИТ сфере. \nРаботаю в ИИИ МФТИ", "title": "Семантическая топология.", "description": "Семантическая топология направлена на решение проблем становящейся цифровой реальности. Главная из них — достижение «взаимопонимания» между людьми и машинами, между людьми с участием машин, а также между машинами. Решения этой проблемы требует создания метаязыка.  Идея метаязыка уходит своими корнями к Р. Луллию с его методом выведения истин из общих понятий и к Г. Лейбницу с идеей создания алфавита человеческой мысли и философского исчисления. Т. Гоббс допускал вычисления не только над числами, но и над словами, а Р. Декарт предложил упорядочить исходные понятия на основе математики и формализовать операции над ними по строгим правилам логики. Подходы к созданию метаязыка и набор принципов логики для формализации идеи истины разработаны математиком А. Тарским и развиты культурологом Ю. Лотманом.\nСозданная автором версия метаязыка вместе со способом ее построения образуют направление, обозначенное автором как «семантическая топология». Семантическая топология – это теоретическая модель построения семантических пространств как топологических структур.\n\nВ модели реализован принцип целостности семантического пространства с соблюдением законов связности, взаимного положения и следования его элементов. Синтаксическую структуру метаязыка образуют геометрические фигуры, элементы которых размечены понятиями, имеющими универсальные значения для разных областей знания. Установление математического порядка в семантическом множестве метаязыка позволяет формализовать описание реальности и оперировать ими по правилам математической логики.", "visual": "Предметом математики как способа научного описания мира выступают три рода проявлений сущностей во Вселенной: 1) число; 2) размер; 3) форма. Все эти три аспекта присутствуют в явлениях одновременно. Но преобладающее значение имеет форма, а число и размер имеют смысл только в отношениях с раскрываемой формой. Число описывает дискретные структуры (предмет арифметики), а размер – непрерывные (предмет алгебры). Обе эти структуры охватывает геометрия и на основе качественной геометрии (топологии) может быть реализовано широкое объединяющее видение мира (А. Гротендик).\n\nНачала геометрии и идея симметрии уходят корнями к идеальным телам Платона. Это пять вписанных в сферу правильных геометрических фигур. Сфера – идеал организации пространства с бесконечным числом симметрий. Симметрия – это идея, посредством которой постигается гармония природы, создается порядок, красота и совершенство, производится согласование частей в едином целом (Г. Вейль). По этой причине в основания современной физики закладываются красивые математические теории. Принцип красоты содержит набор строгих требований простоты, симметрии (инвариантности), целостности (согласованности и соразмерности) и наглядности (понимания) теорий.", "materials": "Все сделаем сами, ничего не требуется.", "volunteers": "не нужно.", "source": "Из телеграм-канала", "format": "Станция", "place": "Стол и люди вокруг стоя", "indoor_outdoor": "Только в помещении", "topic": "Математика; Искусство", "time": "Могу весь интервал 15:00–20:00", "slot_ok": "Да, час подходит", "bring": "Плакаты, Физическую 3D модель, Ноутбук для демонстрации  интерактивной модели и презентаций", "org": "Представляю школу В.А.Рубанова", "links": "https://mirovizor.com/\nhttps://mirovizor.com/3d\nhttps://mirovizor.com/Semanticheskaya-topologiya\nhttps://t.me/mirovizor", "capacity": "До 5", "fractal_link": "Фрактал основной принцип построения семантического пространства. Самоподобие фундаментальный принцип Семантической топологии.", "special": "Розетка для ноутбука, желательно монитор.", "time_constraints": "нет", "source_detail": "слежу за каналом @turings_crossword"}, {"id": "app-9", "status": "new", "_suggested_category": "workshop", "_suggested_subcategory": null, "submitted_at": "2026-04-28T18:16:35.003Z", "name": "Евдокимова Наташа", "contact": "#ERROR!", "about": "Преподаю японский язык, перевожу, организую мк по японской культуре и читаю лекции больше 20 лет. При этом умудрилась прожить почти 10 лет в Южной Корее и выучить корейский до уверенного бытового уровня.\n\nВеду тг канал о японском языке и принципах изучения иностранных языков в целом. Консультирую коллег репетиторов и специалистов помогающих профессий по системному ведению соц сетей без выгорания, запуску онлайн проектов, набору учеников и пр.", "title": "Ничто не повторится дважды - мк по основам японской каллиграфии", "description": "Мы будем практиковаться писать базовые линии японской каллиграфии - точки, горизонтальные и вертикальные линии. Собирать их в иероглифы. Будем искать в них схожести и различия. Расскажу о японской поговорке \"ичи-го ичи-э\", что значит \"одни миг одна встреча\".", "visual": "Издалека листы каллиграфии, написанные одним и тем же человеком, могут казаться похожими. Однако, если рассматривать их вблизи, то даже написанные с намерением быть идентичными линии и иероглифы будут иметь свою индивидуальность и неповторимость.", "materials": "Писчая бумага 1 пачка на 1 час, стоимость 1 пачки до 200р. Тушь для каллиграфии стоимость до 2000р. Влажные салфетки 1 упаковка около 100р. Файлики А4, чтобы люди забрали свои работы с собой опционально. Остальные расходники - кисти, подложки, емкости для туши у меня есть.", "volunteers": "Я могу справиться без волонтеров", "source": "От Розетки", "format": "Станция", "place": "Стол и 2–4 стула", "indoor_outdoor": "Предпочту помещение, можно и на улице", "topic": "Искусство", "time": "Могу весь интервал 15:00–20:00", "slot_ok": "Да, час подходит", "bring": "Специальные кисти для каллиграфии, подложки для письма, емкости для туши, пресс для бумаги", "links": "Основные соц сети:\nhttps://t.me/natashasensei\nhttps://instagram.com/natalia.evdokimova.sensei?igshid=NGVhN2U2NjQ0Yg%3D%3D&utm_source=qr", "fractal_link": "Иероглиф -  это рукотворный фрактал, где простота базовых черт порождает  сложность смыслов через  повторение одних и тех же графических паттернов («рот»口, «дерево»木, «человек»人).", "special": "В идеале только чтобы не было ветра и осадков", "time_constraints": "Хотелось бы иметь 1-2 окна или перерыва по 30 минут, чтобы самой также принять участие в Одиссее", "extra": "Все прекрасно, буду рада поделиться знаниями о японской каллиграфии. Открыта к сотрудничеству и вопросам"}, {"id": "app-10", "status": "new", "_suggested_category": "art", "_suggested_subcategory": "gallery", "submitted_at": "2026-04-29T09:53:06.840Z", "name": "Злата", "contact": 89689290344.0, "about": "https://drive.google.com/file/d/1ApR4anr5MpFp5fWlHDx7poV2Qv8nXexp/view?usp=sharing", "title": "Метафизика", "description": "Инсталляция, графика, живопись и все это объединено общей идеей исследования человека и его внутренней (эмоциональной, интеллектуальной) составляющей. Как и что влияет на внутреннее состояние индивида и отражается во внешнем. Форма, пластика, цвет - все это средства выразительности моих работ.", "visual": "В том как построены работы, их композиция и цвет - это все объясняется физикой, а соотвественно там задействована математика", "materials": "нет", "volunteers": "2026-02-01T00:00:00", "source": "От знакомых", "format": "Инсталляция", "place": "Большая зона 3×3 м+", "indoor_outdoor": "Предпочту помещение, можно и на улице", "topic": "Математика; Искусство", "time": "15:00–16:00", "links": "https://drive.google.com/file/d/1ApR4anr5MpFp5fWlHDx7poV2Qv8nXexp/view?usp=sharing", "fractal_link": "Инсталляция Похороны - внутри гроба лежат разбитые стекла - множащаяся форма", "special": "для одного окна нужна розетка (окно 1)", "time_constraints": "меня не будет в городе, привезет знакомый", "inst_size": "Большое пространство 4×4 м+", "inst_duration": "Весь вечер", "author_presence": "Волонтёр-смотрящий периодически", "_warning": "Метафизика — графика, живопись"}, {"id": "app-11", "status": "new", "_suggested_category": "experiment", "_suggested_subcategory": null, "submitted_at": "2026-04-29T12:16:42.450Z", "name": "Дария", "contact": "Mayalliss", "about": "https://hh.ru/resume/167b9068ff08ed6aeb0039ed1f747331555959?from=share_ios", "title": "Эстетика в диагнозах: как визуальные методики помогают выявлять психические заболевания", "description": "Планирую принести рисуночные методики, картинки для узнавания и так далее, которые используют в диагностике псих расстройств. Красивые!", "visual": "*", "materials": "Бумага, цветные карандаши", "volunteers": "Не нужно или приведу своих", "source": "От Кроссворда Тьюринга", "format": "Станция", "place": "Стол и люди вокруг стоя", "indoor_outdoor": "Предпочту помещение, можно и на улице", "topic": "Естественные науки; Искусство", "time": "Могу весь интервал 15:00–20:00", "slot_ok": "Да, час подходит", "org": "Лес", "capacity": "5–15", "fractal_link": "Самоподобие — методики на нахождение общего и лишнего, отделение главного от второстепенного", "special": "Стулья хорошо, но не обязательно"}, {"id": "app-12", "status": "new", "_suggested_category": "art", "_suggested_subcategory": "installation", "submitted_at": "2026-04-29T18:37:29.875Z", "name": "Роганов Максимилиан Александрович", "contact": "t.me/maxrogan, archisynth@ya.ru, +79776564577", "about": "Медиа-художник, работающий в области генеративной графики и архитектурного дизайна с 2010 года.\nЗа прошедший год принял участие в выставках и фестивалях:\nИгра. Цифра. Искусство, Мультимедийный музей “Россия - моя история”, Екатеринбург, 2026\nЦифровые чувства. Мультисенсорный поворот, Галерея Краснохолмская Объединения “Выставочные залы Москвы”, Москва, 2025\nNextArt. Погружение, ЦСИ Артэтаж, Владивосток, 2025\nЛаборатория братьев Стругацких, Галерея на Каширке Объединения “Выставочные залы Москвы”, Москва, 2025\nЭстетика ошибки. Глитч-арт, Галерея Краснохолмская Объединения “Выставочные залы Москвы”, Москва, 2025", "title": "Полиэдральное Цветение", "description": "Трехмерный объект представляет собой рекурсивную агрегацию икосферических узлов.\nСтруктура колеблется между полиэдральной дискретностью и непрерывным многообразием.\nЭто не модель чего-либо конкретного.\nЭто модель самого процесса организации формы.\nСсылка на видео: https://drive.google.com/file/d/1aHy26tq70ZO9BpnoljQd84w7uoAKvka0/view?usp=sharing", "visual": "В этой работе математика проявляется не как система формул, а как живая среда, способная порождать сложность из простых правил. Рекурсивная структура икосфер создаёт хрупкий баланс между дискретной геометрией и непрерывной органической формой. Визуальный образ становится следом вычисления, где красота возникает из самой логики роста.", "materials": "Нет", "volunteers": "Один человек, способный включить проекцию/экран", "source": "Из телеграм-канала", "format": "Инсталляция", "place": "Другое", "indoor_outdoor": "Только в помещении", "topic": "Искусство", "time": "Могу весь интервал 15:00–20:00", "links": "Сайт: maxroganovstudio.netlify.app\nInstagram: @archisynth", "fractal_link": "Фрактальная природа объекта проявляется в рекурсивном повторении геометрических элементов, где каждая часть воспроизводит структуру целого в новом масштабе.", "special": "Проекция/экран", "source_detail": "Телеграм-канал Open Call for Artists", "inst_size": "Отдельный угол ~2×2 м", "inst_duration": "Весь вечер", "author_presence": "Нет, объект справится сам"}, {"id": "app-13", "status": "new", "_suggested_category": "art", "_suggested_subcategory": "installation", "submitted_at": "2026-04-30T08:59:48.044Z", "name": "Ира", "contact": "почта candelariaira@gmail.com телеграм @lovelyhaircut", "about": "Я современная художница, живу в Москве. Последний год я занимаюсь созданием и развитием своей первой серии Элементы. Прикладываю ссылку на портфолио и CV.\nhttps://drive.google.com/file/d/1MTwv7h6LxY_1_IBYJaDnVqYj9YLhaRE3/view?usp=sharing", "title": "Элемент1", "description": "Для участия я хочу предложить свой объект-инсталляцию Элемент1. Он есть в моем портфолио, и там же можно увидеть описание к нему и этой серии. \nhttps://drive.google.com/file/d/1MTwv7h6LxY_1_IBYJaDnVqYj9YLhaRE3/view?usp=sharing", "visual": "Предлагаемая работа затрагивает темы рекурсии и самоподобия. В будущем я хочу, отталкиваясь от своих работ, как от некоторых начальных точек, развивать другие проекты.", "materials": "нет", "volunteers": "нет", "source": "Другое", "format": "Инсталляция", "place": "Уголок для тихой инсталляции", "indoor_outdoor": "Только в помещении", "topic": "Математика; Естественные науки; Искусство", "time": "Могу весь интервал 15:00–20:00", "source_detail": "из телеграм канала с опенколлами для художников", "inst_size": "Отдельный угол ~2×2 м", "inst_duration": "Весь вечер", "author_presence": "Волонтёр-смотрящий периодически"}, {"id": "app-14", "status": "new", "_suggested_category": "art", "_suggested_subcategory": "gallery", "submitted_at": "2026-04-30T09:14:29.085Z", "name": "Надежда Ховаева", "contact": "#ERROR!", "about": "https://drive.google.com/file/d/1rotTfn8srh3He0n154lxFX949wkzGICC/view?usp=sharing", "title": "Программа цифровой колонизации", "description": "Полиптих из 9 работ, расположенных в три ряда по три, в специальном порядке. Серия отображает матричную основу мира. Каждая из работ в серии в свою очередь тоже является матрицей: Зарождение, Социум, Выход из системы, Цифровая клетка, Downloaded, Матричная ДНК, Фрактал, Клонирование, Металюди. Вся существующая реальность есть не что иное, как проявление точной математики, где исключены любые случайности. Механизм творения является материнской программой, которая проявляется во всех частицах существующего мироздания. Способен ли человек быть свободным, есть ли у него выбор, или он является частью программы и заложником своих достижений? Размер экспозиции 114 х 168 см, бумага, акварель, оформлены в рамы клик. Серия принимала участие в выставке \"Образ науки\" в ИНИОН РАН г.Москва", "visual": "каждая работа - отдельная матрица, в которой заключено повествование. Верхний ряд в сумме со вторым дает третий логически и визуально, также и столбцы. Повествование идет от развития клетки на земле до перерождения в металюдей.", "materials": "только крепления на стену - стандартные для картин , \nрасходы на доставку из Волгограда и обратно", "volunteers": "рассказывать о работе", "source": "Из телеграм-канала", "format": "Инсталляция", "place": "Другое", "indoor_outdoor": "Только в помещении", "topic": "Математика; Естественные науки; Искусство", "time": "15:00–16:00", "links": "https://drive.google.com/file/d/1rotTfn8srh3He0n154lxFX949wkzGICC/view?usp=sharing", "fractal_link": "Визуально сама работа матрица из подобных фигур. Одна из работ является сама по себе фракталом  и имеет схожее название. Визуально можно увидеть работу в портфолио.", "special": "стена, на которой могут быть расположены работы в три ряда по три шт. Общий размер примерно ширина 120 см, высота 180 см", "time_constraints": "я из другого города, сама не смогу присутствовать", "extra": "я из другого города, сама не смогу присутствовать", "inst_size": "Отдельный угол ~2×2 м", "inst_duration": "Весь вечер", "author_presence": "Волонтёр-смотрящий периодически"}, {"id": "app-15", "status": "new", "_suggested_category": "workshop", "_suggested_subcategory": null, "submitted_at": "2026-04-30T12:59:28.819Z", "name": "Полина Романова", "contact": "@Polly_Romanova", "about": "аспирант матфака, препод школы Лес и 179", "title": "сделай 3d фрактал своими руками", "description": "есть две модели фракталов, обе вырезаются из листа бумаги A4. Они есть в этом посте https://t.me/turings_crossword/1510 человеку выдается инструкция где показывается поэтапное построение разных фракталов (то есть объясняется принцип), а потом показано по шагам как это вырезать. на каждый уходит около 5-10 минут. помощь волонтеров нужна с тем, чтобы выдавать материалы", "visual": "получается объект, складывающийся в виде \"книжки\" с объемными картинками", "materials": "печать материалов, ножницы, бумага", "volunteers": "2026-03-02T00:00:00", "source": "От Кроссворда Тьюринга", "format": "Станция", "place": "Другое", "indoor_outdoor": "Предпочту помещение, можно и на улице", "topic": "Математика; Естественные науки; Искусство", "time": "Могу весь интервал 15:00–20:00", "slot_ok": "Да, час подходит", "bring": "примерно 10 ножниц", "org": "школа Лес", "capacity": "15 и больше", "fractal_link": "да, мы собственно вырезаем два фрактала", "special": "нет, но наверное нужно побольше стульев и столов так как станция может вместить много людей"}, {"id": "app-16", "status": "new", "_suggested_category": "workshop", "_suggested_subcategory": null, "submitted_at": "2026-04-30T13:08:03.611Z", "name": "Полина Романова", "contact": "@Polly_Romanova", "about": "мотфаг", "title": "инженерное оригами", "description": "будем собирать подвижные модели солнечных панелей, выполненные в виде оригами. участникам выдается чертеж для сборки и инструкция, где объясняется, что это за устройство и как собрать по чертежу. все есть тут в посте https://t.me/maomao_les/127", "visual": "ну оригами)", "materials": "печать материалов, ножницы, бумага", "volunteers": "2026-04-03T00:00:00", "source": "От Кроссворда Тьюринга", "format": "Станция", "place": "Другое", "indoor_outdoor": "Предпочту помещение, можно и на улице", "topic": "Математика; Естественные науки; Искусство", "time": "Могу весь интервал 15:00–20:00", "slot_ok": "Да, час подходит", "bring": "какой-то запас чертежей и инструкций есть", "capacity": "15 и больше", "fractal_link": "не(", "special": "опять таки побольше стульев"}, {"id": "app-17", "status": "new", "_suggested_category": "workshop", "_suggested_subcategory": null, "submitted_at": "2026-04-30T20:30:20.101Z", "name": "Ольга", "contact": "@msempathy", "about": "https://t.me/zakroootila", "title": "Мастер-класс по тай-дай росписи", "description": "Можно будет раскрасить свою футболку или носки в технике тай-дай методом \"Космические яйца\", что позволяет заметить повторение аргумента, как основу. Для данной техники в идеале использовать лёд и делать ее под наклоном, но в формате мастер-класча можно использовать кипяток, это быстро и результат будет уже через пол часа. Для мастер-класса понадобятчя одноразовые перчатки, фартуки, защита стола, шприцы для кипятка 50-100 мл, кальцинированная сода, красители, поддоны. Участники получат незабываемый опыт и владение новым мастерством.", "visual": "Как я писала выше, технику я взяла не простую. Складывается ткань определенным образом и стягивается вощеной нитью, что позволяет определить рисунок.", "materials": "Фартуки, перчатки, пленка для упаковки, пакеты, пакеты для мусора, вода, кипяток, шприцы 50-100 мл для кипятка, ткань для основы МК", "volunteers": "Пара человек будет кстати, но справлялась и одна. Помочь в упаковке изделий, в подготовке - защита рабочей поверхности, выдача необходимого", "source": "От других организаторов", "format": "Станция", "place": "Стол и люди вокруг стоя", "indoor_outdoor": "Предпочту помещение, можно и на улице", "topic": "Искусство", "time": "Могу весь интервал 15:00–20:00", "slot_ok": "Час подходит, но есть нюансы", "bring": "Краситель", "org": "Zakroootila", "links": "https://t.me/zakrootila", "capacity": "5–15", "fractal_link": "Повторение рисунка при раскручивании будет подобно повторяющейся детализации, что гениально и невероятно просто.", "special": "Возможно понадобится микрофон-петелька, зависит от того, насколько шумное будет в целом помещение"}, {"id": "app-18", "status": "new", "_suggested_category": "art", "_suggested_subcategory": "installation", "submitted_at": "2026-05-01T08:06:02.790Z", "name": "Евдокия Дергилева, Ирина Сафонова", "contact": "tg: @prolegomen + @EvdokiaDi", "about": "Дуэт художников-кураторов.\nСоздаем мультимедийные выставки, инсталляции, арт-объекты. \nПортфолио и CV - https://drive.google.com/drive/folders/14w2wdgGL5-FG3wwHm-7ih2jcYx7mgRjT?usp=drive_link", "title": "Объект из серии \"Детские иллюзии\"", "description": "Серия посвящена орнаментам из (пост)советского обихода, которые многие видели в домах родителей и бабушек. Эти узоры были повсюду: на обоях, коврах, паркетах, плитке… Если долго в них всматриваться, орнаменты оживали: начинали шевелиться, искажались, превращались в персонажей. Мы визуализировали эти иллюзии с помощью 3D, анимации и дополненной реальности, чтобы превратить знакомые паттерны в миры, подобные тем, что рождались детским воображением. \n\nДля Фрактальной одиссеи мы предлагаем 1 ковер с qr-кодами, по которым зрители смогут через телефон анимировать отдельные части его орнамента. \n\nЗдесь можно посмотреть как анимированы некоторые работы из серии: \nКовер \"Поляна\" https://www.instagram.com/p/C7D89cYIHbD/\nhttps://market.third.place/author/evpraxis", "visual": "Она проявляется в зрительном опыте: повтор, симметрия, ритм, искажение масштаба. Эти принципы лежат в основе многих визуальных иллюзий и одновременно являются фундаментальными математическими структурами. В «детской» оптике они проявляются особенно чисто — как будто зритель впервые сталкивается с геометрией мира и ещё не научился её рационализировать.", "materials": "Ковер с доставкой с авито. Примерно 3 тыс.руб.", "volunteers": "1, подвесить ковер и осветить его", "source": "Из телеграм-канала", "format": "Инсталляция", "place": "Другое", "indoor_outdoor": "Без разницы", "topic": "Искусство", "time": "15:00–16:00; 19:00–20:00", "bring": "Стойки для подвешивания ковра.", "org": "группа EVPRAXIS", "links": "https://www.instagram.com/evpraxis\nt.me/evpraxis", "special": "Освещение", "source_detail": "tg workinart", "inst_size": "Отдельный угол ~2×2 м", "inst_duration": "Весь вечер", "author_presence": "Волонтёр-смотрящий периодически"}, {"id": "app-19", "status": "new", "_suggested_category": "experiment", "_suggested_subcategory": null, "submitted_at": "2026-05-01T09:34:47.630Z", "name": "Лора Заиконникова", "contact": "l.zaikonnikova@gmail.com", "about": "Работаю в PR, играю на терменвоксе. \nМузыкант, певица, автор текстов и исполнитель на терменвоксе. Участница специального выпуска шоу «Голос Дети – это Фантастика» (2024 г.); ВК-шоу «Удиви меня» (2025 г.); постоянная участница международного фестиваля терменвокс-культуры «Терменология». Также участвовала как исполнитель на терменвоксе в фестивалях электронной музыки: «Лед на солнце» (2021), «Холодок» (2024), фестиваль стимпанк-культуры Ferrum (2025). В коллаборациях работала с электронным музыкантом и продюсером Ильей Чертковым // mal0 (альбом «Идиома», 2025 г.); drone-музыкантом Максимом Мамкиным (СТРУП, МаЖиКо). Участница выставки «Физика звука» (Audio Device In), Владивосток 2026, Центр современного искусства «Этажи». В рамках выставки презентовалось видео и аудио на композицию Black Ride. Участница «Оркестра терменвоксов» под управлением Петра Термена, (выступление на ВДНХ, 2026)", "title": "Физика звука", "description": "Расскажу про инструмент и сделаю мастер-класс игры на инструменте для всех желающих. Терменвокс – электромузыкальный инструмент, который был изобретен более 100 лет назад в Санкт-Петербурге гениальным русским ученым, изобретателем и музыкантом – Львом Сергеевичем Терменом. Инструмент необычен тем, что музыкант как будто играет руками в «воздухе». Принцип работы терменвокса основан на взаимодействии электромагнитных полей инструмента и музыканта.", "visual": "Там, где физика, там и математика. Я думаю моя станция хорошо впишется в ваш формат.", "materials": "1 волонтер помочь с оборудованием", "volunteers": "1 крепкий волонтер мужчина", "source": "Из телеграм-канала", "format": "Станция", "place": "Большая зона 3×3 м+", "indoor_outdoor": "Только в помещении", "topic": "Искусство", "time": "17:00–18:00; 18:00–19:00; 19:00–20:00", "slot_ok": "Да, час подходит", "bring": "Инструмент, стойку, провода, педали", "links": "https://vk.com/lorazaikonnikova\nYandex Music: https://music.yandex.ru/artist/12352761", "capacity": "До 5", "fractal_link": "Прямой связи, конечно, нет, но я подумаю как это можно представить.", "special": "Заземленные розетки, звук: гитарный комбоусилитель или пульт с мониторами. Есть подробный райдер, в зависимости от ваших возможностей. С собой привезу инструмент, педали, провода, стойку."}, {"id": "app-20", "status": "new", "_suggested_category": "art", "_suggested_subcategory": "installation", "submitted_at": "2026-05-01T10:17:05.813Z", "name": "Максим Нострик", "contact": "@Maxim_nostrik", "about": "СтрингАрт художник. Если пафосно то занимаюсь исследованием мира и себя через искусство СтрингАрт. \nЕсли проще то являюсь огромным поклонником и адептом симметрии. Использую для своих исследований инструмент реализации в види нити.", "title": "Инсталляция. Возможно некое количество картин. Инсталляция может быть как сложной так и более простой.", "description": "Сами нити символизируют общество. \nНевидимые порой связи образуют цельный рисунок которой начинает видится лишь в тот момент когда от него до я бы слегка отдаляешься.", "visual": "Прямые линии обращующие искривление. Казалось бы чистый хаос который под руками человека пришел в структуру. Благодаря математике.", "materials": "Если мы с вами найдем общий язык то я поеду с Санкт-Петербурга. \nПо возможности буду рад финансовой помощи.", "volunteers": "Один человек.", "source": "Из телеграм-канала", "format": "Инсталляция", "place": "Большая зона 3×3 м+", "indoor_outdoor": "Только в помещении", "topic": "Математика; Искусство", "time": "Могу весь интервал 15:00–20:00", "bring": "Все материалы. Их не надо будет оплачивать.", "links": "https://www.instagram.com/maxim_nostrik?igsh=MWlpbHNxZTRsM3c4Yw%3D%3D&utm_source=qr", "fractal_link": "Большое количество повторений прямых дает искривление.", "inst_size": "Большое пространство 4×4 м+", "inst_duration": "Весь вечер", "author_presence": "Волонтёр-смотрящий периодически"}, {"id": "app-21", "status": "new", "_suggested_category": "social", "_suggested_subcategory": null, "submitted_at": "2026-05-01T19:16:37.783Z", "name": "Торбин Максим Сергеевич", "contact": 89257153350.0, "about": "Работаю в закупках. Пишу стихи с 2011 года, пробую себя в создание стихов в стиле киберфутуризма - Я ВКонтакте: vk.com/torbin_maxim", "title": "Киберфутуризм - цикл стихов Вихрь кристалов", "description": "Киберфутуризм – это не только научная фантастика с элементами высоких технологий и передовых научных концепций. Это также форма выражения, которая поднимает философские и социальные вопросы, связанные с будущим нашего общества. В центре внимания таких произведений оказываются робототехника, виртуальная реальность и другие технологии, которые постепенно становятся неотъемлемой частью человеческой жизни.", "visual": "Она создана и органично вписана в стихотворение, где природа рассматривается через призму научных и технологических терминов.", "materials": "Пока не знаю точно, идея есть, воплотить пока не знаю как 🤔", "volunteers": "Если формат подойдет, буду думать и обсуждать", "source": "От знакомых", "format": "Пока не уверен(а)", "place": "Другое", "indoor_outdoor": "Без разницы", "topic": "Математика; Искусство; Другое", "time": "17:00–18:00; 18:00–19:00; 19:00–20:00", "links": "Я ВКонтакте: vk.com/torbin_maxim", "special": "Пока не знаю, идей для воплощения пока нет, готов обсудить", "time_constraints": "Стихи не рассчитаны на долгое время, надо подумать на какой промежуток времени нужно будет сделать", "extra": "Есть идея, но нет четкого воплощения идеи.", "_warning": "Стихи — формат чтения/перформанса"}, {"id": "app-22", "status": "new", "_suggested_category": "popsci", "_suggested_subcategory": null, "submitted_at": "2026-05-02T13:22:44.353Z", "name": "Александр Николаичев", "contact": "saaacha.nik@yandex.ru", "about": "Работаю в Яндексе руководителем разработки внутренней платформы инфраструктуры.", "title": "Эволюция графов", "description": "С помощью локальных замен подграфов (рассматриваются ориентированные графы) можно получить не только практические применения тьюринг полной системы, основанной на перезаписи, но и красивые картины на грани с искусством, в том числе конечно фракталы. Хочу об этом рассказать и показать визуализации. Могу затронуть связь также с конечными автоматами, физическим проектом Вольфрама, лямбда исчислением, комбинаторами, программой Гильберта и тд.", "visual": "Красота визуализации, порожденная простыми правилами эволюции.", "materials": "Нет, достаточно экрана", "volunteers": "Не нужно", "source": "Из телеграм-канала", "format": "Выступление", "place": "Стол и люди вокруг стоя", "indoor_outdoor": "Только в помещении", "topic": "Математика", "time": "Могу весь интервал 15:00–20:00", "links": "https://nikalexxx.github.io/\nhttps://t.me/nik_alex_flow", "speech_details": "Классическое выступление с экраном", "fractal_link": "Фрактальные картины получаются при некоторых правилах перезаписи, если перезапись учитывает \"поколения\" узлов графа, или, иначе говоря, работает как обход \"в ширину\"", "special": "Нужен обязательно проектор для показа запущенных визуализаций.", "duration": "30–45 минут", "extra": "Выше только идея, а формат выступления я выбрал, так как привык выступать с докладами. И к нему я знаю как подготовиться. Но если можно придумать интерактив, готов обсудить."}, {"id": "app-23", "status": "new", "_suggested_category": "experiment", "_suggested_subcategory": null, "submitted_at": "2026-05-03T13:08:31.111Z", "name": "Андрей", "contact": "телеграм - @Gleam_82", "about": "Программист, работаю в СберТехе", "title": "Математический арт", "description": "На моем сайте можно поиграться с фракталами, шумом и тд. А также самим создать подобные объекты. И получить эстетическое наслаждение :)", "visual": "В роликах и на сайте, непосредственно видна красота математических объектов - фракталы, шум и др", "materials": "экран + компьютер (ноутбук)", "volunteers": "1 человек, показывающий что можно сделать на сайте, или вообще ни одного", "source": "От знакомых", "format": "Пока не уверен(а)", "place": "Стол и люди вокруг стоя", "indoor_outdoor": "Без разницы", "topic": "Математика; Искусство", "time": "19:00–20:00", "bring": "не могу приехать", "links": "мой сайт https://spherus.ru/\nнесколько моих видео по теме\nhttps://rutube.ru/shorts/da56803ed2a2dd0e975ed2b8f04994eb/?playlist=530134\nhttps://rutube.ru/video/83266cb1cd2ee9aad68ed468941a1ec3/?playlist=530134\nhttps://rutube.ru/video/df284853b8ad9b5226a62ca52b15bf62/?playlist=530134\nhttps://rutube.ru/video/868965d1440d1b523bb38ac5e905c575/?playlist=530134\nhttps://rutube.ru/video/2aee4c8e3f547ed7ffd0f4baacbb6f39/?playlist=530134\n\nнесколько моих статей на Хабре по теме\nhttps://habr.com/ru/companies/sberbank/articles/952102/\nhttps://habr.com/ru/companies/sberbank/articles/954726/\nhttps://habr.com/ru/companies/sberbank/articles/957194/", "fractal_link": "Связь самая прямая :)", "special": "экран + компьютер (ноутбук)", "time_constraints": "не могу приехать, время указал, чтобы пройти валидацию", "_warning": "Сайт с фракталами для игры на ноутбуке. Не может приехать сам — нужен волонтёр. Возможна станция-experiment если кто-то сядет за ноутбук."}, {"id": "app-24", "status": "new", "_suggested_category": "workshop", "_suggested_subcategory": null, "submitted_at": "2026-05-03T18:03:08.447Z", "name": "Татьяна Зайцева", "contact": "@ttzz0, +79262928105", "about": "28 лет, работаю на мехмате МГУ. Закончила его в 2021 со средним баллом 5.0, до этого 179 школа, призёр всероссийских олимпиад по математике (2014, 2015) и информатике (2015). \nВ 2023 защитила кандидатскую диссертацию \"Самоподобные замощения и многомерная аппроксимация\" в МИАН, руководитель чл.-корр. РАН В.Ю. Протасов. Занимаюсь темой фрактальных замощений с 2017 года, моя основная научная работа про это, имею 12 публикаций. \nБыла одним из трёх лауреатов всероссийской премии фонда \"Талант и успех\" по математике среди аспирантов (2024). Неоднократно получала награды за лучший постер и доклад. Много занимаюсь частным преподаванием для студентов.", "title": "Фрактал-Ателье: напечатай своё фрактальное замощение", "description": "По науке изучаю семейство фрактальных замощений (тайлингов), сгенерированных аффинными растяжениями с одинаковой линейной частью M и сдвигами d. Такие фракталы порождают замощения, у меня есть их коллекция. \n\nПришедший человек выбирает форму фрактала из предложенных и цветовую гамму. Далее я создаю через софт выбранное замощение и печатаю его на имеющемся термопринтере, либо отправляю электронный файл, если принт не нужен. \nЭто занимает около 10 минут, надо настроить программу под замощение, прописать цвета, подогнать расположение, подождать генерацию и кадрировать для принтера. Также можно на выбор пришедшего распечатать один фрактал или его разбиение (см. ниже на диске примеры). \nПродвинутым посетителям возможен краткий рассказ о том, как были получены такие замощения. \n\nТакже имею различный мерч: фрактальные шарфы, 3д напечатанные twindragon, два брелока на веревке. Их можно положить рядом для изучения. Шарф остался один, допечатаю немного еще до фестиваля. Фото 3д печати есть на диске, там немного. Если на фестивале допускается коммерческая реклама своего мерча и/или продажа на месте, я бы записывала контакты заинтересованных себе и потом бы им заказала в типографии по шарфу и уже после фестиваля индивидуально договаривалась о передаче и платеже. Если нет, то буду просто желающим отдавать полученный файл, из которого они смогут сделать шарф сами при желании. \n\nДиск с фото мерча и тестовых карточек, которые предлагается сделать на фестивале (и выложить как образцы)  https://disk.yandex.ru/d/7XwSTvBVSarBKQ", "visual": "Здесь вроде очевидно: получится персональное красивое замощение, либо в электронном виде, либо в виде мининаклейки", "materials": "Хотелось бы скомпенсировать стоимость бумаги. На озоне есть вариант за 4 тыс рублей (100 листов), который успеет приехать до фестиваля \nhttps://www.ozon.ru/product/xiaomi-fotobumaga-100-list-sht-1736959052/?from_sku=1742556194&oos_search=false.  \nПоскольку времени мало, я уже заказала его, озон пишет, что приедет 13-21 мая. Надеюсь, что так. Если не пригодится, оставлю себе. Если нужно на большее число людей, надо определяться быстро, иначе не успеет приехать.  \nНа крайний случай у меня на руках есть 30 листов. \n\nЕсли есть другие варианты печати (возможно минипринтер у кого-то другого из организаторов), то тоже вариант. \n\nЕсли это затратно, можно ограничиться электронным вариантом замощения, но не так интересно, конечно.", "volunteers": "В целом, справлюсь сама. Но если волонтер будет, тоже можно, настроим, чтобы он мог кадрировать и печатать на принтере (нужен телефон с блютуз и готовностью установить приложение xiaomi). Это чуть разгрузит меня и чуть ускорит процесс, но не так сильно -- больше времени занимает настройка программы. Сама волонтеров не приведу", "source": "От Кроссворда Тьюринга", "format": "Станция", "place": "Стол и 2–4 стула", "indoor_outdoor": "Только в помещении", "topic": "Математика; Искусство", "time": "Могу весь интервал 15:00–20:00", "slot_ok": "Час подходит, но есть нюансы", "bring": "Фотопринтер свой, маленький xiaomi", "links": "CV на личной странице http://approx-lab.math.msu.su/staff/Zaitseva.html \n\nЗапись выступления 2025 г. на соискание премии Шувалова (более популярное изложение про вейвлеты на основе фракталов) https://expert.msu.ru/sh2025, таймкод с 3.46\n\nСсылка на диссертацию https://www.mi-ras.ru/dis/ref23/zaitseva/dis.pdf", "capacity": "До 5", "fractal_link": "Полностью подходит под тему", "special": "Рабочий интернет", "extra": "1) Термопринтер в силу технологии и размеров очень искажает цвета. Если пришедший хочет напечатанный вариант, а не электронный, у меня распечатаны тестовые таблицы цветов на это принтере, можно ориентироваться на них. Но отдельные оттенки на нем получить очень сложно, в целом более тусклая картинка получается, чем на экране.  \n\n2) Поскольку процесс создания медленный, возможна очередь. Но пока ждёт, человек может выбрать фрактал или поизучать мерч. Могу сделать какие-то распечатки с информацией, чтобы можно было занять себя ими. \nИз-за медленности процесса, если станция будет час, то смогу принять совсем малое число людей (ориентировочно около 8). Мне кажется разумным такого рода станцию держать большее число часов."}, {"id": "app-25", "status": "new", "_suggested_category": "art", "_suggested_subcategory": "installation", "submitted_at": "2026-05-04T12:24:43.500Z", "name": "Олеся Гаврилина", "contact": "тг: @olesya_ze", "about": "https://disk.360.yandex.ru/i/nC9194fEhR_U6w", "title": "Порядок", "description": "ссылка на проект на портфолио: https://hsedesign.ru/project/6dbb3a439c584debb34988815ce0d844\nОдин из вариантов экспонирования инсталляции - в дверном проеме, через который могут проходить люди, взаимодействуя с инсталляцией. Или она может быть экспонирована в любом другом месте как неприкосновенный объект.", "visual": "Инсталляция изображает устройство мира через абстрактные текстильные формы, универсальную систему, которой можно описать всё.", "materials": "Работа готова, желательно оплатить транспортировку", "volunteers": "не нужны", "source": "Из телеграм-канала", "format": "Инсталляция", "place": "Уголок для тихой инсталляции", "indoor_outdoor": "Предпочту помещение, можно и на улице", "topic": "Искусство", "time": "Могу весь интервал 15:00–20:00", "links": "https://disk.360.yandex.ru/i/nC9194fEhR_U6w", "fractal_link": "Белые объекты, сшитые из разной ткани, являются фрагментами первичной материи. Они могут напоминать одновременно и космические тела (облака вещества, зарождающиеся планеты, туманности) и микроскопические структуры (клетки, частицы, сгустки энергии). Эта двойственность отсылает к идее фрактальности: и в бесконечно большом, и в бесконечно малом действуют одни и те же законы организации.", "special": "возможность подвесить деревянную рейку", "inst_size": "Отдельный угол ~2×2 м", "inst_duration": "Весь вечер", "author_presence": "Нет, объект справится сам"}, {"id": "app-26", "status": "new", "_suggested_category": "social", "_suggested_subcategory": null, "submitted_at": "2026-05-04T22:29:50.422Z", "name": "Алина Асомния", "contact": "89057937003, alina.asomnia@mail.ru", "about": "Я режиссёр, композитор, артист и междисциплинарный художник, по первому образованию - архитектор.\nСоздаю Театр нового звука.\n\nОбразование:\nРежиссёр - мастерская индвидуальной режиссуры Б.Ю. Юхананова в Электротеатре Станиславский (выпуск 2024)\nАрхитектор - МАрхИ (выпуск 2019)\n\nмузыкой занимаюсь всю жизнь, опыт выступлений - более 100 концертов, есть опыт в интерактивности и иммерсивности, опыт в звукозаписи более 10 лет\n\nБиография - https://alina.asomnia.art/bio", "title": "Точка - ноль.", "description": "Я предлагаю сделать музыкальный спектакль с интерактивной возможностью для зрителей влиять на звук спектакля по произведению Д. Хармса \"Нуль и ноль\" \n\nНа сцене разворачивается музыкальное действие - я, как артист-звукохудожник создаю звуковую среду и вплетаю голосом текст Хармса, в зале - есть некий объект (ноль/круг в том или ином виде), при прикосновении зрителя к которому инициируются определённые звуковые эффекты. Зритель может взаимодействовать с объектом и влиять на звук, может не взаимодействовать и не влиять - спектакль всё равно будет продолжать идти, реагируя не происходящее.\n\nПри этом не предполагается что я стою на сцене столбом:) Движение внутри музыки также будет отдельно осмыслено через контемпорари мышление. Если то будет позволять пространство и действие, люблю периодически смешивать территорию сцены и зала, время от времени выходя к зрителю на прямой контакт.", "visual": "Визуально я хочу сделать акцент именно на ноле, как на основополагающем символе. Помимо возможной проекции с абстрактной видео-графикой так или иначе репрезентирующей нули; физический объект, к которому зритель сможет прикасаться в зале тоже должен повторять этот символ - в зависимости от возможностей, это может быть либо большая скульптура (нужна помощь с материалами, их доставкой и сбором скульптуры на месте), либо нарисованный знак на столе, либо стойка с небольшой кнопкой-нулём, либо дополнительный пол. \n\nНоль в данном случае, не только точка отсчёта или влияния, но символ бесконечного потенциала, объединяющий в себе все возможные числа и смыслы.", "materials": "Исходя из конфигураций помещения и планируемой аудитории нам с вами нужно решить в каком именно виде органичнее всего будет создать интерактивный объект. Он должен располагаться в 1-3 метрах от сцены. Это может быть \n\n1. Скульптура \"ноля\" с ростом /выше роста человека\n2. Пол со знаком ноля (кладем фанеру на пол и красим, пьезы устанавливаем под фанеру)\n3. Тумба-стойка с кнопкой/небольшим предметом\n4. Круглый стол со знаком ноля - пьезы под стол\n\nЭто может быть и несколько столов/предметов - до 8 штук (кол-во свободных входов в звуковой карте), в таком случае каждый из 8 предметов может влиять на звук со своим характером\n\nЛюбому предмету можно додумать и подсветку", "volunteers": "В зависимости от масштабов ссооружения интерактивных объектов. Навскидку 1-2 человека - помочь собрать объекты, раскидать провода. Звуковым подключением я занимаюсь сама полностью с нуля.\nСвоих волонтёров я привезти, к сожалению, не смогу.", "source": "Из телеграм-канала", "format": "Выступление", "place": "Другое", "indoor_outdoor": "Только в помещении", "topic": "Искусство", "time": "Могу весь интервал 15:00–20:00", "bring": "Я привезу все нужные звуковые инструменты и датчики, стойки, микрофоны, провода. От вас нужна звуковая система(колонки с пультом), проектор(при возможности) и помощь с производством интерактивных объектов и материалы на них", "links": "https://alina.asomnia.art/ - общее портфолио\n\nВидео выступлений:\n\n1. музыкально-драматическая работа, построенная на контролируемой алеаторике шумов - прикосновения к офисному столу превращались в звуковой пейзаж, который становился сценическим партнёром и двигал драматургию сюжета https://alina.asomnia.art/progulka\n2. иммерсивный концерт - прикосновение к зрителю, становилось частью концерта https://alina.asomnia.art/tactus\n3. музыкальное короткометражное кино о важности ошибки - https://alina.asomnia.art/reshitelnosti\n4. интерактивная саунд-арт инсталляция язык прикосновений - https://alina.asomnia.art/zvuk-sculpture-yazik\n5. интерактивная саунд-арт инсталляция предмет любви https://alina.asomnia.art/zvuk-sculpture-predmet\n6. музыкальный пластический панкрок спектакль https://alina.asomnia.art/spell\n7. разработка звуковой интерактивной среды для спектакля \"выход\" (актёры прикасались к предметам, прикосновение инициировало нужный звук) https://alina.asomnia.art/zvuk-commerce-vihod", "special": "Что нужно технически: звуковая система (колонки и микшерный пульт для подключения звука) и место-сцена, где они стоят. В идеале проектор, если есть такая возможность, потому что возможный видеоряд позади звукохудожника может вполне себе неплохо поддержать визуально. Хотя, естественно, легко можем обойтись и без проектора.\n\nКак работает интерактивный элемент - в него прячется пьезодатчик(и), которые отправляются мне в звуковую карту проводом jack/jack. Всё остальное я настраиваю у себя в компьютере.\n\nМой сетап - несколько мидиконтроллеров на стойках, микрофон, звуковая карта, ноутбук - двумя jack/jack проводами звук увожу в микшерный пульт на месте.", "duration": "30–45 минут", "source_detail": "увидела пост в каком-то канале с подборками опен-коллов", "extra": "Я могу варьировать форматом в зависимости от ваших возможностей, возьму на себя полное подключение звука (с любыми настройками отстройками), помимо своего выступления. Но что касается строительства привлекающего к себе интерактивного объекта - здесь мне нужна помощь, нет возможности в одиночку сделать его заранее или привезти заблаговременно. При этом объект может быть любым - влияние на звук происходит путем передачи вибраций от удара/прикосновения на пьезодатчик, который передаёт сигнал в мою систему. Также, когда появится понимание в какой именно точке происходит спектакль, какие размеры помещения, сцены, сколько зрителей и т.д. - смогу набросать эскизы объектов. Ну и к тому же ко всем вариантам объектов можно предусмотреть и подсветку - но тут снова будет нужна помочь с пайкой, физически, к сожалению, не смогу осилить и звук настроить и свет спаять. Нужно будет рационально оценить силы, команду и время настройки. \n\nПри невозможности помощи с созданием интерактивных объектов - \"Точка-Ноль\", само собой, может остаться просто музыкальным спектаклем.", "_warning": "Музыкальный спектакль по Хармсу — берём, формат уточняется"}, {"id": "app-27", "status": "new", "_suggested_category": "workshop", "_suggested_subcategory": null, "submitted_at": "2026-05-05T15:10:47.124Z", "name": "Ася", "contact": "89772693213 (лучше тг по этому номеру)", "about": "Работаю в школе, преподаю биологию.", "title": "Фрактальные витражи", "description": "Рисуем специальными красками, скорее всего по гибкому пластику. Получаем прикольное тематическое украшение интерьера", "visual": "Эстетика витражных фракталов", "materials": "В идеале расходники: одноразовые/многоразовые фартуки (совсем в идеале, краска плохо отстирывается), чем-то застелить стол, чтоб мы его не угваздали. \nА так: краски, зубочистки, пластик, кисточки, стаканчики для воды, двусторонний \"наноскотч\", пластиковые доски для разделки/жесткая подложка, карандаши и бумага для набросков", "volunteers": "Зависит от потока людей. Если одновременно 5-7 человек, то могу и в одно лицо)", "source": "Другое", "format": "Станция", "place": "Другое", "indoor_outdoor": "Только в помещении", "topic": "Другое", "time": "Могу весь интервал 15:00–20:00", "slot_ok": "Час не подходит", "bring": "В принципе, могу привезти все", "capacity": "До 5", "fractal_link": "Собственно, рисуем фракталы)", "special": "Доступ к воде (набрать воду, поменять воду и т д.), небольшое пространство для просушки работ, прежде чем их заберут. Да, стульев лучше 6-8, по числу одномоментных участников", "time_constraints": "Пока не уверена про время. Возможно, смогу все время, возможно, только часть((", "source_detail": "ЛШ Лес"}, {"id": "app-28", "status": "new", "_suggested_category": "art", "_suggested_subcategory": "media", "submitted_at": "2026-05-05T21:36:45.083Z", "name": "Владыычкина Анастасия", "contact": "#ERROR!", "about": "фаундер и фронтвумен арт-группы Явь", "title": "Внутренняя спираль", "description": "Серия фрактальных видео, где городская среда разворачивается внутрь самой себя. Минимальное вмешательство превращает реальные пространства в рекурсивные системы. Повторение становится формой напряжения, а движение - иллюзией. Работа исследует границу между документальной реальностью и её искажением.", "visual": "Математика в проекте не добавляется извне - она извлекается из самой среды. Повторяющиеся элементы городской архитектуры (ряды, модули, перспективы) уже содержат в себе принципы рекурсии и самоподобия.\nАнимация лишь делает эти закономерности наблюдаемыми: пространство начинает масштабироваться, замыкаться и воспроизводить себя как фрактальная система. В этот момент визуальное становится математическим - и именно это создаёт эффект, который одновременно воспринимается как эстетический и как структурный.", "materials": "нам потребуется оплата кредитов для генерации видео", "volunteers": "нужно будет установить проектор и запустить видео, в целом можем сделать это самостоятельно", "source": "От других организаторов", "format": "Инсталляция", "place": "Другое", "indoor_outdoor": "Предпочту помещение, можно и на улице", "topic": "Искусство", "time": "Могу весь интервал 15:00–20:00", "bring": "-", "org": "арт-группа Явь", "links": "https://taplink.cc/yav_zone", "fractal_link": "Есть — и она прямая.\n\nРабота опирается на принцип \"самоподобия\": элементы городской среды (ряды гаражей, повторяющиеся модули, перспектива) при анимации начинают воспроизводить сами себя на разных масштабах. Пространство ведёт себя как фрактальная структура - оно не просто повторяется, а разворачивается вглубь, создавая ощущение бесконечности.\n\nФрактальность здесь возникает из реальности, а не накладывается как эффект.", "special": "проектор, также мы предлагаем проецировать это не столько до 20 часов, сколько ночью в клубе", "inst_size": "Большое пространство 4×4 м+", "inst_duration": "Несколько часов", "author_presence": "Нет, объект справится сам"}];
-const FESTIVAL_DATA_FALLBACK = {"_meta": {"version": "v9-interludes", "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.", "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.", "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.", "changes_v4": "Добавлен слой subcategories для music/cinema/art. venues получили поле apollo_label. events music/art получили поле subcategory.", "changes_v5": "Sub-cat music labels берутся из venue.display (Мандельброт/Кантор/Серпинский). music-rap (Влад Горелов) перемещён на courtyard.", "changes_v6": "Кантор и Серпинский поменяны местами: big_bar=Серпинский (большой бар), courtyard=Кантор (двор). Mandelbrot (главная сцена) не тронут. _howto дополнен описанием поля subcategory.", "changes_v7": "Введён массив exhibits для постоянных арт-объектов вне таймлайна (галерея/инсталляции/медиа-арт). Добавлен interlude-слот на главной сцене 17:00-17:30. inst-plato перенесён из events в exhibits как галерея.", "changes": " | v7: исправлена категоризация (Сидько→инсталляция, Андрей→experiment-станция). Добавлены: Зайцева (workshop), Алина (social), Явь подтверждено.", "changes_v8": "mc-theremin → experiment без apollo_slot. media-yav привязан к app-28 (Анастасия Владычкина «Внутренняя спираль»).", "changes_v9": "Добавлены slot-interlude-2 (18:30-19:00) и slot-interlude-3 (20:00-20:30) — потенциальные слоты для короткометражек между лекциями. Интерлюды теперь относятся к cinema-категории."}, "venues": {"library": {"display": "Библиотека Достоевского", "short": "Библиотека", "note": "Чистопрудный 23, малый зал", "lanes": 1}, "main_stage": {"display": "Мандельброт", "short": "Мандельброт", "note": "главная сцена клуба Лахесис", "apollo_label": "главная сцена", "lanes": 1}, "big_bar": {"display": "Серпинский", "short": "Серпинский", "note": "большой бар", "apollo_label": "большой бар", "lanes": 2}, "small_bar": {"display": "Жюлиа", "short": "Жюлиа", "note": "малый бар", "lanes": 1}, "courtyard": {"display": "Кантор", "short": "Кантор", "note": "общий двор", "apollo_label": "двор", "lanes": 1}}, "categories": {"popsci": {"display": "научпоп", "size": "big", "comment": "лекции, выступления, открытые форматы"}, "music": {"display": "музыка", "size": "big", "comment": "сеты, концерты, инструменты"}, "art": {"display": "искусство", "size": "big", "comment": "инсталляции, объекты, проекции"}, "workshop": {"display": "мастерские", "size": "big", "comment": "что-то делать руками, чему-то научиться"}, "experiment": {"display": "эксперименты", "size": "big", "comment": "интерактивные станции, эксперименты, наблюдение"}, "cinema": {"display": "кино", "size": "big", "comment": "короткометражки, видеоарт"}, "social": {"display": "общение", "size": "big", "comment": "коллективные действия: дискуссии, квизы, совместное решение задач, нетворкинг, спид-дейтинг, перформансы, танцпол. Критерий: люди делают что-то вместе, в отличие от лекции, где есть выступающий и слушатели."}}, "time_slots": {"slot-evdokimov": {"fern_address": [3], "start": "14:00", "end": "15:00", "label_for_zoom": "Михаил Евдокимов · 14:00", "tool_label": "Библиотека 1"}, "slot-tarasevich": {"fern_address": [2], "start": "15:00", "end": "16:00", "label_for_zoom": "Григорий Тарасевич · 15:00", "tool_label": "Библиотека 2"}, "slot-gelfand": {"fern_address": [1, 2], "start": "16:00", "end": "17:00", "label_for_zoom": "Михаил Гельфанд · 16:00", "tool_label": "Лекция 1"}, "slot-stations-1": {"fern_address": [1, 3], "start": "16:30", "end": "17:30", "label_for_zoom": "Первый блок · 16:30", "tool_label": "Станции 1"}, "slot-rajgorodski": {"fern_address": [1, 1, 2], "start": "17:30", "end": "18:30", "label_for_zoom": "Андрей Райгородский · 17:30", "tool_label": "Лекция 2"}, "slot-stations-2": {"fern_address": [1, 1, 3], "start": "17:30", "end": "18:30", "label_for_zoom": "Второй блок · 17:30", "tool_label": "Станции 2"}, "slot-skripchenko": {"fern_address": [1, 1, 1, 2], "start": "19:00", "end": "20:00", "label_for_zoom": "Александра Скрипченко · 19:00", "tool_label": "Лекция 3"}, "slot-stations-3": {"fern_address": [1, 1, 1, 3], "start": "18:30", "end": "19:30", "label_for_zoom": "Третий блок · 18:30", "tool_label": "Станции 3"}, "slot-stations-4": {"fern_address": [1, 1, 1, 1, 3], "start": "19:30", "end": "20:30", "label_for_zoom": "Четвёртый блок · 19:30", "tool_label": "Станции 4"}, "slot-music-1": {"fern_address": [1, 1, 1, 1, 1, 2], "start": "22:00", "end": "23:00", "label_for_zoom": "Главная сцена · 22:00", "tool_label": "Музыка 1"}, "slot-music-2": {"fern_address": [1, 1, 1, 1, 1, 1, 2], "start": "23:00", "end": "00:00", "label_for_zoom": "Главная сцена · 23:00", "tool_label": "Музыка 2"}, "slot-music-3": {"fern_address": [1, 1, 1, 1, 1, 1, 1, 2], "start": "00:00", "end": "01:00", "label_for_zoom": "Главная сцена · 00:00", "tool_label": "Музыка 3"}, "slot-music-4": {"fern_address": [1, 1, 1, 1, 1, 1, 1, 1, 2], "start": "01:00", "end": "02:00", "label_for_zoom": "Главная сцена · 01:00", "tool_label": "Музыка 4"}, "slot-music-parallel-1": {"fern_address": [1, 1, 1, 1, 1, 3], "start": "22:00", "end": "23:00", "label_for_zoom": "Малая сцена · 22:00", "tool_label": "Параллель 1"}, "slot-music-parallel-2": {"fern_address": [1, 1, 1, 1, 1, 1, 3], "start": "23:00", "end": "00:00", "label_for_zoom": "Малая сцена · 23:00", "tool_label": "Параллель 2"}, "slot-music-parallel-3": {"fern_address": [1, 1, 1, 1, 1, 1, 1, 3], "start": "00:00", "end": "01:00", "label_for_zoom": "Малая сцена · 00:00", "tool_label": "Параллель 3"}, "slot-music-parallel-4": {"fern_address": [1, 1, 1, 1, 1, 1, 1, 1, 3], "start": "01:00", "end": "02:00", "label_for_zoom": "Малая сцена · 01:00", "tool_label": "Параллель 4"}, "slot-dance": {"fern_address": "tail", "start": "02:00", "end": "04:00", "label_for_zoom": "Танцпол · 02:00", "tool_label": "Танцпол"}, "slot-discussion": {"fern_address": [1, 1, 1, 1, 2], "start": "20:30", "end": "21:30", "label_for_zoom": "Дискуссия · 20:30", "tool_label": "Дискуссия"}, "slot-cinema-1": {"fern_address": [3, 1], "start": "19:00", "end": "20:00", "label_for_zoom": "Кино 1 · 19:00", "tool_label": "Кино 1"}, "slot-cinema-2": {"fern_address": [3, 2], "start": "20:00", "end": "21:00", "label_for_zoom": "Кино 2 · 20:00", "tool_label": "Кино 2"}, "slot-interlude-1": {"fern_address": [1, 1, 4], "start": "17:00", "end": "17:30", "label_for_zoom": "Перебив · 17:00", "tool_label": "Короткометражки 1"}, "slot-interlude-2": {"fern_address": [1, 1, 1, 4], "start": "18:30", "end": "19:00", "label_for_zoom": "Перебив · 18:30", "tool_label": "Короткометражки 2"}, "slot-interlude-3": {"fern_address": [1, 1, 1, 1, 4], "start": "20:00", "end": "20:30", "label_for_zoom": "Перебив · 20:00", "tool_label": "Короткометражки 3"}}, "events": [{"id": "talk-evdokimov", "status": "confirmed", "title": "Задачки «Квантика»", "subtitle": "решаем задачи вместе с залом", "speaker": "Михаил Евдокимов", "speaker_role": "автор задач, популяризатор математики", "category": "social", "apollo_slot": "big-1", "venue": "library", "slot": "slot-evdokimov", "duration_override": null, "description": "Утренний пролог в библиотеке: классные задачи журнала «Квантик», которые решаются всем залом совместно. Можно прийти с детьми — это семейная часть программы.", "team_notes": null}, {"id": "talk-tarasevich", "status": "confirmed", "title": "Научпоп-квиз", "subtitle": "командный квиз", "speaker": "Григорий Тарасевич", "speaker_role": "научный журналист", "category": "social", "apollo_slot": "big-2", "venue": "library", "slot": "slot-tarasevich", "duration_override": null, "description": "Командный квиз на математико-естественнонаучные темы — играют команды зала. Семейная утренняя часть в библиотеке Достоевского.", "team_notes": null}, {"id": "social-rosetka", "status": "tentative", "title": "Нетворкинг", "subtitle": null, "speaker": "Бюро «Розетка»", "speaker_role": "образовательное бюро", "category": "social", "apollo_slot": "big-3", "venue": null, "slot": null, "duration_override": null, "description": "Программа знакомств и совместных активностей. Готовится бюро «Розетка». Время и место уточняются.", "team_notes": null}, {"id": "talk-gelfand", "status": "confirmed", "title": "Иерархия бесконечностей", "subtitle": null, "speaker": "Михаил Гельфанд", "speaker_role": "биоинформатик", "category": "popsci", "apollo_slot": "big-1", "venue": "main_stage", "slot": "slot-gelfand", "duration_override": null, "description": "О генетике, эволюции и о том, как устроена наука.", "team_notes": null}, {"id": "talk-rajgorodski", "status": "confirmed", "title": "Лекция Андрея Райгородского", "subtitle": null, "speaker": "Андрей Райгородский", "speaker_role": "математик, директор ФПМИ МФТИ", "category": "popsci", "apollo_slot": "big-2", "venue": "main_stage", "slot": "slot-rajgorodski", "duration_override": null, "description": "Теория графов, комбинаторика. Тема будет уточнена ближе к фестивалю.", "team_notes": null}, {"id": "talk-skripchenko", "status": "confirmed", "title": "Лекция Александры Скрипченко", "subtitle": null, "speaker": "Александра Скрипченко", "speaker_role": "математик", "category": "popsci", "apollo_slot": "big-3", "venue": "main_stage", "slot": "slot-skripchenko", "duration_override": null, "description": "О том, как простые правила могут породить бесконечно сложную структуру. Динамические системы.", "team_notes": null}, {"id": "puzzle-fractal-3d", "status": "confirmed", "title": "Сделай 3D-фрактал из бумаги", "subtitle": null, "speaker": "Полина Романова", "speaker_role": null, "category": "workshop", "apollo_slot": "big-1", "venue": "big_bar", "slot": "slot-stations-1", "duration_override": null, "description": "Ножницы, лист А4, инструкция. За 5–10 минут — фрактальная модель в руках. Можно собрать дома ещё.", "_source": "app-17", "_source_app": "app-15", "team_notes": null}, {"id": "mc-calligraphy", "status": "confirmed", "title": "Каллиграфия как фрактал", "subtitle": null, "speaker": "Наташа Евдокимова", "speaker_role": null, "category": "workshop", "apollo_slot": "big-3", "venue": "big_bar", "slot": "slot-stations-1", "duration_override": null, "description": "Базовые черты, точки, линии. Из них — иероглифы. Простота порождает сложность через повторение.", "_source": "app-11", "_source_app": "app-9", "team_notes": null}, {"id": "obs-diagnostics", "status": "confirmed", "title": "Эстетика в диагнозах", "subtitle": null, "speaker": "Дария", "speaker_role": null, "category": "experiment", "apollo_slot": "big-1", "venue": "small_bar", "slot": "slot-stations-1", "duration_override": null, "description": "Рисуночные методики, которыми психиатрия выявляет психические расстройства. Самоподобие как клинический инструмент.", "_source": "app-13", "_source_app": "app-11", "team_notes": null}, {"id": "puzzle-engineering-origami", "status": "confirmed", "title": "Инженерное оригами", "subtitle": null, "speaker": "Полина Романова", "speaker_role": null, "category": "workshop", "apollo_slot": "big-2", "venue": "big_bar", "slot": "slot-stations-2", "duration_override": null, "description": "Складные конструкции из бумаги, использующиеся в инженерии — солнечные панели, медицинские стенты. Складывание по математическим правилам.", "_source": "app-18", "_source_app": "app-16", "team_notes": null}, {"id": "mc-tie-dye", "status": "confirmed", "title": "Тай-дай: космические яйца", "subtitle": null, "speaker": "Ольга", "speaker_role": null, "category": "workshop", "apollo_slot": "mid-1", "venue": "courtyard", "slot": "slot-stations-2", "duration_override": null, "description": "Окрашивание тканей с фрактальными разводами. На выходе — узор, никогда не повторяющийся.", "_source": "app-19", "_source_app": "app-17", "team_notes": null}, {"id": "mc-theremin", "status": "confirmed", "title": "Терменвокс: попробовать самому", "subtitle": null, "speaker": "Лора Заиконникова", "speaker_role": null, "category": "experiment", "apollo_slot": null, "venue": "small_bar", "slot": "slot-stations-2", "duration_override": null, "description": "Подойти к инструменту, поиграть руками в воздухе. К Петру Термену готовиться никак не нужно — просто можно попробовать.", "_source": "app-21", "_source_app": "app-19", "team_notes": null}, {"id": "puzzle-graphs-evolution", "status": "confirmed", "title": "Эволюция графов", "subtitle": null, "speaker": "Александр Николаичев", "speaker_role": null, "category": "experiment", "apollo_slot": "big-3", "venue": "small_bar", "slot": "slot-stations-3", "duration_override": null, "description": "Интерактивная демонстрация — как графы растут, ломаются, перестраиваются. Игра с динамикой связей.", "_source": "app-24", "_source_app": "app-22", "team_notes": null}, {"id": "station-3-extra", "status": "placeholder", "title": "Станция 3.4", "subtitle": null, "speaker": null, "speaker_role": null, "category": "experiment", "apollo_slot": "mid-1", "venue": "big_bar", "slot": "slot-stations-3", "duration_override": null, "description": null, "team_notes": null}, {"id": "station-4-1", "status": "placeholder", "title": "Станция 4.1", "subtitle": null, "speaker": null, "speaker_role": null, "category": "experiment", "apollo_slot": "mid-2", "venue": "big_bar", "slot": "slot-stations-4", "duration_override": null, "description": null, "team_notes": null}, {"id": "station-4-2", "status": "placeholder", "title": "Станция 4.2", "subtitle": null, "speaker": null, "speaker_role": null, "category": "workshop", "apollo_slot": "mid-3", "venue": "small_bar", "slot": "slot-stations-4", "duration_override": null, "description": null, "team_notes": null}, {"id": "station-4-4", "status": "placeholder", "title": "Станция 4.4", "subtitle": null, "speaker": null, "speaker_role": null, "category": "experiment", "apollo_slot": "mid-3", "venue": "big_bar", "slot": "slot-stations-4", "duration_override": null, "description": null, "team_notes": null}, {"id": "music-termen", "status": "confirmed", "title": "Сет Петра Термена", "subtitle": "терменвокс", "speaker": "Пётр Термен", "speaker_role": "музыкант, терменвокс", "category": "music", "apollo_slot": "big-1", "venue": "main_stage", "slot": "slot-music-1", "duration_override": null, "description": "Музыкант играет руками в воздухе. Инструмент, которому больше ста лет (его прадед — Лев Термен — изобретатель). Музыка ближе к академической.", "subcategory": "main_stage", "team_notes": null}, {"id": "music-rap", "status": "confirmed", "title": "Научно-технический рэп", "subtitle": null, "speaker": "Влад Горелов", "speaker_role": "музыкант, научно-технический рэп", "category": "music", "apollo_slot": "big-1", "venue": "courtyard", "slot": "slot-music-2", "duration_override": null, "description": "Музыкальная программа переходного интенсива между Терменом и ночной танцевальной частью.", "subcategory": "courtyard", "team_notes": null}, {"id": "music-brinstar", "status": "tentative", "title": "Brinstar", "subtitle": null, "speaker": "Brinstar", "speaker_role": "музыкант", "category": "music", "apollo_slot": "big-3", "venue": "main_stage", "slot": "slot-music-3", "duration_override": null, "description": "Музыкальный сет в ночной части программы. Подробности уточняются.", "subcategory": "main_stage", "team_notes": null}, {"id": "music-spiral-fractal", "status": "tentative", "title": "Spiral Fractal", "subtitle": null, "speaker": "Spiral Fractal", "speaker_role": "музыкант", "category": "music", "apollo_slot": "center", "venue": "main_stage", "slot": "slot-music-4", "duration_override": null, "description": "Музыкальный сет в поздней ночной части. Подробности уточняются.", "subcategory": "main_stage", "team_notes": null}, {"id": "music-parallel-1", "status": "placeholder", "title": "Малая сцена 1", "subtitle": null, "speaker": null, "speaker_role": null, "category": "music", "apollo_slot": "mid-1", "venue": "small_bar", "slot": "slot-music-parallel-1", "duration_override": null, "description": null, "subcategory": "big_bar", "team_notes": null}, {"id": "music-parallel-2", "status": "placeholder", "title": "Малая сцена 2", "subtitle": null, "speaker": null, "speaker_role": null, "category": "music", "apollo_slot": "mid-2", "venue": "small_bar", "slot": "slot-music-parallel-2", "duration_override": null, "description": null, "subcategory": "big_bar", "team_notes": null}, {"id": "music-parallel-3", "status": "placeholder", "title": "Малая сцена 3", "subtitle": null, "speaker": null, "speaker_role": null, "category": "music", "apollo_slot": "mid-3", "venue": "small_bar", "slot": "slot-music-parallel-3", "duration_override": null, "description": null, "subcategory": "big_bar", "team_notes": null}, {"id": "music-parallel-4", "status": "placeholder", "title": "Малая сцена 4", "subtitle": null, "speaker": null, "speaker_role": null, "category": "music", "apollo_slot": "ear-1", "venue": "small_bar", "slot": "slot-music-parallel-4", "duration_override": null, "description": null, "subcategory": "big_bar", "team_notes": null}, {"id": "dance-program", "status": "placeholder", "title": "Танцевальная программа", "subtitle": null, "speaker": null, "speaker_role": null, "category": "music", "apollo_slot": "ear-2", "venue": "main_stage", "slot": "slot-dance", "duration_override": null, "description": "Открытый танцпол, продолжается до закрытия фестиваля.", "subcategory": "main_stage", "team_notes": null}, {"id": "exp-fractal-worlds", "status": "tentative", "title": "Миры фракталов", "speaker": "Андрей", "category": "experiment", "apollo_slot": null, "venue": "courtyard", "slot": "slot-stations-3", "description": "Совместное создание/обсуждение фрактальных миров — ландшафтов, которые переходят друг в друга.", "team_notes": "Андрей предлагает совместное создание чего-то — кандидат на станцию-experiment, не просто проекцию.", "_source_app": "app-5"}, {"id": "mc-fractal-tiles", "status": "confirmed", "title": "Фрактал-Ателье: напечатай свой тайлинг", "speaker": "Татьяна Зайцева", "category": "workshop", "apollo_slot": null, "venue": "courtyard", "slot": "slot-stations-4", "description": "Печать на ткани/бумаге фрактальных замощений — разных тайлингов, сгенерированных аффинными растяжениями.", "team_notes": "Берём 100% — отличная заявка, всё расписано.", "_source_app": "app-24"}, {"id": "social-tochka-nol", "status": "tentative", "title": "Точка-ноль (по Хармсу)", "speaker": "Алина Асомния", "category": "social", "apollo_slot": null, "venue": null, "slot": null, "description": "Музыкальный спектакль с интерактивной возможностью для зрителей влиять на звук.", "team_notes": "Берём, формат и место надо уточнить — хармсовский «Нуль» с участием публики.", "_source_app": "app-26"}], "_howto": {"add_event": "Добавь объект в массив events со всеми полями. Если для события нужен новый временной слот — добавь его в time_slots с fern_address. Не забудь apollo_slot, если событие должно появиться в круге Аполлония.", "rename_venue": "Меняй только поле display в venues, id (main_stage и т.д.) оставляй как есть. Так на сайте обновится отображение, но не сломаются ссылки в events.", "change_status": "При подтверждении события меняй status с placeholder на confirmed и заполни speaker, title, description.", "categories_are_fixed": "Семь категорий зафиксированы: popsci, music, art, workshop, experiment, cinema, social. Новые не добавлять без обсуждения архитектуры — они должны соответствовать кругам Аполлоновой навигации.", "category_choice_rule": "Решающий критерий — что человек делает в этом событии. Слушает выступающего → popsci. Что-то делает руками по инструкции → workshop. Наблюдает интерактивный объект → experiment или art (art если объект — произведение, experiment если объект — наблюдение/опыт). Делает что-то вместе с другими (квиз, дискуссия, спид-дейтинг, танцпол) → social. Когда в одном событии есть и лекция, и совместное действие — выбираем по доминанте. Например, утренний квиз Тарасевича — это social, не popsci, потому что доминанта в командной игре, а не в выступлении ведущего.", "apollo_slot": "Позиция события внутри круга-категории в Аполлонии. Опциональное. Значения: 'big-1', 'big-2', 'big-3' (три крупных), 'mid-1', 'mid-2', 'mid-3' (три средних), 'center' (центр), 'ear-1', 'ear-2', 'ear-3' (три ушка — для переполнения; визуально мельче). Один и тот же slot не должен повторяться внутри одной категории.", "subcategory": "Обязательное поле для events в категориях music/cinema/art — указывает в какой sub-круг Аполлония попадёт событие. Значения: music → main_stage / big_bar / courtyard (соответствует venue id, площадка). cinema → feature / short / animation. art → art / installation / media. Для остальных категорий (popsci, workshop, experiment, social) поле НЕ задаётся.", "file_layout": "Этот файл — единственный источник правды о программе фестиваля. Используется и в index.html (отображение), и в будущей admin-странице (редактирование). Подключается синхронно через <script src=\"festival-data.js\">, после чего в window.FESTIVAL_DATA доступен весь объект.", "rendering_targets": "База кормит ТРИ виджета на index.html: (1) Аполлония (круги категорий с зумом) — берёт events по category + apollo_slot, для music/cinema/art также subcategory; (2) Папоротник-расписание (iframe в секции #schedule) — берёт time_slots с fern_address для построения дерева; (3) Список расписания в правой колонке — берёт events с venue/slot для группировки по интервалам. Все три виджета — read-only визуализации. Редактирование = только в этом файле.", "fern_address": "Поле time_slots[id].fern_address — путь от корня фрактального папоротника. Массив чисел [n1, n2, ...]: каждая цифра 1, 2 или 3 — какой ветви идти на этом шаге (1 — главный ствол, 2 — основная боковая ветвь, 3 — вторичная боковая). Глубина массива = глубина зума. Особое значение \"tail\" для танцевальной программы (хвост папоротника, без конкретного адреса). При добавлении нового слота важно не пересекаться с существующими адресами и располагаться визуально логично по времени.", "venue_resolution": "В коде index.html ВСЕ ссылки на площадки идут через id (main_stage, big_bar, small_bar, courtyard, library), а не через display-имена. Display подтягивается через хелпер resolveVenue(v): принимает id, массив id, или плоскую строку (для сборных описаний типа \"бары и двор\"). Это даёт один источник правды: переименовал площадку в venues[id].display — меняется везде на сайте."}, "subcategories": {"music": {"main_stage": {"slot": "big-1", "label_from_venue": "main_stage"}, "big_bar": {"slot": "big-2", "label_from_venue": "big_bar"}, "courtyard": {"slot": "big-3", "label_from_venue": "courtyard"}}, "cinema": {"feature": {"slot": "big-1", "display": "полный метр"}, "short": {"slot": "big-2", "display": "короткометражки"}, "animation": {"slot": "big-3", "display": "анимация"}}, "art": {"art": {"slot": "big-1", "display": "галерея"}, "installation": {"slot": "big-2", "display": "инсталляции"}, "media": {"slot": "big-3", "display": "медиа-арт"}}}, "exhibits": [{"id": "media-arttech", "kind": "media", "status": "tentative", "title": "ArtTech", "speaker": "группа ArtTech", "description": "Медиа-арт-группа, приглашение в процессе.", "subcategory": "media", "apollo_slot": "big-1", "team_notes": null}, {"id": "media-shchelochi", "kind": "media", "status": "tentative", "title": "Щелочь", "speaker": "группа «Щелочь»", "description": "Медиа-арт-группа, приглашение в процессе.", "subcategory": "media", "apollo_slot": "big-2", "team_notes": null}, {"id": "media-yav", "kind": "media", "status": "confirmed", "title": "Внутренняя спираль", "speaker": "арт-группа Явь · Анастасия Владычкина", "description": "Серия фрактальных видео — городская среда разворачивается внутрь самой себя. Деталь в заявке app-28 от Анастасии Владычкиной (фронтвумен арт-группы Явь).", "subcategory": "media", "apollo_slot": "big-3", "team_notes": "Группа «Явь» подтвердила участие.", "_source_app": "app-28"}, {"id": "inst-tetraquark", "kind": "installation", "status": "tentative", "title": "Очарование тетракварка", "speaker": "Alex Mu", "_source_app": "app-4", "description": "Инсталляция о тетракварках, заявка app-5/6 от Alex Mu — детали в карточке заявки.", "subcategory": "installation", "apollo_slot": "big-1", "team_notes": null}, {"id": "inst-polyhedral-exhibit", "kind": "installation", "status": "tentative", "title": "Полиэдральное цветение", "speaker": "Максимилиан Роганов", "_source_app": "app-12", "description": "Складные многогранники. Деталь в заявке app-14.", "subcategory": "installation", "apollo_slot": "big-2", "team_notes": null}, {"id": "inst-element1", "kind": "installation", "status": "tentative", "title": "Элемент 1", "speaker": "Ира", "_source_app": "app-13", "description": "Инсталляция, заявка app-15 от автора Ира.", "subcategory": "installation", "apollo_slot": "big-3", "team_notes": null}, {"id": "inst-mimesis", "kind": "installation", "status": "tentative", "title": "Мимесис", "speaker": "Евдокия Дергилёва, Ирина Сафонова", "description": "Привязано к заявке app-20 («Объект из серии Детские иллюзии»). Авторы планируют другой объект — Мимесис. Детали — у них.", "subcategory": "installation", "apollo_slot": "mid-1", "_source_app": "app-18", "team_notes": null}, {"id": "art-plato", "kind": "art", "status": "tentative", "title": "Артефакты Плато", "speaker": "Александр Солеев", "_source_app": "app-7", "description": "Мыльные плёнки на проволочных рамках. Минимальные поверхности. Деталь в заявке app-9.", "subcategory": "art", "apollo_slot": "big-1", "team_notes": null}, {"id": "art-fluoro", "kind": "art", "status": "tentative", "title": "Андрей Флюоро", "speaker": "Андрей Флюоро", "description": "Художник, идея от команды. Заявки в OpenCall нет — нужно дозаполнить.", "subcategory": "art", "apollo_slot": "big-2", "team_notes": null}, {"id": "art-string-1", "kind": "art", "status": "tentative", "title": "String Art (художник 1)", "speaker": "(уточнить)", "description": "String Art, первый из двух художников. Идея от команды.", "subcategory": "art", "apollo_slot": "big-3", "team_notes": null}, {"id": "art-string-2", "kind": "art", "status": "tentative", "title": "String Art (художник 2)", "speaker": "(уточнить)", "description": "String Art, второй из двух художников. Идея от команды.", "subcategory": "art", "apollo_slot": "mid-1", "team_notes": null}, {"id": "art-other-spaces", "kind": "art", "status": "tentative", "title": "Свет иных пространств", "speaker": "Пётр Николаев", "description": "Картины. Идея от команды, заявки OpenCall нет.", "subcategory": "art", "apollo_slot": "mid-2", "team_notes": null}, {"id": "inst-squirrel", "status": "tentative", "title": "Squirrel Institute", "speaker": "Антон Сидько", "subcategory": "installation", "apollo_slot": null, "description": "Светящиеся фарфоровые цилиндры — инсталляция из портфолио автора.", "team_notes": "Перенесён со станций — это экспонат, не станция.", "_source_app": "app-3"}]};
+// FESTIVAL_DATA_FALLBACK удалён в итерации 10. При первом открытии без сети программер показывает empty state с warning, а не устаревшие данные v9.
 
 const CFG_KEY = 'festtool-v12-config';
 const STATE_KEY = 'festtool-v12-state';
@@ -1405,33 +1798,22 @@ const VENUE_TECH_NAMES = {
 };
 
 function slotKind(sid) {
-  // Приоритет — slot.type из схемы v17+. Если type есть — маппим в kind напрямую.
-  // Fallback на старую логику по подстроке id (для совместимости со встроенным
-  // FALLBACK v9, где slot.type ещё не было).
+  // Источник правды — slot.type из схемы v17+. Если type не задан — возвращаем
+  // 'lecture' как самый нейтральный fallback.
   const sl = state.data && state.data.time_slots && state.data.time_slots[sid];
-  if (sl && sl.type) {
-    switch (sl.type) {
-      case 'talk':       return sl.venue === 'library' ? 'library' : 'lecture';
-      case 'discussion': return 'discussion';
-      case 'station':    return 'stations';
-      case 'music':      return 'music';
-      case 'music-extra':return 'music-par';
-      case 'dance':      return 'dance';
-      case 'cinema':     return 'cinema';
-      case 'interlude':  return 'interlude';
-      case 'networking': return 'lecture';  // нетворкинг идёт в "open-apps" мир, как лекции
-    }
+  if (!sl || !sl.type) return 'lecture';
+  switch (sl.type) {
+    case 'talk':       return sl.venue === 'library' ? 'library' : 'lecture';
+    case 'discussion': return 'discussion';
+    case 'station':    return 'stations';
+    case 'music':      return 'music';
+    case 'music-extra':return 'music-par';
+    case 'dance':      return 'dance';
+    case 'cinema':     return 'cinema';
+    case 'interlude':  return 'interlude';
+    case 'networking': return 'lecture'; // нетворкинг идёт в «open-apps» мир, как лекции
+    default:           return 'lecture';
   }
-  // Fallback: старая логика по подстроке id (для FALLBACK v9 без slot.type).
-  if (sid.includes('cinema')) return 'cinema';
-  if (sid.includes('library') || sid.includes('evdokimov') || sid.includes('tarasevich')) return 'library';
-  if (sid.includes('discussion')) return 'discussion';
-  if (sid.includes('stations')) return 'stations';
-  if (sid.includes('music-parallel')) return 'music-par';
-  if (sid.includes('music')) return 'music';
-  if (sid.includes('dance')) return 'dance';
-  if (sid.includes('interlude')) return 'interlude';
-  return 'lecture';
 }
 
 // Все слоты видны всегда. Это карта-таймлайн фестиваля, общая для всех вкладок.
@@ -1578,14 +1960,18 @@ function updateSrcBadge() {
   el.classList.toggle('dirty', state.isDirty);
   el.classList.toggle('fallback', state.dataSource === 'fallback' || state.dataSource === 'cached');
   document.getElementById('btn-publish').disabled = !state.isDirty || !CONFIG.ghToken || !CONFIG.ghRepo;
+  // Обновляем title вкладки браузера для удобства когда открыто несколько программеров.
+  const dirtyMark = state.isDirty ? '✎ ' : '';
+  document.title = `${dirtyMark}Программер · ${version || '?'}`;
 }
 
 async function loadFestivalData() {
   const hadCachedData = !!state.data;  // запомним: были ли данные перед попыткой fetch (значит в localStorage)
   if (!CONFIG.baseUrl) {
     if (!hadCachedData) {
-      state.data = JSON.parse(JSON.stringify(FESTIVAL_DATA_FALLBACK));
-      enrichEventsFromSlots(state.data);
+      // Нет ни сети, ни кэша. Не подставляем устаревший fallback —
+      // лучше пустой UI с понятной ошибкой, чем данные v9 которые путают.
+      state.data = { _meta: { version: '?' }, venues: {}, categories: {}, time_slots: {}, events: [], exhibits: [], fern_leaves: [] };
     }
     state.dataSource = hadCachedData ? 'cached' : 'fallback';
     state.dataLoadError = 'CONFIG.baseUrl не задан';
@@ -1615,9 +2001,8 @@ async function loadFestivalData() {
       // Сеть упала, но в localStorage были данные — оставляем их, помечаем как кэш.
       state.dataSource = 'cached';
     } else {
-      // И сети нет, и кэша нет — встроенный fallback.
-      state.data = JSON.parse(JSON.stringify(FESTIVAL_DATA_FALLBACK));
-      enrichEventsFromSlots(state.data);
+      // И сети нет, и кэша нет — пустой UI вместо устаревшего fallback.
+      state.data = { _meta: { version: '?' }, venues: {}, categories: {}, time_slots: {}, events: [], exhibits: [], fern_leaves: [] };
       state.dataSource = 'fallback';
     }
   }
@@ -1963,15 +2348,13 @@ function getTotalMinutes() {
 }
 
 function getAllowedVenues(sid, slot) {
+  // v17+: каждый слот имеет либо allowed_venues (массив для multi-venue блоков),
+  // либо venue (одиночная площадка). Один из двух обязателен.
   if (slot.allowed_venues && slot.allowed_venues.length) return slot.allowed_venues;
-  // v17+: у каждого слота явный venue → это и есть единственная разрешённая площадка.
-  // (Старая логика по kind остаётся как fallback для слотов без venue/allowed_venues.)
   if (slot.venue) return [slot.venue];
-  const kind = slotKind(sid);
-  if (kind === 'library' || kind === 'cinema') return ['library'];
-  if (kind === 'stations') return ['big_bar', 'small_bar', 'courtyard'];
-  if (kind === 'music-par') return ['big_bar', 'small_bar', 'courtyard'];
-  if (kind === 'music' || kind === 'dance' || kind === 'lecture' || kind === 'discussion' || kind === 'interlude') return ['main_stage'];
+  // Слот без явной привязки к площадке — в v22 такого не должно быть. Возвращаем
+  // все площадки чтобы UI не упал, но это сигнал о неполных данных.
+  console.warn('Слот без venue/allowed_venues:', sid);
   return VENUE_ORDER;
 }
 
@@ -2436,6 +2819,28 @@ function renderConflicts() {
     if (['music', 'cinema', 'art'].includes(ev.category) && !ev.subcategory) {
       issues.push(`«${ev.title || ev.id}» — категория ${ev.category} требует subcategory`);
     }
+    // Событие без status — должно быть placeholder/tentative/confirmed
+    if (!ev.status) {
+      issues.push(`«${ev.title || ev.id}» — нет поля status`);
+    }
+  });
+  // Слоты без обязательных полей (схема v17+)
+  Object.entries(state.data.time_slots).forEach(([sid, s]) => {
+    if (!s.type) issues.push(`Слот ${sid} — нет type`);
+    if (!s.category) issues.push(`Слот ${sid} — нет category`);
+    if (!s.venue && !(s.allowed_venues && s.allowed_venues.length)) issues.push(`Слот ${sid} — нет venue/allowed_venues`);
+    if (!s.apollo_slot) issues.push(`Слот ${sid} — нет apollo_slot`);
+    if (!s.label_for_zoom) issues.push(`Слот ${sid} — нет label_for_zoom`);
+  });
+  // Дубли apollo_slot на уровне слотов (внутри одной category)
+  const slotApollo = {};
+  Object.entries(state.data.time_slots).forEach(([sid, s]) => {
+    if (!s.apollo_slot || !s.category) return;
+    const k = s.category + '::' + s.apollo_slot;
+    (slotApollo[k] = slotApollo[k] || []).push(sid);
+  });
+  Object.entries(slotApollo).forEach(([k, list]) => {
+    if (list.length > 1) issues.push(`Slot apollo дубль ${k}: ${list.join(', ')}`);
   });
   // Перегруз lanes
   const byCell = {};
@@ -2455,7 +2860,7 @@ function renderConflicts() {
       issues.push(`${VENUE_TECH_NAMES[vid]} в слоте ${k.split('::')[0]} — ${evs.length} событий, но мест ${lanes}`);
     }
   });
-  // Apollo дубли
+  // Apollo дубли на event-уровне
   const dup = {};
   state.data.events.forEach(ev => {
     if (!ev.apollo_slot) return;
@@ -2477,7 +2882,9 @@ function renderConflicts() {
 }
 
 function renderUnassigned() {
-  const u = state.data.events.filter(e => !e.slot || !e.venue);
+  // Фильтруем по активной вкладке (eventIsRelevant) — иначе на КИНО видны все
+  // короткометражки + музыка + всё подряд, что нерелевантно.
+  const u = state.data.events.filter(e => (!e.slot || !e.venue) && eventIsRelevant(e));
   const box = document.getElementById('unassigned');
   if (u.length === 0) { box.style.display = 'none'; return; }
   box.style.display = 'block';
@@ -3379,9 +3786,18 @@ function openEventModal(evId) {
   slotSelect.value = ev.slot || '';
   updateSlotInfoBlock();
 
-  // _source_app — read-only
+  // _source_app — read-only ссылка на строку Google Sheets с заявками
   const srcBlock = document.getElementById('ev-source-app-block');
-  srcBlock.textContent = ev._source_app ? `Из заявки ${ev._source_app}` : '';
+  if (ev._source_app) {
+    const url = getApplicationUrl(ev._source_app);
+    if (url) {
+      srcBlock.innerHTML = `Из заявки <a href="${url}" target="_blank" rel="noopener" style="color:#5d8b6e;text-decoration:underline">${esc(ev._source_app)} ↗</a>`;
+    } else {
+      srcBlock.textContent = `Из заявки ${ev._source_app}`;
+    }
+  } else {
+    srcBlock.textContent = '';
+  }
 
   renderLinksEditor(ev.links || [], 'ev-links-editor');
   document.getElementById('event-modal').classList.add('active');
@@ -3469,6 +3885,953 @@ function deleteEvent() {
 // ============================================================
 // SLOT EDIT MODAL — детальный редактор одного слота
 // ============================================================
+
+// Алгоритм соответствия слот → лист, точно как в buildSpotsFromData в index.html.
+// Лист определяется по слоту так:
+//   1. Если у слота есть явный slot.leaf — возвращаем его (override)
+//   2. Иначе по slot.type определяется сторона: headline (talk/discussion + music на
+//      main_stage), tail (dance), side (всё остальное)
+//   3. Из листьев этой стороны берётся тот, чьё временное окно [start, end) содержит
+//      slot.start (включительно с лева, исключительно справа)
+//
+// Возвращает один лист (или null) — НЕ массив. Длина слота для соответствия не важна:
+// слот привязан к листу по времени НАЧАЛА. Это позволяет иметь, например, кино 19:30–21:00
+// в leaf-side-4 (19:30–20:30) — slot.start=19:30 попадает в окно [19:30, 20:30).
+function findLeafForSlotInProgrammer(sl) {
+  if (!sl || !sl.start || !state.data.fern_leaves) return null;
+  const FEST_START = 14 * 60;
+  const festMin = t => {
+    const [h, m] = t.split(':').map(Number);
+    let hh = h < 12 ? h + 24 : h; // утро после полуночи — на следующий день
+    return (hh - 14) * 60 + m;
+  };
+  if (sl.leaf) {
+    return state.data.fern_leaves.find(l => l.id === sl.leaf) || null;
+  }
+  const sideOf = (s) => {
+    if (s.type === 'talk' || s.type === 'discussion') return 'headline';
+    if (s.type === 'dance') return 'tail';
+    if (s.type === 'music' && s.venue === 'main_stage') return 'headline';
+    return 'side';
+  };
+  const wantSide = sideOf(sl);
+  const fm = festMin(sl.start);
+  return state.data.fern_leaves.find(l =>
+    l.side === wantSide && fm >= festMin(l.start) && fm < festMin(l.end)
+  ) || null;
+}
+
+function renderFernCoverageBlock(slotStart, slotEnd, currentLeafOverride, slotType, slotVenue) {
+  const block = document.getElementById('se-fern-coverage');
+  if (!block) return;
+  if (!slotStart) { block.innerHTML = '<em style="color:#888">Укажи время начала, чтобы увидеть лист.</em>'; return; }
+  const fakeSlot = { start: slotStart, end: slotEnd, type: slotType, venue: slotVenue, leaf: currentLeafOverride };
+  const leaf = findLeafForSlotInProgrammer(fakeSlot);
+  if (!leaf) {
+    const sideName = (() => {
+      if (slotType === 'talk' || slotType === 'discussion') return 'headline';
+      if (slotType === 'dance') return 'tail';
+      if (slotType === 'music' && slotVenue === 'main_stage') return 'headline';
+      return 'side';
+    })();
+    block.innerHTML = `<span style="color:#c25040">⚠ Не найден лист стороны «${esc(sideName)}», чей временной интервал содержит ${esc(slotStart)}. Слот не отобразится во фрактале.</span>`;
+    return;
+  }
+  const isOverride = currentLeafOverride === leaf.id;
+  block.innerHTML = `<div>${isOverride ? '★ ' : '→ '}<code>${esc(leaf.id)}</code> (${esc(leaf.start)}–${esc(leaf.end)}, ${esc(leaf.side)})${isOverride ? ' — выбран явно' : ''}</div>
+    <div style="color:#888;font-size:11px;margin-top:6px">Сторона выбрана по типу слота «${esc(slotType || '—')}»${slotVenue ? ' и площадке «' + esc(slotVenue) + '»' : ''}. Лист найден по slot.start = ${esc(slotStart)}.</div>`;
+}
+
+// ============================================================
+// LEAF EDIT MODAL — минимальный редактор листа фрактала.
+// Правим только start/end. id/side/address не трогаем — они привязаны к SVG.
+// ============================================================
+function openLeafEditModal(leafId) {
+  const leaf = (state.data.fern_leaves || []).find(l => l.id === leafId);
+  if (!leaf) return;
+  document.getElementById('leaf-edit-modal-title').textContent = `Лист · ${leaf.id}`;
+  document.getElementById('le-id').value = leaf.id;
+  document.getElementById('le-id-display').value = leaf.id;
+  document.getElementById('le-side-display').value = leaf.side || '';
+  document.getElementById('le-address-display').value = Array.isArray(leaf.address) ? leaf.address.join(',') : (leaf.address || '');
+  document.getElementById('le-start').value = leaf.start || '';
+  document.getElementById('le-end').value = leaf.end || '';
+
+  // Какие слоты сейчас в этом листе — для понимания последствий правки
+  const slotsHere = Object.entries(state.data.time_slots)
+    .filter(([sid, s]) => {
+      const found = findLeafForSlotInProgrammer(s);
+      return found && found.id === leafId;
+    });
+  const block = document.getElementById('le-affected-slots');
+  if (slotsHere.length === 0) {
+    block.innerHTML = '<em style="color:#888">Сейчас в этом листе нет слотов.</em>';
+  } else {
+    block.innerHTML = '<strong>Сейчас в листе:</strong><br>' + slotsHere.map(([sid, s]) =>
+      `<div style="padding:2px 0">• <code>${esc(sid)}</code> · ${esc(s.start)}–${esc(s.end || '?')} · ${esc(s.tool_label || '—')}</div>`
+    ).join('') + '<div style="margin-top:6px;color:#888;font-size:11px">Если сдвинешь время листа — слоты могут перейти в другой лист (или выпасть).</div>';
+  }
+
+  document.getElementById('leaf-edit-modal').classList.add('active');
+}
+function closeLeafEditModal() {
+  document.getElementById('leaf-edit-modal').classList.remove('active');
+}
+function saveLeafEdit() {
+  const leafId = document.getElementById('le-id').value;
+  const leaf = (state.data.fern_leaves || []).find(l => l.id === leafId);
+  if (!leaf) return;
+  const newStart = document.getElementById('le-start').value;
+  const newEnd = document.getElementById('le-end').value;
+  if (!newStart || !newEnd) { alert('Время начала и конца обязательны.'); return; }
+  leaf.start = newStart;
+  leaf.end = newEnd;
+  closeLeafEditModal();
+  markDirty(); rerenderAll(); persistState();
+  // Если открыт structure view — перерисуем его с актуальной картиной
+  if (document.getElementById('structure-modal').classList.contains('active')) {
+    renderStructureAll();
+  }
+}
+
+// ============================================================
+// PRINT VIEW — расписание для печати/Telegram
+// ============================================================
+//
+// Чёрно-белая компактная вёрстка. Две страницы по A4 portrait:
+//   Страница 1 — день (14:00–22:00)
+//   Страница 2 — ночь (22:00–04:00) + список постоянных экспонатов
+//
+// На экране — preview во весь viewport. Кнопка «Печать / Сохранить PDF»
+// запускает window.print(); печатные стили скрывают тулбар и интерфейс
+// программера, оставляя только канвас.
+// ============================================================
+function openPrintView() {
+  renderPrintCanvas();
+  document.getElementById('print-modal').classList.add('active');
+}
+function closePrintView() {
+  document.getElementById('print-modal').classList.remove('active');
+}
+
+// Время → минут от начала фестиваля (используется только локально)
+function _printFestMin(t) {
+  if (!t) return 0;
+  const [h, m] = t.split(':').map(Number);
+  let hh = h < 12 ? h + 24 : h;
+  return (hh - 14) * 60 + (m || 0);
+}
+
+// Печатная страница: одна для дня, одна для ночи. fromMin/toMin — границы
+// в festMin относительно 14:00.
+function _renderPrintScheduleSection(title, fromMin, toMin) {
+  const venues = state.data.venues || {};
+  // Порядок площадок: main_stage, library, big_bar, small_bar, courtyard.
+  // Если в данных есть ещё — добавим в конец.
+  const venueOrder = ['main_stage', 'library', 'big_bar', 'small_bar', 'courtyard'];
+  const allVenueIds = Object.keys(venues);
+  const ordered = venueOrder.filter(v => allVenueIds.includes(v))
+    .concat(allVenueIds.filter(v => !venueOrder.includes(v)));
+
+  // Уникальные временные интервалы внутри fromMin..toMin
+  const slots = Object.entries(state.data.time_slots).filter(([sid, s]) => {
+    if (!s.start) return false;
+    const m = _printFestMin(s.start);
+    return m >= fromMin && m < toMin;
+  });
+  // Группировка по start-end (одно временное окно может содержать несколько слотов на разных venues)
+  const timeGroups = {};
+  slots.forEach(([sid, s]) => {
+    const key = s.start + '–' + (s.end || '?');
+    (timeGroups[key] = timeGroups[key] || []).push({ sid, s });
+  });
+  const sortedTimes = Object.keys(timeGroups).sort((a, b) => {
+    const [as] = a.split('–'); const [bs] = b.split('–');
+    return _printFestMin(as) - _printFestMin(bs);
+  });
+
+  let html = `<div class="print-page">
+    <h2 class="print-section-title">${esc(title)}</h2>
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th class="print-time-col">Время</th>`;
+  ordered.forEach(vid => {
+    html += `<th class="print-venue-col">${esc(venues[vid].display || vid)}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
+
+  sortedTimes.forEach(timeKey => {
+    const slotsHere = timeGroups[timeKey];
+    html += `<tr><td class="ptime">${esc(timeKey)}</td>`;
+    ordered.forEach(vid => {
+      const slotsInVenue = slotsHere.filter(({ s }) => {
+        if (s.venue) return s.venue === vid;
+        if (s.allowed_venues) return s.allowed_venues.includes(vid);
+        return false;
+      });
+      html += `<td>`;
+      slotsInVenue.forEach(({ sid, s }) => {
+        const events = state.data.events.filter(e => e.slot === sid);
+        if (events.length === 0) {
+          // Пустой слот: показываем только tool_label
+          if (s.tool_label) {
+            html += `<div class="pslot-label">${esc(s.tool_label)}</div>
+              <div class="pevent-pending">— открыто —</div>`;
+          }
+        } else {
+          events.forEach(ev => {
+            const isTBA = ev.title === 'TBA' || !ev.title;
+            html += `<div class="pevent-title">${isTBA ? '<span class="pevent-pending">TBA</span>' : esc(ev.title)}</div>`;
+            if (ev.speaker) html += `<div class="pevent-speaker">${esc(ev.speaker)}</div>`;
+          });
+        }
+      });
+      html += `</td>`;
+    });
+    html += `</tr>`;
+  });
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+function _renderPrintExhibits() {
+  const ex = state.data.exhibits || [];
+  if (ex.length === 0) return '';
+  let html = `<div class="print-page">
+    <h2 class="print-section-title">Постоянные экспонаты (весь вечер)</h2>
+    <div class="print-exhibits-list">`;
+  ex.forEach(e => {
+    html += `<div class="print-exhibit-item">
+      <span class="pexh-title">${esc(e.title || '?')}</span>
+      ${e.speaker ? `<span class="pexh-speaker"> — ${esc(e.speaker)}</span>` : ''}
+    </div>`;
+  });
+  html += `</div></div>`;
+  return html;
+}
+
+function renderPrintCanvas() {
+  const canvas = document.getElementById('print-canvas');
+  if (!canvas) return;
+  const meta = (state.data._meta) || {};
+  // Заголовок (одна обёртка-страница, чтобы header не дублировался при печати)
+  let html = `<div class="print-page" style="page-break-after:auto">
+    <div class="print-fest-header">
+      <h1 class="print-fest-title">Фрактальная Одиссея</h1>
+      <p class="print-fest-subtitle">Matema-фест · 23 мая 2026 · Чистые Пруды</p>
+    </div>
+    <div style="font-size:11px;color:#666;text-align:center">Версия данных: ${esc(meta.version || '?')}</div>
+  </div>`;
+  // День: 14:00 → 22:00 = festMin 0..480
+  html += _renderPrintScheduleSection('День · 14:00 — 22:00', 0, 480);
+  // Ночь: 22:00 → 04:00 = festMin 480..840
+  html += _renderPrintScheduleSection('Вечер и ночь · 22:00 — 04:00', 480, 840);
+  // Экспонаты
+  html += _renderPrintExhibits();
+  canvas.innerHTML = html;
+}
+
+
+// ============================================================
+// Связь с Google Sheets заявок
+// ============================================================
+// Каждое event/exhibit может иметь поле _source_app со значением "app-N",
+// где N — порядковый номер заявки в открытой таблице (без учёта header).
+// Так как N — это просто позиция строки, в URL передаём range=A{N+1}
+// (учитывая что header занимает строку 1).
+const APPLICATIONS_SHEET_ID = '1D8ogWQnBsLLf0FqXOCwcZxndraWxEXmxRzbgtktxJnk';
+function getApplicationUrl(sourceApp) {
+  if (!sourceApp) return null;
+  const m = String(sourceApp).match(/^app-(\d+)$/);
+  if (!m) return null;
+  const rowNum = parseInt(m[1], 10) + 1;
+  return `https://docs.google.com/spreadsheets/d/${APPLICATIONS_SHEET_ID}/edit#gid=0&range=A${rowNum}`;
+}
+
+
+// Шесть категорий из data.categories (art не используется на слотах — это exhibits).
+// Тёплая охристая палитра в стиле сайта.
+const SLOT_CATEGORY_COLORS = {
+  'popsci':     '#8e5a2d', // тёмно-янтарный — научпоп
+  'experiment': '#c4a847', // золотистая охра — эксперименты
+  'workshop':   '#a06b3d', // светло-коричневый — мастерские
+  'music':      '#a04d3a', // глубокий красный — музыка
+  'cinema':     '#4a3055', // баклажан — кино
+  'social':     '#5d8b6e', // приглушённый зелёный — общение
+};
+function slotCategoryColor(s) {
+  if (!s || !s.category) return '#5a3f1f';
+  return SLOT_CATEGORY_COLORS[s.category] || '#5a3f1f';
+}
+
+// ============================================================
+// STRUCTURE VIEW — единая большая панель: список слотов | папоротник | детали.
+// ============================================================
+//
+// Архитектура: одна модалка во весь экран, три колонки.
+//   Левая: слоты, сгруппированные по листу, в порядке времени.
+//   Центр: SVG-карта папоротника (схематичная — это карта, не копия фрактала
+//          с index.html, чтобы не дублировать логику Барнсли). Листья — формы,
+//          внутри листа — кружки-точки слотов.
+//   Правая: параметры выбранной сущности (лист или слот) с inline-правкой и
+//           кнопкой «Полный редактор» (открывает существующие модалки).
+//
+// Реактивность: одна общая `_structureSelected` хранит что выбрано. Любая
+// правка вызывает renderStructureAll() — перерисовываются все три колонки.
+// ============================================================
+let _structureSelected = null; // { type: 'leaf'|'slot', id }
+
+function openStructureView() {
+  _structureSelected = null;
+  renderStructureAll();
+  document.getElementById('structure-modal').classList.add('active');
+}
+function closeStructureView() {
+  document.getElementById('structure-modal').classList.remove('active');
+  _structureSelected = null;
+  hideStructureTooltip();
+}
+
+function renderStructureAll() {
+  renderStructureLeftPanel();
+  renderStructureFernSVG();
+  renderStructureRightPanel();
+  renderStructureLegend();
+}
+
+function renderStructureLegend() {
+  const lg = document.getElementById('structure-legend');
+  if (!lg) return;
+  // Показываем только те категории которые реально присутствуют в слотах
+  const presentCats = new Set();
+  Object.values(state.data.time_slots).forEach(s => { if (s.category) presentCats.add(s.category); });
+  const order = ['popsci', 'experiment', 'workshop', 'music', 'cinema', 'social'];
+  let html = '';
+  order.forEach(c => {
+    if (!presentCats.has(c)) return;
+    const display = (state.data.categories[c] && state.data.categories[c].display) || c;
+    html += `<div class="structure-legend-item">
+      <div class="structure-legend-dot" style="background:${SLOT_CATEGORY_COLORS[c]}"></div>
+      <span>${esc(display)}</span>
+    </div>`;
+  });
+  // ★ — это override slot.leaf
+  html += `<div class="structure-legend-item" style="margin-left:8px">
+    <div class="structure-legend-dot" style="background:transparent;border:2px solid #b8763d"></div>
+    <span>★ зафиксирован вручную (slot.leaf)</span>
+  </div>`;
+  lg.innerHTML = html;
+}
+
+// ----- Утилиты времени -----
+function fest_min(t) {
+  if (!t) return 0;
+  const [h, m] = t.split(':').map(Number);
+  let hh = h < 12 ? h + 24 : h;
+  return (hh - 14) * 60 + (m || 0);
+}
+
+// ----- Левая колонка: список слотов сгруппированный по листам -----
+function renderStructureLeftPanel() {
+  const left = document.getElementById('structure-left');
+  const leaves = [...(state.data.fern_leaves || [])].sort((a, b) => fest_min(a.start) - fest_min(b.start));
+  const slots = Object.entries(state.data.time_slots);
+
+  // Группируем слоты по их листу
+  const groups = {}; // leafId -> [{sid, s}]
+  const unplaced = [];
+  slots.forEach(([sid, s]) => {
+    if (!s.start) return;
+    const leaf = findLeafForSlotInProgrammer(s);
+    if (!leaf) unplaced.push({ sid, s });
+    else (groups[leaf.id] = groups[leaf.id] || []).push({ sid, s });
+  });
+  Object.values(groups).forEach(arr => arr.sort((a, b) => fest_min(a.s.start) - fest_min(b.s.start)));
+
+  let html = '';
+  leaves.forEach(l => {
+    const items = groups[l.id] || [];
+    if (items.length === 0) return; // пустые листы в левой панели не показываем
+    html += `<div class="structure-group">
+      <div class="structure-group-title">${esc(l.start)}–${esc(l.end)} · ${esc(l.id)}</div>`;
+    items.forEach(({ sid, s }) => {
+      const sel = (_structureSelected && _structureSelected.type === 'slot' && _structureSelected.id === sid) ? ' selected' : '';
+      const dotColor = slotCategoryColor(s);
+      html += `<div class="structure-slot-row${sel}" data-slot="${esc(sid)}">
+        <div class="marker" style="background:${dotColor}"></div>
+        <div class="time">${esc(s.start)}–${esc(s.end || '?')}</div>
+        <div class="label">${esc(s.tool_label || sid)}</div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  if (unplaced.length) {
+    html += `<div class="structure-group" style="border-top:1px solid #c25040;padding-top:10px">
+      <div class="structure-group-title" style="color:#c25040">⚠ Без листа</div>`;
+    unplaced.forEach(({ sid, s }) => {
+      const sel = (_structureSelected && _structureSelected.type === 'slot' && _structureSelected.id === sid) ? ' selected' : '';
+      const dotColor = slotCategoryColor(s);
+      html += `<div class="structure-slot-row${sel}" data-slot="${esc(sid)}">
+        <div class="marker" style="background:${dotColor}"></div>
+        <div class="time">${esc(s.start)}–${esc(s.end || '?')}</div>
+        <div class="label">${esc(s.tool_label || sid)}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  left.innerHTML = html;
+  left.querySelectorAll('.structure-slot-row').forEach(row => {
+    row.addEventListener('click', () => selectStructure('slot', row.dataset.slot));
+    row.addEventListener('mouseenter', () => highlightSlotEverywhere(row.dataset.slot, true));
+    row.addEventListener('mouseleave', () => highlightSlotEverywhere(row.dataset.slot, false));
+  });
+}
+
+// Подсветка одного и того же слота во всех трёх колонках одновременно.
+// Вызывается на mouseenter/mouseleave и в SVG, и в левом списке.
+function highlightSlotEverywhere(sid, on) {
+  if (!sid) return;
+  const cls = 'related-hover';
+  document.querySelectorAll(`.structure-slot-row[data-slot="${CSS.escape(sid)}"]`).forEach(el => {
+    el.classList.toggle(cls, on);
+  });
+  document.querySelectorAll(`.fern-slot-dot[data-slot="${CSS.escape(sid)}"]`).forEach(el => {
+    el.classList.toggle(cls, on);
+  });
+}
+
+// ----- Центр: SVG-карта папоротника -----
+//
+// Layout SVG: вертикальная ось времени.
+//   Время идёт сверху вниз (раньше — выше, позже — ниже).
+//   Слева — листья side (включая утренний side-morning).
+//   Справа — листья headline (включая music-headline-*).
+//   Снизу — tail (наконечник, по центру).
+// Координаты пропорциональны минутам — длинные листья визуально выше коротких,
+// что даёт ощущение временно́й диаграммы.
+function getStructureFernLayout() {
+  const positions = {};
+  const leaves = state.data.fern_leaves || [];
+  if (leaves.length === 0) return positions;
+
+  // Диапазон фестиваля: считаем по самим данным
+  const allTimes = leaves.flatMap(l => [fest_min(l.start), fest_min(l.end)]);
+  const tMin = Math.min(...allTimes);
+  const tMax = Math.max(...allTimes);
+  const total = Math.max(tMax - tMin, 1);
+
+  const VB_TOP = 30;     // отступ сверху
+  const VB_BOTTOM = 740; // место для tail-наконечника снизу
+  const usableH = VB_BOTTOM - VB_TOP;
+  const stemX = 300;     // x-координата центрального стебля
+  const sideLeft = 80;   // левая граница side-блоков
+  const sideRight = stemX - 16;
+  const headlineLeft = stemX + 16;
+  const headlineRight = 530;
+
+  const yOf = t => VB_TOP + ((fest_min(t) - tMin) / total) * usableH;
+
+  leaves.forEach(l => {
+    if (l.side === 'tail') {
+      // Хвост рисуется отдельно — внизу как наконечник
+      positions[l.id] = { isTail: true, yTop: yOf(l.start), yBot: yOf(l.end) };
+      return;
+    }
+    const yTop = yOf(l.start);
+    const yBot = yOf(l.end);
+    const isHeadline = l.side === 'headline';
+    positions[l.id] = {
+      x: isHeadline ? headlineLeft : sideLeft,
+      y: yTop,
+      w: isHeadline ? (headlineRight - headlineLeft) : (sideRight - sideLeft),
+      h: Math.max(yBot - yTop - 2, 22),
+      side: l.side
+    };
+  });
+  return positions;
+}
+
+function renderStructureFernSVG() {
+  const svg = document.getElementById('structure-fern-svg');
+  const leaves = state.data.fern_leaves || [];
+  const positions = getStructureFernLayout();
+  const slots = Object.entries(state.data.time_slots);
+
+  const leafToSlots = {};
+  slots.forEach(([sid, s]) => {
+    if (!s.start) return;
+    const leaf = findLeafForSlotInProgrammer(s);
+    if (leaf) (leafToSlots[leaf.id] = leafToSlots[leaf.id] || []).push({ sid, s });
+  });
+
+  // Метки времени слева (14:00, 16:00, ... 04:00)
+  const allTimes = leaves.flatMap(l => [fest_min(l.start), fest_min(l.end)]);
+  const tMin = Math.min(...allTimes);
+  const tMax = Math.max(...allTimes);
+  const total = Math.max(tMax - tMin, 1);
+  const VB_TOP = 30, VB_BOTTOM = 740;
+  const usableH = VB_BOTTOM - VB_TOP;
+  let svgContent = '';
+  // Часовые риски (каждые 2 часа)
+  for (let m = Math.ceil(tMin / 120) * 120; m <= tMax; m += 120) {
+    const y = VB_TOP + ((m - tMin) / total) * usableH;
+    const totalMinFromMidnight = (m + 14*60) % (24*60);
+    const hh = String(Math.floor(totalMinFromMidnight / 60)).padStart(2, '0');
+    const mm = String(totalMinFromMidnight % 60).padStart(2, '0');
+    svgContent += `<line x1="20" y1="${y}" x2="580" y2="${y}" stroke="#000" stroke-opacity="0.05" stroke-width="1"/>
+      <text x="14" y="${y - 2}" font-family="var(--font-mono)" font-size="9" fill="#999">${hh}:${mm}</text>`;
+  }
+
+  // Стебель
+  svgContent += `<line x1="300" y1="20" x2="300" y2="${VB_BOTTOM + 6}" stroke="#5d4d3a" stroke-width="1.5" opacity="0.5"/>`;
+  // Подписи сторон
+  svgContent += `<text x="180" y="20" font-family="var(--font-mono)" font-size="9" fill="#888" text-anchor="middle" letter-spacing="0.1em">SIDE (НЕ ХЕДЛАЙНЕРЫ)</text>`;
+  svgContent += `<text x="430" y="20" font-family="var(--font-mono)" font-size="9" fill="#888" text-anchor="middle" letter-spacing="0.1em">HEADLINE</text>`;
+
+  // Листья
+  leaves.forEach(l => {
+    const p = positions[l.id];
+    if (!p) return;
+    if (p.isTail) {
+      // Хвост — треугольник-наконечник
+      const cx = 300, yTop = p.yTop, yBot = p.yBot + 30;
+      const isSel = (_structureSelected && _structureSelected.type === 'leaf' && _structureSelected.id === l.id);
+      svgContent += `<g data-leaf="${esc(l.id)}">
+        <polygon class="fern-leaf-area tail${isSel ? ' selected' : ''}"
+                 points="${cx-50},${yTop} ${cx+50},${yTop} ${cx},${yBot}"
+                 data-leaf-area="${esc(l.id)}"/>
+        <text class="fern-leaf-label" x="${cx}" y="${yTop + 14}" text-anchor="middle">${esc(l.id.replace('leaf-', ''))}</text>
+        <text class="fern-leaf-time" x="${cx}" y="${yTop + 24}" text-anchor="middle">${esc(l.start)}–${esc(l.end)}</text>
+      </g>`;
+      return;
+    }
+    const sideClass = l.side === 'headline' ? ' headline' : '';
+    const isSel = (_structureSelected && _structureSelected.type === 'leaf' && _structureSelected.id === l.id);
+    svgContent += `<g data-leaf="${esc(l.id)}">
+      <rect class="fern-leaf-area${sideClass}${isSel ? ' selected' : ''}"
+            x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="4"
+            data-leaf-area="${esc(l.id)}"/>
+      <text class="fern-leaf-label" x="${p.x + 6}" y="${p.y + 11}">${esc(l.id.replace('leaf-', ''))}</text>
+      <text class="fern-leaf-time" x="${p.x + 6}" y="${p.y + 21}">${esc(l.start)}–${esc(l.end)}</text>
+    </g>`;
+  });
+
+  // Точки-слоты внутри листьев
+  leaves.forEach(l => {
+    const p = positions[l.id];
+    if (!p) return;
+    const slotsHere = leafToSlots[l.id] || [];
+    if (slotsHere.length === 0) return;
+
+    if (p.isTail) {
+      // Для хвоста — точки в ряд вдоль верхнего края треугольника
+      const cx = 300, y = p.yTop + 18;
+      slotsHere.forEach((item, idx) => {
+        const xx = cx - (slotsHere.length - 1) * 6 + idx * 12;
+        const isSel = (_structureSelected && _structureSelected.type === 'slot' && _structureSelected.id === item.sid);
+        const isOverride = !!item.s.leaf;
+        const fillColor = slotCategoryColor(item.s);
+        svgContent += `<circle class="fern-slot-dot${isSel ? ' selected' : ''}"
+          cx="${xx}" cy="${y}" r="4" fill="${fillColor}"
+          data-slot="${esc(item.sid)}"
+          ${isOverride ? 'stroke="#b8763d" stroke-width="2"' : ''}/>`;
+      });
+      return;
+    }
+    // Раскладываем точки сеткой — N точек в макс-2 ряда после label
+    const cols = Math.min(slotsHere.length, 4);
+    const rows = Math.ceil(slotsHere.length / cols);
+    const cellW = p.w / (cols + 1);
+    const labelReserve = 26;
+    const usableHeight = p.h - labelReserve;
+    const cellH = usableHeight / Math.max(rows, 1);
+    slotsHere.forEach((item, idx) => {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      const cx = p.x + cellW * (col + 1);
+      const cy = p.y + labelReserve + cellH * (row + 0.5);
+      const isSel = (_structureSelected && _structureSelected.type === 'slot' && _structureSelected.id === item.sid);
+      const isOverride = !!item.s.leaf;
+      const fillColor = slotCategoryColor(item.s);
+      svgContent += `<circle class="fern-slot-dot${isSel ? ' selected' : ''}"
+        cx="${cx}" cy="${cy}" r="4" fill="${fillColor}"
+        data-slot="${esc(item.sid)}"
+        ${isOverride ? 'stroke="#b8763d" stroke-width="2"' : ''}/>`;
+    });
+  });
+
+  svg.innerHTML = svgContent;
+
+  // Слушатели — листья
+  svg.querySelectorAll('[data-leaf-area]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      selectStructure('leaf', el.dataset.leafArea);
+    });
+  });
+  // Слушатели — слоты
+  svg.querySelectorAll('.fern-slot-dot').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      selectStructure('slot', el.dataset.slot);
+    });
+    el.addEventListener('mouseenter', e => {
+      const sid = el.dataset.slot;
+      const s = state.data.time_slots[sid];
+      if (s) showStructureTooltip(e.clientX, e.clientY, `${s.tool_label || sid} · ${s.start}–${s.end || '?'}${s.leaf ? ' · ★' : ''}`);
+      highlightSlotEverywhere(sid, true);
+    });
+    el.addEventListener('mousemove', e => {
+      moveStructureTooltip(e.clientX, e.clientY);
+    });
+    el.addEventListener('mouseleave', () => {
+      hideStructureTooltip();
+      highlightSlotEverywhere(el.dataset.slot, false);
+    });
+    el.addEventListener('mousedown', e => startSlotDrag(e, el.dataset.slot));
+  });
+}
+
+// ----- Tooltip -----
+let _structureTooltipEl = null;
+function showStructureTooltip(x, y, text) {
+  if (!_structureTooltipEl) {
+    _structureTooltipEl = document.createElement('div');
+    _structureTooltipEl.className = 'structure-tooltip';
+    document.body.appendChild(_structureTooltipEl);
+  }
+  _structureTooltipEl.textContent = text;
+  _structureTooltipEl.style.display = 'block';
+  moveStructureTooltip(x, y);
+}
+function moveStructureTooltip(x, y) {
+  if (_structureTooltipEl) {
+    _structureTooltipEl.style.left = (x + 12) + 'px';
+    _structureTooltipEl.style.top = (y + 8) + 'px';
+  }
+}
+function hideStructureTooltip() {
+  if (_structureTooltipEl) _structureTooltipEl.style.display = 'none';
+}
+
+// ----- Drag&drop точек-слотов между листьями -----
+// При drop на лист: ставим slot.leaf = leafId (override).
+// Если drop на «естественный» лист (тот, в который слот и так попадает) — снимаем override.
+let _slotDragState = null;
+function startSlotDrag(ev, sid) {
+  ev.preventDefault();
+  hideStructureTooltip();
+  _slotDragState = { sid, startX: ev.clientX, startY: ev.clientY, dragging: false };
+  const onMove = (e) => {
+    if (!_slotDragState) return;
+    const dx = e.clientX - _slotDragState.startX;
+    const dy = e.clientY - _slotDragState.startY;
+    if (!_slotDragState.dragging && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+      _slotDragState.dragging = true;
+      const dot = document.querySelector(`.fern-slot-dot[data-slot="${sid}"]`);
+      if (dot) dot.classList.add('dragging');
+    }
+    if (_slotDragState.dragging) {
+      // Подсвечиваем лист под курсором
+      const target = document.elementFromPoint(e.clientX, e.clientY);
+      document.querySelectorAll('.fern-leaf-area.drop-target').forEach(el => el.classList.remove('drop-target'));
+      if (target && target.dataset && target.dataset.leafArea) {
+        target.classList.add('drop-target');
+      }
+    }
+  };
+  const onUp = (e) => {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    if (!_slotDragState) return;
+    const wasDragging = _slotDragState.dragging;
+    const dragSid = _slotDragState.sid;
+    _slotDragState = null;
+    document.querySelectorAll('.fern-slot-dot.dragging').forEach(el => el.classList.remove('dragging'));
+    document.querySelectorAll('.fern-leaf-area.drop-target').forEach(el => el.classList.remove('drop-target'));
+    if (!wasDragging) return; // это был обычный клик, не drag — обрабатывается click handler'ом
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    if (target && target.dataset && target.dataset.leafArea) {
+      const targetLeafId = target.dataset.leafArea;
+      const slot = state.data.time_slots[dragSid];
+      if (!slot) return;
+      // Какой лист «естественный» (без учёта slot.leaf override)?
+      const slotCopy = Object.assign({}, slot, { leaf: null });
+      const naturalLeaf = findLeafForSlotInProgrammer(slotCopy);
+      if (naturalLeaf && naturalLeaf.id === targetLeafId) {
+        // Drop в естественный лист — снимаем override
+        delete slot.leaf;
+      } else {
+        slot.leaf = targetLeafId;
+      }
+      // Переинжектируем enriched поля
+      state.data.events.forEach(ev => {
+        if (ev.slot === dragSid && ev._enriched_fields) {
+          ev._enriched_fields.forEach(f => delete ev[f]);
+          delete ev._enriched_fields;
+        }
+      });
+      enrichEventsFromSlots(state.data);
+      markDirty(); persistState();
+      renderStructureAll();
+      // Не вызываем rerenderAll() основного таймлайна — drag тяжёлый, это притормозит.
+      // Изменения сохранены, при закрытии structure view rerenderAll() произойдёт через откладывающую механику ниже.
+    }
+  };
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+// ----- Правая колонка: детали выбранного -----
+function renderStructureRightPanel() {
+  const right = document.getElementById('structure-right');
+  if (!_structureSelected) {
+    right.innerHTML = '<div class="empty-hint">Выбери лист или слот — здесь появятся параметры</div>';
+    return;
+  }
+  if (_structureSelected.type === 'leaf') {
+    renderStructureLeafDetails(right, _structureSelected.id);
+  } else {
+    renderStructureSlotDetails(right, _structureSelected.id);
+  }
+}
+
+function renderStructureLeafDetails(container, leafId) {
+  const leaf = (state.data.fern_leaves || []).find(l => l.id === leafId);
+  if (!leaf) { container.innerHTML = '<div class="empty-hint">Лист не найден</div>'; return; }
+  const slotsHere = Object.entries(state.data.time_slots).filter(([sid, s]) => {
+    const found = findLeafForSlotInProgrammer(s);
+    return found && found.id === leafId;
+  });
+  container.innerHTML = `
+    <h3>Лист · ${esc(leaf.id)}</h3>
+    <div class="structure-field">
+      <label>id (read-only — привязан к SVG)</label>
+      <input value="${esc(leaf.id)}" disabled>
+    </div>
+    <div class="structure-field-row">
+      <div class="structure-field">
+        <label>side (read-only)</label>
+        <input value="${esc(leaf.side || '')}" disabled>
+      </div>
+      <div class="structure-field">
+        <label>address (read-only)</label>
+        <input value="${esc(Array.isArray(leaf.address) ? leaf.address.join(',') : (leaf.address || ''))}" disabled>
+      </div>
+    </div>
+    <div class="structure-field-row">
+      <div class="structure-field">
+        <label>Начало</label>
+        <input type="time" id="sr-leaf-start" value="${esc(leaf.start || '')}">
+      </div>
+      <div class="structure-field">
+        <label>Конец</label>
+        <input type="time" id="sr-leaf-end" value="${esc(leaf.end || '')}">
+      </div>
+    </div>
+    <div class="structure-divider"></div>
+    <h3>Слоты в листе (${slotsHere.length})</h3>
+    <div class="structure-mini-list">
+      ${slotsHere.length ? slotsHere.map(([sid, s]) =>
+        `<div class="structure-mini-list-row" data-slot="${esc(sid)}">${esc(s.start)}–${esc(s.end || '?')} · ${esc(s.tool_label || sid)}${s.leaf ? ' ★' : ''}</div>`
+      ).join('') : '<em style="color:#888">пусто</em>'}
+    </div>
+    <button class="structure-full-edit-btn" onclick="addSlotInLeaf('${esc(leafId)}')" style="background:rgba(60,120,80,0.1);border-color:#5d8b6e;color:#3a6b50;margin-top:8px">+ Создать слот в этом листе</button>
+    <button class="structure-full-edit-btn" onclick="openLeafEditModalFromStructure('${esc(leafId)}')">Полный редактор листа</button>
+  `;
+  // Inline-сохранение start/end на blur
+  const startInp = container.querySelector('#sr-leaf-start');
+  const endInp = container.querySelector('#sr-leaf-end');
+  const saveLeafTime = () => {
+    const ns = startInp.value, ne = endInp.value;
+    if (!ns || !ne) return;
+    if (ns === leaf.start && ne === leaf.end) return;
+    leaf.start = ns; leaf.end = ne;
+    markDirty(); persistState(); renderStructureAll();
+  };
+  startInp.addEventListener('change', saveLeafTime);
+  endInp.addEventListener('change', saveLeafTime);
+  // Клик на слот в мини-списке — выделить его
+  container.querySelectorAll('.structure-mini-list-row').forEach(row => {
+    row.addEventListener('click', () => selectStructure('slot', row.dataset.slot));
+  });
+}
+
+function renderStructureSlotDetails(container, sid) {
+  const s = state.data.time_slots[sid];
+  if (!s) { container.innerHTML = '<div class="empty-hint">Слот не найден</div>'; return; }
+  const leaf = findLeafForSlotInProgrammer(s);
+  const attached = state.data.events.filter(e => e.slot === sid);
+  // Опции площадок
+  const venueOpts = '<option value="">—</option>' +
+    Object.entries(state.data.venues).map(([vid, v]) =>
+      `<option value="${esc(vid)}" ${s.venue === vid ? 'selected' : ''}>${esc(v.display || vid)}</option>`
+    ).join('');
+  // Опции типов
+  const typeOpts = ['', 'talk', 'discussion', 'station', 'music', 'music-extra', 'dance', 'cinema', 'interlude', 'networking']
+    .map(t => `<option value="${esc(t)}" ${s.type === t ? 'selected' : ''}>${esc(t || '—')}</option>`).join('');
+  container.innerHTML = `
+    <h3>Слот · ${esc(sid)}</h3>
+    <div class="structure-field">
+      <label>tool_label</label>
+      <input id="sr-slot-tool" value="${esc(s.tool_label || '')}">
+    </div>
+    <div class="structure-field-row">
+      <div class="structure-field">
+        <label>Начало</label>
+        <input type="time" id="sr-slot-start" value="${esc(s.start || '')}">
+      </div>
+      <div class="structure-field">
+        <label>Конец</label>
+        <input type="time" id="sr-slot-end" value="${esc(s.end || '')}">
+      </div>
+    </div>
+    <div class="structure-field-row">
+      <div class="structure-field">
+        <label>type</label>
+        <select id="sr-slot-type">${typeOpts}</select>
+      </div>
+      <div class="structure-field">
+        <label>venue</label>
+        <select id="sr-slot-venue">${venueOpts}</select>
+      </div>
+    </div>
+    <div class="structure-field">
+      <label>leaf override (если хочешь зафиксировать)</label>
+      <input id="sr-slot-leaf" value="${esc(s.leaf || '')}" placeholder="оставь пустым для авто">
+    </div>
+    <div class="structure-divider"></div>
+    <div style="font-size:11px;color:#666;line-height:1.5">
+      <strong>Сейчас в листе:</strong> ${leaf ? `<code>${esc(leaf.id)}</code> (${esc(leaf.side)})` : '<span style="color:#c25040">не найден</span>'}<br>
+      <strong>Привязано событий:</strong> ${attached.length}
+    </div>
+    <button class="structure-full-edit-btn" onclick="openSlotEditModalFromStructure('${esc(sid)}')">Полный редактор слота</button>
+  `;
+  // Inline-сохранение каждого поля
+  const fields = [
+    ['sr-slot-tool', 'tool_label'],
+    ['sr-slot-start', 'start'],
+    ['sr-slot-end', 'end'],
+    ['sr-slot-type', 'type'],
+    ['sr-slot-venue', 'venue'],
+    ['sr-slot-leaf', 'leaf'],
+  ];
+  fields.forEach(([elId, field]) => {
+    const el = container.querySelector('#' + elId);
+    if (!el) return;
+    const handler = () => {
+      const val = el.value;
+      if ((s[field] || '') === (val || '')) return;
+      s[field] = val || null;
+      // Переинжектируем enriched поля если поменялся slot
+      state.data.events.forEach(ev => {
+        if (ev.slot === sid && ev._enriched_fields) {
+          ev._enriched_fields.forEach(f => delete ev[f]);
+          delete ev._enriched_fields;
+        }
+      });
+      enrichEventsFromSlots(state.data);
+      markDirty(); persistState(); renderStructureAll();
+    };
+    el.addEventListener('change', handler);
+    if (el.tagName === 'INPUT' && el.type !== 'time') el.addEventListener('blur', handler);
+  });
+}
+
+// Мост в существующие модалки. Закрывает structure view, открывает «полный редактор».
+// При закрытии полного редактора пользователь может вернуться через меню — это редко.
+function openLeafEditModalFromStructure(leafId) {
+  closeStructureView();
+  openLeafEditModal(leafId);
+}
+function openSlotEditModalFromStructure(sid) {
+  closeStructureView();
+  openSlotEditModal(sid);
+}
+
+// Создание нового слота прямо из structure view — без выхода из него.
+function addNewSlotFromStructure() {
+  const id = prompt('id нового слота (напр. slot-custom-1):');
+  if (!id) return;
+  if (state.data.time_slots[id]) { alert('такой id уже есть'); return; }
+  state.data.time_slots[id] = {
+    start: '20:00', end: '21:00',
+    label_for_zoom: id, tool_label: id,
+    type: null, venue: null,
+    category: null, apollo_slot: null, subcategory: null,
+    leaf: null
+  };
+  markDirty(); persistState();
+  selectStructure('slot', id);
+  renderStructureAll();
+}
+
+// Создание слота с предзаполненными параметрами от выбранного листа.
+// Время берём из листа целиком (start/end). По стороне листа догадываемся
+// что это headline (talk/discussion/music) или side (station и др).
+function addSlotInLeaf(leafId) {
+  const leaf = (state.data.fern_leaves || []).find(l => l.id === leafId);
+  if (!leaf) return;
+  const id = prompt('id нового слота (напр. slot-custom-1):');
+  if (!id) return;
+  if (state.data.time_slots[id]) { alert('такой id уже есть'); return; }
+  // Дефолты в зависимости от стороны листа
+  let type = null, category = null, venue = null;
+  if (leaf.side === 'headline') {
+    type = 'talk'; category = 'popsci'; venue = 'main_stage';
+  } else if (leaf.side === 'tail') {
+    type = 'dance'; category = 'music'; venue = 'main_stage';
+  } else {
+    // side — обычно станции
+    type = 'station'; category = 'workshop'; venue = 'big_bar';
+  }
+  state.data.time_slots[id] = {
+    start: leaf.start, end: leaf.end,
+    label_for_zoom: id, tool_label: id,
+    type, venue, category,
+    apollo_slot: null, subcategory: null,
+    leaf: leafId   // явный override на этот лист — это и был запрос
+  };
+  markDirty(); persistState();
+  selectStructure('slot', id);
+  renderStructureAll();
+}
+
+function selectStructure(type, id) {
+  _structureSelected = { type, id };
+  renderStructureAll();
+  // Скроллим левый список к выбранному слоту (если это слот)
+  if (type === 'slot') {
+    const row = document.querySelector(`.structure-slot-row[data-slot="${id}"]`);
+    if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+}
+
+// Esc закрывает structure view + и любую модалку открытую через .modal-bg.active
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('structure-modal').classList.contains('active')) {
+      closeStructureView();
+      e.preventDefault();
+      return;
+    }
+    // Закроем любую активную модалку (это удобство, ранее Esc не работал на модалках)
+    const active = document.querySelector('.modal-bg.active');
+    if (active) {
+      active.classList.remove('active');
+      e.preventDefault();
+    }
+  }
+});
+
+// При закрытии structure view — если были изменения, перерисуем основной таймлайн
+const _origCloseStructure = closeStructureView;
+closeStructureView = function() {
+  _origCloseStructure();
+  rerenderAll();
+};
+
 function openSlotEditModal(sid) {
   const s = state.data.time_slots[sid];
   if (!s) return;
@@ -3494,6 +4857,22 @@ function openSlotEditModal(sid) {
     ? attached.map(e => `<div style="padding:3px 0">• <strong>${esc(e.title || '(без названия)')}</strong>${e.speaker ? ' — ' + esc(e.speaker) : ''}</div>`).join('')
     : '<em style="color:#888">Нет привязанных событий</em>';
 
+  // Покрытие фракталом — рисуем сразу и обновляем при изменении полей,
+  // влияющих на алгоритм (start, type, venue, leaf override).
+  const renderCov = () => renderFernCoverageBlock(
+    document.getElementById('se-start').value,
+    document.getElementById('se-end').value,
+    document.getElementById('se-leaf').value,
+    document.getElementById('se-type').value,
+    document.getElementById('se-venue').value
+  );
+  renderCov();
+  document.getElementById('se-start').oninput = renderCov;
+  document.getElementById('se-end').oninput = renderCov;
+  document.getElementById('se-leaf').oninput = renderCov;
+  document.getElementById('se-type').onchange = renderCov;
+  document.getElementById('se-venue').onchange = renderCov;
+
   document.getElementById('slot-edit-modal').classList.add('active');
 }
 function closeSlotEditModal() {
@@ -3509,6 +4888,23 @@ function saveSlotEdit() {
   if (!state.data.time_slots[oldId]) return;
   if (!newId) { alert('id обязателен'); return; }
 
+  // Валидация: проверяем что слот попадёт в лист фрактала по реальному алгоритму
+  const newStart = document.getElementById('se-start').value;
+  const newEnd = document.getElementById('se-end').value;
+  const newLeaf = document.getElementById('se-leaf').value || null;
+  const newType = document.getElementById('se-type').value || null;
+  const newVenue = document.getElementById('se-venue').value || null;
+  if (newStart) {
+    const fakeSlot = { start: newStart, end: newEnd, type: newType, venue: newVenue, leaf: newLeaf };
+    const leaf = findLeafForSlotInProgrammer(fakeSlot);
+    if (!leaf && !newLeaf) {
+      if (!confirm(`Слот не попадает ни в один лист фрактала по start=${newStart}, type=${newType || '—'}. На сайте отобразится только в текстовом расписании. Сохранить всё равно?`)) return;
+    }
+    if (newLeaf && !state.data.fern_leaves.some(l => l.id === newLeaf)) {
+      if (!confirm(`Лист «${newLeaf}» не найден в fern_leaves. Сохранить всё равно?`)) return;
+    }
+  }
+
   if (newId !== oldId) {
     if (state.data.time_slots[newId]) { alert('id уже занят'); return; }
     // Переименование: переносим объект и обновляем все ссылки в events
@@ -3520,14 +4916,14 @@ function saveSlotEdit() {
   const s = state.data.time_slots[newId];
   s.tool_label = document.getElementById('se-tool-label').value || null;
   s.label_for_zoom = document.getElementById('se-zoom-label').value || null;
-  s.start = document.getElementById('se-start').value;
-  s.end = document.getElementById('se-end').value;
+  s.start = newStart;
+  s.end = newEnd;
   s.type = document.getElementById('se-type').value || null;
   s.venue = document.getElementById('se-venue').value || null;
   s.category = document.getElementById('se-category').value || null;
   s.apollo_slot = document.getElementById('se-apollo').value || null;
   s.subcategory = document.getElementById('se-subcategory').value || null;
-  s.leaf = document.getElementById('se-leaf').value || null;
+  s.leaf = newLeaf;
 
   // После правки слота — переинжектируем enriched поля во все его events
   state.data.events.forEach(ev => {
@@ -3582,7 +4978,16 @@ function openExhibitModal(id) {
   populateSubcategoryOptions('art', document.getElementById('ex-subcategory'), item.subcategory);
 
   const srcBlock = document.getElementById('ex-source-app-block');
-  srcBlock.textContent = item._source_app ? `Из заявки ${item._source_app}` : '';
+  if (item._source_app) {
+    const url = getApplicationUrl(item._source_app);
+    if (url) {
+      srcBlock.innerHTML = `Из заявки <a href="${url}" target="_blank" rel="noopener" style="color:#5d8b6e;text-decoration:underline">${esc(item._source_app)} ↗</a>`;
+    } else {
+      srcBlock.textContent = `Из заявки ${item._source_app}`;
+    }
+  } else {
+    srcBlock.textContent = '';
+  }
 
   renderLinksEditor(item.links || [], 'ex-links-editor');
   document.getElementById('exhibit-modal').classList.add('active');
@@ -3701,13 +5106,8 @@ function saveSlots() {
   closeSlotEditor();
   markDirty(); rerenderAll(); persistState();
 }
-function addSlot() {
-  const id = prompt('id нового слота:');
-  if (!id) return;
-  if (state.data.time_slots[id]) { alert('такой id уже есть'); return; }
-  state.data.time_slots[id] = { fern_address: null, start: '20:00', end: '21:00', label_for_zoom: id };
-  openSlotEditor();
-}
+// Удаление слота из table-списка (старое меню «Слоты — общий список» в коде осталось,
+// но вызывается через openSlotEditor + кнопка «×»).
 function deleteSlot(id) {
   if (!confirm(`Удалить слот ${id}?`)) return;
   delete state.data.time_slots[id];

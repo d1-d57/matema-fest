@@ -1,29 +1,15 @@
 // === База событий фестиваля «Фрактальная Одиссея», 23 мая 2026 ===
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-07-v22",
+    "version": "2026-05-08-v24",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
-    "changes_v2": "Добавлено поле apollo_slot для каждого события (позиция внутри круга-категории). Возвращены Brinstar/Spiral Fractal с status=tentative (вместо абстрактных music-3/music-4). Расширен _howto.",
-    "changes_v3": "Удалён placeholder stage-extra в popsci (события не будет). music-rap: speaker → Вадим. dance-program: category social → music, apollo_slot big-3 → ear-2. Новое событие social-rosetka: нетворкинг от бюро «Розетка», apollo_slot big-3.",
-    "changes_v4": "Добавлен слой subcategories для music/cinema/art. venues получили поле apollo_label. events music/art получили поле subcategory.",
-    "changes_v5": "Sub-cat music labels берутся из venue.display (Мандельброт/Кантор/Серпинский). music-rap (Влад Горелов) перемещён на courtyard.",
-    "changes_v6": "Кантор и Серпинский поменяны местами: big_bar=Серпинский (большой бар), courtyard=Кантор (двор). Mandelbrot (главная сцена) не тронут. _howto дополнен описанием поля subcategory.",
-    "changes_v7": "Введён массив exhibits для постоянных арт-объектов вне таймлайна (галерея/инсталляции/медиа-арт). Добавлен interlude-слот на главной сцене 17:00-17:30. inst-plato перенесён из events в exhibits как галерея.",
-    "changes": " | v7: исправлена категоризация (Сидько→инсталляция, Андрей→experiment-станция). Добавлены: Зайцева (workshop), Алина (social), Явь подтверждено.",
-    "changes_v8": "mc-theremin → experiment без apollo_slot. media-yav привязан к app-28 (Анастасия Владычкина «Внутренняя спираль»).",
-    "changes_v9": "Добавлены slot-interlude-2 (18:30-19:00) и slot-interlude-3 (20:00-20:30) — потенциальные слоты для короткометражек между лекциями. Интерлюды теперь относятся к cinema-категории.",
-    "changes_v10": "Финальная версия для сегодняшнего deploy: добавлены Ася (Фрактальные витражи), TBA-плейсхолдеры на cinema-слоты, интерлюды и дискуссию. Размещены social-rosetka и social-tochka-nol. Восстановлены legacy id (inst-squirrel, inst-polyhedral, inst-plato, inst-fractal-projection) для совместимости с захардкоженным папоротником в index.html.",
-    "changes_v11": "Все 12 art-экспонатов вернулись в events с уникальными apollo_slot. Теперь круг ИСКУССТВО на сайте показывает 12 произведений. Squirrel получил kind=installation в exhibits.",
-    "changes_v12": "Кинопрограмма наполнена: 4 короткометражки в субкат short (3 поставлены в интерлюды, 4-я ждёт слота 1 ч), 10 анимаций в субкат animation (без timeline-слотов, заглушки лайнапа), 4 полнометражных в субкат feature (Pi + 3 документалки). Это первичный лайнап, конкретные названия и авторы уточняются.",
-    "changes_v13": "TBA-режим для неподтверждённых: Флюоро, ArtTech, Щелочь, все анимации, второй полный метр. String Art объединён в одну карточку (было 2). Полнометражных оставлено 2 (было 4): Пи + TBA. Реальные названия и автор спрятаны в служебных полях _team_real_title/_team_real_speaker для команды; на сайт идёт только title=TBA.",
-    "changes_v14": "УБРАНЫ ART-ДУБЛИ из events. Все 11 art-объектов теперь живут только в exhibits. Сайт научился читать exhibits через apolloItems в Аполлонии. Папоротник: art-id удалены из захардкоженных SPOTS/SUBSPOTS, заменены на placeholder-станции.",
-    "changes_v15": "Зоны: тройной хедлайнер (Дискуссия+Нетворкинг+Рэп) на одном листе [1,1,1,1,2]. Утренний блок (Евдокимов+Тарасевич) на одном листе [3]. Cinema/interlude переадресованы внутрь блоков станций. Кино 2 продлено до 22:00.",
-    "changes_v16": "Короткометражки и кино перенесены на адреса блоков-листьев (было: подлисты [...,1,2]/[...,1,3], стало: тот же адрес что у блока станций). Это требуется новой логикой v19-B где SPOTS генерируется из time_slots по fern_address: все события одного адреса становятся зонами одного листа.",
     "changes_v17": "Разделение составных слотов: slot-stations-1..4 разбиты по событиям (slot-stations-1-1, -1-2, -1-3 и т.д.). Каждый слот теперь содержит максимум 1 событие. Поля category/apollo_slot/subcategory перенесены с событий на слоты (это атрибуты места, не карточки). У событий-сирот (banks: cinema/animation без слота) поля остались. Добавлено slot.type — короткий тип: talk/station/interlude/cinema/music/discussion/networking/dance/music-extra. Также перенесён venue с событий на слоты.",
     "changes_v18": "Введена секция fern_leaves — явный список листьев папоротника с временами и сторонами (headline / side / tail). Поле fern_address удалено из всех слотов. Привязка слот→лист теперь делается алгоритмом в индексе по правилу: хедлайнерский слот (talk/discussion) → headline лист по времени; иначе → side лист. Изменены времена: cinema-1 (Пи) 19:30-21:00, cinema-2 21:00-22:00, dance 01-04. Музыкальная программа переразвязана: Brinstar 23-00, Spiral Fractal 00-01. Удалены slot-music-4 и slot-music-parallel-4. Переименована \"Малая сцена\" в \"Музыка (малая сцена)\".",
     "changes_v19": "Сдвиг всех хедлайнерских листьев на 1 уровень вниз (убрана пустота слева). Расширение музыкальной программы до 03:00: добавлены 4 новых слота (slot-music-5, slot-music-parallel-5, slot-music-6, slot-music-parallel-6) и 4 новых листа. Добавлены 7 новых музыкантов: Stropharia, Gonaitei, Hobboth, WOMBA, Rombix, Aensof, Darkest Supernova. Танцы (slot-dance) сжаты до 03:00-04:00.",
     "changes_v21": "Добавлены 6 анимаций (cinema/animation) и 4 короткометражки (cinema/short). Из коротких 3 привязаны к существующим interlude-слотам в расписании, 4-я (длинное название Menger meets Eiffel) — сирота для ночного показа. Удалены 11 старых TBA-сирот.",
-    "changes_v22": "venue музыки на малой сцене (slot-music-parallel-1/2/3/5/6) перенесён с small_bar на big_bar — параллельная музыка идёт в Большом баре, в lane 2; малый бар освобождается. Восстановлены связи _source_app между событиями/экспонатами и заявками open call (были утеряны при миграции v9->v17). 10 events + 7 exhibits получили ссылки на свои заявки."
+    "changes_v22": "venue музыки на малой сцене (slot-music-parallel-1/2/3/5/6) перенесён с small_bar на big_bar — параллельная музыка идёт в Большом баре, в lane 2; малый бар освобождается. Восстановлены связи _source_app между событиями/экспонатами и заявками open call (были утеряны при миграции v9->v17). 10 events + 7 exhibits получили ссылки на свои заявки.",
+    "changes_v23": "Добавлены slot-stations-1-4 (workshop, courtyard) и slot-stations-3-3 (workshop, courtyard) — двор не должен пустовать днём. Раньше Станции 1 и Станции 3 были только на big_bar+small_bar, теперь как Станции 2 и 4 — на трёх площадках включая двор.",
+    "changes_v24": "Чистка данных: status=tentative проставлен у 17 событий (новые музыканты + анимации + короткометражки). label_for_zoom сгенерирован у 4 ночных music-слотов. Закрыты apollo_slot пропуски у slot-stations-2-3 и -4-3. Резолвлены дубли apollo_slot в workshop (slot-stations-1-4 и -3-3 переведены в experiment). Теперь экспериментов столько же сколько мастерских."
   },
   "venues": {
     "library": {
@@ -160,6 +146,16 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "big-1",
       "venue": "small_bar"
     },
+    "slot-stations-1-4": {
+      "start": "16:30",
+      "end": "17:30",
+      "label_for_zoom": "Первый блок · 16:30",
+      "tool_label": "Станции 1",
+      "type": "station",
+      "category": "experiment",
+      "apollo_slot": "big-2",
+      "venue": "courtyard"
+    },
     "slot-rajgorodski": {
       "start": "17:30",
       "end": "18:30",
@@ -197,7 +193,8 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 2",
       "type": "station",
       "category": "experiment",
-      "venue": "small_bar"
+      "venue": "small_bar",
+      "apollo_slot": "mid-1"
     },
     "slot-skripchenko": {
       "start": "19:00",
@@ -229,6 +226,16 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "mid-2",
       "venue": "big_bar"
     },
+    "slot-stations-3-3": {
+      "start": "18:30",
+      "end": "19:30",
+      "label_for_zoom": "Третий блок · 18:30",
+      "tool_label": "Станции 3",
+      "type": "station",
+      "category": "experiment",
+      "apollo_slot": "ear-1",
+      "venue": "courtyard"
+    },
     "slot-stations-4-1": {
       "start": "19:30",
       "end": "20:30",
@@ -255,7 +262,8 @@ window.FESTIVAL_DATA = {
       "label_for_zoom": "Четвёртый блок · 19:30",
       "tool_label": "Станции 4",
       "type": "station",
-      "category": "workshop",
+      "category": "experiment",
+      "apollo_slot": "mid-3",
       "venue": "courtyard"
     },
     "slot-music-1": {
@@ -435,7 +443,8 @@ window.FESTIVAL_DATA = {
       "type": "music",
       "category": "music",
       "apollo_slot": "mid-1",
-      "subcategory": "main_stage"
+      "subcategory": "main_stage",
+      "label_for_zoom": "Музыка · 01:00"
     },
     "slot-music-parallel-5": {
       "venue": "big_bar",
@@ -445,7 +454,8 @@ window.FESTIVAL_DATA = {
       "type": "music-extra",
       "category": "music",
       "apollo_slot": "big-1",
-      "subcategory": "big_bar"
+      "subcategory": "big_bar",
+      "label_for_zoom": "Музыка (малая сцена) · 01:00"
     },
     "slot-music-6": {
       "venue": "main_stage",
@@ -455,7 +465,8 @@ window.FESTIVAL_DATA = {
       "type": "music",
       "category": "music",
       "apollo_slot": "mid-2",
-      "subcategory": "main_stage"
+      "subcategory": "main_stage",
+      "label_for_zoom": "Музыка · 02:00"
     },
     "slot-music-parallel-6": {
       "venue": "big_bar",
@@ -465,7 +476,8 @@ window.FESTIVAL_DATA = {
       "type": "music-extra",
       "category": "music",
       "apollo_slot": "big-2",
-      "subcategory": "big_bar"
+      "subcategory": "big_bar",
+      "label_for_zoom": "Музыка (малая сцена) · 02:00"
     }
   },
   "events": [
@@ -761,49 +773,56 @@ window.FESTIVAL_DATA = {
       "title": "Stropharia",
       "speaker": "Stropharia",
       "description": "",
-      "slot": "slot-music-5"
+      "slot": "slot-music-5",
+      "status": "tentative"
     },
     {
       "id": "music-gonaitei",
       "title": "Gonaitei",
       "speaker": "Gonaitei",
       "description": "",
-      "slot": "slot-music-6"
+      "slot": "slot-music-6",
+      "status": "tentative"
     },
     {
       "id": "music-hobboth",
       "title": "Hobboth",
       "speaker": "Hobboth",
       "description": "",
-      "slot": "slot-music-parallel-1"
+      "slot": "slot-music-parallel-1",
+      "status": "tentative"
     },
     {
       "id": "music-womba",
       "title": "WOMBA",
       "speaker": "WOMBA",
       "description": "",
-      "slot": "slot-music-parallel-2"
+      "slot": "slot-music-parallel-2",
+      "status": "tentative"
     },
     {
       "id": "music-rombix",
       "title": "Rombix",
       "speaker": "Rombix",
       "description": "",
-      "slot": "slot-music-parallel-3"
+      "slot": "slot-music-parallel-3",
+      "status": "tentative"
     },
     {
       "id": "music-aensof",
       "title": "Aensof",
       "speaker": "Aensof",
       "description": "",
-      "slot": "slot-music-parallel-5"
+      "slot": "slot-music-parallel-5",
+      "status": "tentative"
     },
     {
       "id": "music-darkest-supernova",
       "title": "Darkest Supernova",
       "speaker": "Darkest Supernova",
       "description": "",
-      "slot": "slot-music-parallel-6"
+      "slot": "slot-music-parallel-6",
+      "status": "tentative"
     },
     {
       "id": "cinema-anim-horsthuis",
@@ -812,7 +831,8 @@ window.FESTIVAL_DATA = {
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "big-1",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "status": "tentative"
     },
     {
       "id": "cinema-anim-machina",
@@ -821,7 +841,8 @@ window.FESTIVAL_DATA = {
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "big-2",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "status": "tentative"
     },
     {
       "id": "cinema-anim-missing-fractals",
@@ -830,7 +851,8 @@ window.FESTIVAL_DATA = {
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "big-3",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "status": "tentative"
     },
     {
       "id": "cinema-anim-fractal-baby",
@@ -839,7 +861,8 @@ window.FESTIVAL_DATA = {
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "mid-1",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "status": "tentative"
     },
     {
       "id": "cinema-anim-like-in-a-dream",
@@ -848,7 +871,8 @@ window.FESTIVAL_DATA = {
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "mid-2",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "status": "tentative"
     },
     {
       "id": "cinema-anim-worlds-within-worlds",
@@ -857,25 +881,29 @@ window.FESTIVAL_DATA = {
       "category": "cinema",
       "subcategory": "animation",
       "apollo_slot": "mid-3",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "status": "tentative"
     },
     {
       "id": "cinema-short-big-brains",
       "title": "Big Brains, Small Films",
       "description": "Фильм основан на последнем интервью Бенуа Мандельброта, записанном в 2010 году всего за 19 дней до его смерти. В этом интервью «отец фракталов» делится воспоминаниями о своём пути в математике и о том, как его уникальный взгляд на мир привёл к открытию фрактальной геометрии.",
-      "slot": "slot-interlude-1"
+      "slot": "slot-interlude-1",
+      "status": "tentative"
     },
     {
       "id": "cinema-short-fractal",
       "title": "Fractal",
       "description": "Как оплакивать потерю того, чего у тебя никогда не было? Грейс живёт воспоминаниями и мечтами о том, что могло бы быть, после потери того, чего у неё никогда и не было.",
-      "slot": "slot-interlude-2"
+      "slot": "slot-interlude-2",
+      "status": "tentative"
     },
     {
       "id": "cinema-short-fractal-universe",
       "title": "Fractal universe?",
       "description": "Could our universe be fractal? Может ли простая математика создать целую вселенную? Что общего у брокколи с Большим взрывом? И какое отношение это имеет к таким видеоиграм, как «No Man's Sky» или «Minecraft»?",
-      "slot": "slot-interlude-3"
+      "slot": "slot-interlude-3",
+      "status": "tentative"
     },
     {
       "id": "cinema-short-menger-eiffel",
@@ -884,21 +912,23 @@ window.FESTIVAL_DATA = {
       "category": "cinema",
       "subcategory": "short",
       "apollo_slot": "mid-1",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "status": "tentative"
     }
   ],
   "_howto": {
-    "add_event": "Добавь объект в массив events со всеми полями. Если для события нужен новый временной слот — добавь его в time_slots с fern_address. Не забудь apollo_slot, если событие должно появиться в круге Аполлония.",
-    "rename_venue": "Меняй только поле display в venues, id (main_stage и т.д.) оставляй как есть. Так на сайте обновится отображение, но не сломаются ссылки в events.",
-    "change_status": "При подтверждении события меняй status с placeholder на confirmed и заполни speaker, title, description.",
-    "categories_are_fixed": "Семь категорий зафиксированы: popsci, music, art, workshop, experiment, cinema, social. Новые не добавлять без обсуждения архитектуры — они должны соответствовать кругам Аполлоновой навигации.",
-    "category_choice_rule": "Решающий критерий — что человек делает в этом событии. Слушает выступающего → popsci. Что-то делает руками по инструкции → workshop. Наблюдает интерактивный объект → experiment или art (art если объект — произведение, experiment если объект — наблюдение/опыт). Делает что-то вместе с другими (квиз, дискуссия, спид-дейтинг, танцпол) → social. Когда в одном событии есть и лекция, и совместное действие — выбираем по доминанте. Например, утренний квиз Тарасевича — это social, не popsci, потому что доминанта в командной игре, а не в выступлении ведущего.",
-    "apollo_slot": "Позиция события внутри круга-категории в Аполлонии. Опциональное. Значения: 'big-1', 'big-2', 'big-3' (три крупных), 'mid-1', 'mid-2', 'mid-3' (три средних), 'center' (центр), 'ear-1', 'ear-2', 'ear-3' (три ушка — для переполнения; визуально мельче). Один и тот же slot не должен повторяться внутри одной категории.",
-    "subcategory": "Обязательное поле для events в категориях music/cinema/art — указывает в какой sub-круг Аполлония попадёт событие. Значения: music → main_stage / big_bar / courtyard (соответствует venue id, площадка). cinema → feature / short / animation. art → art / installation / media. Для остальных категорий (popsci, workshop, experiment, social) поле НЕ задаётся.",
-    "file_layout": "Этот файл — единственный источник правды о программе фестиваля. Используется и в index.html (отображение), и в будущей admin-странице (редактирование). Подключается синхронно через <script src=\"festival-data.js\">, после чего в window.FESTIVAL_DATA доступен весь объект.",
-    "rendering_targets": "База кормит ТРИ виджета на index.html: (1) Аполлония (круги категорий с зумом) — берёт events по category + apollo_slot, для music/cinema/art также subcategory; (2) Папоротник-расписание (iframe в секции #schedule) — берёт time_slots с fern_address для построения дерева; (3) Список расписания в правой колонке — берёт events с venue/slot для группировки по интервалам. Все три виджета — read-only визуализации. Редактирование = только в этом файле.",
-    "fern_address": "Поле time_slots[id].fern_address — путь от корня фрактального папоротника. Массив чисел [n1, n2, ...]: каждая цифра 1, 2 или 3 — какой ветви идти на этом шаге (1 — главный ствол, 2 — основная боковая ветвь, 3 — вторичная боковая). Глубина массива = глубина зума. Особое значение \"tail\" для танцевальной программы (хвост папоротника, без конкретного адреса). При добавлении нового слота важно не пересекаться с существующими адресами и располагаться визуально логично по времени.",
-    "venue_resolution": "В коде index.html ВСЕ ссылки на площадки идут через id (main_stage, big_bar, small_bar, courtyard, library), а не через display-имена. Display подтягивается через хелпер resolveVenue(v): принимает id, массив id, или плоскую строку (для сборных описаний типа \"бары и двор\"). Это даёт один источник правды: переименовал площадку в venues[id].display — меняется везде на сайте."
+    "schema": "Источник правды о программе фестиваля. Структура (схема v17+, актуально на v24): time_slots — где и когда, events — что (название, спикер, описание), exhibits — постоянные экспонаты вне таймлайна, fern_leaves — 21 лист папоротника, venues и categories — справочники. Поля venue/category/apollo_slot/subcategory живут на time_slots; события наследуют их через slot.",
+    "add_event": "Добавь объект в массив events: id, title, slot (id слота), speaker, description, status. Поля venue/category/apollo_slot — на слот, не на событие.",
+    "add_slot": "Новый временной слот в time_slots: start, end, type (talk/discussion/station/music/music-extra/dance/cinema/interlude/networking), venue (id из data.venues), category, apollo_slot, tool_label. Привязка к листу фрактала вычисляется автоматически по slot.start; для override — поле slot.leaf.",
+    "rename_venue": "Меняй только venues[id].display, id (main_stage и т.д.) оставляй — на него ссылаются слоты.",
+    "change_status": "placeholder → tentative → confirmed. confirmed подразумевает заполненные speaker, title, description.",
+    "categories": "Семь фиксированных: popsci, music, art, workshop, experiment, cinema, social. art только в exhibits, не на слотах.",
+    "category_choice_rule": "По доминанте: что человек делает. Слушает → popsci. Делает руками → workshop. Наблюдает интерактивный объект → experiment (опыт) или art (произведение). Делает с другими → social.",
+    "apollo_slot": "Позиция в круге-категории: big-1/2/3 (крупные), mid-1/2/3 (средние), center, ear-1/2/3 (мелкие, для переполнения). Один apollo_slot не должен повторяться внутри одной категории+subcategory.",
+    "subcategory": "Только для music/cinema/art. music → main_stage/big_bar/courtyard (= venue). cinema → feature/short/animation. art → art/installation/media.",
+    "fern_leaves": "Массив из 21 листа фрактала. Поля: id, start, end, side (headline/side/tail), address (координаты в SVG, не трогать). Привязка слот→лист: алгоритм в index.html и в programmer.html (findLeafForSlot). По slot.type определяется side (talk/discussion+music на main_stage → headline; dance → tail; остальное → side). Лист выбирается по slot.start: первый лист этой стороны, чьё окно [start, end) содержит slot.start. Для override — slot.leaf.",
+    "exhibits_vs_events": "events — те что в таймлайне (имеют slot). exhibits — постоянные арт-объекты, висят весь вечер. Оба попадают в Аполлонию.",
+    "programmer": "UI-инструмент для редактирования этого файла — programmer.html в том же репо. Загружается с github pages, экспорт через кнопку «Скачать festival-data.js»."
   },
   "subcategories": {
     "music": {
