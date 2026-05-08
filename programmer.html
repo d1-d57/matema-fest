@@ -400,23 +400,27 @@ body {
 }
 
 .slot-label {
-  position: absolute; top: 3px; left: 5px;
+  position: absolute; top: 3px; left: 5px; right: 5px;
   font-size: 10px; color: var(--ink); font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.12em; pointer-events: none; z-index: 2;
+  letter-spacing: 0.12em; cursor: pointer; z-index: 2;
   background: rgba(241, 243, 226, 0.85); padding: 2px 7px;
   font-family: var(--font-mono);
-  white-space: nowrap;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: background 0.15s;
 }
+.slot-label:hover { background: rgba(241, 243, 226, 1); outline: 1px solid rgba(0,0,0,0.2); }
 
 /* Горизонтальный баннер для multi-venue слотов (станции, music-par) */
 .stations-band-label {
   font-size: 11px; color: var(--ink); font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.18em; pointer-events: none; z-index: 6;
+  letter-spacing: 0.18em; cursor: pointer; z-index: 6;
   padding: 7px 14px; box-sizing: border-box;
   text-align: center;
   font-family: var(--font-mono);
   border-bottom: 2px solid;
+  transition: filter 0.15s;
 }
+.stations-band-label:hover { filter: brightness(0.95); }
 .stations-band-label.kind-stations {
   background: rgba(241, 243, 226, 0.95);
   border-bottom-color: var(--ink);
@@ -652,7 +656,7 @@ body {
 .exhibit-add-btn:hover { border-color: var(--ink); color: var(--ink); }
 
 .slot-editor-row {
-  display: grid; grid-template-columns: 110px 80px 80px 1fr 30px;
+  display: grid; grid-template-columns: 110px 80px 80px 1fr 30px 30px;
   gap: 6px; padding: 7px 0; border-bottom: 1px solid var(--rule-soft);
   align-items: center; font-size: 12px;
 }
@@ -1003,7 +1007,10 @@ body {
   <span class="menu-wrap">
     <button class="icon-only" onclick="toggleMenu(event)" title="Ещё">⋯</button>
     <div class="menu-dropdown" id="extra-menu">
-      <button onclick="openSlotEditor(); closeMenu()">Редактор слотов…</button>
+      <button onclick="addNewEvent(); closeMenu()">+ Новое событие</button>
+      <button onclick="addNewSlot(); closeMenu()">+ Новый слот</button>
+      <div style="height:1px;background:#ddd;margin:4px 0"></div>
+      <button onclick="openSlotEditor(); closeMenu()">Слоты — общий список…</button>
       <button onclick="openConfig(); closeMenu()">Настройки подключения…</button>
       <button onclick="exportJSON(); closeMenu()">Скачать festival-data.js</button>
     </div>
@@ -1104,9 +1111,9 @@ body {
 <div class="modal-bg" id="event-modal">
   <div class="modal">
     <h2 id="event-modal-title">Событие</h2>
-    <input type="hidden" id="ev-id">
+    <input type="hidden" id="ev-id-old">
     <label>id (стабильный, не меняй после публикации)</label>
-    <input id="ev-internal-id">
+    <input id="ev-id">
     <label>Название</label>
     <input id="ev-title">
     <label>Подзаголовок</label>
@@ -1121,8 +1128,80 @@ body {
     <div class="links-editor" id="ev-links-editor"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div>
+        <label>Статус</label>
+        <select id="ev-status">
+          <option value="confirmed">подтверждено</option>
+          <option value="tentative">пока не точно</option>
+          <option value="placeholder">плейсхолдер</option>
+        </select>
+      </div>
+      <div>
+        <label>Длительность override (мин) <span style="color:#888;font-weight:normal">— если короче слота</span></label>
+        <input type="number" id="ev-duration-override" min="1" step="5">
+      </div>
+    </div>
+    <h3 style="font-size:14px;margin-top:14px">Слот</h3>
+    <select id="ev-slot" onchange="updateSlotInfoBlock()"></select>
+    <div id="ev-slot-info" style="font-size:12px;color:#555;padding:8px 0;background:#faf8ed;padding:10px;border-left:2px solid #ddd;margin-top:6px;display:none"></div>
+    <button onclick="editCurrentSlot()" id="ev-edit-slot-btn" style="margin-top:6px;display:none">→ Редактировать слот</button>
+    <p style="font-size:11px;color:#888;margin-top:6px">Категория, подкатегория, площадка и Apollo-slot живут на слоте. Чтобы их изменить — открой слот.</p>
+    <div id="ev-source-app-block" style="font-size:11px;color:#888;margin-top:8px"></div>
+    <div class="modal-actions">
+      <button onclick="closeEventModal()">Отмена</button>
+      <button class="danger" onclick="deleteEvent()">Удалить</button>
+      <button class="primary" onclick="saveEvent()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLOT EDIT MODAL (детальный редактор одного слота) ===== -->
+<div class="modal-bg" id="slot-edit-modal">
+  <div class="modal" style="max-width:720px">
+    <h2 id="slot-edit-modal-title">Слот</h2>
+    <input type="hidden" id="se-id-old">
+    <label>id (стабильный, не меняй после публикации)</label>
+    <input id="se-id">
+    <label>Название (tool_label) — что показывается в шапке блока</label>
+    <input id="se-tool-label" placeholder="Лекция 1, Станции 1, Короткометражки 1, …">
+    <label>Подпись для зума на сайте (label_for_zoom) — если не задана, берётся из tool_label</label>
+    <input id="se-zoom-label" placeholder="Например: Большое выступление">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>
+        <label>Начало</label>
+        <input type="time" id="se-start">
+      </div>
+      <div>
+        <label>Конец</label>
+        <input type="time" id="se-end">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>
+        <label>Тип слота (type)</label>
+        <select id="se-type">
+          <option value="">—</option>
+          <option value="talk">talk (лекция)</option>
+          <option value="discussion">discussion</option>
+          <option value="station">station (станция)</option>
+          <option value="music">music (главная сцена)</option>
+          <option value="music-extra">music-extra (параллельно)</option>
+          <option value="dance">dance (танцпол)</option>
+          <option value="cinema">cinema (фильм)</option>
+          <option value="interlude">interlude (короткометражка)</option>
+          <option value="networking">networking</option>
+        </select>
+      </div>
+      <div>
+        <label>Площадка (venue)</label>
+        <select id="se-venue"></select>
+      </div>
+    </div>
+    <h3 style="font-size:14px;margin-top:14px">Аполлоний / категории</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>
         <label>Категория</label>
-        <select id="ev-category" onchange="updateSubcategoryOptions()">
+        <select id="se-category" onchange="updateSlotSubcategoryOptions()">
+          <option value="">—</option>
           <option value="popsci">научпоп</option>
           <option value="music">музыка</option>
           <option value="art">искусство</option>
@@ -1133,22 +1212,12 @@ body {
         </select>
       </div>
       <div>
-        <label>Подкатегория <span id="subcat-hint" style="color:#888;font-weight:normal">(music/cinema/art)</span></label>
-        <select id="ev-subcategory">
-          <option value="">—</option>
-        </select>
-      </div>
-      <div>
-        <label>Статус</label>
-        <select id="ev-status">
-          <option value="confirmed">подтверждено</option>
-          <option value="tentative">пока не точно</option>
-          <option value="placeholder">плейсхолдер</option>
-        </select>
+        <label>Подкатегория</label>
+        <select id="se-subcategory"><option value="">—</option></select>
       </div>
       <div>
         <label>Apollo slot</label>
-        <select id="ev-apollo">
+        <select id="se-apollo">
           <option value="">—</option>
           <option value="big-1">big-1</option><option value="big-2">big-2</option><option value="big-3">big-3</option>
           <option value="mid-1">mid-1</option><option value="mid-2">mid-2</option><option value="mid-3">mid-3</option>
@@ -1157,37 +1226,89 @@ body {
         </select>
       </div>
       <div>
-        <label>Lane (для big_bar) <span style="color:#888;font-weight:normal">— занимает левую/правую/обе</span></label>
-        <select id="ev-lane">
-          <option value="">авто</option>
-          <option value="left">левая (1/2)</option>
-          <option value="right">правая (2/2)</option>
-          <option value="both">обе (полная ширина)</option>
-        </select>
+        <label>Лист фрактала (leaf)</label>
+        <input id="se-leaf" placeholder="leaf-X">
       </div>
     </div>
+    <h3 style="font-size:14px;margin-top:14px">Привязанные события</h3>
+    <div id="se-events-list" style="font-size:13px;background:#faf8ed;padding:10px;border-left:2px solid #ddd"></div>
     <div class="modal-actions">
-      <button onclick="closeEventModal()">Отмена</button>
-      <button class="danger" onclick="deleteEvent()">Удалить</button>
-      <button class="primary" onclick="saveEvent()">Сохранить</button>
+      <button onclick="closeSlotEditModal()">Отмена</button>
+      <button class="danger" onclick="deleteSlotFromEdit()">Удалить</button>
+      <button class="primary" onclick="saveSlotEdit()">Сохранить</button>
     </div>
   </div>
 </div>
 
-<!-- ===== SLOT EDITOR MODAL ===== -->
+<!-- ===== EXHIBIT MODAL (отдельная схема — экспонаты не привязаны к слотам) ===== -->
+<div class="modal-bg" id="exhibit-modal">
+  <div class="modal">
+    <h2 id="exhibit-modal-title">Экспонат</h2>
+    <input type="hidden" id="ex-id-old">
+    <label>id</label>
+    <input id="ex-id">
+    <label>Тип</label>
+    <select id="ex-kind">
+      <option value="art">картина / объект (art)</option>
+      <option value="installation">инсталляция (installation)</option>
+      <option value="media">медиа-арт (media)</option>
+    </select>
+    <label>Название</label>
+    <input id="ex-title">
+    <label>Автор / спикер</label>
+    <input id="ex-speaker">
+    <label>Описание</label>
+    <textarea id="ex-description"></textarea>
+    <label>Ссылки</label>
+    <div class="links-editor" id="ex-links-editor"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>
+        <label>Статус</label>
+        <select id="ex-status">
+          <option value="confirmed">подтверждено</option>
+          <option value="tentative">пока не точно</option>
+          <option value="placeholder">плейсхолдер</option>
+        </select>
+      </div>
+      <div>
+        <label>Подкатегория</label>
+        <select id="ex-subcategory"><option value="">—</option></select>
+      </div>
+      <div>
+        <label>Apollo slot</label>
+        <select id="ex-apollo">
+          <option value="">—</option>
+          <option value="big-1">big-1</option><option value="big-2">big-2</option><option value="big-3">big-3</option>
+          <option value="mid-1">mid-1</option><option value="mid-2">mid-2</option><option value="mid-3">mid-3</option>
+          <option value="center">center</option>
+          <option value="ear-1">ear-1</option><option value="ear-2">ear-2</option><option value="ear-3">ear-3</option>
+        </select>
+      </div>
+    </div>
+    <div id="ex-source-app-block" style="font-size:11px;color:#888;margin-top:8px"></div>
+    <div class="modal-actions">
+      <button onclick="closeExhibitModal()">Отмена</button>
+      <button class="danger" onclick="deleteExhibit()">Удалить</button>
+      <button class="primary" onclick="saveExhibit()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLOT EDITOR MODAL — table-список для быстрого обзора ===== -->
 <div class="modal-bg" id="slot-modal">
-  <div class="modal" style="max-width:760px">
-    <h2>Слоты</h2>
-    <div style="display:grid;grid-template-columns:110px 80px 80px 1fr 30px;gap:6px;font-size:11px;color:#888;font-weight:600;padding:4px 0;border-bottom:1px solid #ddd">
-      <div>id</div><div>начало</div><div>конец</div><div>label_for_zoom</div><div></div>
+  <div class="modal" style="max-width:780px">
+    <h2>Слоты — общий список</h2>
+    <p style="font-size:12px;color:#666">Здесь видно все слоты с их временами и названиями. «✎» открывает детальный редактор слота.</p>
+    <div style="display:grid;grid-template-columns:110px 80px 80px 1fr 30px 30px;gap:6px;font-size:11px;color:#888;font-weight:600;padding:4px 0;border-bottom:1px solid #ddd">
+      <div>id</div><div>начало</div><div>конец</div><div>tool_label</div><div></div><div></div>
     </div>
     <div id="slot-editor-rows"></div>
     <div style="margin-top:12px">
-      <button onclick="addSlot()">+ добавить слот</button>
+      <button onclick="addNewSlot(); closeSlotEditor()">+ добавить слот</button>
     </div>
     <div class="modal-actions">
-      <button onclick="closeSlotEditor()">Отмена</button>
-      <button class="primary" onclick="saveSlots()">Сохранить</button>
+      <button onclick="closeSlotEditor()">Закрыть</button>
+      <button class="primary" onclick="saveSlots()">Сохранить правки времён</button>
     </div>
   </div>
 </div>
@@ -1900,10 +2021,12 @@ function getSlotBandGroups() {
 }
 
 // Вычисляет «lane слота» среди слотов, конкурирующих за ту же venue в пересекающемся
-// времени. Нужно для v17+, где блок («Станции 1») состоит из нескольких отдельных
-// слотов, каждый с одним событием — без этого все события встают в lane 0 и наложатся.
-function getSlotLaneInVenue(sid, slot, vid) {
-  if (slot.lane != null) return slot.lane;
+// времени, и общее количество таких конкурентов. Нужно для v17+, где блок («Станции 1»)
+// состоит из нескольких отдельных слотов, каждый с одним событием — без этого все
+// события встают в lane 0 и наложатся. total>1 значит «слот в группе» — это меняет
+// логику dropzone'ов в renderTimeline (одна dropzone в slotLane вместо всех lanes).
+function getSlotLaneInfoInVenue(sid, slot, vid) {
+  if (slot.lane != null) return { lane: slot.lane, total: 1 };
   const a1 = timeToMin(slot.start), b1 = timeToMin(slot.end);
   const competing = Object.entries(state.data.time_slots)
     .filter(([sid2, s2]) => {
@@ -1913,7 +2036,11 @@ function getSlotLaneInVenue(sid, slot, vid) {
     })
     .map(([sid2]) => sid2)
     .sort();
-  return competing.indexOf(sid);
+  return { lane: competing.indexOf(sid), total: competing.length };
+}
+// Совместимость для мест где нужен только lane.
+function getSlotLaneInVenue(sid, slot, vid) {
+  return getSlotLaneInfoInVenue(sid, slot, vid).lane;
 }
 
 function renderTimeline() {
@@ -1970,7 +2097,7 @@ function renderTimeline() {
       // (band нарисуется поверх в placeBandLabels) и живёт в одной venue.
       if (firstAllowed === vid && allowed.length === 1 && !inBand) {
         const label = s.tool_label || s.label_for_zoom || sid;
-        html += `<div class="slot-label" style="top:${startPx + 3}px">${esc(label)} · ${esc(s.start)}–${esc(s.end)}</div>`;
+        html += `<div class="slot-label" data-slot="${esc(sid)}" style="top:${startPx + 3}px">${esc(label)} · ${esc(s.start)}–${esc(s.end)}</div>`;
       }
 
       const cellEvents = state.data.events.filter(e => e.slot === sid && e.venue === vid);
@@ -1981,12 +2108,17 @@ function renderTimeline() {
       const bottomPad = isMultiVenue ? 4 : 4; // в нижней части тоже немного резерва
       const innerHeight = heightPx - labelOffset - bottomPad;
 
-      // Lane слота: для blocked-style группы (v17+) — индекс среди конкурирующих слотов
+      // Lane слота: для блок-стиля группы (v17+) — индекс среди конкурирующих слотов
       // в этой venue. Для одиночного slot lane=0 и события распределяются по idx внутри.
-      const slotLane = getSlotLaneInVenue(sid, s, vid);
+      const { lane: slotLane, total: competingTotal } = getSlotLaneInfoInVenue(sid, s, vid);
+      const isGroupSlot = competingTotal > 1;
 
-      // Дроп-зоны для каждой lane (если lanes > 1, иначе одна на всю ширину)
-      for (let laneIdx = 0; laneIdx < lanes; laneIdx++) {
+      // Дроп-зоны: если слот в группе (несколько слотов делят venue+время), у него
+      // занята ровно одна lane = slotLane, и dropzone должна быть только она.
+      // Иначе — старая логика: dropzone на каждую lane.
+      const dzStart = isGroupSlot ? slotLane : 0;
+      const dzEnd = isGroupSlot ? slotLane + 1 : lanes;
+      for (let laneIdx = dzStart; laneIdx < dzEnd; laneIdx++) {
         const leftPct = (laneIdx / lanes) * 100;
         const widthPct = 100 / lanes;
         // Заполнено? Считаем какие lanes уже заняты
@@ -2135,6 +2267,14 @@ function renderTimeline() {
       }
     });
   });
+  // Клик по slot-label — открывает редактор слота
+  tl.querySelectorAll('.slot-label').forEach(label => {
+    label.addEventListener('click', e => {
+      e.stopPropagation();
+      const sid = label.dataset.slot;
+      if (sid) openSlotEditModal(sid);
+    });
+  });
 }
 
 // Esc отменяет drag — слушаем глобально
@@ -2201,6 +2341,14 @@ function placeBandLabels(ppm) {
     const PAD = 4;
     banner.style.cssText = `position:absolute;top:${venueColTopOffset + startPx}px;left:${left + PAD}px;width:${right - left - PAD * 2}px;`;
     banner.textContent = `${label} · ${s.start}–${s.end}`;
+    banner.dataset.slot = sid; // первый слот группы — открываем по клику
+    banner.title = entries.length > 1
+      ? `Открыть редактор первого слота группы (${sid}). В группе ${entries.length} слотов.`
+      : `Открыть редактор слота ${sid}`;
+    banner.addEventListener('click', e => {
+      e.stopPropagation();
+      openSlotEditModal(sid);
+    });
     tl.appendChild(banner);
   });
 }
@@ -3142,125 +3290,141 @@ function convertCandToTarget() {
 // Сохраняем старое имя на случай существующих вызовов
 function convertCandToEvent() { convertCandToTarget(); }
 
-function updateSubcategoryOptions() {
-  const cat = document.getElementById('ev-category').value;
-  const sel = document.getElementById('ev-subcategory');
-  const subs = state.data.subcategories?.[cat];
-  if (!subs) { sel.innerHTML = '<option value="">—</option>'; sel.disabled = true; return; }
-  sel.disabled = false;
+// ============================================================
+// HELPERS для select'ов (используются в нескольких модалках)
+// ============================================================
+function populateSubcategoryOptions(category, selectEl, currentValue) {
+  const subs = state.data.subcategories?.[category];
   let opts = '<option value="">—</option>';
-  Object.entries(subs).forEach(([key, sc]) => {
-    const label = sc.display || (sc.label_from_venue && state.data.venues[sc.label_from_venue]?.display) || key;
-    opts += `<option value="${esc(key)}">${esc(label)} (${esc(key)})</option>`;
+  if (subs) {
+    Object.entries(subs).forEach(([key, sc]) => {
+      const label = sc.display || (sc.label_from_venue && state.data.venues[sc.label_from_venue]?.display) || key;
+      opts += `<option value="${esc(key)}">${esc(label)} (${esc(key)})</option>`;
+    });
+  }
+  selectEl.innerHTML = opts;
+  selectEl.disabled = !subs;
+  if (currentValue) selectEl.value = currentValue;
+}
+function populateVenueOptions(selectEl, currentValue, includeEmpty) {
+  let opts = includeEmpty ? '<option value="">—</option>' : '';
+  Object.entries(state.data.venues).forEach(([vid, v]) => {
+    opts += `<option value="${esc(vid)}">${esc(v.display || vid)}</option>`;
   });
-  sel.innerHTML = opts;
+  selectEl.innerHTML = opts;
+  if (currentValue != null) selectEl.value = currentValue;
 }
 
-function renderLinksEditor(links) {
-  const editor = document.getElementById('ev-links-editor');
+// ============================================================
+// LINKS EDITOR — generic, работает с любым editor div'ом
+// ============================================================
+function renderLinksEditor(links, editorId) {
+  editorId = editorId || 'ev-links-editor';
+  const editor = document.getElementById(editorId);
+  if (!editor) return;
   const ls = links || [];
   editor.innerHTML = ls.map((l, i) => `
     <div class="link-row">
       <input data-link-idx="${i}" data-field="label" placeholder="название (напр. Telegram)" value="${esc(l.label||'')}">
       <input data-link-idx="${i}" data-field="url" placeholder="https://..." value="${esc(l.url||'')}">
-      <button onclick="removeLink(${i})">×</button>
+      <button onclick="removeLink(${i}, '${editorId}')">×</button>
     </div>
-  `).join('') + `<button class="add-link-btn" onclick="addLink()">+ ссылка</button>`;
+  `).join('') + `<button class="add-link-btn" onclick="addLink('${editorId}')">+ ссылка</button>`;
 }
-function getLinksFromEditor() {
+function getLinksFromEditor(editorId) {
+  editorId = editorId || 'ev-links-editor';
   const rows = {};
-  document.querySelectorAll('#ev-links-editor input[data-link-idx]').forEach(inp => {
+  document.querySelectorAll(`#${editorId} input[data-link-idx]`).forEach(inp => {
     const i = inp.dataset.linkIdx;
     if (!rows[i]) rows[i] = {};
     rows[i][inp.dataset.field] = inp.value;
   });
   return Object.values(rows).filter(l => l.url);
 }
-function addLink() {
-  const cur = getLinksFromEditor();
+function addLink(editorId) {
+  const cur = getLinksFromEditor(editorId);
   cur.push({label: '', url: ''});
-  renderLinksEditor(cur);
+  renderLinksEditor(cur, editorId);
 }
-function removeLink(i) {
-  const cur = getLinksFromEditor();
+function removeLink(i, editorId) {
+  const cur = getLinksFromEditor(editorId);
   cur.splice(i, 1);
-  renderLinksEditor(cur);
+  renderLinksEditor(cur, editorId);
 }
 
-function openExhibitModal(id) {
-  const item = (state.data.exhibits || []).find(x => x.id === id);
-  if (!item) return;
-  const modal = document.getElementById('event-modal');
-  modal.dataset.editingExhibit = id;
-  document.getElementById('event-modal-title').textContent = `Экспонат · ${item.kind}`;
-  document.getElementById('ev-id').value = item.id;
-  document.getElementById('ev-internal-id').value = item.id;
-  document.getElementById('ev-title').value = item.title || '';
-  document.getElementById('ev-subtitle').value = item.subtitle || '';
-  document.getElementById('ev-speaker').value = item.speaker || '';
-  document.getElementById('ev-speaker-role').value = item.speaker_role || '';
-  document.getElementById('ev-description').value = item.description || '';
-  document.getElementById('ev-category').value = 'art';
-  document.getElementById('ev-status').value = item.status || 'tentative';
-  document.getElementById('ev-apollo').value = item.apollo_slot || '';
-  document.getElementById('ev-lane').value = '';
-  updateSubcategoryOptions();
-  document.getElementById('ev-subcategory').value = item.subcategory || item.kind || '';
-  renderLinksEditor(item.links || []);
-  modal.classList.add('active');
-}
-
+// ============================================================
+// EVENT MODAL — только event-поля, слот меняется через селектор
+// или открывается отдельным редактором
+// ============================================================
 function openEventModal(evId) {
   const ev = state.data.events.find(e => e.id === evId);
   if (!ev) return;
+  document.getElementById('ev-id-old').value = ev.id;
   document.getElementById('ev-id').value = ev.id;
-  document.getElementById('ev-internal-id').value = ev.id;
   document.getElementById('ev-title').value = ev.title || '';
   document.getElementById('ev-subtitle').value = ev.subtitle || '';
   document.getElementById('ev-speaker').value = ev.speaker || '';
   document.getElementById('ev-speaker-role').value = ev.speaker_role || '';
   document.getElementById('ev-description').value = ev.description || '';
-  document.getElementById('ev-category').value = ev.category || 'popsci';
   document.getElementById('ev-status').value = ev.status || 'tentative';
-  document.getElementById('ev-apollo').value = ev.apollo_slot || '';
-  document.getElementById('ev-lane').value = ev.lane || '';
-  updateSubcategoryOptions();
-  document.getElementById('ev-subcategory').value = ev.subcategory || '';
-  renderLinksEditor(ev.links || []);
+  document.getElementById('ev-duration-override').value = ev.duration_override || '';
+
+  // Selector со списком всех слотов + «без слота»
+  const slotSelect = document.getElementById('ev-slot');
+  const slotOpts = Object.entries(state.data.time_slots)
+    .sort((a, b) => timeToMin(a[1].start) - timeToMin(b[1].start))
+    .map(([sid, s]) => `<option value="${esc(sid)}">${esc(s.tool_label || s.label_for_zoom || sid)} · ${esc(s.start)}–${esc(s.end)}</option>`)
+    .join('');
+  slotSelect.innerHTML = '<option value="">— без слота —</option>' + slotOpts;
+  slotSelect.value = ev.slot || '';
+  updateSlotInfoBlock();
+
+  // _source_app — read-only
+  const srcBlock = document.getElementById('ev-source-app-block');
+  srcBlock.textContent = ev._source_app ? `Из заявки ${ev._source_app}` : '';
+
+  renderLinksEditor(ev.links || [], 'ev-links-editor');
   document.getElementById('event-modal').classList.add('active');
 }
 function closeEventModal() {
-  const m = document.getElementById('event-modal');
-  m.classList.remove('active');
-  delete m.dataset.editingExhibit;
+  document.getElementById('event-modal').classList.remove('active');
 }
-function saveEvent() {
-  const modal = document.getElementById('event-modal');
-  const exhibitId = modal.dataset.editingExhibit;
-
-  if (exhibitId) {
-    // Сохраняем как экспонат
-    const item = (state.data.exhibits || []).find(x => x.id === exhibitId);
-    if (!item) return;
-    item.title = document.getElementById('ev-title').value || null;
-    item.subtitle = document.getElementById('ev-subtitle').value || null;
-    item.speaker = document.getElementById('ev-speaker').value || null;
-    item.speaker_role = document.getElementById('ev-speaker-role').value || null;
-    item.description = document.getElementById('ev-description').value || null;
-    item.status = document.getElementById('ev-status').value;
-    item.apollo_slot = document.getElementById('ev-apollo').value || null;
-    const sc = document.getElementById('ev-subcategory').value;
-    if (sc) item.subcategory = sc;
-    const links = getLinksFromEditor();
-    if (links.length) item.links = links; else delete item.links;
-    delete modal.dataset.editingExhibit;
-    closeEventModal();
-    markDirty(); rerenderAll(); persistState();
+function updateSlotInfoBlock() {
+  const sid = document.getElementById('ev-slot').value;
+  const info = document.getElementById('ev-slot-info');
+  const btn = document.getElementById('ev-edit-slot-btn');
+  if (!sid) {
+    info.style.display = 'none';
+    btn.style.display = 'none';
     return;
   }
-
-  const oldId = document.getElementById('ev-id').value;
-  const newId = document.getElementById('ev-internal-id').value.trim();
+  const s = state.data.time_slots[sid];
+  if (!s) {
+    info.style.display = 'block';
+    info.innerHTML = `Слот <code>${esc(sid)}</code> не найден.`;
+    btn.style.display = 'none';
+    return;
+  }
+  const cat = s.category && state.data.categories[s.category];
+  const venue = s.venue && state.data.venues[s.venue];
+  info.style.display = 'block';
+  info.innerHTML = `
+    <strong>${esc(s.tool_label || s.label_for_zoom || sid)}</strong>
+    · ${esc(s.start)}–${esc(s.end)}
+    · ${esc(venue ? (venue.display || s.venue) : (s.venue || '—'))}
+    <br>Категория: ${esc(cat ? cat.display : (s.category || '—'))}${s.subcategory ? ' · ' + esc(s.subcategory) : ''}${s.apollo_slot ? ' · apollo: ' + esc(s.apollo_slot) : ''}
+  `;
+  btn.style.display = 'inline-block';
+}
+function editCurrentSlot() {
+  const sid = document.getElementById('ev-slot').value;
+  if (!sid) return;
+  closeEventModal();
+  openSlotEditModal(sid);
+}
+function saveEvent() {
+  const oldId = document.getElementById('ev-id-old').value;
+  const newId = document.getElementById('ev-id').value.trim();
   const ev = state.data.events.find(e => e.id === oldId);
   if (!ev) return;
   if (newId !== oldId) {
@@ -3272,24 +3436,221 @@ function saveEvent() {
   ev.speaker = document.getElementById('ev-speaker').value || null;
   ev.speaker_role = document.getElementById('ev-speaker-role').value || null;
   ev.description = document.getElementById('ev-description').value || null;
-  ev.category = document.getElementById('ev-category').value;
   ev.status = document.getElementById('ev-status').value;
-  ev.apollo_slot = document.getElementById('ev-apollo').value || null;
-  const sc = document.getElementById('ev-subcategory').value;
-  if (sc) ev.subcategory = sc; else delete ev.subcategory;
-  const lane = document.getElementById('ev-lane').value;
-  if (lane) ev.lane = lane; else delete ev.lane;
-  const links = getLinksFromEditor();
+  const dur = document.getElementById('ev-duration-override').value;
+  ev.duration_override = dur ? parseInt(dur) : null;
+
+  // Перепривязка слота. Если изменилась — снимаем enriched поля чтобы они переинжектировались.
+  const newSlot = document.getElementById('ev-slot').value || null;
+  if (newSlot !== ev.slot) {
+    if (ev._enriched_fields) {
+      ev._enriched_fields.forEach(f => delete ev[f]);
+      delete ev._enriched_fields;
+    }
+    ev.slot = newSlot;
+    enrichEventsFromSlots(state.data);
+  }
+
+  const links = getLinksFromEditor('ev-links-editor');
   if (links.length) ev.links = links; else delete ev.links;
   closeEventModal();
   markDirty(); rerenderAll(); persistState();
 }
 function deleteEvent() {
-  const evId = document.getElementById('ev-id').value;
-  if (!confirm('Удалить событие?')) return;
+  const evId = document.getElementById('ev-id-old').value;
+  const ev = state.data.events.find(e => e.id === evId);
+  if (!ev) return;
+  if (!confirm(`Удалить событие «${ev.title || ev.id}»?`)) return;
   state.data.events = state.data.events.filter(e => e.id !== evId);
   closeEventModal();
   markDirty(); rerenderAll(); persistState();
+}
+
+// ============================================================
+// SLOT EDIT MODAL — детальный редактор одного слота
+// ============================================================
+function openSlotEditModal(sid) {
+  const s = state.data.time_slots[sid];
+  if (!s) return;
+  document.getElementById('slot-edit-modal-title').textContent = `Слот · ${s.tool_label || s.label_for_zoom || sid}`;
+  document.getElementById('se-id-old').value = sid;
+  document.getElementById('se-id').value = sid;
+  document.getElementById('se-tool-label').value = s.tool_label || '';
+  document.getElementById('se-zoom-label').value = s.label_for_zoom || '';
+  document.getElementById('se-start').value = s.start || '';
+  document.getElementById('se-end').value = s.end || '';
+  document.getElementById('se-type').value = s.type || '';
+  document.getElementById('se-leaf').value = s.leaf || '';
+  document.getElementById('se-apollo').value = s.apollo_slot || '';
+  document.getElementById('se-category').value = s.category || '';
+
+  populateVenueOptions(document.getElementById('se-venue'), s.venue || '', true);
+  populateSubcategoryOptions(s.category, document.getElementById('se-subcategory'), s.subcategory);
+
+  // Список привязанных событий
+  const attached = state.data.events.filter(e => e.slot === sid);
+  const eventsBlock = document.getElementById('se-events-list');
+  eventsBlock.innerHTML = attached.length
+    ? attached.map(e => `<div style="padding:3px 0">• <strong>${esc(e.title || '(без названия)')}</strong>${e.speaker ? ' — ' + esc(e.speaker) : ''}</div>`).join('')
+    : '<em style="color:#888">Нет привязанных событий</em>';
+
+  document.getElementById('slot-edit-modal').classList.add('active');
+}
+function closeSlotEditModal() {
+  document.getElementById('slot-edit-modal').classList.remove('active');
+}
+function updateSlotSubcategoryOptions() {
+  const cat = document.getElementById('se-category').value;
+  populateSubcategoryOptions(cat, document.getElementById('se-subcategory'), '');
+}
+function saveSlotEdit() {
+  const oldId = document.getElementById('se-id-old').value;
+  const newId = document.getElementById('se-id').value.trim();
+  if (!state.data.time_slots[oldId]) return;
+  if (!newId) { alert('id обязателен'); return; }
+
+  if (newId !== oldId) {
+    if (state.data.time_slots[newId]) { alert('id уже занят'); return; }
+    // Переименование: переносим объект и обновляем все ссылки в events
+    state.data.time_slots[newId] = state.data.time_slots[oldId];
+    delete state.data.time_slots[oldId];
+    state.data.events.forEach(ev => { if (ev.slot === oldId) ev.slot = newId; });
+  }
+
+  const s = state.data.time_slots[newId];
+  s.tool_label = document.getElementById('se-tool-label').value || null;
+  s.label_for_zoom = document.getElementById('se-zoom-label').value || null;
+  s.start = document.getElementById('se-start').value;
+  s.end = document.getElementById('se-end').value;
+  s.type = document.getElementById('se-type').value || null;
+  s.venue = document.getElementById('se-venue').value || null;
+  s.category = document.getElementById('se-category').value || null;
+  s.apollo_slot = document.getElementById('se-apollo').value || null;
+  s.subcategory = document.getElementById('se-subcategory').value || null;
+  s.leaf = document.getElementById('se-leaf').value || null;
+
+  // После правки слота — переинжектируем enriched поля во все его events
+  state.data.events.forEach(ev => {
+    if (ev.slot === newId && ev._enriched_fields) {
+      ev._enriched_fields.forEach(f => delete ev[f]);
+      delete ev._enriched_fields;
+    }
+  });
+  enrichEventsFromSlots(state.data);
+
+  closeSlotEditModal();
+  markDirty(); rerenderAll(); persistState();
+}
+function deleteSlotFromEdit() {
+  const sid = document.getElementById('se-id-old').value;
+  const attached = state.data.events.filter(e => e.slot === sid);
+  let msg = `Удалить слот ${sid}?`;
+  if (attached.length) {
+    msg += `\n\nК нему привязано ${attached.length} событий. Они останутся, но окажутся «без слота».`;
+  }
+  if (!confirm(msg)) return;
+  delete state.data.time_slots[sid];
+  state.data.events.forEach(ev => {
+    if (ev.slot === sid) {
+      ev.slot = null;
+      if (ev._enriched_fields) {
+        ev._enriched_fields.forEach(f => delete ev[f]);
+        delete ev._enriched_fields;
+      }
+    }
+  });
+  closeSlotEditModal();
+  markDirty(); rerenderAll(); persistState();
+}
+
+// ============================================================
+// EXHIBIT MODAL — отдельная схема (не привязан к слоту)
+// ============================================================
+function openExhibitModal(id) {
+  const item = (state.data.exhibits || []).find(x => x.id === id);
+  if (!item) return;
+  document.getElementById('exhibit-modal-title').textContent = `Экспонат · ${item.kind}`;
+  document.getElementById('ex-id-old').value = item.id;
+  document.getElementById('ex-id').value = item.id;
+  document.getElementById('ex-kind').value = item.kind || 'art';
+  document.getElementById('ex-title').value = item.title || '';
+  document.getElementById('ex-speaker').value = item.speaker || '';
+  document.getElementById('ex-description').value = item.description || '';
+  document.getElementById('ex-status').value = item.status || 'tentative';
+  document.getElementById('ex-apollo').value = item.apollo_slot || '';
+  // Подкатегория экспоната — в данных это «art», т.к. exhibit-категория всегда искусство
+  populateSubcategoryOptions('art', document.getElementById('ex-subcategory'), item.subcategory);
+
+  const srcBlock = document.getElementById('ex-source-app-block');
+  srcBlock.textContent = item._source_app ? `Из заявки ${item._source_app}` : '';
+
+  renderLinksEditor(item.links || [], 'ex-links-editor');
+  document.getElementById('exhibit-modal').classList.add('active');
+}
+function closeExhibitModal() {
+  document.getElementById('exhibit-modal').classList.remove('active');
+}
+function saveExhibit() {
+  const oldId = document.getElementById('ex-id-old').value;
+  const newId = document.getElementById('ex-id').value.trim();
+  const item = (state.data.exhibits || []).find(x => x.id === oldId);
+  if (!item) return;
+  if (newId !== oldId) {
+    if ((state.data.exhibits || []).some(x => x.id === newId)) { alert('id уже занят'); return; }
+    item.id = newId;
+  }
+  item.kind = document.getElementById('ex-kind').value || 'art';
+  item.title = document.getElementById('ex-title').value || null;
+  item.speaker = document.getElementById('ex-speaker').value || null;
+  item.description = document.getElementById('ex-description').value || null;
+  item.status = document.getElementById('ex-status').value;
+  item.apollo_slot = document.getElementById('ex-apollo').value || null;
+  const sc = document.getElementById('ex-subcategory').value;
+  if (sc) item.subcategory = sc; else delete item.subcategory;
+  const links = getLinksFromEditor('ex-links-editor');
+  if (links.length) item.links = links; else delete item.links;
+  closeExhibitModal();
+  markDirty(); rerenderAll(); persistState();
+}
+function deleteExhibit() {
+  const id = document.getElementById('ex-id-old').value;
+  const item = (state.data.exhibits || []).find(x => x.id === id);
+  if (!item) return;
+  if (!confirm(`Удалить экспонат «${item.title || item.id}»?`)) return;
+  state.data.exhibits = state.data.exhibits.filter(x => x.id !== id);
+  closeExhibitModal();
+  markDirty(); rerenderAll(); persistState();
+}
+
+// ============================================================
+// СОЗДАНИЕ НОВЫХ
+// ============================================================
+function addNewEvent() {
+  const title = prompt('Название нового события:');
+  if (!title) return;
+  const id = 'ev-' + Date.now();
+  state.data.events.push({
+    id, status: 'tentative', title, slot: null,
+    subtitle: null, speaker: null, speaker_role: null, description: null,
+    duration_override: null
+  });
+  markDirty(); rerenderAll(); persistState();
+  // Сразу открываем редактор для дозаполнения
+  openEventModal(id);
+}
+function addNewSlot() {
+  const id = prompt('id нового слота (напр. slot-custom-music-1):');
+  if (!id) return;
+  if (state.data.time_slots[id]) { alert('такой id уже есть'); return; }
+  state.data.time_slots[id] = {
+    start: '20:00', end: '21:00',
+    label_for_zoom: id, tool_label: id,
+    type: null, venue: null,
+    category: null, apollo_slot: null, subcategory: null,
+    leaf: null
+  };
+  markDirty(); rerenderAll(); persistState();
+  openSlotEditModal(id);
 }
 function addNewIdea() {
   const name = prompt('Кого/что зовём?');
@@ -3324,6 +3685,7 @@ function openSlotEditor() {
       <input type="time" value="${esc(s.start)}" data-slot="${id}" data-field="start">
       <input type="time" value="${esc(s.end)}" data-slot="${id}" data-field="end">
       <input value="${esc(s.tool_label||s.label_for_zoom||'')}" data-slot="${id}" data-field="tool_label" placeholder="название (Лекция 1, Станции 2…)">
+      <button onclick="closeSlotEditor(); openSlotEditModal('${id}')" title="Детально" style="background:#fff;border:1px solid #ccc;border-radius:2px;cursor:pointer">✎</button>
       <button onclick="deleteSlot('${id}')" style="color:#c00;background:#fff;border:1px solid #ccc;border-radius:2px;cursor:pointer">×</button>
     </div>`).join('');
   document.getElementById('slot-editor-rows').innerHTML = rows;
