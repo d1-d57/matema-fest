@@ -2108,12 +2108,75 @@ const VIEW_CONFIG = {
 
 function persistState() {
   try {
+    // Автопересчёт Apollo-слотов перед сохранением. Идея: круги Аполлония
+    // приписаны слотам автоматически по правилу «больше title → больший круг»,
+    // в пределах группы (тип, подкатегория). Лимит — 10 слотов на группу.
+    try { recomputeApolloSlots(state.data); } catch(e) { console.warn('apollo recompute failed', e); }
     localStorage.setItem(STATE_KEY, JSON.stringify({
       data: state.data, appStatuses: state.appStatuses, ideas: state.ideas,
       candCategoryOverrides: state.candCategoryOverrides || {},
       remoteSha: state.remoteSha, isDirty: state.isDirty
     }));
   } catch(e) { console.warn('persist failed', e); }
+}
+
+// ============================================================
+// АВТОРАСПРЕДЕЛЕНИЕ APOLLO ПО СЛОТАМ
+// Группировка: по (slot.category, slot.subcategory). Если subcategory нет —
+// один контейнер на всю category. Лимит 10 слотов в группе. Распределение
+// по убыванию «размера» = длина title главного события в слоте (или
+// tool_label если событий нет). Большие → big-1/2/3, средние → mid-, малые
+// → ear-, центр в середине.
+// Если в группе >10 — alert и пропускаем эту группу.
+// ============================================================
+function _slotMainTitleLength(slotId, slot) {
+  const evs = (state.data?.events || []).filter(e => e.slot === slotId);
+  if (evs.length > 0) {
+    // Берём максимум по длине из всех событий в слоте
+    return Math.max(...evs.map(e => (e.title || '').length));
+  }
+  return (slot.tool_label || slot.label_for_zoom || '').length;
+}
+
+const APOLLO_ORDER = ['big-1', 'big-2', 'big-3', 'mid-1', 'mid-2', 'mid-3', 'center', 'ear-1', 'ear-2', 'ear-3'];
+
+function recomputeApolloSlots(data) {
+  if (!data || !data.time_slots) return;
+  // Собираем слоты с typed category. Без category слот в Apollo не участвует.
+  const groups = {};  // ключ "category::subcategory|*" → [{id, slot, size}]
+  Object.entries(data.time_slots).forEach(([sid, slot]) => {
+    if (!slot.category) return;
+    const subKey = slot.subcategory || '*';
+    const key = slot.category + '::' + subKey;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push({id: sid, slot, size: _slotMainTitleLength(sid, slot)});
+  });
+  const overflows = [];
+  Object.entries(groups).forEach(([key, arr]) => {
+    if (arr.length > APOLLO_ORDER.length) {
+      const [cat, sub] = key.split('::');
+      overflows.push({key: cat + (sub !== '*' ? '/' + sub : ''), n: arr.length});
+      return;  // пропускаем эту группу — Apollo не назначаем
+    }
+    // Сортируем по убыванию размера (большие в первую очередь)
+    arr.sort((a, b) => b.size - a.size);
+    arr.forEach((item, idx) => {
+      const apollo = APOLLO_ORDER[idx];
+      if (item.slot.apollo_slot !== apollo) {
+        item.slot.apollo_slot = apollo;
+      }
+    });
+  });
+  if (overflows.length > 0) {
+    const msg = overflows.map(o => `«${o.key}»: ${o.n} слотов (макс 10)`).join('\n');
+    if (!window._apolloOverflowWarned) {
+      console.warn('[programmer] Apollo overflow:\n' + msg);
+      window._apolloOverflowWarned = true;
+      setTimeout(() => alert('Превышен лимит 10 кругов Аполлония в группе:\n\n' + msg + '\n\nApollo для этих групп не пересчитан. Уменьши количество слотов или раздели по подтипам.'), 100);
+    }
+  } else {
+    window._apolloOverflowWarned = false;
+  }
 }
 
 // Авто-бэкап в отдельный ключ. Используется перед опасными операциями (reload,
@@ -3683,6 +3746,31 @@ function handleDrop(slotId, venueId, laneIdx, e) {
     if (!confirm(`Площадка ${venueId} нетипична для слота. Всё равно поставить?`)) return;
   }
 
+  // ТИПОВАЯ ВАЛИДАЦИЯ. Слот зарезервирован под определённый тип (slot.category).
+  // Событие должно совпадать. Иначе отказ — пользователь либо меняет тип события,
+  // либо выбирает другой слот. Это контроль структуры программы.
+  if (slot && slot.category) {
+    let candCat = null;
+    if (kind === 'event') {
+      const ev = state.data.events.find(x => x.id === id);
+      candCat = ev?.category;
+    } else if (kind === 'app' || kind === 'idea') {
+      const cand = buildCandidates().find(c => c.id === id);
+      // У заявки тип определяется так же как при создании: override > suggested
+      const ovr = state.candCategoryOverrides?.[id];
+      if (ovr && typeof ovr === 'object') candCat = ovr.type;
+      else if (typeof ovr === 'string') candCat = (['art','installation','media'].includes(ovr) ? 'art' : ovr);
+      else candCat = cand?._suggested_category || null;
+      if (candCat === 'installation' || candCat === 'media') candCat = 'art';
+    }
+    if (candCat && candCat !== slot.category) {
+      const slotCat = state.data.categories?.[slot.category]?.display || slot.category;
+      const evCat = state.data.categories?.[candCat]?.display || candCat;
+      alert(`Не могу поставить.\n\nСлот зарезервирован под «${slotCat}».\nА это событие имеет тип «${evCat}».\n\nПоменяй тип события в его карточке, или выбери другой слот.`);
+      return;
+    }
+  }
+
   // indoor/outdoor проверка
   const isOutdoor = venueId === 'courtyard';
   if (kind === 'app' || kind === 'idea') {
@@ -3799,10 +3887,30 @@ function renderAppDetail(id) {
     media: 'Медиа-арт'
   };
   const suggest = c._suggested_category;
-  // Приоритет defaultCat: override (если пользователь раньше менял) > suggest > режим вкладки
+  // Приоритет: override > suggest > дефолт по моду. Override может быть legacy-строкой
+  // ('installation'/'media') или новым объектом {type, subtype}.
   if (!state.candCategoryOverrides) state.candCategoryOverrides = {};
   const override = state.candCategoryOverrides[id];
-  const defaultCat = override || suggest || (state.view === 'art' ? 'installation' : 'experiment');
+  let defaultType, defaultSubtype = null;
+  if (override && typeof override === 'object') {
+    defaultType = override.type;
+    defaultSubtype = override.subtype || null;
+  } else if (override === 'art' || override === 'installation' || override === 'media') {
+    defaultType = 'art';
+    defaultSubtype = override;
+  } else if (override) {
+    defaultType = override;
+  } else if (suggest === 'art' || suggest === 'installation' || suggest === 'media') {
+    defaultType = 'art';
+    defaultSubtype = suggest;
+  } else if (suggest) {
+    defaultType = suggest;
+  } else {
+    defaultType = (state.view === 'art' ? 'art' : 'experiment');
+    defaultSubtype = (state.view === 'art' ? 'installation' : null);
+  }
+  const subtypeOptionsHtml = _entitySubtypeOptionsHtml(defaultType, defaultSubtype);
+  const subtypeWrapStyle = _entitySubtypes(defaultType).length === 0 ? 'display:none' : '';
 
   const fields = [
     ['Формат', c.format],
@@ -3852,16 +3960,19 @@ function renderAppDetail(id) {
 
       <div class="detail-suggest">
         <div class="detail-suggest-label">${suggest ? 'Предлагаемый тип' : 'Тип не определён — выбери'}</div>
-        <div class="detail-suggest-text">${suggest ? `На основе анкеты: <strong>${labelMap[suggest]}</strong>` : 'Заявка не классифицирована автоматически.'}</div>
-        <select id="detail-target-cat" onchange="state.candCategoryOverrides=state.candCategoryOverrides||{}; state.candCategoryOverrides['${esc(id)}']=this.value; persistState();">
-          <option value="popsci" ${defaultCat==='popsci'?'selected':''}>Лекция / выступление (popsci)</option>
-          <option value="experiment" ${defaultCat==='experiment'?'selected':''}>Опыт / эксперимент (experiment)</option>
-          <option value="workshop" ${defaultCat==='workshop'?'selected':''}>Мастерская (workshop)</option>
-          <option value="social" ${defaultCat==='social'?'selected':''}>Перформанс / коллективное (social)</option>
-          <option value="art" ${defaultCat==='art'?'selected':''}>Галерея (art)</option>
-          <option value="installation" ${defaultCat==='installation'?'selected':''}>Инсталляция (installation)</option>
-          <option value="media" ${defaultCat==='media'?'selected':''}>Медиа-арт (media)</option>
-        </select>
+        <div class="detail-suggest-text">${suggest ? `На основе анкеты: <strong>${labelMap[suggest] || suggest}</strong>` : 'Заявка не классифицирована автоматически.'}</div>
+        <div style="margin-top:8px">
+          <label style="font-size:12px;color:#666">Тип <span style="font-size:11px;color:#888">(круг Аполлония)</span></label>
+          <select id="detail-target-cat" onchange="detailUpdateCandSubtype('${esc(id)}')">
+            ${_entityTypeOptionsHtml(defaultType)}
+          </select>
+        </div>
+        <div id="detail-target-subtype-wrap" style="margin-top:6px;${subtypeWrapStyle}">
+          <label style="font-size:12px;color:#666">Подтип <span style="font-size:11px;color:#888">(внутри круга)</span></label>
+          <select id="detail-target-subtype" onchange="detailSaveCandOverride('${esc(id)}')">
+            ${subtypeOptionsHtml}
+          </select>
+        </div>
       </div>
     </div>
     <div class="detail-actions">
@@ -3948,16 +4059,9 @@ function renderEventDetail(id) {
       <div>
         <label>Статус</label>
         <select id="detail-ev-status">
-          <option value="confirmed" ${ev.status==='confirmed'?'selected':''}>подтверждено</option>
-          <option value="tentative" ${ev.status==='tentative'?'selected':''}>пока не точно</option>
-          <option value="placeholder" ${ev.status==='placeholder'?'selected':''}>плейсхолдер</option>
-        </select>
-      </div>
-      <div>
-        <label>Apollo slot</label>
-        <select id="detail-ev-apollo">
-          <option value="">—</option>
-          ${['big-1','big-2','big-3','mid-1','mid-2','mid-3','center','ear-1','ear-2','ear-3'].map(s => `<option value="${s}" ${ev.apollo_slot===s?'selected':''}>${s}</option>`).join('')}
+          <option value="tentative" ${(ev.status==='tentative'||ev.status==='confirmed')?'selected':''}>в программе</option>
+          <option value="placeholder" ${ev.status==='placeholder'?'selected':''}>думаем</option>
+          <option value="rejected" ${ev.status==='rejected'?'selected':''}>отказ</option>
         </select>
       </div>
       <div class="full">
@@ -4136,17 +4240,9 @@ function renderExhibitDetail(id) {
         <div>
           <label>Статус</label>
           <select id="detail-ex-status">
-            <option value="confirmed" ${ex.status==='confirmed'?'selected':''}>в программе · подтверждено</option>
-            <option value="tentative" ${ex.status==='tentative'?'selected':''}>в программе · уточняется</option>
-            <option value="placeholder" ${ex.status==='placeholder'?'selected':''}>думаем (вернуть в раздумья)</option>
+            <option value="tentative" ${(ex.status==='tentative'||ex.status==='confirmed')?'selected':''}>в программе</option>
+            <option value="placeholder" ${ex.status==='placeholder'?'selected':''}>думаем</option>
             <option value="rejected" ${ex.status==='rejected'?'selected':''}>отказ</option>
-          </select>
-        </div>
-        <div>
-          <label>Apollo slot</label>
-          <select id="detail-ex-apollo">
-            <option value="">—</option>
-            ${['big-1','big-2','big-3','mid-1','mid-2','mid-3','center','ear-1','ear-2','ear-3'].map(s => `<option value="${s}" ${ex.apollo_slot===s?'selected':''}>${s}</option>`).join('')}
           </select>
         </div>
         <div class="full">
@@ -4169,6 +4265,35 @@ function bindDetailHandlers() {
   if (catSel) {
     catSel.addEventListener('change', detailUpdateSubcat);
   }
+}
+
+function detailUpdateCandSubtype(appId) {
+  const typeSel = document.getElementById('detail-target-cat');
+  const wrap = document.getElementById('detail-target-subtype-wrap');
+  const sel = document.getElementById('detail-target-subtype');
+  if (!typeSel || !wrap) return;
+  const newType = typeSel.value;
+  const opts = _entitySubtypes(newType);
+  if (opts.length === 0) {
+    wrap.style.display = 'none';
+    if (sel) sel.innerHTML = '';
+  } else {
+    wrap.style.display = '';
+    if (sel) sel.innerHTML = _entitySubtypeOptionsHtml(newType, '');
+  }
+  detailSaveCandOverride(appId);
+}
+
+function detailSaveCandOverride(appId) {
+  const typeSel = document.getElementById('detail-target-cat');
+  const subSel = document.getElementById('detail-target-subtype');
+  if (!typeSel) return;
+  state.candCategoryOverrides = state.candCategoryOverrides || {};
+  state.candCategoryOverrides[appId] = {
+    type: typeSel.value,
+    subtype: (subSel && subSel.value) ? subSel.value : null
+  };
+  persistState();
 }
 
 function detailUpdateExhibitSubcat() {
@@ -4253,17 +4378,14 @@ function detailConvertApp() {
   pushHistory();
   const c = buildCandidates().find(x => x.id === _detailContext.id);
   if (!c) return;
-  const targetCat = document.getElementById('detail-target-cat').value;
-  const isExhibit = ['installation', 'art', 'media'].includes(targetCat);
+  const targetType = document.getElementById('detail-target-cat').value;
+  const targetSub = document.getElementById('detail-target-subtype')?.value || null;
+  const isExhibit = (targetType === 'art');
+  // Для exhibit kind = подтип (art/installation/media); если не выбран — 'art' по умолчанию
+  const exhibitKind = targetSub || 'art';
 
   // ЕСЛИ для заявки уже создано событие/экспонат — НЕ создаём дубль, а
   // «перемещаем» — т.е. меняем тип. Это и есть «смена категории заявки в карточке».
-  // Логика:
-  //   - найти существующую сущность по _source_app=c.id (или _source)
-  //   - если она того же типа (exhibit↔isExhibit совпадает) → просто поменять
-  //     subcategory/kind/category внутри
-  //   - если другого типа (event vs exhibit) → удалить старую, создать новую
-  //     с теми же полями (title, speaker, description, _source_app, status)
   const existingEvent = state.data.events.find(e => e._source_app === c.id || e._source === c.id);
   const existingExhibit = (state.data.exhibits || []).find(x => x._source_app === c.id || x._source === c.id);
   const existing = existingEvent || existingExhibit;
@@ -4271,29 +4393,26 @@ function detailConvertApp() {
   if (existing) {
     const wasExhibit = !!existingExhibit;
     if (isExhibit && wasExhibit) {
-      // Меняем подкатегорию exhibit'a (art / installation / media)
-      existing.kind = targetCat;
-      existing.subcategory = targetCat;
+      // Меняем подтип exhibit'a (art / installation / media)
+      existing.kind = exhibitKind;
+      existing.subcategory = exhibitKind;
       markDirty(); rerenderAll(); persistState();
-      // НЕ закрываем detail — пользователь видит изменение
       showDetail('exhibit', existing.id);
       return;
     }
     if (!isExhibit && !wasExhibit) {
-      // Меняем категорию event'a (popsci/experiment/workshop/social)
-      existing.category = targetCat;
+      // Меняем категорию event'a (popsci/experiment/workshop/social/cinema/music)
+      existing.category = targetType;
+      if (targetSub) existing.subcategory = targetSub; else delete existing.subcategory;
       delete existing._enriched_fields;
       enrichEventsFromSlots(state.data);
       markDirty(); rerenderAll(); persistState();
       showDetail('event', existing.id);
       return;
     }
-    // Меняем ТИП (event ↔ exhibit) — нужно удалить старое и создать новое
-    if (existing.slot && !isExhibit) {
-      // event → event, slot сохраняем — это уже обработано выше
-    }
+    // Меняем ТИП (event ↔ exhibit) — удалить старое и создать новое
     if (existingEvent && existingEvent.slot && isExhibit) {
-      if (!confirm('У этого события есть слот в timeline. Перевод в галерею открепит его. Продолжить?')) return;
+      if (!confirm('У этого события есть слот в timeline. Перевод в галерею откреплит его. Продолжить?')) return;
     }
     if (wasExhibit) {
       state.data.exhibits = state.data.exhibits.filter(x => x.id !== existing.id);
@@ -4303,11 +4422,11 @@ function detailConvertApp() {
     if (isExhibit) {
       const id = 'exh-' + Date.now();
       const newEx = {
-        id, kind: targetCat, status: existing.status || 'tentative',
+        id, kind: exhibitKind, status: existing.status || 'tentative',
         title: existing.title || c.title || '(без названия)',
         speaker: existing.speaker || c.name || null,
         description: existing.description || c.description || null,
-        subcategory: targetCat, apollo_slot: existing.apollo_slot || null,
+        subcategory: exhibitKind, apollo_slot: existing.apollo_slot || null,
         _source_app: c.id
       };
       state.data.exhibits = state.data.exhibits || [];
@@ -4316,32 +4435,34 @@ function detailConvertApp() {
       showDetail('exhibit', id);
     } else {
       const newId = 'ev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-      state.data.events.push({
+      const newEv = {
         id: newId,
         title: existing.title || c.title || '(без названия)',
         speaker: existing.speaker || c.name || null,
         description: existing.description || c.description || null,
-        category: targetCat,
+        category: targetType,
         status: existing.status || 'tentative',
         slot: null, venue: null,
         _source_app: c.id
-      });
+      };
+      if (targetSub) newEv.subcategory = targetSub;
+      state.data.events.push(newEv);
       markDirty(); rerenderAll(); persistState();
       showDetail('event', newId);
     }
     return;
   }
 
-  // НЕТ существующей сущности — создаём с нуля (стандартная логика)
+  // НЕТ существующей сущности — создаём с нуля
   if (isExhibit) {
     const id = 'exh-' + Date.now();
     state.data.exhibits = state.data.exhibits || [];
     state.data.exhibits.push({
-      id, kind: targetCat, status: 'tentative',
+      id, kind: exhibitKind, status: 'tentative',
       title: c.title || '(без названия)',
       speaker: c.name || null,
       description: c.description || null,
-      subcategory: targetCat, apollo_slot: null,
+      subcategory: exhibitKind, apollo_slot: null,
       _source_app: c.id
     });
     if (c.kind === 'app') state.appStatuses[c.id] = 'considering';
@@ -4349,7 +4470,8 @@ function detailConvertApp() {
     showDetail('exhibit', id);
   } else {
     const newEv = createEventFromCand(c, null, null);
-    newEv.category = targetCat;
+    newEv.category = targetType;
+    if (targetSub) newEv.subcategory = targetSub;
     state.data.events.push(newEv);
     if (c.kind === 'app') state.appStatuses[c.id] = 'considering';
     markDirty(); rerenderAll(); persistState();
@@ -4468,7 +4590,6 @@ function detailSaveEvent() {
     const newType = document.getElementById('detail-ev-category').value;
     const newSubtype = document.getElementById('detail-ev-subcategory')?.value || null;
     ev.status = document.getElementById('detail-ev-status').value;
-    ev.apollo_slot = document.getElementById('detail-ev-apollo').value || null;
     if (newSubtype) ev.subcategory = newSubtype; else delete ev.subcategory;
     const links = detailGetLinks();
     if (links.length) ev.links = links; else delete ev.links;
@@ -4517,7 +4638,6 @@ function detailSaveExhibit() {
   const newSubtype = document.getElementById('detail-ex-subcategory')?.value || null;
   ex.description = document.getElementById('detail-ex-description').value || null;
   ex.status = document.getElementById('detail-ex-status').value;
-  ex.apollo_slot = document.getElementById('detail-ex-apollo').value || null;
   const links = detailGetLinks();
   if (links.length) ex.links = links; else delete ex.links;
   // Унификация типа: если выбрали не-art — переводим в event с category=type, subcategory=subtype.
