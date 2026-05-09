@@ -1405,7 +1405,8 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
     <button class="expand-toggle" onclick="cyclePane('wider')" title="Расширить пул кандидатов" id="expand-toggle">›</button>
     <div class="right-tabs">
       <button class="right-tab active" data-view="all">Всё <span class="tab-count" id="stat-all">—</span></button>
-      <button class="right-tab" data-view="open-apps">События <span class="tab-count" id="stat-open-apps">—</span></button>
+      <button class="right-tab" data-view="popsci">Научпоп <span class="tab-count" id="stat-popsci">—</span></button>
+      <button class="right-tab" data-view="open-apps">Станции <span class="tab-count" id="stat-open-apps">—</span></button>
       <button class="right-tab" data-view="cinema">Кино <span class="tab-count" id="stat-cinema">—</span></button>
       <button class="right-tab" data-view="music">Музыка <span class="tab-count" id="stat-music">—</span></button>
       <button class="right-tab" data-view="art">Искусство <span class="tab-count" id="stat-art">—</span></button>
@@ -1536,28 +1537,13 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
         <input type="time" id="se-end">
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div>
-        <label>Тип слота (type)</label>
-        <select id="se-type">
-          <option value="">—</option>
-          <option value="talk">talk (лекция)</option>
-          <option value="discussion">discussion</option>
-          <option value="station">station (станция)</option>
-          <option value="music">music (главная сцена)</option>
-          <option value="music-extra">music-extra (параллельно)</option>
-          <option value="dance">dance (танцпол)</option>
-          <option value="cinema">cinema (фильм)</option>
-          <option value="interlude">interlude (короткометражка)</option>
-          <option value="networking">networking</option>
-        </select>
-      </div>
+    <div style="display:grid;grid-template-columns:1fr;gap:8px">
       <div>
         <label>Площадка (venue)</label>
         <select id="se-venue"></select>
       </div>
     </div>
-    <h3 style="font-size:14px;margin-top:14px">Аполлоний / категории</h3>
+    <h3 style="font-size:14px;margin-top:14px">Категория (круг Аполлония)</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div>
         <label>Категория</label>
@@ -1575,20 +1561,6 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
       <div>
         <label>Подкатегория</label>
         <select id="se-subcategory"><option value="">—</option></select>
-      </div>
-      <div>
-        <label>Apollo slot</label>
-        <select id="se-apollo">
-          <option value="">—</option>
-          <option value="big-1">big-1</option><option value="big-2">big-2</option><option value="big-3">big-3</option>
-          <option value="mid-1">mid-1</option><option value="mid-2">mid-2</option><option value="mid-3">mid-3</option>
-          <option value="center">center</option>
-          <option value="ear-1">ear-1</option><option value="ear-2">ear-2</option><option value="ear-3">ear-3</option>
-        </select>
-      </div>
-      <div>
-        <label>Лист фрактала (leaf)</label>
-        <input id="se-leaf" placeholder="leaf-X">
       </div>
     </div>
     <div style="margin-top:14px;padding:10px;background:#faf8ed;border-left:2px solid #c4a847;font-size:12px">
@@ -1999,22 +1971,25 @@ const VENUE_TECH_NAMES = {
 };
 
 function slotKind(sid) {
-  // Источник правды — slot.type из схемы v17+. Если type не задан — возвращаем
-  // 'lecture' как самый нейтральный fallback.
+  // ИСТОЧНИК ПРАВДЫ — slot.category. Раньше было два дублирующих поля
+  // (slot.type техническое + slot.category содержательное), но это переусложнение.
+  // Сейчас kind для рендера и цвета вычисляется из (category, subcategory, venue).
+  // Возвращаем CSS-класс для kind-X (см. CSS .slot-bg.kind-*).
   const sl = state.data && state.data.time_slots && state.data.time_slots[sid];
-  if (!sl || !sl.type) return 'lecture';
-  switch (sl.type) {
-    case 'talk':       return sl.venue === 'library' ? 'library' : 'lecture';
-    case 'discussion': return 'discussion';
-    case 'station':    return 'stations';
-    case 'music':      return 'music';
-    case 'music-extra':return 'music-par';
-    case 'dance':      return 'dance';
-    case 'cinema':     return 'cinema';
-    case 'interlude':  return 'interlude';
-    case 'networking': return 'lecture'; // нетворкинг идёт в «open-apps» мир, как лекции
-    default:           return 'lecture';
+  if (!sl) return 'lecture';
+  const cat = sl.category;
+  const subcat = sl.subcategory;
+  const venue = sl.venue;
+  if (cat === 'cinema') return subcat === 'short' ? 'interlude' : 'cinema';
+  if (cat === 'music') {
+    if (venue === 'main_stage' || subcat === 'main_stage') return 'music';
+    if (venue === 'courtyard' || subcat === 'courtyard') return 'dance';
+    return 'music-par';  // big_bar и параллельная музыка
   }
+  if (cat === 'social') return 'discussion';
+  if (cat === 'popsci') return venue === 'library' ? 'library' : 'lecture';
+  if (cat === 'experiment' || cat === 'workshop') return 'stations';
+  return 'lecture';
 }
 
 // Все слоты видны всегда. Это карта-таймлайн фестиваля, общая для всех вкладок.
@@ -2077,12 +2052,19 @@ const VIEW_CONFIG = {
     timelineCats: null,
     poolWorlds: ['station', 'art', 'cinema', 'music'],
   },
+  'popsci': {
+    label: 'научпоп',
+    showSection: 'timeline',
+    timelineCats: ['popsci'],
+    poolWorlds: ['station'],
+    poolStationCats: ['popsci'],
+  },
   'open-apps': {
     label: 'станции',
     showSection: 'timeline',
-    timelineCats: ['popsci', 'workshop', 'experiment', 'social'],
+    timelineCats: ['workshop', 'experiment', 'social'],
     poolWorlds: ['station'],
-    poolStationCats: ['popsci', 'workshop', 'experiment', 'social'],
+    poolStationCats: ['workshop', 'experiment', 'social'],
   },
   'cinema': {
     label: 'кино',
@@ -2879,25 +2861,32 @@ function updateViewTabCounters() {
   const ds = state.data;
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-  // Счётчики на главных вкладках = неразмещённые заявки этого мира
-  const openApps = state.applications.filter(a => {
+  // Унифицированные счётчики на вкладках. Везде одно и то же: число неразобранных
+  // заявок (status: new или considering) данного типа. Если неразобранных нет —
+  // показываем 0. Это убирает разнобой который был раньше (Музыка показывала
+  // tentative events, Искусство — non-confirmed exhibits, и т.д.).
+  // Для каждой вкладки определяем какие категории туда «попадают».
+  const _appCat = (a) => {
+    const ovr = state.candCategoryOverrides?.[a.id];
+    if (ovr && typeof ovr === 'object') return ovr.type;
+    if (typeof ovr === 'string') return ['art','installation','media'].includes(ovr) ? 'art' : ovr;
+    let c = a._suggested_category || null;
+    if (c === 'installation' || c === 'media') c = 'art';
+    return c;
+  };
+  const isPending = (a) => {
     const st = state.appStatuses[a.id] || a.status || 'new';
-    if (st === 'rejected' || st === 'duplicate') return false;
-    return !isPlaced({...a, kind:'app', id:a.id});
-  });
-  const byWorld = { station: 0, art: 0, cinema: 0, music: 0 };
-  openApps.forEach(a => { const w = appWorld(a); if (byWorld[w] !== undefined) byWorld[w]++; });
+    return st === 'new' || st === 'considering';
+  };
+  const pendingApps = state.applications.filter(a => isPending(a) && !isPlaced({...a, kind:'app', id:a.id}));
+  const countByCats = (cats) => pendingApps.filter(a => cats.includes(_appCat(a))).length;
 
-  // ВСЁ — общее число открытых
-  set('stat-all', openApps.length);
-  set('stat-open-apps', byWorld.station);
-  set('stat-cinema', byWorld.cinema);
-  // Для музыки: pool пустой, но в правой панели есть placeholder-музыка — показываем число tentative+placeholder
-  const musicPending = ds.events.filter(e => e.category === 'music' && (e.status === 'placeholder' || e.status === 'tentative')).length;
-  set('stat-music', musicPending || byWorld.music);
-  // Искусство — открытые заявки + ещё не подтверждённые экспонаты
-  const artPending = (ds.exhibits || []).filter(e => e.status !== 'confirmed').length;
-  set('stat-art', byWorld.art + artPending);
+  set('stat-all', pendingApps.length);
+  set('stat-popsci', countByCats(['popsci']));
+  set('stat-open-apps', countByCats(['workshop', 'experiment', 'social']));
+  set('stat-cinema', countByCats(['cinema']));
+  set('stat-music', countByCats(['music']));
+  set('stat-art', countByCats(['art']));
 }
 
 function renderCandCard(c) {
@@ -3644,12 +3633,10 @@ function renderConflicts() {
       issues.push(`«${ev.title || ev.id}» — нет поля status`);
     }
   });
-  // Слоты без обязательных полей (схема v17+)
+  // Слоты без обязательных полей (схема v17+, но без type — он вычисляется автоматически)
   Object.entries(state.data.time_slots).forEach(([sid, s]) => {
-    if (!s.type) issues.push(`Слот ${sid} — нет type`);
     if (!s.category) issues.push(`Слот ${sid} — нет category`);
     if (!s.venue && !(s.allowed_venues && s.allowed_venues.length)) issues.push(`Слот ${sid} — нет venue/allowed_venues`);
-    if (!s.apollo_slot) issues.push(`Слот ${sid} — нет apollo_slot`);
     if (!s.label_for_zoom) issues.push(`Слот ${sid} — нет label_for_zoom`);
   });
   // Дубли apollo_slot на уровне слотов (внутри одной category, с учётом subcategory).
@@ -3685,18 +3672,10 @@ function renderConflicts() {
       issues.push(`${VENUE_TECH_NAMES[vid]} в слоте ${k.split('::')[0]} — ${evs.length} событий, но мест ${lanes}`);
     }
   });
-  // Apollo дубли на event-уровне
-  const dup = {};
-  state.data.events.forEach(ev => {
-    if (!ev.apollo_slot) return;
-    let k = ev.category;
-    if (ev.subcategory) k += '/' + ev.subcategory;
-    k += '::' + ev.apollo_slot;
-    (dup[k] = dup[k] || []).push(ev);
-  });
-  Object.entries(dup).forEach(([k, list]) => {
-    if (list.length > 1) issues.push(`Apollo дубль ${k}: ${list.map(e => e.title).join(', ')}`);
-  });
+  // Apollo-дубли проверяются на уровне слотов (выше). На уровне events не проверяем —
+  // у cinema-короткометражек/анимаций Apollo живёт прямо на event, и валидация по
+  // (category, apollo_slot) ложно срабатывает между animation и short коллекциями.
+  // Реальные дубли ловит группировка по (category, subcategory) на уровне slots.
 
   const box = document.getElementById('conflicts');
   if (issues.length === 0) { box.classList.add('empty'); box.innerHTML = ''; }
@@ -6163,9 +6142,6 @@ function openSlotEditModal(sid) {
   document.getElementById('se-zoom-label').value = s.label_for_zoom || '';
   document.getElementById('se-start').value = s.start || '';
   document.getElementById('se-end').value = s.end || '';
-  document.getElementById('se-type').value = s.type || '';
-  document.getElementById('se-leaf').value = s.leaf || '';
-  document.getElementById('se-apollo').value = s.apollo_slot || '';
   document.getElementById('se-category').value = s.category || '';
   document.getElementById('se-exclusive').checked = !!s.exclusive;
 
@@ -6179,20 +6155,18 @@ function openSlotEditModal(sid) {
     ? attached.map(e => `<div style="padding:3px 0">• <strong>${esc(e.title || '(без названия)')}</strong>${e.speaker ? ' — ' + esc(e.speaker) : ''}</div>`).join('')
     : '<em style="color:#888">Нет привязанных событий</em>';
 
-  // Покрытие фракталом — рисуем сразу и обновляем при изменении полей,
-  // влияющих на алгоритм (start, type, venue, leaf override).
+  // Покрытие фракталом — рисуем сразу и обновляем при изменении start/venue.
+  // leaf и type больше не редактируются вручную (выводятся автоматически).
   const renderCov = () => renderFernCoverageBlock(
     document.getElementById('se-start').value,
     document.getElementById('se-end').value,
-    document.getElementById('se-leaf').value,
-    document.getElementById('se-type').value,
+    s.leaf || null,
+    null,  // type больше не задаётся вручную, fern coverage опирается на venue+category
     document.getElementById('se-venue').value
   );
   renderCov();
   document.getElementById('se-start').oninput = renderCov;
   document.getElementById('se-end').oninput = renderCov;
-  document.getElementById('se-leaf').oninput = renderCov;
-  document.getElementById('se-type').onchange = renderCov;
   document.getElementById('se-venue').onchange = renderCov;
 
   document.getElementById('slot-edit-modal').classList.add('active');
@@ -6209,21 +6183,21 @@ function saveSlotEdit() {
   const newId = document.getElementById('se-id').value.trim();
   if (!state.data.time_slots[oldId]) return;
   if (!newId) { alert('id обязателен'); return; }
+  const oldSlot = state.data.time_slots[oldId];
 
-  // Валидация: проверяем что слот попадёт в лист фрактала по реальному алгоритму
+  // Валидация: проверяем что слот попадёт в лист фрактала по реальному алгоритму.
+  // Сохраняем существующие s.leaf/s.type из объекта (поля убраны из UI, но в данных
+  // могут быть legacy-значения — используем их для проверки покрытия).
   const newStart = document.getElementById('se-start').value;
   const newEnd = document.getElementById('se-end').value;
-  const newLeaf = document.getElementById('se-leaf').value || null;
-  const newType = document.getElementById('se-type').value || null;
+  const newLeaf = oldSlot.leaf || null;
+  const newType = oldSlot.type || null;
   const newVenue = document.getElementById('se-venue').value || null;
   if (newStart) {
     const fakeSlot = { start: newStart, end: newEnd, type: newType, venue: newVenue, leaf: newLeaf };
     const leaf = findLeafForSlotInProgrammer(fakeSlot);
     if (!leaf && !newLeaf) {
-      if (!confirm(`Слот не попадает ни в один лист фрактала по start=${newStart}, type=${newType || '—'}. На сайте отобразится только в текстовом расписании. Сохранить всё равно?`)) return;
-    }
-    if (newLeaf && !state.data.fern_leaves.some(l => l.id === newLeaf)) {
-      if (!confirm(`Лист «${newLeaf}» не найден в fern_leaves. Сохранить всё равно?`)) return;
+      if (!confirm(`Слот не попадает ни в один лист фрактала по start=${newStart}. На сайте отобразится только в текстовом расписании. Сохранить всё равно?`)) return;
     }
   }
 
@@ -6240,14 +6214,15 @@ function saveSlotEdit() {
   s.label_for_zoom = document.getElementById('se-zoom-label').value || null;
   s.start = newStart;
   s.end = newEnd;
-  s.type = document.getElementById('se-type').value || null;
   s.venue = document.getElementById('se-venue').value || null;
   s.category = document.getElementById('se-category').value || null;
-  s.apollo_slot = document.getElementById('se-apollo').value || null;
   s.subcategory = document.getElementById('se-subcategory').value || null;
-  s.leaf = newLeaf;
   s.exclusive = document.getElementById('se-exclusive').checked || false;
   if (!s.exclusive) delete s.exclusive;  // не загромождаем JSON если false
+  // s.type, s.leaf, s.apollo_slot — больше не редактируются в UI:
+  //   - type избыточен (вычисляется из category+subcategory+venue)
+  //   - leaf вычисляется автоматически (findLeafForSlot)
+  //   - apollo_slot автораспределяется в recomputeApolloSlots при сохранении
 
   // После правки слота — переинжектируем enriched поля во все его events.
   // ВАЖНО: enrichEventsFromSlots копирует только если ev[f] == null (не перезаписывает
