@@ -1082,42 +1082,71 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 .print-section-title {
   font-family: var(--font-mono); font-size: 11px; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.18em;
-  margin: 18px 0 10px; padding-bottom: 4px;
-  border-bottom: 1px solid #ddd; color: #5d4d3a;
+  margin: 18px 0 6px; padding-bottom: 4px;
+  border-bottom: 1px solid #1a1814; color: #1a1814;
 }
-.print-table {
-  width: 100%; border-collapse: collapse; font-size: 11px;
-  margin-bottom: 8px;
+
+/* ===== Print grid (новая сетка с пропорциональной высотой по времени) ===== */
+.print-grid {
+  display: grid;
+  grid-template-columns: 48px 1fr 1fr 1fr 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid #1a1814;
+  border-left: 1px solid #ddd;
+  margin-bottom: 12px;
 }
-.print-table th {
-  text-align: left; padding: 5px 6px; vertical-align: top;
-  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+.print-grid-header {
+  font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: #1a1814; padding: 4px 5px;
+  border-right: 1px solid #ddd; border-bottom: 1px solid #1a1814;
+  background: #fafafa;
+}
+.print-time-col, .print-venue-col {
+  position: relative;
+  border-right: 1px solid #ddd;
+}
+.print-time-col {
+  background: #fafafa;
+}
+.print-tick {
+  position: absolute; left: 0; right: 0;
+  font-family: var(--font-mono); font-size: 8px;
+  color: #888; padding-left: 4px;
+  border-top: 1px dashed #e8e6df;
+  line-height: 1;
+}
+.print-tick.major { color: #1a1814; border-top-style: solid; border-top-color: #c4bfa8; }
+.print-time-col .print-tick { background: #fafafa; padding-top: 1px; }
+.print-event {
+  position: absolute;
+  background: white;
+  border: 1px solid #888;
+  border-left: 2.5px solid #1a1814;
+  padding: 3px 5px;
+  font-size: 9px; line-height: 1.25;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.print-event .pe-title {
+  font-weight: 600; font-size: 9.5px;
+}
+.print-event .pe-speaker {
+  color: #555; font-size: 8.5px; margin-top: 1px;
+}
+.print-event.pending {
+  border-style: dashed; border-left-style: dashed;
+  background: #fafafa;
+}
+.print-event.pending .pe-title {
+  font-style: italic; color: #888; font-weight: 500;
+}
+.print-event.pending .pe-pending-label {
+  font-family: var(--font-mono); font-size: 7.5px;
   text-transform: uppercase; letter-spacing: 0.1em;
-  color: #555; border-bottom: 1px solid #1a1814;
+  color: #aaa; display: block; margin-bottom: 1px;
 }
-.print-table td {
-  padding: 6px 6px; vertical-align: top;
-  border-bottom: 1px solid #eee;
-}
-.print-table .ptime {
-  font-family: var(--font-mono); font-size: 10px; color: #888;
-  white-space: nowrap; padding-right: 10px;
-}
-.print-table .pslot-label {
-  font-family: var(--font-mono); font-size: 9px; color: #888;
-  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;
-}
-.print-table .pevent-title {
-  font-weight: 600; font-size: 11px; line-height: 1.3;
-}
-.print-table .pevent-speaker {
-  font-size: 10px; color: #555; line-height: 1.3;
-}
-.print-table .pevent-pending {
-  color: #999; font-style: italic; font-size: 10px;
-}
-.print-venue-col { width: 18%; }
-.print-time-col { width: 10%; }
+
 .print-exhibits-list {
   display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px;
   font-size: 11px;
@@ -1129,20 +1158,17 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 .print-exhibit-item .pexh-speaker { color: #555; font-size: 10px; }
 
 @media print {
-  /* Прячем интерфейс программера, оставляем только print-canvas */
   body > *:not(.print-modal-bg.active) { display: none !important; }
   .print-modal-bg.active { display: block !important; padding: 0; }
   .print-modal { box-shadow: none; height: auto; background: white; }
   .print-toolbar { display: none !important; }
-  .print-canvas {
-    overflow: visible; padding: 0; background: white;
-  }
+  .print-canvas { overflow: visible; padding: 0; background: white; }
   .print-page {
     box-shadow: none; max-width: none; margin: 0;
     padding: 0; page-break-after: always;
   }
   .print-page:last-child { page-break-after: auto; }
-  @page { size: A4 portrait; margin: 16mm 14mm; }
+  @page { size: A4 portrait; margin: 14mm 12mm; }
 }
 .structure-modal-bg.active { display: flex !important; padding: 0; }
 .structure-modal {
@@ -4553,76 +4579,164 @@ function _printFestMin(t) {
   return (hh - 14) * 60 + (m || 0);
 }
 
-// Печатная страница: одна для дня, одна для ночи. fromMin/toMin — границы
-// в festMin относительно 14:00.
+// Печатная страница: пропорциональная сетка как в основном таймлайне.
+// fromMin/toMin — границы в festMin относительно 14:00.
+// Каждая venue — колонка. Время идёт сверху вниз. Каждые 30 мин — горизонтальный тик.
+// События позиционируются absolute с top/height пропорциональным длительности слота.
 function _renderPrintScheduleSection(title, fromMin, toMin) {
   const venues = state.data.venues || {};
-  // Порядок площадок: main_stage, library, big_bar, small_bar, courtyard.
-  // Если в данных есть ещё — добавим в конец.
   const venueOrder = ['main_stage', 'library', 'big_bar', 'small_bar', 'courtyard'];
   const allVenueIds = Object.keys(venues);
   const ordered = venueOrder.filter(v => allVenueIds.includes(v))
     .concat(allVenueIds.filter(v => !venueOrder.includes(v)));
 
-  // Уникальные временные интервалы внутри fromMin..toMin
-  const slots = Object.entries(state.data.time_slots).filter(([sid, s]) => {
+  // Геометрия: pixels per minute. Подбираем чтобы день (480 мин) ≈ 580px,
+  // ночь (360 мин) ≈ 440px — обе помещаются на A4 portrait после печати.
+  const ppm = 1.2;
+  const totalMin = toMin - fromMin;
+  const totalPx = Math.round(totalMin * ppm);
+
+  // Слоты в этом временном окне
+  const slotsInRange = Object.entries(state.data.time_slots).filter(([sid, s]) => {
     if (!s.start) return false;
-    const m = _printFestMin(s.start);
-    return m >= fromMin && m < toMin;
-  });
-  // Группировка по start-end (одно временное окно может содержать несколько слотов на разных venues)
-  const timeGroups = {};
-  slots.forEach(([sid, s]) => {
-    const key = s.start + '–' + (s.end || '?');
-    (timeGroups[key] = timeGroups[key] || []).push({ sid, s });
-  });
-  const sortedTimes = Object.keys(timeGroups).sort((a, b) => {
-    const [as] = a.split('–'); const [bs] = b.split('–');
-    return _printFestMin(as) - _printFestMin(bs);
+    const sm = _printFestMin(s.start);
+    return sm >= fromMin && sm < toMin;
   });
 
+  // Для определения lanes (если в одной venue в одно время несколько слотов)
+  // — простая группировка по (venue, перекрытие времени).
+  function laneInfo(targetSid, targetSlot, venueId) {
+    const competing = slotsInRange.filter(([sid, s]) => {
+      if (sid === targetSid) return false;
+      const ven = s.venue || (s.allowed_venues && s.allowed_venues[0]);
+      if (ven !== venueId) return false;
+      // Перекрытие?
+      const a1 = _printFestMin(targetSlot.start), a2 = _printFestMin(targetSlot.end);
+      const b1 = _printFestMin(s.start), b2 = _printFestMin(s.end);
+      return Math.max(a1, b1) < Math.min(a2, b2);
+    });
+    if (competing.length === 0) return { lane: 0, total: 1 };
+    // Все участвующие slots: target + competing, отсортированные по sid для стабильности
+    const all = [[targetSid, targetSlot], ...competing].sort((a, b) => a[0].localeCompare(b[0]));
+    const idx = all.findIndex(([sid]) => sid === targetSid);
+    return { lane: idx, total: all.length };
+  }
+
+  // Рендер
   let html = `<div class="print-page">
     <h2 class="print-section-title">${esc(title)}</h2>
-    <table class="print-table">
-      <thead>
-        <tr>
-          <th class="print-time-col">Время</th>`;
+    <div class="print-grid">
+      <div class="print-grid-header">время</div>`;
   ordered.forEach(vid => {
-    html += `<th class="print-venue-col">${esc(venues[vid].display || vid)}</th>`;
+    html += `<div class="print-grid-header">${esc((venues[vid].display || vid).toLowerCase())}</div>`;
   });
-  html += `</tr></thead><tbody>`;
 
-  sortedTimes.forEach(timeKey => {
-    const slotsHere = timeGroups[timeKey];
-    html += `<tr><td class="ptime">${esc(timeKey)}</td>`;
-    ordered.forEach(vid => {
-      const slotsInVenue = slotsHere.filter(({ s }) => {
-        if (s.venue) return s.venue === vid;
-        if (s.allowed_venues) return s.allowed_venues.includes(vid);
-        return false;
-      });
-      html += `<td>`;
-      slotsInVenue.forEach(({ sid, s }) => {
-        const events = state.data.events.filter(e => e.slot === sid);
-        if (events.length === 0) {
-          // Пустой слот: показываем только tool_label
-          if (s.tool_label) {
-            html += `<div class="pslot-label">${esc(s.tool_label)}</div>
-              <div class="pevent-pending">— открыто —</div>`;
-          }
-        } else {
-          events.forEach(ev => {
-            const isTBA = ev.title === 'TBA' || !ev.title;
-            html += `<div class="pevent-title">${isTBA ? '<span class="pevent-pending">TBA</span>' : esc(ev.title)}</div>`;
-            if (ev.speaker) html += `<div class="pevent-speaker">${esc(ev.speaker)}</div>`;
-          });
+  // Колонка времени
+  html += `<div class="print-time-col" style="height:${totalPx}px">`;
+  for (let m = 0; m <= totalMin; m += 30) {
+    const top = Math.round(m * ppm);
+    const isHour = m % 60 === 0;
+    const absMin = fromMin + m;
+    const hh = Math.floor(absMin / 60) + 14;
+    const mm = absMin % 60;
+    const label = String(hh % 24).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+    html += `<div class="print-tick ${isHour ? 'major' : ''}" style="top:${top}px">${label}</div>`;
+  }
+  html += `</div>`;
+
+  // Колонки площадок
+  ordered.forEach(vid => {
+    html += `<div class="print-venue-col" style="height:${totalPx}px">`;
+    // Тики на фоне каждой колонки — для визуальной сетки
+    for (let m = 30; m < totalMin; m += 30) {
+      const top = Math.round(m * ppm);
+      const isHour = m % 60 === 0;
+      html += `<div class="print-tick ${isHour ? 'major' : ''}" style="top:${top}px"></div>`;
+    }
+
+    // Слоты этой venue
+    slotsInRange.forEach(([sid, s]) => {
+      const ven = s.venue || (s.allowed_venues && s.allowed_venues[0]);
+      if (ven !== vid) return;
+      const sm = _printFestMin(s.start) - fromMin;
+      const em = _printFestMin(s.end) - fromMin;
+      const top = Math.round(sm * ppm);
+      const heightPx = Math.max(20, Math.round((em - sm) * ppm) - 1);
+
+      const events = state.data.events.filter(e => e.slot === sid);
+      const isExclusive = !!s.exclusive;
+
+      if (events.length === 0) {
+        // Открытый слот — пунктирная рамка
+        const labelText = s.tool_label || s.label_for_zoom || '—';
+        html += `<div class="print-event pending" style="top:${top}px;height:${heightPx}px;left:1%;width:98%">
+          <span class="pe-pending-label">${esc(labelText)}</span>
+          <div class="pe-title">— открыто —</div>
+        </div>`;
+        return;
+      }
+
+      // Для exclusive — одна большая карточка на всю ширину venue
+      if (isExclusive || events.length === 1) {
+        const ev = events[0];
+        const isTBA = ev.title === 'TBA' || !ev.title;
+        html += `<div class="print-event" style="top:${top}px;height:${heightPx}px;left:1%;width:98%">
+          ${isTBA ? '<span class="pe-pending-label">TBA</span>' : ''}
+          <div class="pe-title">${isTBA ? '—' : esc(ev.title)}</div>
+          ${ev.speaker ? `<div class="pe-speaker">${esc(ev.speaker)}</div>` : ''}
+        </div>`;
+        // Если есть ещё события — рисуем их под (в slot всё равно одно может быть, но на всякий)
+        for (let i = 1; i < events.length; i++) {
+          const ev2 = events[i];
+          html += `<div class="print-event" style="top:${top + i * 22}px;height:20px;left:1%;width:98%">
+            <div class="pe-title">${esc(ev2.title || '—')}</div>
+          </div>`;
         }
+        return;
+      }
+
+      // Несколько событий в одном слоте — делим колонку
+      const { lane: slotLane, total: laneTotal } = laneInfo(sid, s, vid);
+      events.forEach((ev, idx) => {
+        const lanesInSlot = events.length;
+        const myLane = laneTotal > 1 ? slotLane : idx;
+        const totalLanes = laneTotal > 1 ? laneTotal : lanesInSlot;
+        const left = (myLane / totalLanes) * 100;
+        const width = 100 / totalLanes;
+        const isTBA = ev.title === 'TBA' || !ev.title;
+        html += `<div class="print-event" style="top:${top}px;height:${heightPx}px;left:${left}%;width:calc(${width}% - 1px)">
+          ${isTBA ? '<span class="pe-pending-label">TBA</span>' : ''}
+          <div class="pe-title">${isTBA ? '—' : esc(ev.title)}</div>
+          ${ev.speaker ? `<div class="pe-speaker">${esc(ev.speaker)}</div>` : ''}
+        </div>`;
       });
-      html += `</td>`;
     });
-    html += `</tr>`;
+
+    // Дополнительно: слоты в которых allowed_venues содержит этот vid но venue не задан явно
+    // — рисуем с lane логикой
+    slotsInRange.forEach(([sid, s]) => {
+      if (s.venue) return; // уже отрисовано выше
+      const allowed = s.allowed_venues || [];
+      if (!allowed.includes(vid)) return;
+      const sm = _printFestMin(s.start) - fromMin;
+      const em = _printFestMin(s.end) - fromMin;
+      const top = Math.round(sm * ppm);
+      const heightPx = Math.max(20, Math.round((em - sm) * ppm) - 1);
+      const events = state.data.events.filter(e => e.slot === sid && (e.venue === vid || !e.venue));
+      if (events.length === 0) return;
+      events.forEach(ev => {
+        const isTBA = ev.title === 'TBA' || !ev.title;
+        html += `<div class="print-event" style="top:${top}px;height:${heightPx}px;left:1%;width:98%">
+          <div class="pe-title">${isTBA ? '—' : esc(ev.title)}</div>
+          ${ev.speaker ? `<div class="pe-speaker">${esc(ev.speaker)}</div>` : ''}
+        </div>`;
+      });
+    });
+
+    html += `</div>`;
   });
-  html += `</tbody></table></div>`;
+
+  html += `</div></div>`;
   return html;
 }
 
