@@ -1361,6 +1361,7 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
       <button onclick="addNewEvent(); closeMenu()">+ Новое событие</button>
       <button onclick="syncNewApplicationsFromSheets(); closeMenu()">📥 Новые заявки из Sheets</button>
       <button onclick="resetApplicationsSyncThreshold(); closeMenu()">⏮ Сбросить порог синхронизации…</button>
+      <button onclick="exportJSON(); closeMenu()">💾 Скачать festival-data.js</button>
       <button onclick="openStructureView(); closeMenu()">Слоты и папоротник…</button>
       <div style="height:1px;background:#ddd;margin:4px 0"></div>
       <button onclick="openPrintView(); closeMenu()">🖨 Расписание для печати…</button>
@@ -2258,6 +2259,19 @@ async function loadFestivalData() {
     }
     state.data = JSON.parse(text.substring(start, end + 1));
     enrichEventsFromSlots(state.data);
+
+    // Восстановление статусов заявок из data._app_statuses (если в локальном
+    // state.appStatuses ничего нет — например при первой загрузке, открытии с
+    // другого устройства или после очистки кеша). Локальный state имеет приоритет:
+    // если ты что-то ставил здесь — оно не перезатирается из файла.
+    if (state.data._app_statuses && typeof state.data._app_statuses === 'object') {
+      const localCount = Object.keys(state.appStatuses || {}).length;
+      if (localCount === 0) {
+        state.appStatuses = {...state.data._app_statuses};
+        console.log('[programmer] восстановлены appStatuses из файла:', Object.keys(state.appStatuses).length);
+      }
+    }
+
     state.isDirty = false;
     state.dataSource = 'live';
     state.dataLoadError = null;
@@ -5572,10 +5586,17 @@ function saveSlotEdit() {
   s.exclusive = document.getElementById('se-exclusive').checked || false;
   if (!s.exclusive) delete s.exclusive;  // не загромождаем JSON если false
 
-  // После правки слота — переинжектируем enriched поля во все его events
+  // После правки слота — переинжектируем enriched поля во все его events.
+  // ВАЖНО: enrichEventsFromSlots копирует только если ev[f] == null (не перезаписывает
+  // прямо заданные поля). Поэтому сначала ЯВНО снимаем venue/category/apollo_slot/
+  // subcategory с events этого слота — независимо от того были ли они enriched —
+  // чтобы новые значения слота гарантированно подхватились.
+  const RESET_FIELDS = ['venue', 'category', 'apollo_slot', 'subcategory'];
   state.data.events.forEach(ev => {
-    if (ev.slot === newId && ev._enriched_fields) {
-      ev._enriched_fields.forEach(f => delete ev[f]);
+    if (ev.slot !== newId) return;
+    RESET_FIELDS.forEach(f => { if (ev[f] !== undefined) ev[f] = null; });
+    if (ev._enriched_fields) {
+      ev._enriched_fields.forEach(f => { ev[f] = null; });
       delete ev._enriched_fields;
     }
   });
@@ -5827,6 +5848,22 @@ function buildExportText() {
   obj.time_slots = state.data.time_slots;
   obj.events = cleanEvents;
   if (state.data.exhibits) obj.exhibits = state.data.exhibits;
+
+  // === Полный экспорт всех заявок и их статусов ===
+  // Раньше в файл попадали только данные.applications (28 базовых), а 29+ из Sheets
+  // и статусы (state.appStatuses) жили только в localStorage браузера. Теперь всё это
+  // выгружается в файл — публикация/скачивание сохраняет полное состояние работы.
+  // Применяется простой принцип: state.applications (мердж data.applications + synced)
+  // → obj.applications. И state.appStatuses → obj._app_statuses.
+  if (Array.isArray(state.applications) && state.applications.length > 0) {
+    obj.applications = state.applications;
+  } else if (Array.isArray(state.data.applications)) {
+    obj.applications = state.data.applications;
+  }
+  if (state.appStatuses && Object.keys(state.appStatuses).length > 0) {
+    obj._app_statuses = state.appStatuses;
+  }
+
   if (state.data._howto) obj._howto = state.data._howto;
   if (state.data.subcategories) obj.subcategories = state.data.subcategories;
   if (state.data.fern_leaves) obj.fern_leaves = state.data.fern_leaves;
