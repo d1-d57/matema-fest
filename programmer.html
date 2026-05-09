@@ -53,6 +53,39 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* ====== LOCK OVERLAY (защита от случайных посетителей) ====== */
+.lock-overlay {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #f5f1e6;
+  display: none; align-items: center; justify-content: center;
+}
+.lock-overlay.active { display: flex; }
+body.locked > *:not(.lock-overlay) { display: none !important; }
+.lock-box { text-align: center; max-width: 320px; padding: 40px 30px; }
+.lock-title {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.18em;
+  color: #2d3028; margin-bottom: 6px;
+}
+.lock-subtitle { font-size: 13px; color: #888; margin-bottom: 18px; }
+.lock-overlay input {
+  width: 100%; padding: 10px 12px; font-size: 14px;
+  border: 1px solid #d9d4c2; border-radius: 4px;
+  background: white; box-sizing: border-box; font-family: inherit;
+}
+.lock-overlay input:focus { outline: none; border-color: #5d8b6e; }
+.lock-btn {
+  margin-top: 10px; width: 100%; padding: 9px;
+  background: #5d8b6e; color: white; border: none; border-radius: 4px;
+  font-size: 13px; font-family: inherit; cursor: pointer;
+  letter-spacing: 0.04em;
+}
+.lock-btn:hover { background: #4a7359; }
+.lock-error {
+  margin-top: 10px; color: #c25040; font-size: 12px; min-height: 16px;
+}
+
 /* ====== TOPBAR ====== */
 .topbar {
   background: var(--ink); color: var(--bg); padding: 12px 22px;
@@ -1276,6 +1309,16 @@ body {
 </style>
 </head>
 <body>
+<!-- ===== LOCK OVERLAY (защита от случайных посетителей) ===== -->
+<div class="lock-overlay" id="lock-overlay">
+  <div class="lock-box">
+    <div class="lock-title">Программер</div>
+    <div class="lock-subtitle">Введите пароль</div>
+    <input type="password" id="lock-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <button onclick="tryUnlock()" class="lock-btn">Войти</button>
+    <div class="lock-error" id="lock-error"></div>
+  </div>
+</div>
 
 <div class="topbar">
   <h1>Фрактальная Одиссея — программа</h1>
@@ -1283,7 +1326,7 @@ body {
   <span class="stat" id="stat-cands">0</span>
   <span class="src-info" id="src-info">локальные данные</span>
   <span class="spacer"></span>
-  <button onclick="undoLast()" id="btn-undo" title="Отменить последнее изменение (Ctrl+Z)" disabled>↶ Отменить</button>
+  <button onclick="undoLastChange()" id="btn-undo" title="Отменить последнее изменение (Ctrl+Z)" disabled>↶ Отменить</button>
   <button onclick="reloadAll()" id="btn-reload" title="Перечитать программу с сайта и заявки">↻ Обновить</button>
   <button class="primary" onclick="publishToGitHub()" id="btn-publish">🚀 Опубликовать</button>
   <span class="menu-wrap">
@@ -1291,6 +1334,7 @@ body {
     <div class="menu-dropdown" id="extra-menu">
       <button onclick="addNewEvent(); closeMenu()">+ Новое событие</button>
       <button onclick="syncNewApplicationsFromSheets(); closeMenu()">📥 Новые заявки из Sheets</button>
+      <button onclick="resetApplicationsSyncThreshold(); closeMenu()">⏮ Сбросить порог синхронизации…</button>
       <button onclick="openStructureView(); closeMenu()">Слоты и папоротник…</button>
       <div style="height:1px;background:#ddd;margin:4px 0"></div>
       <button onclick="openPrintView(); closeMenu()">🖨 Расписание для печати…</button>
@@ -1714,6 +1758,105 @@ body {
 </div>
 
 <script>
+// ============================================================
+// LOCK / AUTH — защита от случайных посетителей
+// ============================================================
+//
+// Это не серьёзная защита (на статическом GitHub Pages серьёзной не сделать
+// без backend — пароль виден в коде как SHA-256 хеш, можно brute-force).
+// Но достаточно чтобы случайно зашедший человек не мог сразу что-то изменить.
+//
+// Текущий пароль: "mathesis23" (μάθησις по-гречески — учение/знание + 23 мая).
+// Чтобы поменять — посчитать SHA-256 нового слова и заменить PASSWORD_HASH.
+// В терминале: echo -n "новый_пароль" | sha256sum
+//
+// Поведение:
+// - sessionStorage (исчезает при закрытии вкладки) → новая вкладка = пароль заново
+// - 15 минут неактивности (нет mouse/keyboard) → блокировка
+// - Скрытая вкладка >5 минут → при возврате блокировка
+// ============================================================
+const PASSWORD_HASH = 'a53c75a6ee1b3ef1b4b8f1d9d6f235634aec96411f7209f1bbc15d5108078688';
+const UNLOCK_KEY = 'programmer.unlocked';
+const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+const HIDDEN_TIMEOUT_MS = 5 * 60 * 1000;
+
+async function _sha256(text) {
+  const buf = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function tryUnlock() {
+  const inputEl = document.getElementById('lock-input');
+  const errEl = document.getElementById('lock-error');
+  const input = inputEl.value;
+  if (!input) return;
+  const hash = await _sha256(input);
+  if (hash === PASSWORD_HASH) {
+    sessionStorage.setItem(UNLOCK_KEY, String(Date.now()));
+    inputEl.value = '';
+    errEl.textContent = '';
+    document.getElementById('lock-overlay').classList.remove('active');
+    document.body.classList.remove('locked');
+    _resetIdleTimer();
+  } else {
+    errEl.textContent = 'Неверный пароль';
+    inputEl.select();
+  }
+}
+
+function lockProgrammer() {
+  sessionStorage.removeItem(UNLOCK_KEY);
+  document.getElementById('lock-overlay').classList.add('active');
+  document.body.classList.add('locked');
+  setTimeout(() => {
+    const el = document.getElementById('lock-input');
+    if (el) el.focus();
+  }, 100);
+}
+
+function _checkLockOnLoad() {
+  const ts = sessionStorage.getItem(UNLOCK_KEY);
+  if (!ts || isNaN(parseInt(ts, 10))) {
+    lockProgrammer();
+    return false;
+  }
+  return true;
+}
+
+let _idleTimer;
+function _resetIdleTimer() {
+  clearTimeout(_idleTimer);
+  _idleTimer = setTimeout(() => lockProgrammer(), IDLE_TIMEOUT_MS);
+}
+
+let _hiddenSince = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    _hiddenSince = Date.now();
+  } else {
+    if (_hiddenSince && Date.now() - _hiddenSince > HIDDEN_TIMEOUT_MS) {
+      lockProgrammer();
+    } else {
+      _resetIdleTimer();
+    }
+    _hiddenSince = 0;
+  }
+});
+
+['mousedown', 'keypress', 'scroll', 'touchstart'].forEach(ev =>
+  document.addEventListener(ev, _resetIdleTimer, { capture: true, passive: true })
+);
+
+document.addEventListener('DOMContentLoaded', () => {
+  const lockInput = document.getElementById('lock-input');
+  if (lockInput) {
+    lockInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') tryUnlock();
+    });
+  }
+  if (_checkLockOnLoad()) _resetIdleTimer();
+});
 // ============================================================================
 // PROGRAMMER — UI-инструмент для редактирования festival-data.js
 // ============================================================================
@@ -1951,7 +2094,82 @@ function restoreState() {
   } catch(e) { console.warn('restore failed', e); }
 }
 
-function markDirty() { state.isDirty = true; updateSrcBadge(); }
+// ============================================================
+// UNDO — стек снапшотов state.data
+// ============================================================
+//
+// Паттерн: сохраняем "предыдущее состояние" перед каждой мутацией.
+// При markDirty() пушим _prevDataSnapshot в стек (это состояние ДО мутации),
+// и обновляем _prevDataSnapshot на текущий state.data (для следующей мутации).
+//
+// Глубина: 20 шагов. Хранится в памяти (не localStorage) — после перезагрузки
+// страницы стек пустой, это ожидаемо.
+//
+// Стек обнуляется через _initUndoBaseline() при:
+// - первой загрузке данных
+// - «↻ Обновить» (новые данные с сайта = новая отправная точка)
+// - успешной публикации
+// ============================================================
+const UNDO_LIMIT = 20;
+state.undoStack = [];
+let _prevDataSnapshot = null;
+
+function _initUndoBaseline() {
+  _prevDataSnapshot = state.data ? JSON.stringify(state.data) : null;
+  state.undoStack = [];
+  _updateUndoButton();
+}
+
+function undoLastChange() {
+  if (state.undoStack.length === 0) return;
+  const snapshot = state.undoStack.pop();
+  try {
+    state.data = JSON.parse(snapshot);
+    enrichEventsFromSlots(state.data);
+    _prevDataSnapshot = snapshot;  // следующая мутация будет пушить отсюда
+    state.isDirty = state.undoStack.length > 0;
+    persistState();
+    rerenderAll();
+    updateSrcBadge();
+    _updateUndoButton();
+  } catch (e) {
+    console.error('undo failed', e);
+    alert('Не удалось откатить: ' + e.message);
+  }
+}
+
+function _updateUndoButton() {
+  const btn = document.getElementById('btn-undo');
+  if (!btn) return;
+  btn.disabled = (state.undoStack || []).length === 0;
+  btn.title = btn.disabled
+    ? 'Нечего отменять'
+    : `Отменить последнее изменение (${state.undoStack.length} в стеке) · Ctrl+Z`;
+}
+
+// Глобальный шорткат Ctrl+Z / Cmd+Z (вне input/textarea)
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    const tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    e.preventDefault();
+    undoLastChange();
+  }
+});
+
+function markDirty() {
+  // Пушим предыдущее состояние (до текущей мутации) в стек
+  if (_prevDataSnapshot) {
+    state.undoStack.push(_prevDataSnapshot);
+    if (state.undoStack.length > UNDO_LIMIT) state.undoStack.shift();
+  }
+  // Запоминаем новое состояние как baseline для следующего markDirty
+  _prevDataSnapshot = state.data ? JSON.stringify(state.data) : null;
+
+  state.isDirty = true;
+  updateSrcBadge();
+  _updateUndoButton();
+}
 function updateSrcBadge() {
   const el = document.getElementById('src-info');
   const version = state.data && state.data._meta && state.data._meta.version;
@@ -2017,6 +2235,7 @@ async function loadFestivalData() {
     state.isDirty = false;
     state.dataSource = 'live';
     state.dataLoadError = null;
+    if (typeof _initUndoBaseline === 'function') _initUndoBaseline();
     console.log('[programmer] loaded live data, version =', state.data._meta && state.data._meta.version);
   } catch (e) {
     console.warn('[programmer] loadFestivalData failed:', e);
@@ -2139,15 +2358,20 @@ async function syncNewApplicationsFromSheets() {
 
   const headers = rows[0].map(h => h.trim());
   const newApps = [];
-  const skipped = [];
+  const skippedExists = []; // id уже в state.applications
+  let totalDataRows = 0;
+  let maxRowIndex = 0;
+
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
     if (!r || r.every(x => !x || !x.trim())) continue;
+    totalDataRows++;
+    maxRowIndex = i;
     const N = i; // app-N: первая заявка в row 2 (i=1) → N=1
     if (N <= threshold) continue;
     const id = 'app-' + N;
     if (state.applications.some(a => a.id === id)) {
-      skipped.push(id);
+      skippedExists.push(id);
       continue;
     }
     const obj = {};
@@ -2190,8 +2414,21 @@ async function syncNewApplicationsFromSheets() {
     });
   }
 
+  // Информативное сообщение если ничего не подтянулось
   if (newApps.length === 0) {
-    alert('Новых заявок нет. Последняя синхронизация: app-' + threshold);
+    let msg = `Новых заявок не подтянулось.\n\n`;
+    msg += `В таблице Sheets всего ${totalDataRows} непустых заявок (последняя — app-${maxRowIndex}).\n`;
+    msg += `Текущий порог синхронизации: app-${threshold}.\n`;
+    if (maxRowIndex <= threshold) {
+      msg += `\nВсе ${totalDataRows} заявок из таблицы уже у вас. Ждите когда появятся новые.`;
+    } else {
+      msg += `\nВ таблице есть ${maxRowIndex - threshold} строк выше порога — но они уже добавлены ранее.`;
+    }
+    if (skippedExists.length) {
+      msg += `\n\nПропущено как уже существующие: ${skippedExists.join(', ')}`;
+    }
+    msg += `\n\nЕсли ждали новые — попроси Claude сбросить порог через DevTools или меню «Сбросить порог синхронизации».`;
+    alert(msg);
     return;
   }
 
@@ -2216,7 +2453,28 @@ async function syncNewApplicationsFromSheets() {
 
   // Сообщение
   const summary = newApps.map(a => `  ${a.id} · ${a.name || '?'} · ${a.title || '?'}`).join('\n');
-  alert(`Подтянуто новых заявок: ${newApps.length}\n\n${summary}\n\nПорог обновлён: app-${maxN}`);
+  let msg = `Подтянуто новых заявок: ${newApps.length}\n\n${summary}\n\nПорог обновлён: app-${maxN}`;
+  if (skippedExists.length) msg += `\n\nПропущено как уже существующие: ${skippedExists.join(', ')}`;
+  alert(msg);
+}
+
+// Сброс порога синхронизации — для случая когда нужно перепроверить таблицу
+// или подозреваешь что порог застрял на неправильном значении.
+function resetApplicationsSyncThreshold() {
+  const cur = localStorage.getItem(APPS_LAST_SYNCED_KEY) || '28';
+  const ans = prompt(
+    `Текущий порог синхронизации: app-${cur}\n\n` +
+    `Введи новый порог (число):\n` +
+    `• 28 — заявки 1-28 заблокированы (защита FALLBACK), 29+ будут перезагружены\n` +
+    `• 0 — все заявки перепроверятся и могут быть добавлены повторно (если их нет в state)\n` +
+    `• любое число — заявки выше этого N будут считаться новыми`,
+    cur
+  );
+  if (ans === null) return;
+  const n = parseInt(ans, 10);
+  if (isNaN(n) || n < 0) { alert('Нужно неотрицательное число'); return; }
+  localStorage.setItem(APPS_LAST_SYNCED_KEY, String(n));
+  alert(`Порог установлен: app-${n}\n\nТеперь нажми «📥 Новые заявки из Sheets» чтобы перепроверить.`);
 }
 
 // Минимальный CSV-парсер с поддержкой кавычек и многострочных значений
@@ -5500,6 +5758,7 @@ async function publishToGitHub() {
     const result = await putResp.json();
     state.remoteSha = result.content.sha;
     state.isDirty = false;
+    _initUndoBaseline();
     alert(`Опубликовано! Коммит: ${result.commit.sha.slice(0,7)}`);
     updateSrcBadge(); persistState();
   } catch (e) {
