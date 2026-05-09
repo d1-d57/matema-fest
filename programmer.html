@@ -1487,9 +1487,10 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
       <div>
         <label>Статус</label>
         <select id="ev-status">
-          <option value="confirmed">подтверждено</option>
-          <option value="tentative">пока не точно</option>
-          <option value="placeholder">плейсхолдер</option>
+          <option value="confirmed">в программе · подтверждено</option>
+          <option value="tentative">в программе · уточняется</option>
+          <option value="placeholder">думаем (вернуть в раздумья)</option>
+          <option value="rejected">отказ</option>
         </select>
       </div>
       <div>
@@ -2431,8 +2432,16 @@ function enrichEventsFromSlots(data) {
     if (!sl) continue;
     const enriched = [];
     for (const f of FIELDS) {
+      // Заполняем поля события из слота, если у события поле пустое.
       if (ev[f] == null && sl[f] != null) {
         ev[f] = sl[f];
+        enriched.push(f);
+      }
+      // Дополнительно для venue: если у слота venue ЯВНО задан и расходится с event.venue
+      // — переписываем событием. Это лечит ситуацию когда slot.venue поменяли в редакторе,
+      // но у event venue остался старый (был прописан напрямую, не через enrich).
+      else if (f === 'venue' && sl.venue && ev.venue && ev.venue !== sl.venue) {
+        ev.venue = sl.venue;
         enriched.push(f);
       }
     }
@@ -2725,39 +2734,46 @@ function renderCandidates() {
     return cfg.poolWorlds && cfg.poolWorlds.includes(w);
   });
 
-  // Фильтр по статусу/размещённости — 4 вкладки:
-  //   new        — заявки, по которым ещё не дали анализа (status=new или нет)
-  //   considering — «Думаем»: заявки status=considering + events/exhibits со статусом
-  //                  не-confirmed (т.е. tentative/placeholder — мы их создали, но
-  //                  пока не уверены что окончательно идут в программу)
-  //   placed     — «В программе»: events/exhibits со status=confirmed (размещены
-  //                  или нет — неважно). + apps со status=accepted (явно приняли)
-  //   rejected   — отказы
+  // 4 коробки. Каждая сущность попадает ровно в ОДНУ.
+  //
+  //   Новые:    apps status=new, не связанные с event/exhibit
+  //   Думаем:   apps status=considering   ИЛИ   events/exhibits status=placeholder
+  //   В программе:  events/exhibits status=tentative или confirmed
+  //                 + apps status=accepted (явно приняли) без связанного event
+  //   Отказы:   apps status=rejected/duplicate   ИЛИ   events/exhibits status=rejected
+  //
+  // Связанная с event заявка сама по себе в коробку не идёт — её представляет event.
   items = items.filter(c => {
     if (filter === 'new') {
-      // Только applications со status=new (или без статуса)
       if (c.kind !== 'app' && c.kind !== 'idea') return false;
+      if (c.kind === 'app' && isPlaced(c)) return false;
       const st = c.status || 'new';
       return st === 'new';
     }
     if (filter === 'considering') {
       if (c.kind === 'app' || c.kind === 'idea') {
+        if (c.kind === 'app' && isPlaced(c)) return false;  // не дублируем — event сам в коробке
         return c.status === 'considering';
       }
-      // events/exhibits — со status не равным 'confirmed' и не 'rejected'
       if (c.kind === 'event' || c.kind === 'exhibit') {
-        return c.status !== 'confirmed' && c.status !== 'rejected';
+        return c.status === 'placeholder';
       }
       return false;
     }
     if (filter === 'placed') {
-      // Принятые в программу: events/exhibits со status=confirmed + apps со status=accepted
-      if (c.kind === 'event' || c.kind === 'exhibit') return c.status === 'confirmed';
-      if (c.kind === 'app') return c.status === 'accepted';
+      if (c.kind === 'event' || c.kind === 'exhibit') {
+        return c.status === 'tentative' || c.status === 'confirmed';
+      }
+      if (c.kind === 'app') {
+        // accepted-заявка без event (явно приняли, но event ещё не создали)
+        return c.status === 'accepted' && !isPlaced(c);
+      }
       return false;
     }
     if (filter === 'rejected') {
-      return (c.kind === 'app' || c.kind === 'idea') && (c.status === 'rejected' || c.status === 'duplicate');
+      if (c.kind === 'app' || c.kind === 'idea') return c.status === 'rejected' || c.status === 'duplicate';
+      if (c.kind === 'event' || c.kind === 'exhibit') return c.status === 'rejected';
+      return false;
     }
     return true;
   });
@@ -2894,7 +2910,7 @@ function linkApplicationToExisting(appId) {
   }
   // Статус заявки
   state.appStatuses = state.appStatuses || {};
-  state.appStatuses[appId] = 'considering';
+  state.appStatuses[appId] = 'accepted';
 
   markDirty(); persistState(); rerenderAll();
   alert(`Связали:\n${appId} ↔ ${chosen._kind}/${chosen.id}\n\nНе забудь опубликовать (🚀).`);
@@ -3255,35 +3271,63 @@ function renderTimeline() {
       } else merged.push([a, b]);
     });
 
-    // Discovery zones — промежутки между слотами этой venue, в которые можно добавить interlude
-    // Только если venue имеет хотя бы один слот (значит активна) и промежуток >=15 минут
-    if (allowedRanges.length > 0) {
-      const firstSlotStart = allowedRanges[0][0];
-      const lastSlotEnd = allowedRanges[allowedRanges.length - 1][1];
-      // Внутри активного диапазона ищем gaps
-      let cursor = firstSlotStart;
-      [...merged].forEach(([a, b]) => {
-        if (a > cursor) {
-          // Промежуток от cursor до a
-          const gap = a - cursor;
-          if (gap >= 15) {
-            html += `<div class="discovery-zone" data-venue="${vid}" data-start-min="${cursor}" data-end-min="${a}"
-                          style="top:${cursor * ppm}px;height:${gap * ppm}px"
-                          title="Свободно ${minToTime(cursor)}–${minToTime(a)}. Кликни чтобы добавить событие.">
-              <span>+ ${minToTime(cursor)}–${minToTime(a)}</span>
-            </div>`;
+    // Discovery zones и блокировки.
+    // Логика: только library «закрывается» в реальной жизни (после 22:00 — отдельная
+    // площадка с собственными часами). Все остальные venues (Зал Мандельброт, Бар
+    // Серпинский, Бар Жюлиа, Кантор) работают весь фестиваль и должны принимать события
+    // в любое время — поэтому никакого штрихованного «заблокировано» там нет, а
+    // discovery-zones (свободные окна с возможностью добавить) рисуются по всему
+    // диапазону timeline.
+    const isLibrary = vid === 'library';
+    if (isLibrary) {
+      // Старая логика: discovery-zones внутри активного диапазона, snippet-blocked вне.
+      if (allowedRanges.length > 0) {
+        const firstSlotStart = allowedRanges[0][0];
+        const lastSlotEnd = allowedRanges[allowedRanges.length - 1][1];
+        let cursor = firstSlotStart;
+        [...merged].forEach(([a, b]) => {
+          if (a > cursor) {
+            const gap = a - cursor;
+            if (gap >= 15) {
+              html += `<div class="discovery-zone" data-venue="${vid}" data-start-min="${cursor}" data-end-min="${a}"
+                            style="top:${cursor * ppm}px;height:${gap * ppm}px"
+                            title="Свободно ${minToTime(cursor)}–${minToTime(a)}. Кликни чтобы добавить событие.">
+                <span>+ ${minToTime(cursor)}–${minToTime(a)}</span>
+              </div>`;
+            }
           }
+          cursor = Math.max(cursor, b);
+        });
+      }
+      // Заблокированные участки (вне разрешённых диапазонов library)
+      let cursor = 0;
+      merged.forEach(([a, b]) => {
+        if (a > cursor) html += `<div class="slot-blocked" style="top:${cursor * ppm}px;height:${(a - cursor) * ppm}px"></div>`;
+        cursor = Math.max(cursor, b);
+      });
+      if (cursor < totalMin) html += `<div class="slot-blocked" style="top:${cursor * ppm}px;height:${(totalMin - cursor) * ppm}px"></div>`;
+    } else {
+      // Для всех остальных venues: блокировок нет, discovery-zones по всему дню
+      // во всех промежутках где нет слотов и промежуток ≥ 15 минут.
+      let cursor = 0;
+      merged.forEach(([a, b]) => {
+        if (a > cursor && (a - cursor) >= 15) {
+          html += `<div class="discovery-zone" data-venue="${vid}" data-start-min="${cursor}" data-end-min="${a}"
+                        style="top:${cursor * ppm}px;height:${(a - cursor) * ppm}px"
+                        title="Свободно ${minToTime(cursor)}–${minToTime(a)}. Кликни чтобы добавить событие.">
+            <span>+ ${minToTime(cursor)}–${minToTime(a)}</span>
+          </div>`;
         }
         cursor = Math.max(cursor, b);
       });
+      if (cursor < totalMin && (totalMin - cursor) >= 15) {
+        html += `<div class="discovery-zone" data-venue="${vid}" data-start-min="${cursor}" data-end-min="${totalMin}"
+                      style="top:${cursor * ppm}px;height:${(totalMin - cursor) * ppm}px"
+                      title="Свободно ${minToTime(cursor)}–${minToTime(totalMin)}. Кликни чтобы добавить событие.">
+          <span>+ ${minToTime(cursor)}–${minToTime(totalMin)}</span>
+        </div>`;
+      }
     }
-
-    let cursor = 0;
-    merged.forEach(([a, b]) => {
-      if (a > cursor) html += `<div class="slot-blocked" style="top:${cursor * ppm}px;height:${(a - cursor) * ppm}px"></div>`;
-      cursor = Math.max(cursor, b);
-    });
-    if (cursor < totalMin) html += `<div class="slot-blocked" style="top:${cursor * ppm}px;height:${(totalMin - cursor) * ppm}px"></div>`;
     html += `</div>`;
   });
   tl.innerHTML = html;
@@ -4080,8 +4124,10 @@ function renderExhibitDetail(id) {
         <div>
           <label>Статус</label>
           <select id="detail-ex-status">
-            <option value="confirmed" ${ex.status==='confirmed'?'selected':''}>подтверждено</option>
-            <option value="tentative" ${ex.status==='tentative'?'selected':''}>пока не точно</option>
+            <option value="confirmed" ${ex.status==='confirmed'?'selected':''}>в программе · подтверждено</option>
+            <option value="tentative" ${ex.status==='tentative'?'selected':''}>в программе · уточняется</option>
+            <option value="placeholder" ${ex.status==='placeholder'?'selected':''}>думаем (вернуть в раздумья)</option>
+            <option value="rejected" ${ex.status==='rejected'?'selected':''}>отказ</option>
           </select>
         </div>
         <div>
@@ -4367,6 +4413,23 @@ function openCandModal(kind, id) {
     // Дефолт по моду
     targetSel.value = state.view === 'art' ? 'installation' : 'experiment';
   }
+
+  // Если для этой заявки уже есть связанное событие/экспонат — дизаблим
+  // «Создать», чтобы не плодить дубли. Покажем подсказку «уже в программе».
+  const alreadyPlaced = c.kind === 'app' && isPlaced(c);
+  const convertBtn = document.getElementById('btn-convert');
+  if (convertBtn) {
+    if (alreadyPlaced) {
+      convertBtn.disabled = true;
+      convertBtn.title = 'Для этой заявки уже создано событие/экспонат — повторно создавать нельзя';
+      convertBtn.textContent = '✓ Уже в программе';
+    } else {
+      convertBtn.disabled = false;
+      convertBtn.title = '';
+      convertBtn.textContent = 'Создать →';
+    }
+  }
+
   document.getElementById('cand-modal').classList.add('active');
 }
 function closeCandModal() { document.getElementById('cand-modal').classList.remove('active'); _modalCandId = null; }
@@ -4377,6 +4440,11 @@ function markCand(status) {
 function convertCandToTarget() {
   const c = buildCandidates().find(c => c.id === _modalCandId);
   if (!c) return;
+  // Защита: если для этой заявки уже создано событие/экспонат — не создаём дубль
+  if (c.kind === 'app' && isPlaced(c)) {
+    alert('Для заявки ' + c.id + ' уже есть связанное событие или экспонат. Повторное создание заблокировано — иначе появятся дубли.');
+    return;
+  }
   const targetCat = document.getElementById('cand-target-category').value;
   // installation/art/media → exhibit; всё остальное → event
   const isExhibit = ['installation', 'art', 'media'].includes(targetCat);
