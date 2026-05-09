@@ -205,10 +205,20 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 .search:focus { outline: none; border-color: var(--ink); }
 .cand-list { padding: 8px; }
 .cand-card {
-  padding: 13px 15px; border: 1px solid var(--rule-soft);
+  padding: 13px 15px 13px 18px; border: 1px solid var(--rule-soft);
   margin-bottom: 8px; cursor: grab; background: var(--paper);
   position: relative; transition: border-color 0.12s, box-shadow 0.12s;
+  border-left-width: 4px;  /* левая полоса для цвета категории */
+  border-left-color: var(--rule-soft);
 }
+/* Цветная левая полоса по категории — единая палитра 7 кругов Аполлония */
+.cand-card.cat-popsci     { border-left-color: #d8b878; }
+.cand-card.cat-experiment { border-left-color: #8fa8c8; }
+.cand-card.cat-workshop   { border-left-color: #94b884; }
+.cand-card.cat-social     { border-left-color: #a0a0c0; }
+.cand-card.cat-cinema     { border-left-color: #b888b8; }
+.cand-card.cat-music      { border-left-color: #d88090; }
+.cand-card.cat-art        { border-left-color: #c8a060; }
 .cand-card:hover {
   border-color: var(--ink);
 }
@@ -531,9 +541,19 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   transition: border-color 0.12s, box-shadow 0.12s;
 }
 .event-pill:hover { border-color: var(--ink); }
-.event-pill.s-confirmed { background: rgba(74, 107, 58, 0.10); border-color: rgba(74, 107, 58, 0.4); }
-.event-pill.s-tentative { background: var(--accent-dim); border-color: var(--accent-line); }
-.event-pill.s-placeholder { background: rgba(45, 48, 40, 0.05); border-color: var(--rule-soft); border-style: dashed; color: var(--ink-soft); }
+/* Цвет карточки события по категории Аполлония — 7 цветов, один в один к slot-bg.
+   Чуть более насыщенные чем фон слота, чтобы карточка читалась поверх него.
+   Cтатус (placeholder vs confirmed/tentative) только меняет насыщенность через
+   .s-placeholder ниже — не цвет. */
+.event-pill.cat-popsci     { background: rgba(255, 235, 200, 0.85); border-color: #d8b878; }
+.event-pill.cat-experiment { background: rgba(210, 225, 245, 0.85); border-color: #8fa8c8; }
+.event-pill.cat-workshop   { background: rgba(218, 235, 212, 0.85); border-color: #94b884; }
+.event-pill.cat-social     { background: rgba(220, 220, 232, 0.85); border-color: #a0a0c0; }
+.event-pill.cat-cinema     { background: rgba(238, 220, 238, 0.85); border-color: #b888b8; }
+.event-pill.cat-music      { background: rgba(255, 212, 218, 0.85); border-color: #d88090; }
+.event-pill.cat-art        { background: rgba(245, 220, 200, 0.85); border-color: #c8a060; }
+/* Статус — меняет толщину рамки и opacity, цвет остаётся «по категории» */
+.event-pill.s-placeholder  { opacity: 0.65; border-style: dashed; }
 .event-pill.s-placeholder .ev-title { font-style: italic; }
 .event-pill .ev-title {
   font-family: var(--font-body);
@@ -2895,7 +2915,22 @@ function updateViewTabCounters() {
 
 function renderCandCard(c) {
   const placed = c.kind === 'event' ? c.placed : isPlaced(c);
-  return `<div class="cand-card k-${c.kind} s-${c.status||'new'}" draggable="true" data-kind="${c.kind}" data-id="${c.id}">
+  // Определяем категорию для цветной полосы. Для event/exhibit — прямо из объекта,
+  // для app/idea — через override > suggested.
+  let cat = null;
+  if (c.kind === 'event') cat = c.category;
+  else if (c.kind === 'exhibit') cat = 'art';
+  else {
+    const ovr = state.candCategoryOverrides?.[c.id];
+    if (ovr && typeof ovr === 'object') cat = ovr.type;
+    else if (typeof ovr === 'string') cat = ['art','installation','media'].includes(ovr) ? 'art' : ovr;
+    else {
+      cat = c._suggested_category || null;
+      if (cat === 'installation' || cat === 'media') cat = 'art';
+    }
+  }
+  const catClass = cat ? ` cat-${cat}` : '';
+  return `<div class="cand-card k-${c.kind} s-${c.status||'new'}${catClass}" draggable="true" data-kind="${c.kind}" data-id="${c.id}">
     ${c.name ? `<div class="cand-name">${esc(c.name)}</div>` : ''}
     <div class="cand-cardtitle">${esc(c.title || '(без названия)')}</div>
     <div class="cand-meta">
@@ -3310,7 +3345,7 @@ function renderTimeline() {
         const leftPct = isExclusive ? 0 : (pos.start / lanes) * 100;
         const widthPct = isExclusive ? 100 : (pos.span / lanes) * 100;
         const dimClass = eventIsRelevant(ev) ? '' : ' dim';
-        html += `<div class="event-pill s-${ev.status}${dimClass}" draggable="true" data-event="${ev.id}"
+        html += `<div class="event-pill s-${ev.status} cat-${ev.category||'unknown'}${dimClass}" draggable="true" data-event="${ev.id}"
                       style="top:${startPx + labelOffset}px;height:${heightPx - labelOffset - 4}px;
                              left:calc(${leftPct}% + 4px);width:calc(${widthPct}% - 8px)">
           <button class="ev-remove" title="Открепить">×</button>
