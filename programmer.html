@@ -1353,6 +1353,7 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   <span class="src-info" id="src-info">локальные данные</span>
   <span class="spacer"></span>
   <button onclick="undoLastChange()" id="btn-undo" title="Отменить последнее изменение (Ctrl+Z)" disabled>↶ Отменить</button>
+  <button onclick="saveLocally()" id="btn-save-local" title="Сохранить текущее состояние локально (в браузере). Безопасно — не публикует, никуда не отправляет.">💾 Сохранить</button>
   <button onclick="reloadAll()" id="btn-reload" title="Перечитать программу с сайта и заявки">↻ Обновить</button>
   <button class="primary" onclick="publishToGitHub()" id="btn-publish">🚀 Опубликовать</button>
   <span class="menu-wrap">
@@ -1362,6 +1363,7 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
       <button onclick="syncNewApplicationsFromSheets(); closeMenu()">📥 Новые заявки из Sheets</button>
       <button onclick="resetApplicationsSyncThreshold(); closeMenu()">⏮ Сбросить порог синхронизации…</button>
       <button onclick="exportJSON(); closeMenu()">💾 Скачать festival-data.js</button>
+      <button onclick="showBackupHistory(); closeMenu()">🕘 История версий (автобэкапы)…</button>
       <button onclick="openStructureView(); closeMenu()">Слоты и папоротник…</button>
       <div style="height:1px;background:#ddd;margin:4px 0"></div>
       <button onclick="openPrintView(); closeMenu()">🖨 Расписание для печати…</button>
@@ -2107,6 +2109,124 @@ function persistState() {
     }));
   } catch(e) { console.warn('persist failed', e); }
 }
+
+// Авто-бэкап в отдельный ключ. Используется перед опасными операциями (reload,
+// publish, очистка кэша). Хранятся последние 5 — старые удаляются. Восстановить
+// можно через DevTools: Object.keys(localStorage).filter(k=>k.startsWith('festtool-v12-autobackup-'))
+function _saveAutoBackup(label) {
+  try {
+    const key = 'festtool-v12-autobackup-' + new Date().toISOString().replace(/[:.]/g, '-') + '-' + (label || 'manual');
+    const payload = {
+      ts: new Date().toISOString(),
+      label: label || 'manual',
+      data: state.data,
+      appStatuses: state.appStatuses,
+      ideas: state.ideas
+    };
+    localStorage.setItem(key, JSON.stringify(payload));
+    // Удалить старые (оставить 10 последних — больше истории на случай раскопок)
+    const all = Object.keys(localStorage)
+      .filter(k => k.startsWith('festtool-v12-autobackup-'))
+      .sort();
+    while (all.length > 10) localStorage.removeItem(all.shift());
+    console.log('[programmer] автобэкап:', key);
+  } catch (e) { console.warn('auto-backup failed', e); }
+}
+
+// Список доступных автобэкапов — для UI восстановления
+function listAutoBackups() {
+  return Object.keys(localStorage)
+    .filter(k => k.startsWith('festtool-v12-autobackup-'))
+    .sort()
+    .reverse()
+    .map(k => {
+      try {
+        const p = JSON.parse(localStorage.getItem(k));
+        return { key: k, ts: p.ts, label: p.label, eventsCount: (p.data && p.data.events || []).length };
+      } catch { return { key: k, ts: '?', label: '?', eventsCount: 0 }; }
+    });
+}
+
+// Восстановить из автобэкапа по ключу
+function restoreFromAutoBackup(key) {
+  if (!confirm(`Восстановить состояние из ${key}?\n\nТекущие правки будут заменены.\nПеред восстановлением создаётся ещё один автобэкап.`)) return;
+  _saveAutoBackup('before-restore');
+  try {
+    const p = JSON.parse(localStorage.getItem(key));
+    if (!p || !p.data) { alert('Бэкап повреждён'); return; }
+    state.data = p.data;
+    state.appStatuses = p.appStatuses || {};
+    state.ideas = p.ideas || [];
+    state.isDirty = true;  // помечаем что есть несохранённые правки относительно сервера
+    enrichEventsFromSlots(state.data);
+    persistState();
+    rerenderAll();
+    updateSrcBadge();
+    alert('Восстановлено из ' + key + '\nСостояние помечено как несохранённое — нажми «🚀 Опубликовать» чтобы залить на сайт, или продолжай работу.');
+  } catch (e) {
+    alert('Ошибка восстановления: ' + e.message);
+  }
+}
+
+// UI меню «История версий» — показ списка автобэкапов с кнопками восстановления
+function showBackupHistory() {
+  const backups = listAutoBackups();
+  if (backups.length === 0) {
+    alert('Автобэкапов ещё нет. Они создаются автоматически каждые 30 секунд (если есть несохранённые правки) и перед каждым «↻ Обновить».');
+    return;
+  }
+  const lines = backups.map((b, i) => {
+    const dt = new Date(b.ts);
+    const time = dt.toLocaleString('ru-RU', { hour:'2-digit', minute:'2-digit', second:'2-digit', day:'2-digit', month:'2-digit' });
+    return `${i+1}. ${time} · ${b.label} · ${b.eventsCount} events`;
+  }).join('\n');
+  const ans = prompt(
+    'История автобэкапов (новейшие сверху):\n\n' + lines +
+    '\n\nВведи номер для восстановления (или Cancel):',
+    '1'
+  );
+  if (!ans) return;
+  const n = parseInt(ans, 10);
+  if (isNaN(n) || n < 1 || n > backups.length) { alert('Неверный номер'); return; }
+  restoreFromAutoBackup(backups[n-1].key);
+}
+
+// Авто-сохранение каждые 30 секунд если есть несохранённые правки.
+// Создаёт автобэкап + persistState. Молчаливое — без UI оповещений.
+let _autoSaveTimer = null;
+function _startAutoSaveLoop() {
+  if (_autoSaveTimer) return;
+  _autoSaveTimer = setInterval(() => {
+    if (state.isDirty) {
+      persistState();
+      _saveAutoBackup('auto-30s');
+      console.log('[programmer] auto-save tick');
+    }
+  }, 30 * 1000);
+}
+
+// Защита от закрытия вкладки/обновления страницы при несохранённых правках.
+window.addEventListener('beforeunload', e => {
+  if (state.isDirty) {
+    e.preventDefault();
+    e.returnValue = 'Есть несохранённые правки. Точно закрыть страницу?';
+    return e.returnValue;
+  }
+});
+
+// Явное «Сохранить локально» — то же что persistState + уведомление пользователю.
+// Главное: даёт человеку чёткий мысленный якорь "вот я сохранил, можно не бояться F5".
+function saveLocally() {
+  persistState();
+  _saveAutoBackup('manual-save');
+  const btn = document.getElementById('btn-save-local');
+  if (btn) {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Сохранено';
+    btn.style.background = '#5d8b6e'; btn.style.color = 'white';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.style.color = ''; }, 1500);
+  }
+}
 function restoreState() {
   try {
     const raw = localStorage.getItem(STATE_KEY);
@@ -2541,7 +2661,12 @@ function _parseCSV(text) {
 }
 
 async function reloadAll() {
-  if (state.isDirty && !confirm('Есть несохранённые правки. Перечитать (правки потеряются)?')) return;
+  if (state.isDirty) {
+    if (!confirm('Есть несохранённые правки. Перечитать с сервера и потерять их?\n\n(Авто-бэкап будет сохранён в localStorage перед перезаписью.)')) return;
+  }
+  // Авто-бэкап перед перезаписью — сохраняем снапшот в отдельном ключе.
+  // Хранится 5 последних, можно восстановить вручную через DevTools если что.
+  _saveAutoBackup('before-reload');
   state.isDirty = false; state.remoteSha = null;
   // Последовательно: сначала festival-data, потом applications (зависит от data.applications).
   await loadFestivalData();
@@ -5962,12 +6087,28 @@ document.getElementById('zoom').addEventListener('input', e => {
 
 (async () => {
   restoreState();
-  // Всегда пытаемся подтянуть свежие данные с сервера — даже если в localStorage
-  // что-то осталось от прошлой сессии. Если fetch упал, loadFestivalData оставит
-  // существующий state.data (из кэша) и пометит источник как 'cached', что видно в badge.
+  // КРИТИЧНО: если в localStorage есть несохранённые правки (isDirty === true),
+  // НЕ загружаем festival-data.js с сервера — иначе перезатрём работу пользователя.
+  // Это раньше приводило к молчаливой потере правок при F5: твоя работа в state.data
+  // затиралась файлом с GitHub, потому что loadFestivalData() безусловно делал
+  // state.data = JSON.parse(serverFile).
+  //
+  // Теперь: при isDirty показываем badge "ЕСТЬ ПРАВКИ", сервер не трогаем.
+  // Чтобы получить свежие данные с сервера — кнопка «↻ Обновить» (она уже спрашивает
+  // подтверждение и явно перезатирает).
+  if (state.isDirty && state.data && state.data.events) {
+    console.log('[programmer] есть несохранённые правки в localStorage — не перезаписываем сервером');
+    state.dataSource = 'live';
+    if (state.applications.length === 0) await loadApplications();
+    rerenderAll(); updateSrcBadge();
+    _startAutoSaveLoop();
+    return;
+  }
+  // Состояние чистое — можно безопасно подтянуть свежее с сервера
   await loadFestivalData();
   if (state.applications.length === 0) await loadApplications();
   rerenderAll(); updateSrcBadge();
+  _startAutoSaveLoop();  // запускаем фоновое авто-сохранение каждые 30 сек если isDirty
 })();
 </script>
 </body>
