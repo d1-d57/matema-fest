@@ -413,15 +413,14 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   border: 1px dashed #c8d8c8; border-radius: 3px;
   pointer-events: none; z-index: 1;
 }
-.slot-bg.kind-library { background: rgba(232, 240, 232, 0.45); border-color: #c8d8c8; }
-.slot-bg.kind-lecture { background: rgba(255, 240, 220, 0.5); border-color: #e8d0a8; }
-.slot-bg.kind-stations { background: rgba(232, 232, 240, 0.5); border-color: #c8c8e0; }
-.slot-bg.kind-music { background: rgba(240, 220, 240, 0.45); border-color: #e0c0e0; }
-.slot-bg.kind-music-par { background: rgba(240, 220, 240, 0.3); border-color: #d8b0d8; border-style: dotted; }
-.slot-bg.kind-dance { background: rgba(255, 220, 220, 0.5); border-color: #e8a8a8; }
-.slot-bg.kind-discussion { background: rgba(220, 235, 250, 0.5); border-color: #a8c0e0; }
-.slot-bg.kind-cinema { background: rgba(245, 230, 245, 0.5); border-color: #d0a8d0; }
-.slot-bg.kind-interlude { background: rgba(245, 230, 245, 0.5); border-color: #d0a8d0; }
+.slot-bg.kind-popsci     { background: rgba(255, 240, 220, 0.50); border-color: #e8d0a8; }  /* научпоп — тёплый бежевый */
+.slot-bg.kind-experiment { background: rgba(220, 230, 245, 0.50); border-color: #b0c4dc; }  /* эксперимент — холодный синий */
+.slot-bg.kind-workshop   { background: rgba(228, 240, 224, 0.55); border-color: #b8d4a8; }  /* мастерская — мятный зелёный */
+.slot-bg.kind-social     { background: rgba(232, 232, 240, 0.55); border-color: #c0c0d8; }  /* общение — пыльно-сиреневый */
+.slot-bg.kind-cinema     { background: rgba(245, 230, 245, 0.50); border-color: #d0a8d0; }  /* кино — лиловый */
+.slot-bg.kind-music      { background: rgba(255, 222, 224, 0.50); border-color: #e8a8b0; }  /* музыка — розовый */
+.slot-bg.kind-music-par  { background: rgba(255, 222, 224, 0.30); border-color: #d8909c; border-style: dotted; }  /* музыка параллельная — пунктирная */
+.slot-bg.kind-art        { background: rgba(248, 232, 218, 0.55); border-color: #d8b888; }  /* искусство — охра */
 
 /* Приглушённое состояние — для слотов/событий/баннеров вне фокуса текущей вкладки.
    Карта таймлайна общая для всех вкладок: видно всё, но релевантное яркое, остальное в полутени. */
@@ -465,12 +464,16 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   transition: filter 0.15s;
 }
 .stations-band-label:hover { filter: brightness(0.95); }
-.stations-band-label.kind-stations {
+.stations-band-label.kind-experiment,
+.stations-band-label.kind-workshop,
+.stations-band-label.kind-popsci,
+.stations-band-label.kind-social {
   background: rgba(241, 243, 226, 0.95);
   border-bottom-color: var(--ink);
   color: var(--ink);
 }
-.stations-band-label.kind-music-par {
+.stations-band-label.kind-music-par,
+.stations-band-label.kind-music {
   background: rgba(241, 243, 226, 0.95);
   border-bottom-color: var(--accent);
   color: var(--accent);
@@ -1971,25 +1974,17 @@ const VENUE_TECH_NAMES = {
 };
 
 function slotKind(sid) {
-  // ИСТОЧНИК ПРАВДЫ — slot.category. Раньше было два дублирующих поля
-  // (slot.type техническое + slot.category содержательное), но это переусложнение.
-  // Сейчас kind для рендера и цвета вычисляется из (category, subcategory, venue).
-  // Возвращаем CSS-класс для kind-X (см. CSS .slot-bg.kind-*).
+  // ИСТОЧНИК ПРАВДЫ — slot.category. Возвращает один из 7 кругов Аполлония:
+  // popsci · experiment · workshop · social · cinema · music · art.
+  // Это и есть CSS-класс для цвета (см. .slot-bg.kind-*). Один тип = один цвет.
+  // Особый случай: music на параллельной малой сцене (big_bar) рисуется пунктиром,
+  // отдельный CSS-класс kind-music-par; для остальных venue music — обычный kind-music.
   const sl = state.data && state.data.time_slots && state.data.time_slots[sid];
-  if (!sl) return 'lecture';
+  if (!sl) return 'popsci';
   const cat = sl.category;
-  const subcat = sl.subcategory;
-  const venue = sl.venue;
-  if (cat === 'cinema') return subcat === 'short' ? 'interlude' : 'cinema';
-  if (cat === 'music') {
-    if (venue === 'main_stage' || subcat === 'main_stage') return 'music';
-    if (venue === 'courtyard' || subcat === 'courtyard') return 'dance';
-    return 'music-par';  // big_bar и параллельная музыка
-  }
-  if (cat === 'social') return 'discussion';
-  if (cat === 'popsci') return venue === 'library' ? 'library' : 'lecture';
-  if (cat === 'experiment' || cat === 'workshop') return 'stations';
-  return 'lecture';
+  if (!cat) return 'popsci';  // дефолт для слотов без категории
+  if (cat === 'music' && (sl.venue === 'big_bar' || sl.subcategory === 'big_bar')) return 'music-par';
+  return cat;
 }
 
 // Все слоты видны всегда. Это карта-таймлайн фестиваля, общая для всех вкладок.
@@ -2008,10 +2003,10 @@ function slotIsRelevant(sid) {
   const cfg = VIEW_CONFIG[state.view] || VIEW_CONFIG['all'];
   if (!cfg.timelineCats) return true;  // на 'all' релевантно всё
   const k = slotKind(sid);
-  if (state.view === 'cinema') return k === 'cinema' || k === 'interlude';
-  if (state.view === 'music') return k === 'music' || k === 'music-par' || k === 'dance';
-  if (state.view === 'open-apps') return ['library', 'lecture', 'stations', 'discussion'].includes(k);
-  return true;
+  // k теперь = category (или 'music-par' для параллельной музыки).
+  // Сводим music-par к music для целей фильтра по вкладкам.
+  const cat = k === 'music-par' ? 'music' : k;
+  return cfg.timelineCats.includes(cat);
 }
 
 // Событие релевантно текущей вкладке если его категория попадает в timelineCats.
@@ -2861,27 +2856,36 @@ function updateViewTabCounters() {
   const ds = state.data;
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-  // Унифицированные счётчики на вкладках. Везде одно и то же: число неразобранных
-  // заявок (status: new или considering) данного типа. Если неразобранных нет —
-  // показываем 0. Это убирает разнобой который был раньше (Музыка показывала
-  // tentative events, Искусство — non-confirmed exhibits, и т.д.).
-  // Для каждой вкладки определяем какие категории туда «попадают».
-  const _appCat = (a) => {
-    const ovr = state.candCategoryOverrides?.[a.id];
+  // Унифицированные счётчики на вкладках. Считаем всё что лежит в коробках
+  // «Новые» + «Думаем» — это и заявки (apps/ideas со статусами new/considering),
+  // и события/экспонаты со статусом placeholder. Точно как пользователь видит
+  // в левом пуле когда переключает между коробками.
+  const pendingCands = buildCandidates().filter(c => {
+    if (c.kind === 'app' || c.kind === 'idea') {
+      if (c.kind === 'app' && isPlaced(c)) return false;
+      const st = c.status || 'new';
+      return st === 'new' || st === 'considering';
+    }
+    if (c.kind === 'event' || c.kind === 'exhibit') {
+      return c.status === 'placeholder';
+    }
+    return false;
+  });
+  // Тип candidate'а: для app/idea — override > suggested; для event — c.category;
+  // для exhibit — всегда 'art'.
+  const candType = (c) => {
+    if (c.kind === 'event') return c.category || null;
+    if (c.kind === 'exhibit') return 'art';
+    const ovr = state.candCategoryOverrides?.[c.id];
     if (ovr && typeof ovr === 'object') return ovr.type;
     if (typeof ovr === 'string') return ['art','installation','media'].includes(ovr) ? 'art' : ovr;
-    let c = a._suggested_category || null;
-    if (c === 'installation' || c === 'media') c = 'art';
-    return c;
+    let cat = c._suggested_category || null;
+    if (cat === 'installation' || cat === 'media') cat = 'art';
+    return cat;
   };
-  const isPending = (a) => {
-    const st = state.appStatuses[a.id] || a.status || 'new';
-    return st === 'new' || st === 'considering';
-  };
-  const pendingApps = state.applications.filter(a => isPending(a) && !isPlaced({...a, kind:'app', id:a.id}));
-  const countByCats = (cats) => pendingApps.filter(a => cats.includes(_appCat(a))).length;
+  const countByCats = (cats) => pendingCands.filter(c => cats.includes(candType(c))).length;
 
-  set('stat-all', pendingApps.length);
+  set('stat-all', pendingCands.length);
   set('stat-popsci', countByCats(['popsci']));
   set('stat-open-apps', countByCats(['workshop', 'experiment', 'social']));
   set('stat-cinema', countByCats(['cinema']));
