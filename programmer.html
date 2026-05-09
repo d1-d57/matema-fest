@@ -213,8 +213,7 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 }
 /* Цветная левая полоса по категории — единая палитра 7 кругов Аполлония */
 .cand-card.cat-popsci     { border-left-color: #d8b878; }
-.cand-card.cat-experiment { border-left-color: #8fa8c8; }
-.cand-card.cat-workshop   { border-left-color: #94b884; }
+.cand-card.cat-station    { border-left-color: #8fa8c8; }
 .cand-card.cat-social     { border-left-color: #a0a0c0; }
 .cand-card.cat-cinema     { border-left-color: #b888b8; }
 .cand-card.cat-music      { border-left-color: #d88090; }
@@ -423,14 +422,13 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   border: 1px dashed #c8d8c8; border-radius: 3px;
   pointer-events: none; z-index: 1;
 }
-.slot-bg.kind-popsci     { background: rgba(255, 240, 220, 0.50); border-color: #e8d0a8; }  /* научпоп — тёплый бежевый */
-.slot-bg.kind-experiment { background: rgba(220, 230, 245, 0.50); border-color: #b0c4dc; }  /* эксперимент — холодный синий */
-.slot-bg.kind-workshop   { background: rgba(228, 240, 224, 0.55); border-color: #b8d4a8; }  /* мастерская — мятный зелёный */
-.slot-bg.kind-social     { background: rgba(232, 232, 240, 0.55); border-color: #c0c0d8; }  /* общение — пыльно-сиреневый */
-.slot-bg.kind-cinema     { background: rgba(245, 230, 245, 0.50); border-color: #d0a8d0; }  /* кино — лиловый */
-.slot-bg.kind-music      { background: rgba(255, 222, 224, 0.50); border-color: #e8a8b0; }  /* музыка — розовый */
-.slot-bg.kind-music-par  { background: rgba(255, 222, 224, 0.30); border-color: #d8909c; border-style: dotted; }  /* музыка параллельная — пунктирная */
-.slot-bg.kind-art        { background: rgba(248, 232, 218, 0.55); border-color: #d8b888; }  /* искусство — охра */
+.slot-bg.kind-popsci     { background: rgba(255, 240, 220, 0.50); border-color: #e8d0a8; }  /* научпоп */
+.slot-bg.kind-station    { background: rgba(220, 230, 245, 0.50); border-color: #b0c4dc; }  /* станция (workshop+experiment) */
+.slot-bg.kind-social     { background: rgba(232, 232, 240, 0.55); border-color: #c0c0d8; }  /* общение */
+.slot-bg.kind-cinema     { background: rgba(245, 230, 245, 0.50); border-color: #d0a8d0; }  /* кино */
+.slot-bg.kind-music      { background: rgba(255, 222, 224, 0.50); border-color: #e8a8b0; }  /* музыка */
+.slot-bg.kind-music-par  { background: rgba(255, 222, 224, 0.30); border-color: #d8909c; border-style: dotted; }  /* музыка параллельная */
+.slot-bg.kind-art        { background: rgba(248, 232, 218, 0.55); border-color: #d8b888; }  /* искусство */
 
 /* Приглушённое состояние — для слотов/событий/баннеров вне фокуса текущей вкладки.
    Карта таймлайна общая для всех вкладок: видно всё, но релевантное яркое, остальное в полутени. */
@@ -546,8 +544,7 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
    Cтатус (placeholder vs confirmed/tentative) только меняет насыщенность через
    .s-placeholder ниже — не цвет. */
 .event-pill.cat-popsci     { background: rgba(255, 235, 200, 0.85); border-color: #d8b878; }
-.event-pill.cat-experiment { background: rgba(210, 225, 245, 0.85); border-color: #8fa8c8; }
-.event-pill.cat-workshop   { background: rgba(218, 235, 212, 0.85); border-color: #94b884; }
+.event-pill.cat-station    { background: rgba(210, 225, 245, 0.85); border-color: #8fa8c8; }
 .event-pill.cat-social     { background: rgba(220, 220, 232, 0.85); border-color: #a0a0c0; }
 .event-pill.cat-cinema     { background: rgba(238, 220, 238, 0.85); border-color: #b888b8; }
 .event-pill.cat-music      { background: rgba(255, 212, 218, 0.85); border-color: #d88090; }
@@ -1430,6 +1427,7 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
       <button class="right-tab active" data-view="all">Всё <span class="tab-count" id="stat-all">—</span></button>
       <button class="right-tab" data-view="popsci">Научпоп <span class="tab-count" id="stat-popsci">—</span></button>
       <button class="right-tab" data-view="open-apps">Станции <span class="tab-count" id="stat-open-apps">—</span></button>
+      <button class="right-tab" data-view="social">Общение <span class="tab-count" id="stat-social">—</span></button>
       <button class="right-tab" data-view="cinema">Кино <span class="tab-count" id="stat-cinema">—</span></button>
       <button class="right-tab" data-view="music">Музыка <span class="tab-count" id="stat-music">—</span></button>
       <button class="right-tab" data-view="art">Искусство <span class="tab-count" id="stat-art">—</span></button>
@@ -1994,17 +1992,16 @@ const VENUE_TECH_NAMES = {
 };
 
 function slotKind(sid) {
-  // ИСТОЧНИК ПРАВДЫ — slot.category. Возвращает один из 7 кругов Аполлония:
-  // popsci · experiment · workshop · social · cinema · music · art.
-  // Это и есть CSS-класс для цвета (см. .slot-bg.kind-*). Один тип = один цвет.
-  // Особый случай: music на параллельной малой сцене (big_bar) рисуется пунктиром,
-  // отдельный CSS-класс kind-music-par; для остальных venue music — обычный kind-music.
+  // Возвращает CSS-класс для цвета слота. Базируется на slot.category, но
+  // workshop/experiment схлопываются в один класс 'station' (это один тип
+  // в нашей UI-классификации, два круга Аполлония остаются на сайте).
+  // Особый случай music на big_bar — пунктирная рамка для параллельной сцены.
   const sl = state.data && state.data.time_slots && state.data.time_slots[sid];
   if (!sl) return 'popsci';
   const cat = sl.category;
-  if (!cat) return 'popsci';  // дефолт для слотов без категории
+  if (!cat) return 'popsci';
   if (cat === 'music' && (sl.venue === 'big_bar' || sl.subcategory === 'big_bar')) return 'music-par';
-  return cat;
+  return majorCat(cat);
 }
 
 // Все слоты видны всегда. Это карта-таймлайн фестиваля, общая для всех вкладок.
@@ -2077,9 +2074,16 @@ const VIEW_CONFIG = {
   'open-apps': {
     label: 'станции',
     showSection: 'timeline',
-    timelineCats: ['workshop', 'experiment', 'social'],
+    timelineCats: ['workshop', 'experiment'],
     poolWorlds: ['station'],
-    poolStationCats: ['workshop', 'experiment', 'social'],
+    poolStationCats: ['workshop', 'experiment'],
+  },
+  'social': {
+    label: 'общение',
+    showSection: 'timeline',
+    timelineCats: ['social'],
+    poolWorlds: ['station'],
+    poolStationCats: ['social'],
   },
   'cinema': {
     label: 'кино',
@@ -2907,7 +2911,8 @@ function updateViewTabCounters() {
 
   set('stat-all', pendingCands.length);
   set('stat-popsci', countByCats(['popsci']));
-  set('stat-open-apps', countByCats(['workshop', 'experiment', 'social']));
+  set('stat-open-apps', countByCats(['workshop', 'experiment']));
+  set('stat-social', countByCats(['social']));
   set('stat-cinema', countByCats(['cinema']));
   set('stat-music', countByCats(['music']));
   set('stat-art', countByCats(['art']));
@@ -2929,7 +2934,7 @@ function renderCandCard(c) {
       if (cat === 'installation' || cat === 'media') cat = 'art';
     }
   }
-  const catClass = cat ? ` cat-${cat}` : '';
+  const catClass = cat ? ` cat-${majorCat(cat)}` : '';
   return `<div class="cand-card k-${c.kind} s-${c.status||'new'}${catClass}" draggable="true" data-kind="${c.kind}" data-id="${c.id}">
     ${c.name ? `<div class="cand-name">${esc(c.name)}</div>` : ''}
     <div class="cand-cardtitle">${esc(c.title || '(без названия)')}</div>
@@ -3345,7 +3350,7 @@ function renderTimeline() {
         const leftPct = isExclusive ? 0 : (pos.start / lanes) * 100;
         const widthPct = isExclusive ? 100 : (pos.span / lanes) * 100;
         const dimClass = eventIsRelevant(ev) ? '' : ' dim';
-        html += `<div class="event-pill s-${ev.status} cat-${ev.category||'unknown'}${dimClass}" draggable="true" data-event="${ev.id}"
+        html += `<div class="event-pill s-${ev.status} cat-${majorCat(ev.category)||'unknown'}${dimClass}" draggable="true" data-event="${ev.id}"
                       style="top:${startPx + labelOffset}px;height:${heightPx - labelOffset - 4}px;
                              left:calc(${leftPct}% + 4px);width:calc(${widthPct}% - 8px)">
           <button class="ev-remove" title="Открепить">×</button>
@@ -3797,7 +3802,7 @@ function handleDrop(slotId, venueId, laneIdx, e) {
       else candCat = cand?._suggested_category || null;
       if (candCat === 'installation' || candCat === 'media') candCat = 'art';
     }
-    if (candCat && candCat !== slot.category) {
+    if (candCat && majorCat(candCat) !== majorCat(slot.category)) {
       const slotCat = state.data.categories?.[slot.category]?.display || slot.category;
       const evCat = state.data.categories?.[candCat]?.display || candCat;
       alert(`Не могу поставить.\n\nСлот зарезервирован под «${slotCat}».\nА это событие имеет тип «${evCat}».\n\nПоменяй тип события в его карточке, или выбери другой слот.`);
@@ -3925,23 +3930,35 @@ function renderAppDetail(id) {
   // ('installation'/'media') или новым объектом {type, subtype}.
   if (!state.candCategoryOverrides) state.candCategoryOverrides = {};
   const override = state.candCategoryOverrides[id];
+  // Определяем стартовое значение типа и подтипа в dropdown'ах. Источники
+  // (по убыванию приоритета): override объект > legacy override строка > suggested.
+  // Если значение — это workshop/experiment, то это «подтип внутри station».
   let defaultType, defaultSubtype = null;
+  const _resolveOldFormat = (val) => {
+    // val — строковое значение (legacy override или suggested category).
+    // Возвращает {type, subtype}.
+    if (val === 'art' || val === 'installation' || val === 'media') {
+      return {type: 'art', subtype: val === 'art' ? null : val};
+    }
+    if (val === 'workshop' || val === 'experiment') {
+      return {type: 'station', subtype: val};
+    }
+    if (val) return {type: val, subtype: null};
+    return null;
+  };
   if (override && typeof override === 'object') {
     defaultType = override.type;
     defaultSubtype = override.subtype || null;
-  } else if (override === 'art' || override === 'installation' || override === 'media') {
-    defaultType = 'art';
-    defaultSubtype = override;
-  } else if (override) {
-    defaultType = override;
-  } else if (suggest === 'art' || suggest === 'installation' || suggest === 'media') {
-    defaultType = 'art';
-    defaultSubtype = suggest;
-  } else if (suggest) {
-    defaultType = suggest;
   } else {
-    defaultType = (state.view === 'art' ? 'art' : 'experiment');
-    defaultSubtype = (state.view === 'art' ? 'installation' : null);
+    const resolved = _resolveOldFormat(override) || _resolveOldFormat(suggest);
+    if (resolved) {
+      defaultType = resolved.type;
+      defaultSubtype = resolved.subtype;
+    } else {
+      // Нет ни override, ни suggested: дефолт зависит от текущей вкладки.
+      defaultType = (state.view === 'art' ? 'art' : 'station');
+      defaultSubtype = (state.view === 'art' ? 'installation' : 'experiment');
+    }
   }
   const subtypeOptionsHtml = _entitySubtypeOptionsHtml(defaultType, defaultSubtype);
   const subtypeWrapStyle = _entitySubtypes(defaultType).length === 0 ? 'display:none' : '';
@@ -4084,10 +4101,10 @@ function renderEventDetail(id) {
           ${_entityTypeOptionsHtml(ev.category)}
         </select>
       </div>
-      <div id="detail-ev-subcategory-wrap" ${_entitySubtypes(ev.category).length === 0 ? 'style="display:none"' : ''}>
+      <div id="detail-ev-subcategory-wrap" ${_entitySubtypes(majorCat(ev.category)).length === 0 ? 'style="display:none"' : ''}>
         <label>Подтип <span style="font-size:11px;color:#888">(внутри круга)</span></label>
         <select id="detail-ev-subcategory">
-          ${_entitySubtypeOptionsHtml(ev.category, ev.subcategory)}
+          ${_entitySubtypeOptionsHtml(majorCat(ev.category), majorCat(ev.category) === 'station' ? ev.category : ev.subcategory)}
         </select>
       </div>
       <div>
@@ -4514,31 +4531,44 @@ function detailConvertApp() {
 }
 
 // ============================================================
-// УНИФИКАЦИЯ ТИПОВ. Один в один соответствует кругам Аполлония.
-//   7 типов = 7 категорий = 7 кругов: popsci, experiment, workshop,
-//   social, cinema, music, art.
-//   У трёх из них (cinema, music, art) есть подтипы — каждый подтип
-//   соответствует отдельному кругу (big-1/big-2/big-3). Подтипы живут
-//   в data.subcategories — единый источник истины, новых не плодим.
-// При смене типа: если выбран art → сущность переносится в exhibits[];
-// если выбран не-art и она была exhibit → переносится в events[].
+// УНИФИКАЦИЯ ТИПОВ. 6 типов = 6 кругов Аполлония (workshop и experiment
+// в табличке программера сливаются в один тип «station» с двумя подтипами,
+// но на самом фестивале остаются двумя отдельными кругами Аполлония).
+//   6 типов: popsci, station, social, cinema, music, art.
+//   У четырёх есть подтипы — каждый подтип соответствует отдельному кругу.
+//   Подтипы для music/cinema/art живут в data.subcategories (единый источник),
+//   подтипы station (workshop/experiment) зашиты в коде, потому что в
+//   данных это сами values event.category.
 // ============================================================
 const _ENTITY_TYPE_OPTIONS = [
-  {value:'popsci',     label:'Научпоп (лекция)'},
-  {value:'experiment', label:'Опыт / эксперимент'},
-  {value:'workshop',   label:'Мастерская'},
-  {value:'social',     label:'Общение / перформанс'},
-  {value:'cinema',     label:'Кино'},
-  {value:'music',      label:'Музыка'},
-  {value:'art',        label:'Искусство'}
+  {value:'popsci',  label:'Научпоп (лекция)'},
+  {value:'station', label:'Станция (мастерская / опыт)'},
+  {value:'social',  label:'Общение / перформанс'},
+  {value:'cinema',  label:'Кино'},
+  {value:'music',   label:'Музыка'},
+  {value:'art',     label:'Искусство'}
 ];
+// Маппинг хранимой категории (event.category) на крупный тип для UI.
+// workshop/experiment → station; всё остальное — как есть.
+function majorCat(cat) {
+  if (cat === 'workshop' || cat === 'experiment') return 'station';
+  return cat;
+}
 function _entityTypeOptionsHtml(currentValue) {
+  const major = majorCat(currentValue);
   return _ENTITY_TYPE_OPTIONS.map(o =>
-    `<option value="${o.value}" ${o.value===currentValue?'selected':''}>${o.label}</option>`
+    `<option value="${o.value}" ${o.value===major?'selected':''}>${o.label}</option>`
   ).join('');
 }
-// Подтипы данного типа из data.subcategories. Возвращает [{value,label}] или [].
+// Подтипы для типа. Для station возвращаем зашитые workshop/experiment;
+// для music/cinema/art — из data.subcategories.
 function _entitySubtypes(type) {
+  if (type === 'station') {
+    return [
+      {value: 'workshop',   label: 'Мастерская'},
+      {value: 'experiment', label: 'Опыт / эксперимент'}
+    ];
+  }
   const subs = state.data.subcategories?.[type] || {};
   return Object.entries(subs).map(([k, v]) => {
     const venue = v.label_from_venue && state.data.venues?.[v.label_from_venue]?.display;
@@ -4548,12 +4578,13 @@ function _entitySubtypes(type) {
 }
 function _entitySubtypeOptionsHtml(type, currentValue) {
   const opts = _entitySubtypes(type);
-  if (opts.length === 0) return '';  // не показывать select вообще
+  if (opts.length === 0) return '';
   return '<option value="">—</option>' + opts.map(o =>
     `<option value="${o.value}" ${o.value===currentValue?'selected':''}>${o.label}</option>`
   ).join('');
 }
 function _isArtType(t) { return t === 'art'; }
+function _isStationType(t) { return t === 'station'; }
 
 // Конвертирует event → exhibit (физически удаляет из events[], добавляет в
 // exhibits[]). Сохраняет все полезные поля и связь с заявкой.
@@ -4624,21 +4655,27 @@ function detailSaveEvent() {
     const newType = document.getElementById('detail-ev-category').value;
     const newSubtype = document.getElementById('detail-ev-subcategory')?.value || null;
     ev.status = document.getElementById('detail-ev-status').value;
-    if (newSubtype) ev.subcategory = newSubtype; else delete ev.subcategory;
     const links = detailGetLinks();
     if (links.length) ev.links = links; else delete ev.links;
     if (teamNotesEl) ev.team_notes = teamNotesEl.value || null;
-    // Унификация типа: если выбрали art — переводим в exhibit с kind=subtype (или art по дефолту).
+    // Унификация типа: если выбрали art — переводим в exhibit с kind=subtype.
     if (_isArtType(newType)) {
       const newExId = _convertEventToExhibit(ev, newSubtype || 'art');
-      if (!newExId) return;  // отмена при наличии слота
+      if (!newExId) return;
       markDirty(); rerenderAll(); persistState();
       state.detailTab = 'event';
       showDetail('exhibit', newExId);
       return;
     }
-    // Иначе — просто меняем category внутри events
-    ev.category = newType;
+    // Если тип = station — реальная category хранится в подтипе (workshop/experiment).
+    // event.subcategory не нужен — это «подтип внутри субкатегории», нам неактуален.
+    if (_isStationType(newType)) {
+      ev.category = newSubtype || 'experiment';  // дефолт experiment если подтип не выбран
+      delete ev.subcategory;
+    } else {
+      ev.category = newType;
+      if (newSubtype) ev.subcategory = newSubtype; else delete ev.subcategory;
+    }
   }
   // На вкладке «Заявка» сохраняем что было собрано раньше — ev уже актуально
   markDirty(); rerenderAll(); persistState();
@@ -4674,9 +4711,18 @@ function detailSaveExhibit() {
   ex.status = document.getElementById('detail-ex-status').value;
   const links = detailGetLinks();
   if (links.length) ex.links = links; else delete ex.links;
-  // Унификация типа: если выбрали не-art — переводим в event с category=type, subcategory=subtype.
+  // Унификация: если выбран не-art — конвертируем в event.
+  // Для station реальная category — это подтип (workshop/experiment).
   if (!_isArtType(newType)) {
-    const newEvId = _convertExhibitToEvent(ex, newType, newSubtype);
+    let realCat, realSub;
+    if (_isStationType(newType)) {
+      realCat = newSubtype || 'experiment';
+      realSub = null;
+    } else {
+      realCat = newType;
+      realSub = newSubtype;
+    }
+    const newEvId = _convertExhibitToEvent(ex, realCat, realSub);
     markDirty(); rerenderAll(); persistState();
     showDetail('event', newEvId);
     return;
