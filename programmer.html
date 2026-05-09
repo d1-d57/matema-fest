@@ -1385,7 +1385,8 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
         </div>
         <div class="cat-filters" id="cat-filters-pool"></div>
         <div class="filters">
-          <button class="filter-btn active" data-filter="todo">К размещению</button>
+          <button class="filter-btn active" data-filter="new">Новые</button>
+          <button class="filter-btn" data-filter="considering">Думаем</button>
           <button class="filter-btn" data-filter="placed">В программе</button>
           <button class="filter-btn" data-filter="rejected">Отказы</button>
         </div>
@@ -2050,7 +2051,7 @@ function getVenueLanes(vid) {
 // ============================================================
 let state = {
   data: null, applications: [], appStatuses: {}, ideas: [],
-  filter: 'todo', search: '', zoom: 1.0,
+  filter: 'new', search: '', zoom: 1.0,
   catFilter: 'all',          // фильтр пула по категории внутри вкладки
   detailTab: 'event',        // активная табка в detail события: event | app
   view: 'all',               // главная вкладка: all | open-apps | cinema | music | art
@@ -2724,20 +2725,40 @@ function renderCandidates() {
     return cfg.poolWorlds && cfg.poolWorlds.includes(w);
   });
 
-  // Фильтр по статусу/размещённости
+  // Фильтр по статусу/размещённости — 4 вкладки:
+  //   new        — заявки, по которым ещё не дали анализа (status=new или нет)
+  //   considering — «Думаем»: заявки status=considering + events/exhibits со статусом
+  //                  не-confirmed (т.е. tentative/placeholder — мы их создали, но
+  //                  пока не уверены что окончательно идут в программу)
+  //   placed     — «В программе»: events/exhibits со status=confirmed (размещены
+  //                  или нет — неважно). + apps со status=accepted (явно приняли)
+  //   rejected   — отказы
   items = items.filter(c => {
-    if (filter === 'todo') {
-      if (c.kind === 'event' && c.placed) return false;
-      if (c.kind === 'exhibit') return false;
-      if (c.kind === 'app' && (c.status === 'rejected' || c.status === 'duplicate')) return false;
-      if ((c.kind === 'app' || c.kind === 'idea') && isPlaced(c)) return false;
-      return true;
+    if (filter === 'new') {
+      // Только applications со status=new (или без статуса)
+      if (c.kind !== 'app' && c.kind !== 'idea') return false;
+      const st = c.status || 'new';
+      return st === 'new';
+    }
+    if (filter === 'considering') {
+      if (c.kind === 'app' || c.kind === 'idea') {
+        return c.status === 'considering';
+      }
+      // events/exhibits — со status не равным 'confirmed' и не 'rejected'
+      if (c.kind === 'event' || c.kind === 'exhibit') {
+        return c.status !== 'confirmed' && c.status !== 'rejected';
+      }
+      return false;
     }
     if (filter === 'placed') {
-      if (isArtView) return c.kind === 'exhibit';
-      return c.kind === 'event' && c.placed;
+      // Принятые в программу: events/exhibits со status=confirmed + apps со status=accepted
+      if (c.kind === 'event' || c.kind === 'exhibit') return c.status === 'confirmed';
+      if (c.kind === 'app') return c.status === 'accepted';
+      return false;
     }
-    if (filter === 'rejected') return c.kind === 'app' && (c.status === 'rejected' || c.status === 'duplicate');
+    if (filter === 'rejected') {
+      return (c.kind === 'app' || c.kind === 'idea') && (c.status === 'rejected' || c.status === 'duplicate');
+    }
     return true;
   });
   if (search) {
@@ -2873,7 +2894,7 @@ function linkApplicationToExisting(appId) {
   }
   // Статус заявки
   state.appStatuses = state.appStatuses || {};
-  state.appStatuses[appId] = 'accepted';
+  state.appStatuses[appId] = 'considering';
 
   markDirty(); persistState(); rerenderAll();
   alert(`Связали:\n${appId} ↔ ${chosen._kind}/${chosen.id}\n\nНе забудь опубликовать (🚀).`);
@@ -5717,6 +5738,8 @@ function saveSlotEdit() {
   // subcategory с events этого слота — независимо от того были ли они enriched —
   // чтобы новые значения слота гарантированно подхватились.
   const RESET_FIELDS = ['venue', 'category', 'apollo_slot', 'subcategory'];
+  const oldVenue = s.venue;  // для лога — ой, уже изменили выше. Берём из html input.
+  const affected = state.data.events.filter(ev => ev.slot === newId);
   state.data.events.forEach(ev => {
     if (ev.slot !== newId) return;
     RESET_FIELDS.forEach(f => { if (ev[f] !== undefined) ev[f] = null; });
@@ -5726,6 +5749,9 @@ function saveSlotEdit() {
     }
   });
   enrichEventsFromSlots(state.data);
+  if (affected.length) {
+    console.log('[programmer] saveSlotEdit:', newId, '→ venue=' + s.venue + ', обновлено events:', affected.length, affected.map(e => e.id + '→venue=' + e.venue));
+  }
 
   closeSlotEditModal();
   markDirty(); rerenderAll(); persistState();
@@ -6066,7 +6092,7 @@ document.querySelectorAll('.right-tab').forEach(tab => {
     tab.classList.add('active');
     state.view = tab.dataset.view;
     state.catFilter = 'all';
-    state.filter = 'todo';
+    state.filter = 'new';
     // Какая секция активна — таймлайн или экспонаты
     const cfg = VIEW_CONFIG[state.view] || VIEW_CONFIG['all'];
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
