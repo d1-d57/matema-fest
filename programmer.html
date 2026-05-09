@@ -222,8 +222,8 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 .cand-card.k-event.s-tentative { background: var(--confirmed-soft); border-color: #b8d4a8; }
 .cand-card.k-exhibit.s-confirmed { background: var(--confirmed-soft); border-color: #b8d4a8; }
 .cand-card.k-exhibit.s-tentative { background: var(--confirmed-soft); border-color: #b8d4a8; }
-.cand-card.k-event.s-placeholder { background: var(--placeholder-soft); border-color: var(--hairline-strong); color: var(--ink-soft); font-style: italic; }
-.cand-card.k-exhibit.s-placeholder { background: var(--placeholder-soft); border-color: var(--hairline-strong); color: var(--ink-soft); font-style: italic; }
+.cand-card.k-event.s-placeholder { background: var(--placeholder-soft); border-color: var(--hairline-strong); }
+.cand-card.k-exhibit.s-placeholder { background: var(--placeholder-soft); border-color: var(--hairline-strong); }
 .cand-card.k-idea { background: #f5efe8; border-color: #d8c8b8; }
 .cand-name {
   font-family: var(--font-body);
@@ -2695,7 +2695,10 @@ async function reloadAll() {
 function buildCandidates() {
   const pool = [];
   state.applications.forEach(a => pool.push({...a, kind: 'app', status: state.appStatuses[a.id] || a.status || 'new'}));
-  state.ideas.forEach(i => pool.push({...i, kind: 'idea'}));
+  // Идеи: status тоже из state.appStatuses (раньше брался из самого объекта,
+  // и кнопки «Отказ/Думаем/Дубль» в detail-view идеи не работали — статус
+  // сохранялся, но buildCandidates его не читал).
+  state.ideas.forEach(i => pool.push({...i, kind: 'idea', status: state.appStatuses[i.id] || i.status || 'new'}));
   return pool;
 }
 function isPlaced(c) {
@@ -2844,8 +2847,8 @@ function renderCandCard(c) {
       ${c.format ? `<span class="tag format">${esc(c.format)}</span>` : ''}
       ${c.indoor_outdoor ? `<span class="tag ${/улиц/i.test(c.indoor_outdoor)?'outdoor':'indoor'}">${esc(c.indoor_outdoor.slice(0,20).replace(/[,;\s]+$/, ''))}</span>` : ''}
       ${placed ? `<span class="tag placed">в программе</span>` : ''}
-      ${c.kind === 'app' && c.status === 'rejected' ? `<span class="tag">отказ</span>` : ''}
-      ${c.kind === 'app' && c.status === 'considering' ? `<span class="tag">думаем</span>` : ''}
+      ${(c.kind === 'app' && c.status === 'rejected') || ((c.kind === 'event' || c.kind === 'exhibit') && c.status === 'rejected') ? `<span class="tag">отказ</span>` : ''}
+      ${(c.kind === 'app' && c.status === 'considering') || ((c.kind === 'event' || c.kind === 'exhibit') && c.status === 'placeholder') ? `<span class="tag">думаем</span>` : ''}
       ${c.kind === 'app' && !placed ? `<button class="cand-link-btn" onclick="event.stopPropagation(); linkApplicationToExisting('${c.id}')" title="Связать с уже существующим событием или экспонатом в программе">🔗 связать</button>` : ''}
     </div>
   </div>`;
@@ -3796,7 +3799,10 @@ function renderAppDetail(id) {
     media: 'Медиа-арт'
   };
   const suggest = c._suggested_category;
-  const defaultCat = suggest || (state.view === 'art' ? 'installation' : 'experiment');
+  // Приоритет defaultCat: override (если пользователь раньше менял) > suggest > режим вкладки
+  if (!state.candCategoryOverrides) state.candCategoryOverrides = {};
+  const override = state.candCategoryOverrides[id];
+  const defaultCat = override || suggest || (state.view === 'art' ? 'installation' : 'experiment');
 
   const fields = [
     ['Формат', c.format],
@@ -3847,7 +3853,7 @@ function renderAppDetail(id) {
       <div class="detail-suggest">
         <div class="detail-suggest-label">${suggest ? 'Предлагаемый тип' : 'Тип не определён — выбери'}</div>
         <div class="detail-suggest-text">${suggest ? `На основе анкеты: <strong>${labelMap[suggest]}</strong>` : 'Заявка не классифицирована автоматически.'}</div>
-        <select id="detail-target-cat">
+        <select id="detail-target-cat" onchange="state.candCategoryOverrides=state.candCategoryOverrides||{}; state.candCategoryOverrides['${esc(id)}']=this.value; persistState();">
           <option value="popsci" ${defaultCat==='popsci'?'selected':''}>Лекция / выступление (popsci)</option>
           <option value="experiment" ${defaultCat==='experiment'?'selected':''}>Опыт / эксперимент (experiment)</option>
           <option value="workshop" ${defaultCat==='workshop'?'selected':''}>Мастерская (workshop)</option>
@@ -3859,10 +3865,11 @@ function renderAppDetail(id) {
       </div>
     </div>
     <div class="detail-actions">
+      ${c.kind === 'idea' ? `<button onclick="detailDeleteIdea()" class="danger" title="Удалить идею (заявки удалить нельзя — только пометить)">Удалить</button>` : ''}
       <button onclick="detailMarkApp('rejected')" class="danger">Отказ</button>
       <button onclick="detailMarkApp('considering')">Думаем</button>
       <button onclick="detailMarkApp('duplicate')">Дубль</button>
-      <button onclick="detailConvertApp()" class="primary">Создать →</button>
+      <button onclick="detailConvertApp()" class="primary">${isPlaced(c) ? 'Переместить →' : 'Создать →'}</button>
     </div>
   `;
 }
@@ -4218,12 +4225,99 @@ function detailMarkApp(status) {
   markDirty(); rerenderAll(); persistState(); hideDetail();
 }
 
+function detailDeleteIdea() {
+  if (!_detailContext || _detailContext.type !== 'idea') return;
+  if (!confirm('Удалить идею?\n\n(Заявки из Sheets удалить нельзя — только пометить «отказ» или «дубль». Идеи живут только локально, их можно удалить.)')) return;
+  pushHistory();
+  state.ideas = state.ideas.filter(i => i.id !== _detailContext.id);
+  delete state.appStatuses[_detailContext.id];
+  markDirty(); rerenderAll(); persistState(); hideDetail();
+}
+
 function detailConvertApp() {
   pushHistory();
   const c = buildCandidates().find(x => x.id === _detailContext.id);
   if (!c) return;
   const targetCat = document.getElementById('detail-target-cat').value;
   const isExhibit = ['installation', 'art', 'media'].includes(targetCat);
+
+  // ЕСЛИ для заявки уже создано событие/экспонат — НЕ создаём дубль, а
+  // «перемещаем» — т.е. меняем тип. Это и есть «смена категории заявки в карточке».
+  // Логика:
+  //   - найти существующую сущность по _source_app=c.id (или _source)
+  //   - если она того же типа (exhibit↔isExhibit совпадает) → просто поменять
+  //     subcategory/kind/category внутри
+  //   - если другого типа (event vs exhibit) → удалить старую, создать новую
+  //     с теми же полями (title, speaker, description, _source_app, status)
+  const existingEvent = state.data.events.find(e => e._source_app === c.id || e._source === c.id);
+  const existingExhibit = (state.data.exhibits || []).find(x => x._source_app === c.id || x._source === c.id);
+  const existing = existingEvent || existingExhibit;
+
+  if (existing) {
+    const wasExhibit = !!existingExhibit;
+    if (isExhibit && wasExhibit) {
+      // Меняем подкатегорию exhibit'a (art / installation / media)
+      existing.kind = targetCat;
+      existing.subcategory = targetCat;
+      markDirty(); rerenderAll(); persistState();
+      // НЕ закрываем detail — пользователь видит изменение
+      showDetail('exhibit', existing.id);
+      return;
+    }
+    if (!isExhibit && !wasExhibit) {
+      // Меняем категорию event'a (popsci/experiment/workshop/social)
+      existing.category = targetCat;
+      delete existing._enriched_fields;
+      enrichEventsFromSlots(state.data);
+      markDirty(); rerenderAll(); persistState();
+      showDetail('event', existing.id);
+      return;
+    }
+    // Меняем ТИП (event ↔ exhibit) — нужно удалить старое и создать новое
+    if (existing.slot && !isExhibit) {
+      // event → event, slot сохраняем — это уже обработано выше
+    }
+    if (existingEvent && existingEvent.slot && isExhibit) {
+      if (!confirm('У этого события есть слот в timeline. Перевод в галерею открепит его. Продолжить?')) return;
+    }
+    if (wasExhibit) {
+      state.data.exhibits = state.data.exhibits.filter(x => x.id !== existing.id);
+    } else {
+      state.data.events = state.data.events.filter(e => e.id !== existing.id);
+    }
+    if (isExhibit) {
+      const id = 'exh-' + Date.now();
+      const newEx = {
+        id, kind: targetCat, status: existing.status || 'tentative',
+        title: existing.title || c.title || '(без названия)',
+        speaker: existing.speaker || c.name || null,
+        description: existing.description || c.description || null,
+        subcategory: targetCat, apollo_slot: existing.apollo_slot || null,
+        _source_app: c.id
+      };
+      state.data.exhibits = state.data.exhibits || [];
+      state.data.exhibits.push(newEx);
+      markDirty(); rerenderAll(); persistState();
+      showDetail('exhibit', id);
+    } else {
+      const newId = 'ev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+      state.data.events.push({
+        id: newId,
+        title: existing.title || c.title || '(без названия)',
+        speaker: existing.speaker || c.name || null,
+        description: existing.description || c.description || null,
+        category: targetCat,
+        status: existing.status || 'tentative',
+        slot: null, venue: null,
+        _source_app: c.id
+      });
+      markDirty(); rerenderAll(); persistState();
+      showDetail('event', newId);
+    }
+    return;
+  }
+
+  // НЕТ существующей сущности — создаём с нуля (стандартная логика)
   if (isExhibit) {
     const id = 'exh-' + Date.now();
     state.data.exhibits = state.data.exhibits || [];
