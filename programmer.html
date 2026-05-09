@@ -3681,6 +3681,22 @@ function renderConflicts() {
   // (category, apollo_slot) ложно срабатывает между animation и short коллекциями.
   // Реальные дубли ловит группировка по (category, subcategory) на уровне slots.
 
+  // Дубли event/exhibit по title (одинаковые названия — почти всегда баг).
+  // Это ловит ситуации когда «Переместить →» создаёт второй экземпляр вместо
+  // переноса (например когда исходная запись имеет другой _source_app, чем заявка).
+  const titleMap = {};
+  state.data.events.forEach(e => {
+    const k = (e.title || '').trim().toLowerCase();
+    if (k && k !== '(без названия)' && k !== 'tba') (titleMap[k] = titleMap[k] || []).push(e.id);
+  });
+  (state.data.exhibits || []).forEach(x => {
+    const k = (x.title || '').trim().toLowerCase();
+    if (k) (titleMap[k] = titleMap[k] || []).push(x.id);
+  });
+  Object.entries(titleMap).forEach(([t, ids]) => {
+    if (ids.length > 1) issues.push(`Дубль «${t}» — ${ids.length} копий: ${ids.join(', ')}`);
+  });
+
   const box = document.getElementById('conflicts');
   if (issues.length === 0) { box.classList.add('empty'); box.innerHTML = ''; }
   else {
