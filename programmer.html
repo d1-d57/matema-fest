@@ -3934,22 +3934,15 @@ function renderEventDetail(id) {
         <textarea id="detail-ev-description">${esc(ev.description || '')}</textarea>
       </div>
       <div>
-        <label>Категория</label>
+        <label>Тип <span style="font-size:11px;color:#888">(круг Аполлония)</span></label>
         <select id="detail-ev-category" onchange="detailUpdateSubcat()">
-          <option value="popsci" ${ev.category==='popsci'?'selected':''}>научпоп</option>
-          <option value="music" ${ev.category==='music'?'selected':''}>музыка</option>
-          <option value="art" ${ev.category==='art'?'selected':''}>искусство</option>
-          <option value="workshop" ${ev.category==='workshop'?'selected':''}>мастерские</option>
-          <option value="experiment" ${ev.category==='experiment'?'selected':''}>эксперименты</option>
-          <option value="cinema" ${ev.category==='cinema'?'selected':''}>кино</option>
-          <option value="social" ${ev.category==='social'?'selected':''}>общение</option>
+          ${_entityTypeOptionsHtml(ev.category)}
         </select>
       </div>
-      <div>
-        <label>Подкатегория</label>
+      <div id="detail-ev-subcategory-wrap" ${_entitySubtypes(ev.category).length === 0 ? 'style="display:none"' : ''}>
+        <label>Подтип <span style="font-size:11px;color:#888">(внутри круга)</span></label>
         <select id="detail-ev-subcategory">
-          <option value="">—</option>
-          ${subcatOptions}
+          ${_entitySubtypeOptionsHtml(ev.category, ev.subcategory)}
         </select>
       </div>
       <div>
@@ -4125,11 +4118,15 @@ function renderExhibitDetail(id) {
           <input id="detail-ex-speaker" value="${esc(ex.speaker || '')}">
         </div>
         <div>
-          <label>Тип</label>
-          <select id="detail-ex-kind">
-            <option value="art" ${ex.kind==='art'?'selected':''}>Галерея</option>
-            <option value="installation" ${ex.kind==='installation'?'selected':''}>Инсталляция</option>
-            <option value="media" ${ex.kind==='media'?'selected':''}>Медиа-арт</option>
+          <label>Тип <span style="font-size:11px;color:#888">(круг Аполлония)</span></label>
+          <select id="detail-ex-kind" onchange="detailUpdateExhibitSubcat()">
+            ${_entityTypeOptionsHtml('art')}
+          </select>
+        </div>
+        <div id="detail-ex-subcategory-wrap">
+          <label>Подтип <span style="font-size:11px;color:#888">(внутри круга)</span></label>
+          <select id="detail-ex-subcategory">
+            ${_entitySubtypeOptionsHtml('art', ex.kind)}
           </select>
         </div>
         <div class="full">
@@ -4174,16 +4171,34 @@ function bindDetailHandlers() {
   }
 }
 
+function detailUpdateExhibitSubcat() {
+  const cat = document.getElementById('detail-ex-kind').value;
+  const sel = document.getElementById('detail-ex-subcategory');
+  const wrap = document.getElementById('detail-ex-subcategory-wrap');
+  const opts = _entitySubtypes(cat);
+  if (!wrap) return;
+  if (opts.length === 0) {
+    wrap.style.display = 'none';
+    if (sel) sel.innerHTML = '';
+    return;
+  }
+  wrap.style.display = '';
+  if (sel) sel.innerHTML = _entitySubtypeOptionsHtml(cat, '');
+}
+
 function detailUpdateSubcat() {
   const cat = document.getElementById('detail-ev-category').value;
   const sel = document.getElementById('detail-ev-subcategory');
-  const subs = state.data.subcategories?.[cat] || {};
-  let html = '<option value="">—</option>';
-  Object.entries(subs).forEach(([k, sc]) => {
-    const label = sc.display || (sc.label_from_venue && state.data.venues[sc.label_from_venue]?.display) || k;
-    html += `<option value="${esc(k)}">${esc(label)} (${esc(k)})</option>`;
-  });
-  sel.innerHTML = html;
+  const wrap = document.getElementById('detail-ev-subcategory-wrap');
+  const opts = _entitySubtypes(cat);
+  if (!wrap) return;
+  if (opts.length === 0) {
+    wrap.style.display = 'none';
+    if (sel) sel.innerHTML = '';
+    return;
+  }
+  wrap.style.display = '';
+  if (sel) sel.innerHTML = _entitySubtypeOptionsHtml(cat, '');
 }
 
 function detailAddLink() {
@@ -4342,6 +4357,100 @@ function detailConvertApp() {
   }
 }
 
+// ============================================================
+// УНИФИКАЦИЯ ТИПОВ. Один в один соответствует кругам Аполлония.
+//   7 типов = 7 категорий = 7 кругов: popsci, experiment, workshop,
+//   social, cinema, music, art.
+//   У трёх из них (cinema, music, art) есть подтипы — каждый подтип
+//   соответствует отдельному кругу (big-1/big-2/big-3). Подтипы живут
+//   в data.subcategories — единый источник истины, новых не плодим.
+// При смене типа: если выбран art → сущность переносится в exhibits[];
+// если выбран не-art и она была exhibit → переносится в events[].
+// ============================================================
+const _ENTITY_TYPE_OPTIONS = [
+  {value:'popsci',     label:'Научпоп (лекция)'},
+  {value:'experiment', label:'Опыт / эксперимент'},
+  {value:'workshop',   label:'Мастерская'},
+  {value:'social',     label:'Общение / перформанс'},
+  {value:'cinema',     label:'Кино'},
+  {value:'music',      label:'Музыка'},
+  {value:'art',        label:'Искусство'}
+];
+function _entityTypeOptionsHtml(currentValue) {
+  return _ENTITY_TYPE_OPTIONS.map(o =>
+    `<option value="${o.value}" ${o.value===currentValue?'selected':''}>${o.label}</option>`
+  ).join('');
+}
+// Подтипы данного типа из data.subcategories. Возвращает [{value,label}] или [].
+function _entitySubtypes(type) {
+  const subs = state.data.subcategories?.[type] || {};
+  return Object.entries(subs).map(([k, v]) => {
+    const venue = v.label_from_venue && state.data.venues?.[v.label_from_venue]?.display;
+    const label = v.display || venue || k;
+    return {value: k, label: label};
+  });
+}
+function _entitySubtypeOptionsHtml(type, currentValue) {
+  const opts = _entitySubtypes(type);
+  if (opts.length === 0) return '';  // не показывать select вообще
+  return '<option value="">—</option>' + opts.map(o =>
+    `<option value="${o.value}" ${o.value===currentValue?'selected':''}>${o.label}</option>`
+  ).join('');
+}
+function _isArtType(t) { return t === 'art'; }
+
+// Конвертирует event → exhibit (физически удаляет из events[], добавляет в
+// exhibits[]). Сохраняет все полезные поля и связь с заявкой.
+// kindSubtype — один из art/installation/media. По умолчанию art (галерея).
+function _convertEventToExhibit(ev, kindSubtype) {
+  if (ev.slot) {
+    if (!confirm('У этого события есть слот в timeline. Перевод в галерею откреплит его. Продолжить?')) return null;
+  }
+  const newId = 'exh-' + Date.now();
+  const k = kindSubtype || 'art';
+  const newEx = {
+    id: newId,
+    kind: k,
+    status: ev.status || 'tentative',
+    title: ev.title || null,
+    speaker: ev.speaker || null,
+    speaker_role: ev.speaker_role || null,
+    description: ev.description || null,
+    subcategory: k,
+    apollo_slot: ev.apollo_slot || null,
+    links: ev.links || undefined,
+    team_notes: ev.team_notes || undefined,
+    _source_app: ev._source_app || ev._source || null
+  };
+  state.data.exhibits = state.data.exhibits || [];
+  state.data.exhibits.push(newEx);
+  state.data.events = state.data.events.filter(e => e.id !== ev.id);
+  return newId;
+}
+
+// Конвертирует exhibit → event. Возвращает id нового event.
+function _convertExhibitToEvent(ex, newCategory, newSubcategory) {
+  const newId = 'ev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  const newEv = {
+    id: newId,
+    title: ex.title || null,
+    speaker: ex.speaker || null,
+    speaker_role: ex.speaker_role || null,
+    description: ex.description || null,
+    category: newCategory,
+    subcategory: newSubcategory || undefined,
+    status: ex.status || 'tentative',
+    slot: null, venue: null,
+    apollo_slot: ex.apollo_slot || null,
+    links: ex.links || undefined,
+    team_notes: ex.team_notes || undefined,
+    _source_app: ex._source_app || ex._source || null
+  };
+  state.data.events.push(newEv);
+  state.data.exhibits = state.data.exhibits.filter(x => x.id !== ex.id);
+  return newId;
+}
+
 function detailSaveEvent() {
   pushHistory();
   const ev = state.data.events.find(e => e.id === _detailContext.id);
@@ -4356,14 +4465,25 @@ function detailSaveEvent() {
     ev.speaker = document.getElementById('detail-ev-speaker').value || null;
     ev.speaker_role = document.getElementById('detail-ev-speaker-role').value || null;
     ev.description = document.getElementById('detail-ev-description').value || null;
-    ev.category = document.getElementById('detail-ev-category').value;
+    const newType = document.getElementById('detail-ev-category').value;
+    const newSubtype = document.getElementById('detail-ev-subcategory')?.value || null;
     ev.status = document.getElementById('detail-ev-status').value;
     ev.apollo_slot = document.getElementById('detail-ev-apollo').value || null;
-    const sc = document.getElementById('detail-ev-subcategory').value;
-    if (sc) ev.subcategory = sc; else delete ev.subcategory;
+    if (newSubtype) ev.subcategory = newSubtype; else delete ev.subcategory;
     const links = detailGetLinks();
     if (links.length) ev.links = links; else delete ev.links;
     if (teamNotesEl) ev.team_notes = teamNotesEl.value || null;
+    // Унификация типа: если выбрали art — переводим в exhibit с kind=subtype (или art по дефолту).
+    if (_isArtType(newType)) {
+      const newExId = _convertEventToExhibit(ev, newSubtype || 'art');
+      if (!newExId) return;  // отмена при наличии слота
+      markDirty(); rerenderAll(); persistState();
+      state.detailTab = 'event';
+      showDetail('exhibit', newExId);
+      return;
+    }
+    // Иначе — просто меняем category внутри events
+    ev.category = newType;
   }
   // На вкладке «Заявка» сохраняем что было собрано раньше — ev уже актуально
   markDirty(); rerenderAll(); persistState();
@@ -4393,13 +4513,23 @@ function detailSaveExhibit() {
   if (!ex) return;
   ex.title = document.getElementById('detail-ex-title').value || null;
   ex.speaker = document.getElementById('detail-ex-speaker').value || null;
-  ex.kind = document.getElementById('detail-ex-kind').value;
-  ex.subcategory = ex.kind;  // kind == subcategory для exhibits
+  const newType = document.getElementById('detail-ex-kind').value;
+  const newSubtype = document.getElementById('detail-ex-subcategory')?.value || null;
   ex.description = document.getElementById('detail-ex-description').value || null;
   ex.status = document.getElementById('detail-ex-status').value;
   ex.apollo_slot = document.getElementById('detail-ex-apollo').value || null;
   const links = detailGetLinks();
   if (links.length) ex.links = links; else delete ex.links;
+  // Унификация типа: если выбрали не-art — переводим в event с category=type, subcategory=subtype.
+  if (!_isArtType(newType)) {
+    const newEvId = _convertExhibitToEvent(ex, newType, newSubtype);
+    markDirty(); rerenderAll(); persistState();
+    showDetail('event', newEvId);
+    return;
+  }
+  // Внутри art: подтип определяет kind (gallery/installation/media)
+  ex.kind = newSubtype || 'art';
+  ex.subcategory = ex.kind;
   markDirty(); rerenderAll(); persistState();
   showDetail('exhibit', ex.id);
 }
