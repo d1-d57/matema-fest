@@ -219,8 +219,11 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 .cand-card.k-app.s-duplicate { opacity: 0.35; background: var(--bg-card-soft); }
 .cand-card.k-event { background: var(--bg-card-soft); border-color: var(--hairline-strong); }
 .cand-card.k-event.s-confirmed { background: var(--confirmed-soft); border-color: #b8d4a8; }
-.cand-card.k-event.s-tentative { background: var(--tentative-soft); border-color: #e0c890; }
+.cand-card.k-event.s-tentative { background: var(--confirmed-soft); border-color: #b8d4a8; }
+.cand-card.k-exhibit.s-confirmed { background: var(--confirmed-soft); border-color: #b8d4a8; }
+.cand-card.k-exhibit.s-tentative { background: var(--confirmed-soft); border-color: #b8d4a8; }
 .cand-card.k-event.s-placeholder { background: var(--placeholder-soft); border-color: var(--hairline-strong); color: var(--ink-soft); font-style: italic; }
+.cand-card.k-exhibit.s-placeholder { background: var(--placeholder-soft); border-color: var(--hairline-strong); color: var(--ink-soft); font-style: italic; }
 .cand-card.k-idea { background: #f5efe8; border-color: #d8c8b8; }
 .cand-name {
   font-family: var(--font-body);
@@ -677,7 +680,7 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 }
 .exhibit-card:hover { border-color: var(--ink); }
 .exhibit-card.s-confirmed { background: rgba(74, 107, 58, 0.08); border-color: rgba(74, 107, 58, 0.4); }
-.exhibit-card.s-tentative { background: var(--accent-dim); border-color: var(--accent-line); }
+.exhibit-card.s-tentative { background: rgba(74, 107, 58, 0.08); border-color: rgba(74, 107, 58, 0.4); }
 .exhibit-card .ex-title { font-weight: 600; font-size: 13.5px; line-height: 1.25; color: var(--ink); }
 .exhibit-card .ex-speaker { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
 .exhibit-card .ex-desc { font-size: 12px; color: var(--ink-quiet); margin-top: 5px; line-height: 1.4; }
@@ -2107,6 +2110,7 @@ function persistState() {
   try {
     localStorage.setItem(STATE_KEY, JSON.stringify({
       data: state.data, appStatuses: state.appStatuses, ideas: state.ideas,
+      candCategoryOverrides: state.candCategoryOverrides || {},
       remoteSha: state.remoteSha, isDirty: state.isDirty
     }));
   } catch(e) { console.warn('persist failed', e); }
@@ -2237,6 +2241,7 @@ function restoreState() {
       if (s.data) state.data = s.data;
       if (s.appStatuses) state.appStatuses = s.appStatuses;
       if (s.ideas) state.ideas = s.ideas;
+      if (s.candCategoryOverrides) state.candCategoryOverrides = s.candCategoryOverrides;
       if (s.remoteSha) state.remoteSha = s.remoteSha;
       if (s.isDirty) state.isDirty = s.isDirty;
     }
@@ -2734,15 +2739,15 @@ function renderCandidates() {
     return cfg.poolWorlds && cfg.poolWorlds.includes(w);
   });
 
-  // 4 коробки. Каждая сущность попадает ровно в ОДНУ.
-  //
-  //   Новые:    apps status=new, не связанные с event/exhibit
-  //   Думаем:   apps status=considering   ИЛИ   events/exhibits status=placeholder
-  //   В программе:  events/exhibits status=tentative или confirmed
-  //                 + apps status=accepted (явно приняли) без связанного event
-  //   Отказы:   apps status=rejected/duplicate   ИЛИ   events/exhibits status=rejected
-  //
-  // Связанная с event заявка сама по себе в коробку не идёт — её представляет event.
+  // 4 коробки. Семантика:
+  //   Новые      — apps status=new без связанного event/exhibit
+  //   Думаем     — apps status=considering + events/exhibits status=placeholder.
+  //                Это то что НЕ в расписании, но мы рассматриваем.
+  //   В программе — всё что мы уже взяли: events/exhibits status=tentative или confirmed.
+  //                Для расписания (timeline) tentative = «в программе, но детали уточняются»
+  //                — оно не отличается семантически от confirmed для целей пула. Цвета карточек
+  //                в этой коробке должны выглядеть одинаково (зелёный) — см. CSS правило ниже.
+  //   Отказы     — apps rejected/duplicate + events/exhibits rejected
   items = items.filter(c => {
     if (filter === 'new') {
       if (c.kind !== 'app' && c.kind !== 'idea') return false;
@@ -2752,7 +2757,7 @@ function renderCandidates() {
     }
     if (filter === 'considering') {
       if (c.kind === 'app' || c.kind === 'idea') {
-        if (c.kind === 'app' && isPlaced(c)) return false;  // не дублируем — event сам в коробке
+        if (c.kind === 'app' && isPlaced(c)) return false;
         return c.status === 'considering';
       }
       if (c.kind === 'event' || c.kind === 'exhibit') {
@@ -2765,7 +2770,6 @@ function renderCandidates() {
         return c.status === 'tentative' || c.status === 'confirmed';
       }
       if (c.kind === 'app') {
-        // accepted-заявка без event (явно приняли, но event ещё не создали)
         return c.status === 'accepted' && !isPlaced(c);
       }
       return false;
@@ -3483,7 +3487,11 @@ function placeBandLabels(ppm) {
 }
 
 function renderExhibits() {
-  const exh = state.data.exhibits || [];
+  // В правой панели «Галерея» показываем то что в программе — status=confirmed
+  // или tentative. placeholder = «Думаем» (живёт в левом пуле), rejected = «Отказы».
+  const exh = (state.data.exhibits || []).filter(e =>
+    e.status === 'confirmed' || e.status === 'tentative'
+  );
   const byKind = {art: [], installation: [], media: []};
   exh.forEach(e => { (byKind[e.kind] || (byKind[e.kind] = [])).push(e); });
 
@@ -4413,6 +4421,17 @@ function openCandModal(kind, id) {
     // Дефолт по моду
     targetSel.value = state.view === 'art' ? 'installation' : 'experiment';
   }
+  // Если пользователь раньше уже менял категорию для этой заявки — восстанавливаем
+  // (priority выше дефолта/suggest). Сохраняется в state.candCategoryOverrides.
+  if (!state.candCategoryOverrides) state.candCategoryOverrides = {};
+  if (state.candCategoryOverrides[c.id]) {
+    targetSel.value = state.candCategoryOverrides[c.id];
+  }
+  // При смене значения в селекте — запоминаем (чтобы не сбрасывалось на следующее открытие)
+  targetSel.onchange = () => {
+    state.candCategoryOverrides[c.id] = targetSel.value;
+    persistState();
+  };
 
   // Если для этой заявки уже есть связанное событие/экспонат — дизаблим
   // «Создать», чтобы не плодить дубли. Покажем подсказку «уже в программе».
@@ -4664,6 +4683,92 @@ function deleteEvent() {
   state.data.events = state.data.events.filter(e => e.id !== evId);
   closeEventModal();
   markDirty(); rerenderAll(); persistState();
+}
+
+// Конверсия event → exhibit (галерея/инсталляция/медиа-арт). Используется когда
+// при создании из заявки была выбрана не та категория (event vs exhibit).
+// Создаёт новый exhibit с теми же данными и удаляет event. Связь _source_app
+// сохраняется. Заявка остаётся accepted (она уже принята в программу).
+function convertEventToExhibit() {
+  const evId = document.getElementById('ev-id-old').value;
+  const ev = state.data.events.find(e => e.id === evId);
+  if (!ev) return;
+  const kind = prompt(
+    `Преобразовать «${ev.title || ev.id}» в экспонат.\n\n` +
+    `Выбери тип:\n` +
+    `  1 — Галерея (картина, объект, висит весь вечер)\n` +
+    `  2 — Инсталляция (физический объект, занимает место)\n` +
+    `  3 — Медиа-арт (видео/проекция в перебивах)\n\n` +
+    `Введи 1, 2 или 3:`,
+    '2'
+  );
+  if (!kind) return;
+  const kindMap = {'1': 'art', '2': 'installation', '3': 'media'};
+  const kindStr = kindMap[kind.trim()];
+  if (!kindStr) { alert('Неизвестный тип. Операция отменена.'); return; }
+
+  const id = 'exh-' + Date.now();
+  const newEx = {
+    id,
+    kind: kindStr,
+    status: ev.status || 'tentative',
+    title: ev.title || '(без названия)',
+    speaker: ev.speaker || null,
+    description: ev.description || null,
+    subcategory: kindStr,
+    apollo_slot: ev.apollo_slot || null
+  };
+  if (ev._source_app) newEx._source_app = ev._source_app;
+  if (ev._source) newEx._source = ev._source;
+
+  state.data.exhibits = state.data.exhibits || [];
+  state.data.exhibits.push(newEx);
+  state.data.events = state.data.events.filter(e => e.id !== evId);
+  closeEventModal();
+  markDirty(); rerenderAll(); persistState();
+  // Открываем созданный экспонат для проверки
+  showDetail('exhibit', id);
+}
+
+// Обратная конверсия: exhibit → event.
+function convertExhibitToEvent() {
+  if (!_detailContext || _detailContext.type !== 'exhibit') return;
+  const ex = state.data.exhibits.find(x => x.id === _detailContext.id);
+  if (!ex) return;
+  const cat = prompt(
+    `Преобразовать «${ex.title || ex.id}» в событие.\n\n` +
+    `Выбери категорию:\n` +
+    `  1 — Лекция / выступление\n` +
+    `  2 — Опыт / эксперимент (станция)\n` +
+    `  3 — Мастерская\n` +
+    `  4 — Перформанс / коллективное\n\n` +
+    `Введи 1-4:`,
+    '1'
+  );
+  if (!cat) return;
+  const catMap = {'1': 'lectures', '2': 'experiments', '3': 'workshops', '4': 'social'};
+  const catStr = catMap[cat.trim()];
+  if (!catStr) { alert('Неизвестная категория. Операция отменена.'); return; }
+
+  const id = 'ev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  const newEv = {
+    id,
+    title: ex.title || '(без названия)',
+    speaker: ex.speaker || null,
+    description: ex.description || null,
+    category: catStr,
+    status: ex.status || 'tentative',
+    slot: null,
+    venue: null
+  };
+  if (ex._source_app) newEv._source_app = ex._source_app;
+  if (ex._source) newEv._source = ex._source;
+
+  state.data.events.push(newEv);
+  state.data.exhibits = state.data.exhibits.filter(x => x.id !== _detailContext.id);
+  hideDetail();
+  markDirty(); rerenderAll(); persistState();
+  openEventModal(id);
 }
 
 // ============================================================
