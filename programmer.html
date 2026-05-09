@@ -2989,8 +2989,7 @@ function renderTimeline() {
     const v = state.data.venues[vid]; if (!v) return;
     const lanes = getVenueLanes(vid);
     html += `<div class="tl-header">
-      <div class="vh-tech">${esc(VENUE_TECH_NAMES[vid] || vid)}</div>
-      <div class="vh-display">${esc(v.display || '')}</div>
+      <div class="vh-tech">${esc(v.display || vid)}</div>
       ${lanes > 1 ? `<div class="vh-lanes">${lanes} подколонки</div>` : ''}
     </div>`;
   });

@@ -1,7 +1,7 @@
 // === База событий фестиваля «Фрактальная Одиссея», 23 мая 2026 ===
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-09-v26",
+    "version": "2026-05-09-v28",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v17": "Разделение составных слотов: slot-stations-1..4 разбиты по событиям (slot-stations-1-1, -1-2, -1-3 и т.д.). Каждый слот теперь содержит максимум 1 событие. Поля category/apollo_slot/subcategory перенесены с событий на слоты (это атрибуты места, не карточки). У событий-сирот (banks: cinema/animation без слота) поля остались. Добавлено slot.type — короткий тип: talk/station/interlude/cinema/music/discussion/networking/dance/music-extra. Также перенесён venue с событий на слоты.",
     "changes_v18": "Введена секция fern_leaves — явный список листьев папоротника с временами и сторонами (headline / side / tail). Поле fern_address удалено из всех слотов. Привязка слот→лист теперь делается алгоритмом в индексе по правилу: хедлайнерский слот (talk/discussion) → headline лист по времени; иначе → side лист. Изменены времена: cinema-1 (Пи) 19:30-21:00, cinema-2 21:00-22:00, dance 01-04. Музыкальная программа переразвязана: Brinstar 23-00, Spiral Fractal 00-01. Удалены slot-music-4 и slot-music-parallel-4. Переименована \"Малая сцена\" в \"Музыка (малая сцена)\".",
@@ -11,7 +11,9 @@ window.FESTIVAL_DATA = {
     "changes_v23": "Добавлены slot-stations-1-4 (workshop, courtyard) и slot-stations-3-3 (workshop, courtyard) — двор не должен пустовать днём. Раньше Станции 1 и Станции 3 были только на big_bar+small_bar, теперь как Станции 2 и 4 — на трёх площадках включая двор.",
     "changes_v24": "Чистка данных: status=tentative проставлен у 17 событий (новые музыканты + анимации + короткометражки). label_for_zoom сгенерирован у 4 ночных music-слотов. Закрыты apollo_slot пропуски у slot-stations-2-3 и -4-3. Резолвлены дубли apollo_slot в workshop (slot-stations-1-4 и -3-3 переведены в experiment). Теперь экспериментов столько же сколько мастерских.",
     "changes_v25": "Растянут slot-networking до 22:00 (90 минут вместо 60). Placeholder events station-4-1 и station-4-2 переименованы в \"Станция TBA\" — нумерация по индексу была визуальным шумом, статус остался placeholder. Раздел _howto обновлён: документировано поле apollo_slot и связь с subcategory.",
-    "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки)."
+    "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
+    "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
+    "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы."
   },
   "venues": {
     "library": {
@@ -21,21 +23,21 @@ window.FESTIVAL_DATA = {
       "lanes": 1
     },
     "main_stage": {
-      "display": "Мандельброт",
+      "display": "Зал Мандельброт",
       "short": "Мандельброт",
       "note": "главная сцена клуба Лахесис",
       "apollo_label": "главная сцена",
       "lanes": 1
     },
     "big_bar": {
-      "display": "Серпинский",
+      "display": "Бар Серпинский",
       "short": "Серпинский",
       "note": "большой бар",
       "apollo_label": "большой бар",
       "lanes": 2
     },
     "small_bar": {
-      "display": "Жюлиа",
+      "display": "Бар Жюлиа",
       "short": "Жюлиа",
       "note": "малый бар",
       "lanes": 1
@@ -301,42 +303,6 @@ window.FESTIVAL_DATA = {
       "subcategory": "main_stage",
       "venue": "main_stage"
     },
-    "slot-music-parallel-1": {
-      "start": "22:00",
-      "end": "23:00",
-      "label_for_zoom": "Малая сцена · 22:00",
-      "tool_label": "Музыка (малая сцена)",
-      "type": "music-extra",
-      "category": "music",
-      "apollo_slot": "mid-1",
-      "subcategory": "big_bar",
-      "venue": "big_bar",
-      "exclusive": true
-    },
-    "slot-music-parallel-2": {
-      "start": "23:00",
-      "end": "00:00",
-      "label_for_zoom": "Малая сцена · 23:00",
-      "tool_label": "Музыка (малая сцена)",
-      "type": "music-extra",
-      "category": "music",
-      "apollo_slot": "mid-2",
-      "subcategory": "big_bar",
-      "venue": "big_bar",
-      "exclusive": true
-    },
-    "slot-music-parallel-3": {
-      "start": "00:00",
-      "end": "01:00",
-      "label_for_zoom": "Малая сцена · 00:00",
-      "tool_label": "Музыка (малая сцена)",
-      "type": "music-extra",
-      "category": "music",
-      "apollo_slot": "mid-3",
-      "subcategory": "big_bar",
-      "venue": "big_bar",
-      "exclusive": true
-    },
     "slot-dance": {
       "start": "03:00",
       "end": "04:00",
@@ -360,8 +326,8 @@ window.FESTIVAL_DATA = {
     },
     "slot-cinema-1": {
       "start": "19:30",
-      "end": "21:00",
-      "label_for_zoom": "Кино 1 · 19:00",
+      "end": "20:30",
+      "label_for_zoom": "Кино 1 · 19:30",
       "tool_label": "Кино 1",
       "type": "cinema",
       "category": "cinema",
@@ -370,9 +336,9 @@ window.FESTIVAL_DATA = {
       "venue": "library"
     },
     "slot-cinema-2": {
-      "start": "21:00",
+      "start": "20:30",
       "end": "22:00",
-      "label_for_zoom": "Кино 2 · 20:00",
+      "label_for_zoom": "Кино 2 · 20:30",
       "tool_label": "Кино 2",
       "type": "cinema",
       "category": "cinema",
@@ -452,18 +418,6 @@ window.FESTIVAL_DATA = {
       "subcategory": "main_stage",
       "label_for_zoom": "Музыка · 01:00"
     },
-    "slot-music-parallel-5": {
-      "venue": "big_bar",
-      "start": "01:00",
-      "end": "02:00",
-      "tool_label": "Музыка (малая сцена)",
-      "type": "music-extra",
-      "category": "music",
-      "apollo_slot": "big-1",
-      "subcategory": "big_bar",
-      "label_for_zoom": "Музыка (малая сцена) · 01:00",
-      "exclusive": true
-    },
     "slot-music-6": {
       "venue": "main_stage",
       "start": "02:00",
@@ -475,16 +429,76 @@ window.FESTIVAL_DATA = {
       "subcategory": "main_stage",
       "label_for_zoom": "Музыка · 02:00"
     },
-    "slot-music-parallel-6": {
+    "slot-music-parallel-1": {
+      "start": "21:30",
+      "end": "22:30",
+      "label_for_zoom": "Малая сцена · 21:30",
+      "tool_label": "Музыка (малая сцена)",
+      "type": "music-extra",
+      "category": "music",
+      "apollo_slot": "mid-1",
+      "subcategory": "big_bar",
       "venue": "big_bar",
-      "start": "02:00",
-      "end": "03:00",
+      "exclusive": true
+    },
+    "slot-music-parallel-2": {
+      "start": "22:30",
+      "end": "23:30",
+      "label_for_zoom": "Малая сцена · 22:30",
+      "tool_label": "Музыка (малая сцена)",
+      "type": "music-extra",
+      "category": "music",
+      "apollo_slot": "mid-2",
+      "subcategory": "big_bar",
+      "venue": "big_bar",
+      "exclusive": true
+    },
+    "slot-music-parallel-3": {
+      "start": "23:30",
+      "end": "00:30",
+      "label_for_zoom": "Малая сцена · 23:30",
+      "tool_label": "Музыка (малая сцена)",
+      "type": "music-extra",
+      "category": "music",
+      "apollo_slot": "mid-3",
+      "subcategory": "big_bar",
+      "venue": "big_bar",
+      "exclusive": true
+    },
+    "slot-music-parallel-4": {
+      "start": "00:30",
+      "end": "01:30",
+      "label_for_zoom": "Малая сцена · 00:30",
+      "tool_label": "Музыка (малая сцена)",
+      "type": "music-extra",
+      "category": "music",
+      "apollo_slot": "ear-1",
+      "subcategory": "big_bar",
+      "venue": "big_bar",
+      "exclusive": true
+    },
+    "slot-music-parallel-5": {
+      "start": "01:30",
+      "end": "02:30",
+      "label_for_zoom": "Малая сцена · 01:30",
+      "tool_label": "Музыка (малая сцена)",
+      "type": "music-extra",
+      "category": "music",
+      "apollo_slot": "big-1",
+      "subcategory": "big_bar",
+      "venue": "big_bar",
+      "exclusive": true
+    },
+    "slot-music-parallel-6": {
+      "start": "02:30",
+      "end": "03:30",
+      "label_for_zoom": "Малая сцена · 02:30",
       "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
       "apollo_slot": "big-2",
       "subcategory": "big_bar",
-      "label_for_zoom": "Музыка (малая сцена) · 02:00",
+      "venue": "big_bar",
       "exclusive": true
     }
   },
@@ -674,17 +688,6 @@ window.FESTIVAL_DATA = {
       "description": null
     },
     {
-      "id": "music-termen",
-      "status": "confirmed",
-      "title": "Сет Петра Термена",
-      "subtitle": "терменвокс",
-      "speaker": "Пётр Термен",
-      "speaker_role": "музыкант, терменвокс",
-      "slot": "slot-music-1",
-      "duration_override": null,
-      "description": "Музыкант играет руками в воздухе. Инструмент, которому больше ста лет (его прадед — Лев Термен — изобретатель). Музыка ближе к академической."
-    },
-    {
       "id": "music-rap",
       "status": "confirmed",
       "title": "Научно-технический рэп",
@@ -694,28 +697,6 @@ window.FESTIVAL_DATA = {
       "slot": "slot-rap-evening",
       "duration_override": null,
       "description": "Музыкальная программа переходного интенсива между Терменом и ночной танцевальной частью."
-    },
-    {
-      "id": "music-brinstar",
-      "status": "tentative",
-      "title": "Brinstar",
-      "subtitle": null,
-      "speaker": "Brinstar",
-      "speaker_role": "музыкант",
-      "slot": "slot-music-2",
-      "duration_override": null,
-      "description": "Музыкальный сет в ночной части программы. Подробности уточняются."
-    },
-    {
-      "id": "music-spiral-fractal",
-      "status": "tentative",
-      "title": "Spiral Fractal",
-      "subtitle": null,
-      "speaker": "Spiral Fractal",
-      "speaker_role": "музыкант",
-      "slot": "slot-music-3",
-      "duration_override": null,
-      "description": "Музыкальный сет в поздней ночной части. Подробности уточняются."
     },
     {
       "id": "dance-program",
@@ -765,7 +746,7 @@ window.FESTIVAL_DATA = {
       "status": "tentative",
       "title": "Пи",
       "speaker": "Даррен Аронофски",
-      "slot": "slot-cinema-1",
+      "slot": "slot-cinema-2",
       "description": "Художественный фильм 1998 года. Параноидальный математик в поисках универсальной формулы. Чёрно-белый, психоделический."
     },
     {
@@ -773,64 +754,8 @@ window.FESTIVAL_DATA = {
       "status": "tentative",
       "title": "TBA",
       "speaker": null,
-      "slot": "slot-cinema-2",
+      "slot": "slot-cinema-1",
       "description": null
-    },
-    {
-      "id": "music-stropharia",
-      "title": "Stropharia",
-      "speaker": "Stropharia",
-      "description": "",
-      "slot": "slot-music-5",
-      "status": "tentative"
-    },
-    {
-      "id": "music-gonaitei",
-      "title": "Gonaitei",
-      "speaker": "Gonaitei",
-      "description": "",
-      "slot": "slot-music-6",
-      "status": "tentative"
-    },
-    {
-      "id": "music-hobboth",
-      "title": "Hobboth",
-      "speaker": "Hobboth",
-      "description": "",
-      "slot": "slot-music-parallel-1",
-      "status": "tentative"
-    },
-    {
-      "id": "music-womba",
-      "title": "WOMBA",
-      "speaker": "WOMBA",
-      "description": "",
-      "slot": "slot-music-parallel-2",
-      "status": "tentative"
-    },
-    {
-      "id": "music-rombix",
-      "title": "Rombix",
-      "speaker": "Rombix",
-      "description": "",
-      "slot": "slot-music-parallel-3",
-      "status": "tentative"
-    },
-    {
-      "id": "music-aensof",
-      "title": "Aensof",
-      "speaker": "Aensof",
-      "description": "",
-      "slot": "slot-music-parallel-5",
-      "status": "tentative"
-    },
-    {
-      "id": "music-darkest-supernova",
-      "title": "Darkest Supernova",
-      "speaker": "Darkest Supernova",
-      "description": "",
-      "slot": "slot-music-parallel-6",
-      "status": "tentative"
     },
     {
       "id": "cinema-anim-horsthuis",
@@ -922,6 +847,127 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "mid-1",
       "venue": "main_stage",
       "status": "tentative"
+    },
+    {
+      "id": "music-main-22",
+      "title": "Сет Петра Термена",
+      "speaker": "Пётр Термен",
+      "description": "",
+      "slot": "slot-music-1",
+      "status": "tentative",
+      "category": "music",
+      "subcategory": "main_stage",
+      "venue": "main_stage"
+    },
+    {
+      "id": "music-main-23",
+      "title": "Stropharia",
+      "speaker": "Stropharia",
+      "description": "",
+      "slot": "slot-music-2",
+      "status": "tentative",
+      "category": "music",
+      "subcategory": "main_stage",
+      "venue": "main_stage"
+    },
+    {
+      "id": "music-main-00",
+      "title": "Rombix",
+      "speaker": "Rombix",
+      "description": "",
+      "slot": "slot-music-3",
+      "status": "tentative",
+      "category": "music",
+      "subcategory": "main_stage",
+      "venue": "main_stage"
+    },
+    {
+      "id": "music-main-01",
+      "title": "Womba",
+      "speaker": "Womba",
+      "description": "",
+      "slot": "slot-music-5",
+      "status": "tentative",
+      "category": "music",
+      "subcategory": "main_stage",
+      "venue": "main_stage"
+    },
+    {
+      "id": "music-main-02",
+      "title": "Hobboth",
+      "speaker": "Hobboth",
+      "description": "",
+      "slot": "slot-music-6",
+      "status": "tentative",
+      "category": "music",
+      "subcategory": "main_stage",
+      "venue": "main_stage"
+    },
+    {
+      "id": "music-pink-2130",
+      "title": "Brinstaar",
+      "speaker": "Brinstaar",
+      "description": "",
+      "slot": "slot-music-parallel-1",
+      "status": "tentative",
+      "category": "music",
+      "subcategory": "big_bar",
+      "venue": "big_bar"
+    },
+    {
+      "id": "music-pink-2230",
+      "title": "Spiralfractal",
+      "speaker": "Spiralfractal",
+      "description": "",
+      "slot": "slot-music-parallel-2",
+      "status": "tentative",
+      "category": "music",
+      "subcategory": "big_bar",
+      "venue": "big_bar"
+    },
+    {
+      "id": "music-pink-2330",
+      "title": "Morakh",
+      "speaker": "Morakh",
+      "description": "",
+      "slot": "slot-music-parallel-3",
+      "status": "tentative",
+      "category": "music",
+      "subcategory": "big_bar",
+      "venue": "big_bar"
+    },
+    {
+      "id": "music-pink-0030",
+      "title": "ænsof",
+      "speaker": "ænsof",
+      "description": "",
+      "slot": "slot-music-parallel-4",
+      "status": "tentative",
+      "category": "music",
+      "subcategory": "big_bar",
+      "venue": "big_bar"
+    },
+    {
+      "id": "music-pink-0130",
+      "title": "garish_cyborg",
+      "speaker": "garish_cyborg",
+      "description": "",
+      "slot": "slot-music-parallel-5",
+      "status": "tentative",
+      "category": "music",
+      "subcategory": "big_bar",
+      "venue": "big_bar"
+    },
+    {
+      "id": "music-pink-0230",
+      "title": "The Darkest Supernova",
+      "speaker": "The Darkest Supernova",
+      "description": "",
+      "slot": "slot-music-parallel-6",
+      "status": "tentative",
+      "category": "music",
+      "subcategory": "big_bar",
+      "venue": "big_bar"
     }
   ],
   "_howto": {
