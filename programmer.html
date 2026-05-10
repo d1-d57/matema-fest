@@ -587,7 +587,11 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
   letter-spacing: 0.12em; cursor: pointer; z-index: 2;
   background: rgba(241, 243, 226, 0.85); padding: 2px 7px;
   font-family: var(--font-mono);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  /* Разрешаем перенос на 2 строки для длинных tool_label (например
+     «НАУЧНО-ТЕХНИЧЕСКИЙ РЭП»). Если совсем не помещается — обрезается с «…».
+     line-height сжатый чтобы 2 строки занимали разумную высоту. */
+  overflow: hidden; line-height: 1.15;
+  word-break: break-word; overflow-wrap: break-word;
   transition: background 0.15s;
 }
 .slot-label:hover { background: rgba(241, 243, 226, 1); outline: 1px solid rgba(0,0,0,0.2); }
@@ -3429,11 +3433,12 @@ function renderTimeline() {
   // Динамически строим grid-template-columns: время 60px + venues с минимумом
   // PER_LANE_MIN на каждый lane. Venue с lanes=2 (как big_bar/Бар Серпинский,
   // в котором одновременно идут 2 станции) получает min PER_LANE_MIN×2 — иначе
-  // её внутренние подколонки сжимаются и текст рвётся. Размер 160px подобран
-  // эмпирически: самое длинное русское слово в данных («Лингвистические»,
-  // 122.6px при шрифте 14.3px) + padding 20px = 143px ВПРИТЫК; 160px даёт
-  // надёжный запас. На десктопе fr-пропорции расширят колонки сверх минимума.
-  const PER_LANE_MIN = 160;
+  // её внутренние подколонки сжимаются и текст рвётся. Размер 180px подобран
+  // эмпирически: самый длинный title в данных («Научно-технический рэп»,
+  // 161px при шрифте 14.3px) + padding 20px = 181px ВПРИТЫК; 180px колонка
+  // даёт content 160 — title переносится на 2 строки красиво. Раньше было
+  // 160px — title «Научно-технический рэп» обрезался.
+  const PER_LANE_MIN = 180;
   const cols = ['60px', ...VENUE_ORDER.map(v => {
     const lanes = state.data?.venues[v]?.lanes || 1;
     return `minmax(${PER_LANE_MIN * lanes}px, ${VENUE_WIDTH_FR[v]}fr)`;
@@ -3483,19 +3488,22 @@ function renderTimeline() {
       html += `<div class="slot-bg kind-${k}${dimClass}" style="top:${startPx}px;height:${heightPx}px"></div>`;
       const firstAllowed = VENUE_ORDER.find(v => allowed.includes(v));
       const inBand = bandedSids.has(sid);
-      // Индивидуальный slot-label рисуем только если слот не накрыт band-баннером
-      // (band нарисуется поверх в placeBandLabels) и живёт в одной venue.
-      if (firstAllowed === vid && allowed.length === 1 && !inBand) {
-        const label = s.tool_label || s.label_for_zoom || sid;
-        html += `<div class="slot-label" data-slot="${esc(sid)}" style="top:${startPx + 3}px">${esc(label)} · ${esc(s.start)}–${esc(s.end)}</div>`;
-      }
+      // Индивидуальный slot-label больше не рисуем — он дублировал заголовок
+      // карточки event-pill. Вся информация о слоте видна в карточке (title,
+      // speaker) и в колонке времени слева. Раньше тут было:
+      //   if (firstAllowed === vid && allowed.length === 1 && !inBand)
+      //     html += `<div class="slot-label" data-slot="${sid}" ...>${label}</div>`;
+      // Multi-venue band-баннеры (СТАНЦИИ N · HH:MM–HH:MM) остаются — это
+      // другая сущность, баннер над группой venue.
 
       const cellEvents = state.data.events.filter(e => e.slot === sid && e.venue === vid);
-      // labelOffset увеличиваем если над клеткой будет band-баннер (мульти-venue из v9
-      // или группа однотипных слотов из v17+) — карточка не должна налезать на baner.
+      // labelOffset резервирует место сверху для baner-а multi-venue (СТАНЦИИ).
+      // Для одиночных слотов раньше тоже было 22px под slot-label — теперь slot-label
+      // убран, поэтому одиночные слоты получают ноль офсета и карточка занимает
+      // всю высоту слота.
       const isMultiVenue = allowed.length > 1 || inBand;
-      const labelOffset = isMultiVenue ? 34 : 22;
-      const bottomPad = isMultiVenue ? 4 : 4; // в нижней части тоже немного резерва
+      const labelOffset = isMultiVenue ? 34 : 4;
+      const bottomPad = 4; // небольшой резерв снизу
       const innerHeight = heightPx - labelOffset - bottomPad;
 
       // Lane слота: для блок-стиля группы (v17+) — индекс среди конкурирующих слотов
