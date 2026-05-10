@@ -212,12 +212,12 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   border-left-color: var(--rule-soft);
 }
 /* Цветная левая полоса по категории — единая палитра 7 кругов Аполлония */
-.cand-card.cat-popsci     { border-left-color: #d8b878; }
-.cand-card.cat-station    { border-left-color: #8fa8c8; }
-.cand-card.cat-social     { border-left-color: #a0a0c0; }
-.cand-card.cat-cinema     { border-left-color: #b888b8; }
-.cand-card.cat-music      { border-left-color: #d88090; }
-.cand-card.cat-art        { border-left-color: #c8a060; }
+.cand-card.cat-popsci     { border-left-color: #b3956a; }
+.cand-card.cat-station    { border-left-color: #7a9b6e; }
+.cand-card.cat-social     { border-left-color: #6f8aa3; }
+.cand-card.cat-cinema     { border-left-color: #a06070; }
+.cand-card.cat-music      { border-left-color: #c47862; }
+.cand-card.cat-art        { border-left-color: #957490; }
 .cand-card:hover {
   border-color: var(--ink);
 }
@@ -321,6 +321,31 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 
 /* ====== TIMELINE ====== */
 .timeline-toolbar {
+.cat-legend {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+  padding: 8px 12px; margin-bottom: 6px;
+  background: rgba(244, 236, 216, 0.95);
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 12px; color: var(--ink-soft);
+  letter-spacing: 0.02em;
+}
+.cat-legend-item {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: none; padding: 3px 6px;
+  cursor: pointer; color: inherit; font-size: inherit;
+  border-radius: 3px; transition: background 0.12s, opacity 0.12s;
+}
+.cat-legend-item:hover { background: rgba(0,0,0,0.05); }
+.cat-legend-item.dim { opacity: 0.4; }
+.cat-legend-item.active { background: rgba(0,0,0,0.08); font-weight: 500; }
+.cat-legend-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  display: inline-block; flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+.timeline-toolbar {
   display: flex; gap: 12px; align-items: center; margin-bottom: 12px;
   font-size: 12px; color: var(--ink-soft); flex-shrink: 0;
   font-family: var(--font-mono); letter-spacing: 0.04em;
@@ -347,8 +372,8 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 #timeline-wrap .tl-header .vh-display { font-size: calc(11px * var(--content-scale, 1)); }
 #timeline-wrap .tl-header .vh-lanes { font-size: calc(10px * var(--content-scale, 1)); }
 #timeline-wrap .tl-tick { font-size: calc(11px * var(--content-scale, 1)); }
-#timeline-wrap .slot-label { font-size: calc(11px * var(--content-scale, 1)); }
-#timeline-wrap .stations-band-label { font-size: calc(13px * var(--content-scale, 1)); }
+#timeline-wrap .slot-label { font-size: calc(10px * var(--content-scale, 1)); }
+#timeline-wrap .stations-band-label { font-size: calc(11px * var(--content-scale, 1)); }
 #timeline-wrap .event-pill .ev-title { font-size: calc(13px * var(--content-scale, 1)); }
 #timeline-wrap .event-pill .ev-speaker { font-size: calc(11px * var(--content-scale, 1)); }
 #timeline-wrap .event-pill .ev-cat { font-size: calc(10px * var(--content-scale, 1)); }
@@ -422,13 +447,16 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   border: 1px dashed #c8d8c8; border-radius: 3px;
   pointer-events: none; z-index: 1;
 }
-.slot-bg.kind-popsci     { background: rgba(255, 240, 220, 0.50); border-color: #e8d0a8; }  /* научпоп */
-.slot-bg.kind-station    { background: rgba(220, 230, 245, 0.50); border-color: #b0c4dc; }  /* станция (workshop+experiment) */
-.slot-bg.kind-social     { background: rgba(232, 232, 240, 0.55); border-color: #c0c0d8; }  /* общение */
-.slot-bg.kind-cinema     { background: rgba(245, 230, 245, 0.50); border-color: #d0a8d0; }  /* кино */
-.slot-bg.kind-music      { background: rgba(255, 222, 224, 0.50); border-color: #e8a8b0; }  /* музыка */
-.slot-bg.kind-music-par  { background: rgba(255, 222, 224, 0.30); border-color: #d8909c; border-style: dotted; }  /* музыка параллельная */
-.slot-bg.kind-art        { background: rgba(248, 232, 218, 0.55); border-color: #d8b888; }  /* искусство */
+/* Цвет фона слота по категории Аполлония — earth-tone палитра, 6 цветов
+   равноудалены по цветовому кругу, одинаковая насыщенность и светлота.
+   Все приглушённые, чтобы карточки событий поверх читались. */
+.slot-bg.kind-popsci     { background: rgba(179, 149, 106, 0.15); border-color: #b3956a; }  /* золотистая охра */
+.slot-bg.kind-station    { background: rgba(122, 155, 110, 0.15); border-color: #7a9b6e; }  /* мшистый зелёный */
+.slot-bg.kind-social     { background: rgba(111, 138, 163, 0.15); border-color: #6f8aa3; }  /* приглушённая лазурь */
+.slot-bg.kind-cinema     { background: rgba(160, 96, 112, 0.13); border-color: #a06070; }  /* винное-розовое */
+.slot-bg.kind-music      { background: rgba(196, 120, 98, 0.15); border-color: #c47862; }  /* терракота */
+.slot-bg.kind-music-par  { background: rgba(196, 120, 98, 0.10); border-color: #b06550; border-style: dotted; }  /* музыка параллельная */
+.slot-bg.kind-art        { background: rgba(149, 116, 144, 0.15); border-color: #957490; }  /* винтажный лавандовый */
 
 /* Приглушённое состояние — для слотов/событий/баннеров вне фокуса текущей вкладки.
    Карта таймлайна общая для всех вкладок: видно всё, но релевантное яркое, остальное в полутени. */
@@ -543,12 +571,12 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
    Чуть более насыщенные чем фон слота, чтобы карточка читалась поверх него.
    Cтатус (placeholder vs confirmed/tentative) только меняет насыщенность через
    .s-placeholder ниже — не цвет. */
-.event-pill.cat-popsci     { background: rgba(255, 235, 200, 0.85); border-color: #d8b878; }
-.event-pill.cat-station    { background: rgba(210, 225, 245, 0.85); border-color: #8fa8c8; }
-.event-pill.cat-social     { background: rgba(220, 220, 232, 0.85); border-color: #a0a0c0; }
-.event-pill.cat-cinema     { background: rgba(238, 220, 238, 0.85); border-color: #b888b8; }
-.event-pill.cat-music      { background: rgba(255, 212, 218, 0.85); border-color: #d88090; }
-.event-pill.cat-art        { background: rgba(245, 220, 200, 0.85); border-color: #c8a060; }
+.event-pill.cat-popsci     { background: rgba(179, 149, 106, 0.32); border-color: #b3956a; }
+.event-pill.cat-station    { background: rgba(122, 155, 110, 0.32); border-color: #7a9b6e; }
+.event-pill.cat-social     { background: rgba(111, 138, 163, 0.30); border-color: #6f8aa3; }
+.event-pill.cat-cinema     { background: rgba(160, 96, 112, 0.28); border-color: #a06070; }
+.event-pill.cat-music      { background: rgba(196, 120, 98, 0.30); border-color: #c47862; }
+.event-pill.cat-art        { background: rgba(149, 116, 144, 0.30); border-color: #957490; }
 /* Статус — меняет толщину рамки и opacity, цвет остаётся «по категории» */
 .event-pill.s-placeholder  { opacity: 0.65; border-style: dashed; }
 .event-pill.s-placeholder .ev-title { font-style: italic; }
@@ -1436,9 +1464,17 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
       <section class="section active" id="section-timeline">
         <div class="timeline-toolbar">
           <span>Масштаб:</span>
-          <input type="range" id="zoom" min="0.8" max="2.5" step="0.1" value="1.0">
-          <span id="zoom-label">×1.0</span>
+          <input type="range" id="zoom" min="0.8" max="2.5" step="0.1" value="1.1">
+          <span id="zoom-label">×1.1</span>
           <span style="margin-left:auto; font-size:11px; color:#888">Esc — отмена · большой бар: 2 подколонки</span>
+        </div>
+        <div class="cat-legend" id="cat-legend">
+          <button class="cat-legend-item" data-view="popsci"><span class="cat-legend-dot" style="background:#b3956a"></span>Научпоп</button>
+          <button class="cat-legend-item" data-view="open-apps"><span class="cat-legend-dot" style="background:#7a9b6e"></span>Станции</button>
+          <button class="cat-legend-item" data-view="social"><span class="cat-legend-dot" style="background:#6f8aa3"></span>Общение</button>
+          <button class="cat-legend-item" data-view="cinema"><span class="cat-legend-dot" style="background:#a06070"></span>Кино</button>
+          <button class="cat-legend-item" data-view="music"><span class="cat-legend-dot" style="background:#c47862"></span>Музыка</button>
+          <button class="cat-legend-item" data-view="art"><span class="cat-legend-dot" style="background:#957490"></span>Искусство</button>
         </div>
         <div class="timeline-cat-filters" id="cat-filters-timeline"></div>
         <div class="conflicts" id="conflicts"></div>
@@ -2042,7 +2078,10 @@ function getVenueLanes(vid) {
 // ============================================================
 let state = {
   data: null, applications: [], appStatuses: {}, ideas: [],
-  filter: 'new', search: '', zoom: 1.0,
+  filter: 'new', search: '',
+  // Дефолт зума 1.1 — текст в карточках событий хорошо читается даже в
+  // получасовых слотах. Если пользователь менял — берём сохранённое значение.
+  zoom: parseFloat(localStorage.getItem('festtool-zoom')) || 1.1,
   catFilter: 'all',          // фильтр пула по категории внутри вкладки
   detailTab: 'event',        // активная табка в detail события: event | app
   view: 'all',               // главная вкладка: all | open-apps | cinema | music | art
@@ -3357,7 +3396,6 @@ function renderTimeline() {
           <div class="ev-title">${esc(ev.title || '(без названия)')}</div>
           ${ev.speaker ? `<div class="ev-speaker">${esc(ev.speaker)}</div>` : ''}
           ${subcatLabel ? `<div class="ev-subcat">${esc(subcatLabel)}</div>` : ''}
-          <div class="ev-cat">${esc(cat?.display || ev.category || '')}</div>
         </div>`;
       });
     });
@@ -6679,30 +6717,53 @@ document.getElementById('search').addEventListener('input', e => {
   renderCatFiltersPool();
   renderCandidates();
 });
+// Переключение вкладки. Срабатывает и от right-tab сверху, и от cat-legend (sticky-полоса).
+function switchView(viewName) {
+  state.view = viewName;
+  state.catFilter = 'all';
+  state.filter = 'new';
+  document.querySelectorAll('.right-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.view === viewName);
+  });
+  // Подсветка точки в легенде. На вкладке 'all' — все точки одинаковые;
+  // на специализированной вкладке — активная подсвечена, остальные приглушены.
+  document.querySelectorAll('.cat-legend-item').forEach(item => {
+    item.classList.remove('active', 'dim');
+    if (viewName !== 'all') {
+      if (item.dataset.view === viewName) item.classList.add('active');
+      else item.classList.add('dim');
+    }
+  });
+  // Какая секция активна — таймлайн или экспонаты
+  const cfg = VIEW_CONFIG[viewName] || VIEW_CONFIG['all'];
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + cfg.showSection).classList.add('active');
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === 'todo');
+  });
+  rerenderAll();
+}
 document.querySelectorAll('.right-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.right-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    state.view = tab.dataset.view;
-    state.catFilter = 'all';
-    state.filter = 'new';
-    // Какая секция активна — таймлайн или экспонаты
-    const cfg = VIEW_CONFIG[state.view] || VIEW_CONFIG['all'];
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.getElementById('section-' + cfg.showSection).classList.add('active');
-    // Обновляем активные filter-кнопки
-    document.querySelectorAll('.filter-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.filter === 'todo');
-    });
-    rerenderAll();
+  tab.addEventListener('click', () => switchView(tab.dataset.view));
+});
+document.querySelectorAll('.cat-legend-item').forEach(item => {
+  item.addEventListener('click', () => {
+    // Двойное нажатие на ту же точку = вернуться на «Всё»
+    if (state.view === item.dataset.view) switchView('all');
+    else switchView(item.dataset.view);
   });
 });
 document.getElementById('zoom').addEventListener('input', e => {
   state.zoom = parseFloat(e.target.value);
   document.getElementById('zoom-label').textContent = `×${state.zoom.toFixed(1)}`;
   document.documentElement.style.setProperty('--content-scale', state.zoom);
+  localStorage.setItem('festtool-zoom', String(state.zoom));  // запоминаем между сессиями
   renderTimeline();
 });
+// При старте: применяем стартовый zoom (может быть != 1.0 если был сохранён)
+document.getElementById('zoom').value = state.zoom;
+document.getElementById('zoom-label').textContent = `×${state.zoom.toFixed(1)}`;
+document.documentElement.style.setProperty('--content-scale', state.zoom);
 
 (async () => {
   restoreState();
