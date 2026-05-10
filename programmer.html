@@ -137,6 +137,65 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 .topbar button.icon-only { padding: 8px 10px; font-size: 16px; }
 .topbar button:disabled { opacity: 0.35; cursor: not-allowed; }
 .topbar .menu-wrap { position: relative; }
+
+/* ====== DEMO-РЕЖИМ ======
+   До ввода пароля сайт показывает только расписание (read-only) с плашкой
+   о том что это демо. Кнопка «Войти» открывает обычный password-overlay,
+   и после ввода пароля сайт переходит в редактируемый режим. */
+.topbar .demo-banner {
+  display: none;  /* по умолчанию скрыта; показывается через body.demo-mode */
+  font-size: 12px; color: rgba(255,255,255,0.78);
+  padding: 4px 10px;
+  border-left: 1px solid rgba(255,255,255,0.15);
+  font-family: var(--font-body); letter-spacing: 0.01em;
+}
+.topbar .demo-banner a {
+  color: var(--accent); text-decoration: none; font-weight: 500;
+  border-bottom: 1px dotted rgba(232, 138, 71, 0.4);
+}
+.topbar .demo-banner a:hover { border-bottom-style: solid; }
+.topbar .demo-login-btn {
+  display: none;  /* по умолчанию скрыта; показывается через body.demo-mode */
+  background: var(--accent) !important; color: #fff !important;
+  border-color: var(--accent) !important; font-weight: 600;
+}
+.topbar .demo-login-btn:hover {
+  background: var(--accent-hover) !important;
+  border-color: var(--accent-hover) !important;
+}
+
+/* В demo-режиме показываем баннер и кнопку «Войти», скрываем редакторские
+   кнопки и весь левый пул, выключаем взаимодействие с timeline. */
+body.demo-mode .topbar .demo-banner,
+body.demo-mode .topbar .demo-login-btn { display: inline-block; }
+body.demo-mode .topbar .stat,
+body.demo-mode .topbar .src-info,
+body.demo-mode #btn-undo,
+body.demo-mode #btn-save-local,
+body.demo-mode #btn-reload,
+body.demo-mode #btn-publish,
+body.demo-mode .menu-wrap,
+body.demo-mode #candidates-pane,
+body.demo-mode #collapse-toggle,
+body.demo-mode #expand-toggle,
+body.demo-mode #conflicts,
+body.demo-mode .discovery-zone,
+body.demo-mode .ev-remove,
+body.demo-mode .lane-dropzone,
+body.demo-mode .filter-btn,
+body.demo-mode .add-btn,
+body.demo-mode .timeline-cat-filters { display: none !important; }
+/* Никаких подсказок «можно перетаскивать»: события и слоты в демо некликабельны. */
+body.demo-mode .event-pill,
+body.demo-mode .slot-bg,
+body.demo-mode .slot-label,
+body.demo-mode .stations-band-label,
+body.demo-mode .tl-header { cursor: default !important; }
+body.demo-mode .event-pill { pointer-events: none; }
+body.demo-mode .slot-label,
+body.demo-mode .stations-band-label { pointer-events: none; }
+/* «х» спрятана через display:none выше — но на всякий и через opacity */
+body.demo-mode .event-pill .ev-remove { display: none !important; }
 .topbar .menu-dropdown {
   position: absolute; top: 100%; right: 0; margin-top: 4px;
   background: var(--paper); color: var(--ink);
@@ -374,8 +433,8 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 .tl-header.time-header { background: rgba(232, 236, 212, 0.96); width: 60px; min-width: 60px; }
 .tl-header .vh-tech {
   font-family: var(--font-body);
-  font-weight: 500; font-size: 11px;
-  letter-spacing: 0.02em;
+  font-weight: 600; font-size: 11px;
+  letter-spacing: 0.02em; text-align: center;
 }
 .tl-header .vh-display {
   font-family: var(--font-mono); font-weight: 400;
@@ -1389,6 +1448,7 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
     <div class="lock-subtitle">Введите пароль</div>
     <input type="password" id="lock-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
     <button onclick="tryUnlock()" class="lock-btn">Войти</button>
+    <button onclick="cancelUnlock()" class="lock-btn" style="margin-top:8px;background:transparent;color:#888;border:1px solid #ccc">Отмена · смотреть демо</button>
     <div class="lock-error" id="lock-error"></div>
   </div>
 </div>
@@ -1398,7 +1458,11 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   <span class="stat" id="stat-events">0</span>
   <span class="stat" id="stat-cands">0</span>
   <span class="src-info" id="src-info">локальные данные</span>
+  <span class="demo-banner" id="demo-banner">
+    Демо-версия программы. Актуальная информация — на <a href="https://matema-fest.ru" target="_blank" rel="noopener">matema-fest.ru</a>
+  </span>
   <span class="spacer"></span>
+  <button class="demo-login-btn" id="btn-demo-login" onclick="lockProgrammer()">Войти</button>
   <button onclick="undoLastChange()" id="btn-undo" title="Отменить последнее изменение (Ctrl+Z)" disabled>↶ Отменить</button>
   <button onclick="saveLocally()" id="btn-save-local" title="Сохранить текущее состояние локально (в браузере). Безопасно — не публикует, никуда не отправляет.">💾 Сохранить</button>
   <button onclick="reloadAll()" id="btn-reload" title="Перечитать программу с сайта и заявки">↻ Обновить</button>
@@ -1841,6 +1905,7 @@ async function tryUnlock() {
     errEl.textContent = '';
     document.getElementById('lock-overlay').classList.remove('active');
     document.body.classList.remove('locked');
+    document.body.classList.remove('demo-mode');  // выходим из demo, открываем полный редактор
     _resetIdleTimer();
   } else {
     errEl.textContent = 'Неверный пароль';
@@ -1848,23 +1913,41 @@ async function tryUnlock() {
   }
 }
 
+// Показать password-форму для входа из demo. Также используется по таймауту
+// неактивности — после 15 мин без действий пользователь снова в demo и должен
+// ввести пароль чтобы продолжить редактирование.
 function lockProgrammer() {
   sessionStorage.removeItem(UNLOCK_KEY);
+  document.body.classList.add('demo-mode');
   document.getElementById('lock-overlay').classList.add('active');
-  document.body.classList.add('locked');
   setTimeout(() => {
     const el = document.getElementById('lock-input');
     if (el) el.focus();
   }, 100);
 }
 
+// Закрыть password-форму без входа — остаёмся в demo-режиме
+function cancelUnlock() {
+  document.getElementById('lock-overlay').classList.remove('active');
+  document.getElementById('lock-input').value = '';
+  document.getElementById('lock-error').textContent = '';
+}
+
 function _checkLockOnLoad() {
   const ts = sessionStorage.getItem(UNLOCK_KEY);
   if (!ts || isNaN(parseInt(ts, 10))) {
-    lockProgrammer();
+    // По дефолту — demo-режим. Полный редактор открывается только после ввода
+    // пароля через кнопку «Войти» в топбаре.
+    document.body.classList.add('demo-mode');
     return false;
   }
   return true;
+}
+
+// Возвращает true если сейчас demo (read-only). Используется как guard в
+// функциях которые меняют состояние.
+function isDemoMode() {
+  return document.body.classList.contains('demo-mode');
 }
 
 let _idleTimer;
@@ -1896,6 +1979,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (lockInput) {
     lockInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') tryUnlock();
+      if (e.key === 'Escape') cancelUnlock();
     });
   }
   if (_checkLockOnLoad()) _resetIdleTimer();
@@ -2306,6 +2390,7 @@ window.addEventListener('beforeunload', e => {
 // Явное «Сохранить локально» — то же что persistState + уведомление пользователю.
 // Главное: даёт человеку чёткий мысленный якорь "вот я сохранил, можно не бояться F5".
 function saveLocally() {
+  if (isDemoMode()) return;
   persistState();
   _saveAutoBackup('manual-save');
   const btn = document.getElementById('btn-save-local');
@@ -3803,6 +3888,7 @@ function renderUnassigned() {
 // DROP
 // ============================================================
 function handleDrop(slotId, venueId, laneIdx, e) {
+  if (isDemoMode()) return;
   const kind = e.dataTransfer.getData('kind');
   const id = e.dataTransfer.getData('id');
   const slot = state.data.time_slots[slotId];
@@ -3915,6 +4001,7 @@ function guessCategory(c) {
 let _detailContext = null;  // { type: 'app'|'event'|'exhibit', id }
 
 function showDetail(type, id) {
+  if (isDemoMode()) return;
   _detailContext = { type, id };
   const pane = document.getElementById('candidates-pane');
   const view = document.getElementById('detail-view');
@@ -6260,6 +6347,7 @@ closeStructureView = function() {
 };
 
 function openSlotEditModal(sid) {
+  if (isDemoMode()) return;
   const s = state.data.time_slots[sid];
   if (!s) return;
   document.getElementById('slot-edit-modal-title').textContent = `Слот · ${s.tool_label || s.label_for_zoom || sid}`;
@@ -6464,6 +6552,7 @@ function deleteExhibit() {
 // СОЗДАНИЕ НОВЫХ
 // ============================================================
 function addNewEvent() {
+  if (isDemoMode()) return;
   const title = prompt('Название нового события:');
   if (!title) return;
   const id = 'ev-' + Date.now();
@@ -6491,6 +6580,7 @@ function addNewSlot() {
   openSlotEditModal(id);
 }
 function addNewIdea() {
+  if (isDemoMode()) return;
   const name = prompt('Кого/что зовём?');
   if (!name) return;
   state.ideas.push({ id: 'idea-' + Date.now(), name, title: name, status: 'new' });
@@ -6647,6 +6737,7 @@ function exportJSON() {
 window.exportJSON = exportJSON;
 
 async function publishToGitHub() {
+  if (isDemoMode()) return;
   if (!CONFIG.ghToken || !CONFIG.ghRepo || !CONFIG.ghPath) { alert('Сначала настрой GitHub в ⚙'); return; }
   const apiBase = `https://api.github.com/repos/${CONFIG.ghRepo}/contents/${CONFIG.ghPath}`;
   const branch = CONFIG.ghBranch || 'main';
