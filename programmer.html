@@ -463,7 +463,18 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
   padding: 7px 12px; font-size: 12px; font-weight: 500; color: var(--ink);
   position: sticky; top: 0; z-index: 10;
 }
-.tl-header.time-header { background: rgba(232, 236, 212, 0.96); width: 60px; min-width: 60px; }
+.tl-header.time-header {
+  background: rgba(232, 236, 212, 0.98);
+  width: 60px; min-width: 60px;
+  position: sticky; left: 0; top: 0;
+  z-index: 12;  /* выше остальных tl-header (z-index 10) */
+}
+.tl-time-col {
+  border-right: 1px solid var(--rule-soft);
+  background: rgba(232, 236, 212, 0.98);
+  position: sticky; left: 0; z-index: 6;  /* выше event-pill (z-index 5) */
+  padding: 0; width: 60px; min-width: 60px;
+}
 .tl-header .vh-tech {
   font-family: var(--font-body);
   font-weight: 600; font-size: 11px;
@@ -480,10 +491,6 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
   letter-spacing: 0.04em;
 }
 
-.tl-time-col {
-  border-right: 1px solid var(--rule-soft); background: rgba(232, 236, 212, 0.7);
-  position: relative; padding: 0; width: 60px; min-width: 60px;
-}
 .tl-tick {
   position: absolute; left: 0; right: 0; padding: 2px 6px;
   font-size: 11px; color: var(--ink-soft);
