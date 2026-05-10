@@ -2724,6 +2724,269 @@ function updateSrcBadge() {
   document.title = `${dirtyMark}Программер · ${version || '?'}`;
 }
 
+// ============================================================
+// COMPAT LAYER v30 ↔ v31  (вставлено для миграции на cards-модель)
+// ============================================================
+// v31 хранит данные как массив `cards` с единым полем status.
+// Существующий код программера работает с legacy-структурой
+// (events + exhibits + applications + _app_statuses) и
+// слотами, у которых есть category/subcategory/apollo_slot.
+// Этот слой раскрывает cards в legacy при загрузке и
+// собирает обратно при сохранении.
+// Никакой другой код программера не меняется — он работает
+// с legacy-представлением в памяти и не знает про cards.
+
+function v31_decompressCardsToLegacy(data) {
+  if (!Array.isArray(data.cards)) return false;  // уже legacy
+
+  const events = [];
+  const exhibits = [];
+  const applications = [];
+  const appStatuses = {};
+
+  // По всем карточкам
+  for (const card of data.cards) {
+    // 1) Восстанавливаем заявку (если карточка пришла из формы)
+    if (card._source_app) {
+      const app = card.application ? {...card.application} : {};
+      app.id = card._source_app;
+      app.status = 'new';  // legacy applications.status унифицируем в 'new'
+
+      // Если у карточки есть team_notes и она не accepted —
+      // сохраняем заметку в самой заявке (legacy не имеет другого места).
+      if (card.team_notes && card.status !== 'accepted') {
+        app._v31_team_notes = card.team_notes;
+      }
+
+      // Ручные пометки в _app_statuses (если статус карточки — не accepted/new)
+      if (card.status === 'considering') appStatuses[card._source_app] = 'considering';
+      else if (card.status === 'rejected') appStatuses[card._source_app] = 'rejected';
+
+      applications.push(app);
+    }
+
+    // 2) Только accepted-карточки превращаются в events/exhibits для расписания
+    if (card.status !== 'accepted') continue;
+
+    // Восстанавливаем legacy-категории
+    let cat = card.type;
+    let sub = card.subtype || null;
+    if (card.type === 'station') {
+      // station → подтип карточки становится legacy category
+      cat = card.subtype || 'workshop';  // дефолт если не задано
+      sub = null;
+    }
+
+    // Базовая карточка legacy
+    const item = {
+      id: card.id,
+      status: 'confirmed',  // legacy status дефолт (мы потеряли tentative/confirmed различие)
+      title: card.title,
+      subtitle: card.subtitle,
+      speaker: card.speaker,
+      speaker_role: card.speaker_role,
+      description: card.description,
+      category: cat,
+      subcategory: sub,
+      apollo_slot: card.apollo_slot,
+      links: card.links,
+      team_notes: card.team_notes,
+    };
+    if (card._source_app) item._source_app = card._source_app;
+
+    if (card.type === 'art') {
+      // exhibits
+      item.kind = card.subtype || 'art';
+      // exhibits не имеют category/subcategory в старой схеме — там было subcategory как kind
+      item.subcategory = card.subtype;
+      exhibits.push(_v31_stripUndef(item));
+    } else {
+      // events (включая cinema без слота)
+      if (card.slot) item.slot = card.slot;
+      if (card.venue) item.venue = card.venue;
+      if (card.duration_override) item.duration_override = card.duration_override;
+      if (card.lane != null) item.lane = card.lane;
+      events.push(_v31_stripUndef(item));
+    }
+  }
+
+  // 3) Восстанавливаем slot.category из station → workshop|experiment
+  //    по карточкам, которые на этом слоте лежат. Если разнотипицы — приоритет
+  //    experiment (более «общий» подтип в нашей таксономии).
+  //    Для пустых station-слотов — оставляем workshop как дефолт.
+  for (const sid of Object.keys(data.time_slots || {})) {
+    const slot = data.time_slots[sid];
+    if (slot.category === 'station') {
+      const cardsOnSlot = events.filter(e => e.slot === sid);
+      if (cardsOnSlot.length === 0) {
+        slot.category = 'workshop';  // дефолт для пустого станционного слота
+      } else if (cardsOnSlot.length === 1) {
+        slot.category = cardsOnSlot[0].category;
+      } else {
+        // На слоте несколько карточек — пытаемся брать первую,
+        // но если есть experiment — приоритет ему
+        const hasExp = cardsOnSlot.some(e => e.category === 'experiment');
+        slot.category = hasExp ? 'experiment' : cardsOnSlot[0].category;
+      }
+      // Помечаем для обратного компресса
+      slot._v31_was_station = true;
+    }
+  }
+
+  data.events = events;
+  data.exhibits = exhibits;
+  data.applications = applications;
+  data._app_statuses = appStatuses;
+  data._v31_was_cards = true;  // флаг для buildExportText: собирать обратно в cards
+  // data.cards оставляем для отладки (не используется legacy кодом)
+  return true;
+}
+
+function _v31_stripUndef(o) {
+  const r = {};
+  for (const k in o) if (o[k] !== undefined && o[k] !== null && o[k] !== '') r[k] = o[k];
+  return r;
+}
+
+// Собрать обратно в cards для сохранения файла. Принимает obj в legacy-формате,
+// возвращает obj в v31-формате (cards вместо events/exhibits/applications).
+function v31_compressLegacyToCards(obj) {
+  const cards = [];
+  const STATION_LEGACY = new Set(['workshop', 'experiment']);
+
+  // Индекс применений
+  const apps = obj.applications || [];
+  const appsById = {};
+  for (const a of apps) appsById[a.id] = a;
+
+  const appStatuses = obj._app_statuses || {};
+  const usedAppIds = new Set();  // какие заявки уже привязаны к event/exhibit
+
+  // 1) Из events
+  for (const ev of (obj.events || [])) {
+    let type, subtype;
+    if (STATION_LEGACY.has(ev.category)) {
+      type = 'station';
+      subtype = ev.category;  // workshop|experiment как subtype
+    } else {
+      type = ev.category;
+      subtype = ev.subcategory;
+    }
+    const card = _v31_stripUndef({
+      id: ev.id,
+      status: 'accepted',
+      type, subtype,
+      apollo_slot: ev.apollo_slot,
+      title: ev.title,
+      subtitle: ev.subtitle,
+      speaker: ev.speaker,
+      speaker_role: ev.speaker_role,
+      description: ev.description,
+      slot: ev.slot,
+      venue: ev.venue,
+      duration_override: ev.duration_override,
+      lane: ev.lane,
+      links: ev.links,
+      team_notes: ev.team_notes,
+    });
+    // Если есть связанная заявка
+    if (ev._source_app) {
+      card._source_app = ev._source_app;
+      const a = appsById[ev._source_app];
+      if (a) {
+        const appCopy = {...a};
+        delete appCopy.id; delete appCopy.status;
+        if (Object.keys(appCopy).length > 0) card.application = appCopy;
+        usedAppIds.add(ev._source_app);
+      }
+    }
+    cards.push(card);
+  }
+
+  // 2) Из exhibits
+  for (const ex of (obj.exhibits || [])) {
+    const card = _v31_stripUndef({
+      id: ex.id,
+      status: 'accepted',
+      type: 'art',
+      subtype: ex.subcategory || ex.kind,
+      apollo_slot: ex.apollo_slot,
+      title: ex.title,
+      subtitle: ex.subtitle,
+      speaker: ex.speaker,
+      speaker_role: ex.speaker_role,
+      description: ex.description,
+      links: ex.links,
+      team_notes: ex.team_notes,
+    });
+    if (ex._source_app) {
+      card._source_app = ex._source_app;
+      const a = appsById[ex._source_app];
+      if (a) {
+        const appCopy = {...a};
+        delete appCopy.id; delete appCopy.status;
+        if (Object.keys(appCopy).length > 0) card.application = appCopy;
+        usedAppIds.add(ex._source_app);
+      }
+    }
+    cards.push(card);
+  }
+
+  // 3) Одинокие applications (без связи)
+  for (const a of apps) {
+    if (usedAppIds.has(a.id)) continue;
+    let status;
+    const manual = appStatuses[a.id];
+    if (a.status === 'rejected' || manual === 'rejected') status = 'rejected';
+    else if (manual === 'considering') status = 'considering';
+    else if (manual === 'duplicate') status = 'rejected';
+    else status = 'new';
+
+    const appCopy = {...a};
+    delete appCopy.id; delete appCopy.status;
+    // Извлекаем сохранённую team_notes
+    const restoredNotes = appCopy._v31_team_notes;
+    delete appCopy._v31_team_notes;
+    const card = {
+      id: a.id,
+      status,
+      _source_app: a.id,
+      application: appCopy,
+    };
+    if (restoredNotes) card.team_notes = restoredNotes;
+    else if (manual === 'duplicate') card.team_notes = '⚠ Дубликат — проверить';
+    cards.push(card);
+  }
+
+  // 4) Слоты: возвращаем station для workshop/experiment, удаляем _v31_was_station
+  const slots = {};
+  for (const sid of Object.keys(obj.time_slots || {})) {
+    const s = {...obj.time_slots[sid]};
+    if (s._v31_was_station || STATION_LEGACY.has(s.category)) {
+      s.category = 'station';
+    }
+    delete s._v31_was_station;
+    delete s.subcategory;
+    delete s.apollo_slot;
+    slots[sid] = s;
+  }
+
+  // 5) Финальный объект
+  const result = {
+    _meta: obj._meta,
+    venues: obj.venues,
+    categories: obj.categories,
+    subcategories: obj.subcategories,
+    time_slots: slots,
+    cards,
+    fern_leaves: obj.fern_leaves,
+    _howto: obj._howto,
+  };
+  // Удаляем undefined ключи верхнего уровня
+  for (const k of Object.keys(result)) if (result[k] === undefined) delete result[k];
+  return result;
+}
+
 async function loadFestivalData() {
   const hadCachedData = !!state.data;  // запомним: были ли данные перед попыткой fetch (значит в localStorage)
   if (!CONFIG.baseUrl) {
@@ -2748,6 +3011,16 @@ async function loadFestivalData() {
       throw new Error('JSON-объект не найден в ответе (длина ' + text.length + ' байт)');
     }
     state.data = JSON.parse(text.substring(start, end + 1));
+    // v31: если файл в новом формате (с cards), разворачиваем в legacy
+    // структуру (events + exhibits + applications + _app_statuses) для
+    // остального кода программера. Сохранение собирает обратно.
+    if (Array.isArray(state.data.cards)) {
+      v31_decompressCardsToLegacy(state.data);
+      console.log('[programmer] v31 cards decompressed:',
+        state.data.events.length, 'events,',
+        state.data.exhibits.length, 'exhibits,',
+        state.data.applications.length, 'applications');
+    }
     enrichEventsFromSlots(state.data);
 
     // Восстановление статусов заявок из data._app_statuses (если в локальном
@@ -6959,6 +7232,18 @@ function buildExportText() {
   if (state.data._howto) obj._howto = state.data._howto;
   if (state.data.subcategories) obj.subcategories = state.data.subcategories;
   if (state.data.fern_leaves) obj.fern_leaves = state.data.fern_leaves;
+
+  // v31: если данные были загружены в новом формате — компрессируем обратно
+  // в cards перед записью. Иначе сохраняем в legacy-формате (для обратной
+  // совместимости при работе с очень старым файлом).
+  if (state.data._v31_was_cards) {
+    const v31obj = v31_compressLegacyToCards(obj);
+    return `// === База событий фестиваля «Фрактальная Одиссея» v31 ===
+// Автоматически сгенерировано programmer-tool ${new Date().toISOString()}
+window.FESTIVAL_DATA = ${JSON.stringify(v31obj, null, 2)};
+`;
+  }
+
   return `// === База событий фестиваля «Фрактальная Одиссея» ===
 // Автоматически сгенерировано programmer-tool ${new Date().toISOString()}
 window.FESTIVAL_DATA = ${JSON.stringify(obj, null, 2)};
