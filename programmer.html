@@ -596,20 +596,50 @@ body.viewer-mode .event-pill { cursor: pointer; }
   position: absolute; left: 2px; right: 2px;
   background: rgba(232, 240, 232, 0.4);
   border: none; border-radius: 3px;
-  pointer-events: none; z-index: 1;
+  z-index: 1;
+  /* В admin slot-bg кликабелен — клик по выступу сверху открывает редактор слота.
+     pointer-events контролируется через body — в demo/viewer клик гасится через
+     onSlotBgClick (isReadOnly). */
 }
+body.demo-mode .slot-bg,
+body.viewer-mode .slot-bg { pointer-events: none; cursor: default; }
+body:not(.demo-mode):not(.viewer-mode) .slot-bg { cursor: pointer; }
+body:not(.demo-mode):not(.viewer-mode) .slot-bg:hover { filter: brightness(0.92); }
+
+/* Плейсхолдер пустого слота — показывает имя слота на месте где была бы карточка.
+   Полупрозрачный, italic — читается как «слот существует, но события нет». */
+.slot-placeholder {
+  position: absolute; z-index: 2;
+  display: flex; align-items: flex-start; padding: 7px 10px;
+  cursor: pointer; pointer-events: auto;
+  font-family: var(--font-body);
+  color: var(--ink-quiet); opacity: 0.7;
+}
+.slot-placeholder-title {
+  font-size: 13px; font-style: italic; font-weight: 500;
+  word-break: normal; overflow-wrap: break-word;
+}
+body.demo-mode .slot-placeholder,
+body.viewer-mode .slot-placeholder { pointer-events: none; cursor: default; opacity: 0.5; }
+body:not(.demo-mode):not(.viewer-mode) .slot-placeholder:hover {
+  background: rgba(0, 0, 0, 0.04); border-radius: 3px;
+}
+
 /* Цвет фона слота по категории Аполлония — earth-tone палитра.
-   Без рамок: цветной фон сам несёт информацию, рамка — лишняя. */
-.slot-bg.kind-popsci     { background: rgba(179, 149, 106, 0.18); }  /* золотистая охра */
-.slot-bg.kind-station    { background: rgba(122, 155, 110, 0.18); }  /* мшистый зелёный */
-.slot-bg.kind-social     { background: rgba(111, 138, 163, 0.18); }  /* приглушённая лазурь */
-.slot-bg.kind-cinema     { background: rgba(160, 96, 112, 0.16); }  /* винное-розовое */
-.slot-bg.kind-music      { background: rgba(196, 120, 98, 0.18); }  /* терракота */
-.slot-bg.kind-art        { background: rgba(149, 116, 144, 0.18); }  /* винтажный лавандовый */
+   Без рамок: цветной фон сам несёт информацию, рамка — лишняя.
+   Opacity 0.24 чтобы выступ slot-bg сверху был чуть темнее чем карточка
+   (которая имеет cat-* с opacity 0.30 поверх) — не сильно, но достаточно
+   чтобы заметить что «здесь можно кликнуть». */
+.slot-bg.kind-popsci     { background: rgba(179, 149, 106, 0.24); }  /* золотистая охра */
+.slot-bg.kind-station    { background: rgba(122, 155, 110, 0.24); }  /* мшистый зелёный */
+.slot-bg.kind-social     { background: rgba(111, 138, 163, 0.24); }  /* приглушённая лазурь */
+.slot-bg.kind-cinema     { background: rgba(160, 96, 112, 0.22); }  /* винное-розовое */
+.slot-bg.kind-music      { background: rgba(196, 120, 98, 0.24); }  /* терракота */
+.slot-bg.kind-art        { background: rgba(149, 116, 144, 0.24); }  /* винтажный лавандовый */
 /* music-par — единственный случай где визуальный сигнал нужен:
    параллельная сцена должна отличаться от главной. Оставляем тонкий пунктир. */
 .slot-bg.kind-music-par {
-  background: rgba(196, 120, 98, 0.12);
+  background: rgba(196, 120, 98, 0.16);
   border: 1px dotted rgba(176, 101, 80, 0.6);
 }
 
@@ -2105,6 +2135,16 @@ function isReadOnly() {
   return isDemoMode() || isViewerMode();
 }
 
+// Клик по slot-bg или по slot-placeholder. Открывает редактор слота в admin.
+// В demo и viewer ничего не делает (и cursor не показывается через CSS).
+function onSlotBgClick(e, sid) {
+  if (isReadOnly()) return;
+  // Если клик пришёл по дочернему event-pill — это его клик, не slot-bg
+  if (e.target.closest('.event-pill')) return;
+  e.stopPropagation();
+  if (typeof openSlotEditModal === 'function') openSlotEditModal(sid);
+}
+
 let _idleTimer;
 function _resetIdleTimer() {
   clearTimeout(_idleTimer);
@@ -3573,24 +3613,23 @@ function renderTimeline() {
 
       const k = slotKind(sid);
       const dimClass = slotIsRelevant(sid) ? '' : ' dim';
-      html += `<div class="slot-bg kind-${k}${dimClass}" style="top:${startPx}px;height:${heightPx}px"></div>`;
+      // Slot-bg кликабельный для admin: клик открывает редактор слота. В JS
+      // обработчике проверим isReadOnly() — в demo/viewer клик не сработает.
+      // CSS добавляет cursor: pointer только в admin.
+      html += `<div class="slot-bg kind-${k}${dimClass}" data-slot="${esc(sid)}" onclick="onSlotBgClick(event, '${esc(sid)}')" style="top:${startPx}px;height:${heightPx}px"></div>`;
       const firstAllowed = VENUE_ORDER.find(v => allowed.includes(v));
       const inBand = bandedSids.has(sid);
-      // Индивидуальный slot-label больше не рисуем — он дублировал заголовок
-      // карточки event-pill. Вся информация о слоте видна в карточке (title,
-      // speaker) и в колонке времени слева. Раньше тут было:
-      //   if (firstAllowed === vid && allowed.length === 1 && !inBand)
-      //     html += `<div class="slot-label" data-slot="${sid}" ...>${label}</div>`;
-      // Multi-venue band-баннеры (СТАНЦИИ N · HH:MM–HH:MM) остаются — это
-      // другая сущность, баннер над группой venue.
 
       const cellEvents = state.data.events.filter(e => e.slot === sid && e.venue === vid);
-      // labelOffset резервирует место сверху для baner-а multi-venue (СТАНЦИИ).
-      // Для одиночных слотов раньше тоже было 22px под slot-label — теперь slot-label
-      // убран, поэтому одиночные слоты получают ноль офсета и карточка занимает
-      // всю высоту слота.
+      // labelOffset резервирует место сверху slot-bg, которое остаётся видимым
+      // (карточка не накрывает его целиком). Видимая полоска — кликабельная,
+      // ведёт в редактор слота. На мобиле полоска не нужна — карточка занимает
+      // весь слот (там и так горизонтальный скролл, нет места под выступы).
+      // Multi-venue band-баннеры (СТАНЦИИ N) сами рисуют свою область сверху,
+      // им нужно больше места.
       const isMultiVenue = allowed.length > 1 || inBand;
-      const labelOffset = isMultiVenue ? 34 : 4;
+      const isMobile = window.innerWidth <= 700;
+      const labelOffset = isMultiVenue ? 34 : (isMobile ? 4 : 22);
       const bottomPad = 4; // небольшой резерв снизу
       const innerHeight = heightPx - labelOffset - bottomPad;
 
@@ -3640,6 +3679,21 @@ function renderTimeline() {
           }${subcatLabel ? `<span class="ev-subcat">${esc(subcatLabel)}</span>` : ''}</div>` : ''}
         </div>`;
       });
+
+      // Пустой слот — если в одиночной venue нет событий, показываем имя слота
+      // как плейсхолдер на том же месте где был бы заголовок карточки. Так
+      // администратор видит «здесь должна быть лекция X» и может кликнуть чтобы
+      // редактировать слот. На мобиле плейсхолдер не показываем (там нет места).
+      if (cellEvents.length === 0 && !isMultiVenue && !isMobile) {
+        const slotName = s.tool_label || s.label_for_zoom;
+        if (slotName) {
+          html += `<div class="slot-placeholder" data-slot="${esc(sid)}" onclick="onSlotBgClick(event, '${esc(sid)}')"
+                        style="top:${startPx + labelOffset}px;height:${heightPx - labelOffset - 4}px;
+                               left:4px;right:4px">
+            <div class="slot-placeholder-title">${esc(slotName)}</div>
+          </div>`;
+        }
+      }
     });
 
     // Заблокированные участки — все слоты, разрешённые этой venue
