@@ -4763,7 +4763,145 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-10a"></script>
+  <script src="festival-data.js?v=2026-05-11a"></script>
+
+  <!-- ============================================================
+       COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
+       ============================================================
+       Если festival-data в новом формате (есть массив `cards`), мы
+       разворачиваем его в legacy-структуру (events + exhibits +
+       applications + categories.workshop/experiment), чтобы весь
+       остальной код сайта (Аполлоний в основном document и папоротник
+       в iframe) работал без изменений. Слой симметричен с тем что
+       стоит в программере. Если данные уже в legacy — слой ничего
+       не делает. -->
+  <script>
+  (function v31CompatLayerForSite() {
+    if (!window.FESTIVAL_DATA) return;
+    var data = window.FESTIVAL_DATA;
+    if (!Array.isArray(data.cards)) return; // уже legacy
+
+    var STATION_CATS = { workshop: 1, experiment: 1 };
+    var events = [];
+    var exhibits = [];
+    var applications = [];
+    var appStatuses = {};
+
+    function stripUndef(o) {
+      var r = {};
+      for (var k in o) if (o[k] !== undefined && o[k] !== null && o[k] !== '') r[k] = o[k];
+      return r;
+    }
+
+    for (var i = 0; i < data.cards.length; i++) {
+      var card = data.cards[i];
+
+      // 1. Восстанавливаем заявку, если есть привязка
+      if (card._source_app) {
+        var app = card.application ? Object.assign({}, card.application) : {};
+        app.id = card._source_app;
+        app.status = 'new';
+        if (card.team_notes && card.status !== 'accepted') app._v31_team_notes = card.team_notes;
+        if (card.status === 'considering') appStatuses[card._source_app] = 'considering';
+        else if (card.status === 'rejected') appStatuses[card._source_app] = 'rejected';
+        applications.push(app);
+      }
+
+      // 2. Только accepted идут в events/exhibits для показа на сайте
+      if (card.status !== 'accepted') continue;
+
+      // Категории: station-карточка → workshop|experiment (legacy)
+      var cat = card.type;
+      var sub = card.subtype || null;
+      if (card.type === 'station') {
+        cat = card.subtype || 'workshop';
+        sub = null;
+      }
+
+      var item = stripUndef({
+        id: card.id,
+        status: 'confirmed',
+        title: card.title,
+        subtitle: card.subtitle,
+        speaker: card.speaker,
+        speaker_role: card.speaker_role,
+        description: card.description,
+        category: cat,
+        subcategory: sub,
+        apollo_slot: card.apollo_slot,
+        links: card.links,
+        _source_app: card._source_app,
+      });
+
+      if (card.type === 'art') {
+        item.kind = card.subtype || 'art';
+        item.subcategory = card.subtype;
+        exhibits.push(item);
+      } else {
+        if (card.slot) item.slot = card.slot;
+        if (card.venue) item.venue = card.venue;
+        if (card.duration_override) item.duration_override = card.duration_override;
+        if (card.lane != null) item.lane = card.lane;
+        events.push(item);
+      }
+    }
+
+    // 3. Восстанавливаем slot.category=workshop|experiment из station по карточкам.
+    //    Если на слоте несколько карточек (lanes=2 в big_bar) — приоритет experiment.
+    //    Это нужно потому что Аполлоний на сайте обогащает event со слота
+    //    (берёт slot.category/apollo_slot и т.д.).
+    if (data.time_slots) {
+      for (var sid in data.time_slots) {
+        var slot = data.time_slots[sid];
+        if (slot.category === 'station') {
+          var onSlot = events.filter(function(e){return e.slot === sid;});
+          if (onSlot.length === 0) slot.category = 'workshop';
+          else if (onSlot.length === 1) slot.category = onSlot[0].category;
+          else {
+            var hasExp = onSlot.some(function(e){return e.category === 'experiment';});
+            slot.category = hasExp ? 'experiment' : onSlot[0].category;
+          }
+        }
+        // Так как Аполлоний берёт apollo_slot со слота — переносим обратно
+        // с первой карточки на этом слоте, если у слота apollo_slot пуст.
+        // Это нужно только для совместимости со старым кодом Аполлония.
+        if (!slot.apollo_slot) {
+          var cardOnSlot = events.find(function(e){return e.slot === sid;});
+          if (cardOnSlot && cardOnSlot.apollo_slot) slot.apollo_slot = cardOnSlot.apollo_slot;
+        }
+        // subcategory тоже могла быть нужна (для cinema feature/short/animation).
+        if (!slot.subcategory) {
+          var cardOnSlot2 = events.find(function(e){return e.slot === sid;});
+          if (cardOnSlot2 && cardOnSlot2.subcategory) slot.subcategory = cardOnSlot2.subcategory;
+        }
+      }
+    }
+
+    // 4. Восстанавливаем categories.workshop и categories.experiment
+    //    (Аполлоний жёстко знает эти два tag-id, без них tagToCatId сломается).
+    if (!data.categories) data.categories = {};
+    if (!data.categories.workshop) {
+      data.categories.workshop = { display: 'мастерские', size: 'big', comment: 'воркшопы, чему-то научиться' };
+    }
+    if (!data.categories.experiment) {
+      data.categories.experiment = { display: 'эксперименты', size: 'big', comment: 'интерактивные станции, эксперименты, наблюдение' };
+    }
+    // categories.station оставляем — может пригодиться позже.
+
+    data.events = events;
+    data.exhibits = exhibits;
+    data.applications = applications;
+    data._app_statuses = appStatuses;
+    data._v31_was_cards = true;
+
+    if (window.console && console.log) {
+      console.log('[site] v31 → legacy compat:',
+        events.length, 'events,', exhibits.length, 'exhibits,',
+        applications.length, 'applications');
+    }
+  })();
+  </script>
+
 
   <script>
   /* ============================================
