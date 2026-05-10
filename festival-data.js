@@ -1,5 +1,5 @@
 // === База событий фестиваля «Фрактальная Одиссея» ===
-// Автоматически сгенерировано programmer-tool 2026-05-10T15:35:26.515Z
+// Автоматически сгенерировано programmer-tool 2026-05-10T21:24:55.162Z
 window.FESTIVAL_DATA = {
   "_meta": {
     "version": "2026-05-09-v30-handfix-yakovlev",
@@ -15,7 +15,7 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-10T15:35:26.515Z",
+    "last_modified": "2026-05-10T21:24:55.162Z",
     "modified_by": "programmer-tool",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\"."
@@ -109,7 +109,7 @@ window.FESTIVAL_DATA = {
       "start": "20:30",
       "end": "21:30",
       "label_for_zoom": "Григорий Тарасевич · 15:00",
-      "tool_label": "Библиотека 2",
+      "tool_label": "Квиз",
       "type": "talk",
       "category": "social",
       "apollo_slot": "mid-1",
@@ -164,7 +164,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 1",
       "type": "station",
       "category": "experiment",
-      "apollo_slot": "mid-2",
+      "apollo_slot": "mid-3",
       "venue": "courtyard"
     },
     "slot-rajgorodski": {
@@ -205,7 +205,7 @@ window.FESTIVAL_DATA = {
       "type": "station",
       "category": "experiment",
       "venue": "small_bar",
-      "apollo_slot": "big-3"
+      "apollo_slot": "mid-1"
     },
     "slot-skripchenko": {
       "start": "19:00",
@@ -224,7 +224,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 3",
       "type": "station",
       "category": "experiment",
-      "apollo_slot": "mid-3",
+      "apollo_slot": "mid-2",
       "venue": "small_bar"
     },
     "slot-stations-3-2": {
@@ -254,7 +254,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 4",
       "type": "station",
       "category": "experiment",
-      "apollo_slot": "mid-1",
+      "apollo_slot": "big-3",
       "venue": "big_bar"
     },
     "slot-stations-4-2": {
@@ -391,7 +391,7 @@ window.FESTIVAL_DATA = {
       "start": "21:30",
       "end": "22:00",
       "label_for_zoom": "Научно-технический рэп",
-      "tool_label": "Научно-технический рэп",
+      "tool_label": "Музыка (двор)",
       "allowed_venues": [
         "courtyard"
       ],
@@ -517,10 +517,19 @@ window.FESTIVAL_DATA = {
       "tool_label": "Библиотека 1",
       "type": "talk",
       "category": "popsci",
-      "apollo_slot": "big-1",
+      "apollo_slot": "mid-1",
       "venue": "library",
       "leaf": "leaf-side-morning",
       "subcategory": null
+    },
+    "slot-custom-1778431756006": {
+      "start": "21:30",
+      "end": "04:00",
+      "label_for_zoom": "Перебив",
+      "tool_label": "Перебив",
+      "allowed_venues": [
+        "small_bar"
+      ]
     }
   },
   "events": [
@@ -625,18 +634,6 @@ window.FESTIVAL_DATA = {
       "duration_override": null,
       "description": "Базовые черты, точки, линии. Из них — иероглифы. Простота порождает сложность через повторение.",
       "_source_app": "app-9"
-    },
-    {
-      "id": "obs-diagnostics",
-      "status": "confirmed",
-      "title": "Эстетика в диагнозах",
-      "subtitle": null,
-      "speaker": "Дария",
-      "speaker_role": null,
-      "slot": "slot-stations-1-4",
-      "duration_override": null,
-      "description": "Рисуночные методики, которыми психиатрия выявляет психические расстройства. Самоподобие как клинический инструмент.",
-      "_source_app": "app-11"
     },
     {
       "id": "puzzle-engineering-origami",
@@ -1050,7 +1047,7 @@ window.FESTIVAL_DATA = {
     {
       "id": "ev-maskul-prefractals",
       "status": "tentative",
-      "title": "Дерево Пифагора",
+      "title": "Ковер Аполлония, дерево Пифагора",
       "speaker": "Math cool",
       "speaker_role": "онлайн-школа олимпиадной математики",
       "slot": "slot-stations-4-1",
@@ -2455,7 +2452,8 @@ window.FESTIVAL_DATA = {
     "app-38": "rejected",
     "app-39": "rejected",
     "app-22": "considering",
-    "app-9": "considering"
+    "app-9": "considering",
+    "app-11": "rejected"
   },
   "_howto": {
     "schema": "Источник правды о программе фестиваля. Структура (схема v17+, актуально на v24): time_slots — где и когда, events — что (название, спикер, описание), exhibits — постоянные экспонаты вне таймлайна, fern_leaves — 21 лист папоротника, venues и categories — справочники. Поля venue/category/apollo_slot/subcategory живут на time_slots; события наследуют их через slot.",
