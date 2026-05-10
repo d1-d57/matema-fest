@@ -1,9 +1,8 @@
 // === База событий фестиваля «Фрактальная Одиссея» ===
-// v31 — fix предупреждений валидации
-// Обновлено: 2026-05-09T20:22:02.773Z
+// Автоматически сгенерировано programmer-tool 2026-05-10T15:35:26.515Z
 window.FESTIVAL_DATA = {
   "_meta": {
-    "version": "2026-05-09-v31",
+    "version": "2026-05-09-v30-handfix-yakovlev",
     "comment": "База событий фестиваля «Фрактальная Одиссея», 23 мая 2026. Структура: time-slots → events → venues → categories. Поля display в venues и categories — то что видит пользователь. Поля id — внутренние ключи, скучные и стабильные, не меняются при ребрендинге.",
     "changes_v17": "Разделение составных слотов: slot-stations-1..4 разбиты по событиям (slot-stations-1-1, -1-2, -1-3 и т.д.). Каждый слот теперь содержит максимум 1 событие. Поля category/apollo_slot/subcategory перенесены с событий на слоты (это атрибуты места, не карточки). У событий-сирот (banks: cinema/animation без слота) поля остались. Добавлено slot.type — короткий тип: talk/station/interlude/cinema/music/discussion/networking/dance/music-extra. Также перенесён venue с событий на слоты.",
     "changes_v18": "Введена секция fern_leaves — явный список листьев папоротника с временами и сторонами (headline / side / tail). Поле fern_address удалено из всех слотов. Привязка слот→лист теперь делается алгоритмом в индексе по правилу: хедлайнерский слот (talk/discussion) → headline лист по времени; иначе → side лист. Изменены времена: cinema-1 (Пи) 19:30-21:00, cinema-2 21:00-22:00, dance 01-04. Музыкальная программа переразвязана: Brinstar 23-00, Spiral Fractal 00-01. Удалены slot-music-4 и slot-music-parallel-4. Переименована \"Малая сцена\" в \"Музыка (малая сцена)\".",
@@ -16,10 +15,10 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-09T20:22:02.758Z",
-    "modified_by": "manual-fixes-by-claude",
+    "last_modified": "2026-05-10T15:35:26.515Z",
+    "modified_by": "programmer-tool",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
-    "changes_v31": "slot-networking.label_for_zoom set; cinema-short-fractal-universe.subcategory=short; resolves 2 of 5 validation warnings"
+    "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\"."
   },
   "venues": {
     "library": {
@@ -95,26 +94,28 @@ window.FESTIVAL_DATA = {
   },
   "time_slots": {
     "slot-evdokimov": {
-      "start": "14:00",
-      "end": "15:00",
-      "label_for_zoom": "Михаил Евдокимов · 14:00",
-      "tool_label": "Библиотека 1",
-      "type": "talk",
-      "category": "social",
-      "apollo_slot": "big-1",
-      "venue": "library",
-      "leaf": "leaf-side-morning"
-    },
-    "slot-tarasevich": {
       "start": "15:00",
       "end": "16:00",
-      "label_for_zoom": "Григорий Тарасевич · 15:00",
+      "label_for_zoom": "Михаил Евдокимов · 14:00",
       "tool_label": "Библиотека 2",
       "type": "talk",
       "category": "social",
       "apollo_slot": "big-2",
       "venue": "library",
-      "leaf": "leaf-side-morning"
+      "leaf": "leaf-side-morning",
+      "subcategory": null
+    },
+    "slot-tarasevich": {
+      "start": "20:30",
+      "end": "21:30",
+      "label_for_zoom": "Григорий Тарасевич · 15:00",
+      "tool_label": "Библиотека 2",
+      "type": "talk",
+      "category": "social",
+      "apollo_slot": "mid-1",
+      "venue": "small_bar",
+      "leaf": "leaf-side-morning",
+      "subcategory": null
     },
     "slot-gelfand": {
       "start": "16:00",
@@ -123,7 +124,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Лекция 1",
       "type": "talk",
       "category": "popsci",
-      "apollo_slot": "big-1",
+      "apollo_slot": "big-3",
       "venue": "main_stage"
     },
     "slot-stations-1-1": {
@@ -143,7 +144,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 1",
       "type": "station",
       "category": "workshop",
-      "apollo_slot": "big-3",
+      "apollo_slot": "mid-1",
       "venue": "big_bar"
     },
     "slot-stations-1-3": {
@@ -153,7 +154,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 1",
       "type": "station",
       "category": "experiment",
-      "apollo_slot": "big-1",
+      "apollo_slot": "big-2",
       "venue": "small_bar"
     },
     "slot-stations-1-4": {
@@ -163,7 +164,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 1",
       "type": "station",
       "category": "experiment",
-      "apollo_slot": "big-2",
+      "apollo_slot": "mid-2",
       "venue": "courtyard"
     },
     "slot-rajgorodski": {
@@ -183,7 +184,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 2",
       "type": "station",
       "category": "workshop",
-      "apollo_slot": "big-2",
+      "apollo_slot": "mid-2",
       "venue": "big_bar"
     },
     "slot-stations-2-2": {
@@ -193,7 +194,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 2",
       "type": "station",
       "category": "workshop",
-      "apollo_slot": "mid-1",
+      "apollo_slot": "big-2",
       "venue": "courtyard"
     },
     "slot-stations-2-3": {
@@ -204,7 +205,7 @@ window.FESTIVAL_DATA = {
       "type": "station",
       "category": "experiment",
       "venue": "small_bar",
-      "apollo_slot": "mid-1"
+      "apollo_slot": "big-3"
     },
     "slot-skripchenko": {
       "start": "19:00",
@@ -213,7 +214,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Лекция 3",
       "type": "talk",
       "category": "popsci",
-      "apollo_slot": "big-3",
+      "apollo_slot": "big-1",
       "venue": "main_stage"
     },
     "slot-stations-3-1": {
@@ -223,7 +224,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 3",
       "type": "station",
       "category": "experiment",
-      "apollo_slot": "big-3",
+      "apollo_slot": "mid-3",
       "venue": "small_bar"
     },
     "slot-stations-3-2": {
@@ -233,7 +234,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 3",
       "type": "station",
       "category": "workshop",
-      "apollo_slot": "mid-2",
+      "apollo_slot": "big-3",
       "venue": "big_bar"
     },
     "slot-stations-3-3": {
@@ -243,7 +244,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 3",
       "type": "station",
       "category": "experiment",
-      "apollo_slot": "ear-1",
+      "apollo_slot": "big-1",
       "venue": "courtyard"
     },
     "slot-stations-4-1": {
@@ -253,7 +254,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 4",
       "type": "station",
       "category": "experiment",
-      "apollo_slot": "mid-2",
+      "apollo_slot": "mid-1",
       "venue": "big_bar"
     },
     "slot-stations-4-2": {
@@ -273,7 +274,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Станции 4",
       "type": "station",
       "category": "experiment",
-      "apollo_slot": "mid-3",
+      "apollo_slot": "center",
       "venue": "courtyard"
     },
     "slot-music-1": {
@@ -305,7 +306,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка",
       "type": "music",
       "category": "music",
-      "apollo_slot": "big-3",
+      "apollo_slot": "mid-2",
       "subcategory": "main_stage",
       "venue": "main_stage"
     },
@@ -316,7 +317,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Танцпол",
       "type": "dance",
       "category": "music",
-      "apollo_slot": "ear-2",
+      "apollo_slot": "big-3",
       "subcategory": "main_stage",
       "venue": "main_stage"
     },
@@ -381,7 +382,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Перфоманс ",
       "type": "interlude",
       "category": "social",
-      "apollo_slot": "mid-2",
+      "apollo_slot": "big-1",
       "subcategory": null,
       "venue": "main_stage",
       "leaf": null
@@ -408,7 +409,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка",
       "type": "music",
       "category": "music",
-      "apollo_slot": "mid-1",
+      "apollo_slot": "mid-3",
       "subcategory": "main_stage",
       "label_for_zoom": "Музыка · 01:00"
     },
@@ -419,7 +420,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка",
       "type": "music",
       "category": "music",
-      "apollo_slot": "mid-2",
+      "apollo_slot": "mid-1",
       "subcategory": "main_stage",
       "label_for_zoom": "Музыка · 02:00"
     },
@@ -433,7 +434,8 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "mid-1",
       "subcategory": "big_bar",
       "venue": "big_bar",
-      "exclusive": true
+      "exclusive": true,
+      "leaf": null
     },
     "slot-music-parallel-2": {
       "start": "22:30",
@@ -442,7 +444,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
-      "apollo_slot": "mid-2",
+      "apollo_slot": "big-2",
       "subcategory": "big_bar",
       "venue": "big_bar",
       "exclusive": true
@@ -454,7 +456,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
-      "apollo_slot": "mid-3",
+      "apollo_slot": "mid-2",
       "subcategory": "big_bar",
       "venue": "big_bar",
       "exclusive": true
@@ -466,7 +468,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
-      "apollo_slot": "ear-1",
+      "apollo_slot": "mid-3",
       "subcategory": "big_bar",
       "venue": "big_bar",
       "exclusive": true
@@ -478,7 +480,7 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
-      "apollo_slot": "big-1",
+      "apollo_slot": "big-3",
       "subcategory": "big_bar",
       "venue": "big_bar",
       "exclusive": true
@@ -490,26 +492,49 @@ window.FESTIVAL_DATA = {
       "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
-      "apollo_slot": "big-2",
+      "apollo_slot": "big-1",
       "subcategory": "big_bar",
       "venue": "big_bar",
       "exclusive": true
     },
     "slot-networking": {
       "start": "20:30",
-      "end": "21:30",
-      "venue": "small_bar",
-      "type": "social",
+      "end": "21:15",
+      "venue": "big_bar",
+      "type": null,
       "category": "social",
-      "apollo_slot": "mid-1",
+      "apollo_slot": "mid-2",
       "subcategory": null,
       "exclusive": true,
       "leaf": null,
       "tool_label": "Нетворкинг",
       "label_for_zoom": "Нетворкинг"
+    },
+    "slot-yakovlev": {
+      "start": "14:00",
+      "end": "15:00",
+      "label_for_zoom": "Иван Яковлев · 14:00",
+      "tool_label": "Библиотека 1",
+      "type": "talk",
+      "category": "popsci",
+      "apollo_slot": "big-1",
+      "venue": "library",
+      "leaf": "leaf-side-morning",
+      "subcategory": null
     }
   },
   "events": [
+    {
+      "id": "talk-yakovlev-fractals",
+      "status": "confirmed",
+      "title": "Фракталы вокруг нас",
+      "subtitle": "",
+      "speaker": "Иван Яковлев",
+      "speaker_role": "",
+      "slot": "slot-yakovlev",
+      "duration_override": null,
+      "description": ""
+    },
     {
       "id": "talk-evdokimov",
       "status": "confirmed",
@@ -688,12 +713,15 @@ window.FESTIVAL_DATA = {
     },
     {
       "id": "mc-fractal-tiles",
-      "status": "confirmed",
+      "status": "tentative",
       "title": "Фрактал-Ателье: напечатай свой тайлинг",
       "speaker": "Татьяна Зайцева",
       "slot": "slot-stations-1-3",
       "description": "Печать на ткани/бумаге фрактальных замощений — разных тайлингов, сгенерированных аффинными растяжениями.",
-      "_source_app": "app-24"
+      "_source_app": "app-24",
+      "subtitle": null,
+      "speaker_role": null,
+      "team_notes": null
     },
     {
       "id": "social-tochka-nol",
@@ -815,7 +843,12 @@ window.FESTIVAL_DATA = {
       "description": "Could our universe be fractal? Может ли простая математика создать целую вселенную? Что общего у брокколи с Большим взрывом? И какое отношение это имеет к таким видеоиграм, как «No Man's Sky» или «Minecraft»?",
       "slot": null,
       "status": "tentative",
+      "subtitle": null,
+      "speaker": null,
+      "speaker_role": null,
       "category": "cinema",
+      "apollo_slot": null,
+      "team_notes": null,
       "subcategory": "short"
     },
     {
@@ -889,10 +922,7 @@ window.FESTIVAL_DATA = {
       "speaker": "Brinstaar",
       "description": "",
       "slot": "slot-music-parallel-1",
-      "status": "tentative",
-      "category": "music",
-      "subcategory": "big_bar",
-      "venue": "big_bar"
+      "status": "tentative"
     },
     {
       "id": "music-pink-2230",
@@ -989,26 +1019,6 @@ window.FESTIVAL_DATA = {
       ]
     },
     {
-      "id": "ev-1778341949192-8axk",
-      "status": "tentative",
-      "title": "FracLife",
-      "subtitle": null,
-      "speaker": "Юля",
-      "speaker_role": null,
-      "category": "experiment",
-      "apollo_slot": null,
-      "venue": null,
-      "slot": null,
-      "duration_override": null,
-      "description": "Интерактивные фракталы. На экране представлены некоторые виды фракталов с названиями и небольшим описанием. Изображение красочное и стилизованное, вместе с ним идёт звук. Посетители смогут взаимодействовать с фракталами с помощью простых движений рук: менять количество итераций, тип, \"углубляться\" в фрактал или деформировать изображение. Инсталляция направлена на \"игровое\" взаимодействие и изучение базовых форм.",
-      "links": [
-        {
-          "label": "из заявки",
-          "url": "https://www.instagram.com/jell_ixx/\nвидео некоторых проектов: https://disk.yandex.ru/d/sj_-YzlY4_-xdQ"
-        }
-      ]
-    },
-    {
       "id": "ev-1778341972924-tz5v",
       "status": "confirmed",
       "title": "Симметрия наноматериалов",
@@ -1016,102 +1026,59 @@ window.FESTIVAL_DATA = {
       "speaker": "Анастасия",
       "speaker_role": null,
       "category": "experiment",
-      "apollo_slot": null,
-      "venue": null,
-      "slot": null,
+      "venue": "big_bar",
+      "slot": "slot-stations-3-2",
       "duration_override": null,
       "description": "Участникам будет предложено изучить слой различных наноматериалов на бумаге/картоне. Наноматериалы состоят из элементарных ячеек. Элементарная ячейка представляет собой наименьшую постоянно повторяющуюся часть материала. Участникам будет необходимо вырезать ножницами или обвести фломастером (ещё не решено) непосредственно элементарную ячейку материала. Будут представлены несколько уровней сложности с разными элементарными ячейками. Участники смогут проверить себя при помощи скрытого бланка ответов. \nТакже будет создана из пластика структура двухслойного графена, наглядно показывающая структуру диаманов с разным углом поворота. Такая структура создает повторяющуюся мозайку внутри материала. Слои графена можно поворачивать друг относительно друга, чтобы посмотреть структуру. \nТакже будут выставлены напечатанные на 3д принтере структуры различных наноматериалов.",
-      "team_notes": null
-    },
-    {
-      "id": "ev-1778342037192-svt7",
-      "status": "confirmed",
-      "title": "Эволюция графов",
-      "subtitle": null,
-      "speaker": "Александр Николаичев",
-      "speaker_role": null,
-      "category": "popsci",
-      "apollo_slot": null,
-      "venue": null,
-      "slot": null,
-      "duration_override": null,
-      "description": "С помощью локальных замен подграфов (рассматриваются ориентированные графы) можно получить не только практические применения тьюринг полной системы, основанной на перезаписи, но и красивые картины на грани с искусством, в том числе конечно фракталы. Хочу об этом рассказать и показать визуализации. Могу затронуть связь также с конечными автоматами, физическим проектом Вольфрама, лямбда исчислением, комбинаторами, программой Гильберта и тд.",
-      "links": [
-        {
-          "label": "из заявки",
-          "url": "https://nikalexxx.github.io/https://t.me/nik_alex_flow"
-        }
-      ],
-      "team_notes": null
-    },
-    {
-      "id": "ev-1778344326145-wf7r",
-      "status": "tentative",
-      "title": "Нетворкинг ",
-      "subtitle": null,
-      "speaker": "Розетка",
-      "speaker_role": null,
-      "category": "social",
-      "apollo_slot": null,
-      "venue": null,
-      "slot": null,
-      "duration_override": null,
-      "description": null,
-      "team_notes": null
-    },
-    {
-      "id": "ev-1778344344852-wrb7",
-      "status": "tentative",
-      "title": "Нетворкинг ",
-      "subtitle": null,
-      "speaker": "Нетворкинг ",
-      "speaker_role": null,
-      "category": "popsci",
-      "apollo_slot": null,
-      "venue": null,
-      "slot": null,
-      "duration_override": null,
-      "description": null,
-      "links": []
-    },
-    {
-      "id": "ev-1778344406659-uiup",
-      "status": "tentative",
-      "title": "Нетворкинг ",
-      "subtitle": null,
-      "speaker": "Нетворкинг ",
-      "speaker_role": null,
-      "category": "experiment",
-      "apollo_slot": null,
-      "venue": null,
-      "slot": null,
-      "duration_override": null,
-      "description": null,
-      "links": []
+      "team_notes": null,
+      "lane": "right"
     },
     {
       "id": "ev-letnyaya-shkola-linguistics",
-      "status": "confirmed",
+      "status": "tentative",
       "title": "Лингвистические станции",
       "speaker": "Мастерская Летней школы",
       "speaker_role": "команда летней школы",
-      "slot": null,
-      "category": "experiments",
-      "subcategory": "station",
+      "slot": "slot-stations-4-1",
+      "category": "experiment",
       "description": "Серия лингвистических станций от мастерской Летней школы. Формат уточняется командой Летней школы.",
-      "team_notes": "Подтверждено устно. Заявку команда ещё не подавала, но мы их берём."
+      "team_notes": "Подтверждено устно. Заявку команда ещё не подавала, но мы их берём.",
+      "venue": "big_bar",
+      "lane": "left",
+      "subtitle": null
     },
     {
       "id": "ev-maskul-prefractals",
-      "status": "confirmed",
-      "title": "Станция про префракталы",
-      "speaker": "Маскул",
+      "status": "tentative",
+      "title": "Дерево Пифагора",
+      "speaker": "Math cool",
       "speaker_role": "онлайн-школа олимпиадной математики",
-      "slot": null,
-      "category": "experiments",
-      "subcategory": "station",
+      "slot": "slot-stations-4-1",
+      "category": "experiment",
       "description": "Математическая станция про префракталы от онлайн-школы олимпиадной математики Маскул.",
-      "team_notes": "Подтверждено. Команда дорабатывает формат."
+      "team_notes": "Подтверждено. Команда дорабатывает формат.",
+      "venue": "big_bar",
+      "lane": "right",
+      "subtitle": null
+    },
+    {
+      "id": "ev-1778360794899-4bwi",
+      "status": "tentative",
+      "title": "Математический арт",
+      "subtitle": null,
+      "speaker": "Андрей",
+      "speaker_role": null,
+      "category": "experiment",
+      "venue": "small_bar",
+      "slot": "slot-stations-4-2",
+      "duration_override": null,
+      "description": "На моем сайте можно поиграться с фракталами, шумом и тд. А также самим создать подобные объекты. И получить эстетическое наслаждение :)",
+      "links": [
+        {
+          "label": "из заявки",
+          "url": "мой сайт https://spherus.ru/\nнесколько моих видео по теме\nhttps://rutube.ru/shorts/da56803ed2a2dd0e975ed2b8f04994eb/?playlist=530134\nhttps://rutube.ru/video/83266cb1cd2ee9aad68ed468941a1ec3/?playlist=530134\nhttps://rutube.ru/video/df284853b8ad9b5226a62ca52b15bf62/?playlist=530134\nhttps://rutube.ru/video/868965d1440d1b523bb38ac5e905c575/?playlist=530134\nhttps://rutube.ru/video/2aee4c8e3f547ed7ffd0f4baacbb6f39/?playlist=530134\n\nнесколько моих статей на Хабре по теме\nhttps://habr.com/ru/companies/sberbank/articles/952102/\nhttps://habr.com/ru/companies/sberbank/articles/954726/\nhttps://habr.com/ru/companies/sberbank/articles/957194/"
+        }
+      ]
     }
   ],
   "exhibits": [
@@ -1194,7 +1161,7 @@ window.FESTIVAL_DATA = {
     {
       "id": "exh-bogatikova-mini",
       "kind": "art",
-      "status": "tentative",
+      "status": "placeholder",
       "title": "Мини-выставка работ современных художников с фрактальной концепцией",
       "speaker": "Ирина Богатикова (куратор)",
       "description": "Мини-выставка работ современных художников, работающих с темами сакральной геометрии, орнамента, повторяющихся структур и фрактальной эстетики. Куратор — Ирина Богатикова.",
@@ -2391,6 +2358,78 @@ window.FESTIVAL_DATA = {
       "inst_size": "",
       "inst_duration": "",
       "author_presence": ""
+    },
+    {
+      "id": "app-40",
+      "status": "new",
+      "_suggested_category": null,
+      "_suggested_subcategory": null,
+      "submitted_at": "2026-05-09T14:33:29.396Z",
+      "name": "Серомаха Екатерина",
+      "contact": "Seromakha",
+      "about": "Я Екатерина Серомаха — science art художник из Москвы.Я — художникВ моих картинах выражено бесконечное восхищение миром природы. Разнообразием его цветов, форм и текстур. В каждом мазке кисти я стараюсь выразить эту любовь и страсть. Мои картины рождаются глубоко внутри, через медитацию, повторное возвращение к пережитым образам. Мне лишь остаётся наблюдать, как они снова оживают на холсте.Со зрителем я хочу поделиться красотой мирового океана, макро и микромира, разнообразием природы морских глубин. Мне нравится направлять внимание внутрь, в глубину, расширяя восприятие и самосознание зрителя.В своих работах я сочетаю реализм и метафоры. Мне нравится вписывать узнаваемые образы в воображаемый мир, подводить привычные явления к их духовным началам. Этому я училась семь лет в студии искусств.Я — исследовательМоё искусство вдохновлено самыми сильными образами на планете, но пока они доступны только учёным. Это мировой океан и космос, между которыми мне нравится находить общее. Но основное внимание в своём творчестве я уделаю морскому миру.Для меня важны вопросы сохранения природы. Поэтому любовь к океану и в работе, и в творчестве для меня неразрывно связаны с желанием их защитить, показать их хрупкость.\n\nПерсональный сайт seromakha.ru",
+      "title": "Пока нет",
+      "description": "Варианты станций:\n\nНАПРАВЛЕНИЕ 01. РЕШАЮТ\n\n1. «Найди фрактал в раковине»\nНа столе разложены 10 морских объектов: аммонит, наутилус, гребешок, морская звезда, коралл, каури, тридакна, бараний рог, рапана, ципрея. Участник должен за 2 минуты разложить их по принципу «фрактал / не фрактал» и объяснить решение. На обороте карточек — правильный ответ и пояснение, где именно в ракушке спрятано самоподобие.\n\n2. «Что здесь лишнее? (морская версия)»\nЧетыре ряда изображений, в каждом три фрактальных морских объекта и один — не фрактал. Например: раковина наутилуса, морская звезда, коралл-мозговик, рыба-шар. Или: аммонит, лист папоротника, песчаная дюна, ракушка гребешка. Задача: найти лишнего и объяснить почему.\n\nНАПРАВЛЕНИЕ 02. ДЕЛАЮТ РУКАМИ\n\n4. «Отпечаток аммонита»\nУчастник берёт самозатвердевающую глину, пластику, скатывает в лепёшку. С помощью настоящего аммонита (или его слепка) делает оттиск на поверхности. Затем аккуратно обводит линии получившегося узора и дорисовывает повторяющиеся элементы, завершая фрактальную спираль. Можно добавить отверстие чтобы сделать брелок или кулон. Лучшие отпечатки забирают домой.\n\n5. «Бесконечная раковина»\nКаждый участник получает квадрат бумаги (10×10 см) с нарисованным первым витком спирали наутилуса. Задача: дорисовать ещё 3–4 витка, каждый раз повторяя пропорции предыдущего (примерные линии уже пунктиром). В конце все раковины вывешиваются на стену как «Бесконечный риф».\n\nНАПРАВЛЕНИЕ 03. ЭКСПЕРИМЕНТИРУЮТ\n\n6. «Стена масштабов: аммонит»\nНа стене развешаны 10 увеличенных фотографий одного аммонита от целой раковины до фрагмента перегородки, видимой под микроскопом. Нужно разложить их в правильном порядке от самого крупного к самому мелкому. Каждый правильный шаг — наклейка-спираль.\n\nНАПРАВЛЕНИЕ 04. СОЗДАЮТ ВМЕСТЕ\n\n7. «Коралловый квадрат из крышек»\nНа полу размечается большой квадрат (3×3 м). Рядом — коробки с пластиковыми крышками и гранулами (синие, белые, оранжевые, коралловые). Участники заполняют квадрат, выкладывая узор, повторяющий строение коралла: ветвление, ответвления, самоподобные формы. К вечеру получается фрактальный риф из десятков элементов.\n\n8. «Древо из рук-ракушек»\nНа листе ватмана нарисован ствол — как стебель коралла. Участники обводят свои ладони (пальцы в стороны) — они будут напоминать лучи морской звезды или ветки коралла. Простое правило: чем выше, тем ладошка меньше (имитация рекурсивного роста). К концу дня вырастает фрактальное коралловое дерево из десятков рук.\n\n---\n\nНАПРАВЛЕНИЕ 05. СМОТРЯТ И СЛУШАЮТ\n\n9. «Раковина в темноте с шепотом чисел»\nВ маленькой тёмной комнате/ большой коробке стоит одна крупная раковина аммонита на чёрном пьедестале, подсвеченная сверху узким лучом. Луч передвигается вручную, подсвечивая разные фрагменты спирали. В наушниках — запись: морской прибой, наложенный на шёпот, который перечисляет числа Фибоначчи и их появление в спиралях.",
+      "visual": "Есть связь с Фибоначчи",
+      "materials": "5000 на расходные материалы",
+      "volunteers": "2-3",
+      "source": "От Летней школы",
+      "format": "Станция",
+      "place": "Стол и люди вокруг стоя",
+      "indoor_outdoor": "Без разницы",
+      "topic": "Искусство",
+      "time": "Могу весь интервал 15:00–20:00",
+      "slot_ok": "Да, час подходит",
+      "bring": "Художественные материалы",
+      "org": "",
+      "links": "Seromakha.ru\nhttps://disk.yandex.ru/i/QZJO4CaFOeA9ow Cv художника \nhttps://disk.yandex.ru/i/ZzA7R26U5UoSFg Портфолио",
+      "capacity": "До 5",
+      "speech_details": "",
+      "fractal_link": "На станции предусмотрена работа с фракталами",
+      "special": "",
+      "time_constraints": "",
+      "duration": "",
+      "source_detail": "",
+      "extra": "",
+      "inst_size": "",
+      "inst_duration": "",
+      "author_presence": ""
+    },
+    {
+      "id": "app-41",
+      "status": "new",
+      "_suggested_category": null,
+      "_suggested_subcategory": null,
+      "submitted_at": "2026-05-09T20:09:52.885Z",
+      "name": "Дмитрий Манаширович Якубов",
+      "contact": "8 (910) 423-40-42, но же Tg. Почта: d.m.yakubov@mail.ru",
+      "about": "Руковожу Музеем Истории Науки и Техники (МИНТ) в Москве. Лектор, популяризатор.",
+      "title": "Графики. Во-первых, это красиво",
+      "description": "Лекция-игра с опытами, парадоксальными фактами и понятными объяснениями. Динамично, весело, есть над чем подумать. \nГрафики – мощнейшее средство визуализации данных. Графики совершенно необходимы учёным, а кроме того, графики бывают очень красивы и даже эмоциональны. Они могут иллюстрировать гармонию и вскрывать ложь. Подсказывать правильные ответы и вводить в заблуждение.\nМинут 10 мы посмотрим разные графики: 1) содержательные, 2) красивые, 3) и то и другое одновременно. Затем участники сыграют в несколько несложных игр. Действия игроков (играют все!) в реальном времени отображаться на графиках: так легче заметить ошибки и найти выигрышные стратегии. \nРезультат: узнаем кое что о графиках и о себе.",
+      "visual": "Не понял вопроса... Графики бывают очень красивые. Вот и вся \"ось\".",
+      "materials": "Желательно распечатать посеры.",
+      "volunteers": "Один для поддержания контактов с залом (передать микрофон, помочь при рассадке). Или ни одного – буду сам справляться.",
+      "source": "От знакомых",
+      "format": "Выступление",
+      "place": "Другое",
+      "indoor_outdoor": "Только в помещении",
+      "topic": "Математика; Естественные науки",
+      "time": "15:00–16:00; 16:00–17:00; 17:00–18:00; Могу весь интервал 15:00–20:00",
+      "slot_ok": "",
+      "bring": "Какие-то экспонаты: маятник с песком, установку для фигур Хладни, осциллограф.",
+      "org": "",
+      "links": "https://mint.museum/\nСсылку на видео лекции могу прислать позже.",
+      "capacity": "",
+      "speech_details": "Продолжительность: 30 минут + время на вопросы и обсуждения\nВозраст слушателей: старшие школьники, их родители, учителя, дедушки и бабушки.\nЖелательное количество участников: 25...30 и больше, чтобы игры проходили весело и показательно.  \nТребуемая подготовка слушателей: это лекция не о физике и не о математике, специальная подготовка не требуется.\n\nЕсли заранее распечатать на пенокартоне с десяток разных красивых графиков – получится маленькая выставка.",
+      "fractal_link": "Если нужно, могу включить в выступление эпизод о самоподобии, но пока не уверен.",
+      "special": "Большой экран, доступ в Интернет. Стулья по числу участников (25...30 или больше).",
+      "time_constraints": "Предпочтительно не ставить занятие на самый вечер. Но можно и туда, если не будет вариантов.",
+      "duration": "30–45 минут",
+      "source_detail": "",
+      "extra": "",
+      "inst_size": "",
+      "inst_duration": "",
+      "author_presence": ""
     }
   ],
   "_app_statuses": {
@@ -2403,23 +2442,20 @@ window.FESTIVAL_DATA = {
     "app-29": "considering",
     "app-32": "considering",
     "app-33": "rejected",
-    "app-36": "considering",
+    "app-36": "duplicate",
     "app-6": "considering",
     "app-8": "rejected",
     "app-21": "considering",
     "app-23": "considering",
     "app-30": "rejected",
     "app-31": "rejected",
-    "app-34": "accepted",
+    "app-34": "considering",
     "app-35": "rejected",
-    "app-37": "considering",
+    "app-37": "rejected",
     "app-38": "rejected",
     "app-39": "rejected",
     "app-22": "considering",
-    "app-9": "considering",
-    "idea-1778344303220": "duplicate",
-    "app-1": "rejected",
-    "app-2": "rejected"
+    "app-9": "considering"
   },
   "_howto": {
     "schema": "Источник правды о программе фестиваля. Структура (схема v17+, актуально на v24): time_slots — где и когда, events — что (название, спикер, описание), exhibits — постоянные экспонаты вне таймлайна, fern_leaves — 21 лист папоротника, venues и categories — справочники. Поля venue/category/apollo_slot/subcategory живут на time_slots; события наследуют их через slot.",
