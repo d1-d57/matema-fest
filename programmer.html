@@ -168,6 +168,9 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
    кнопки и весь левый пул, выключаем взаимодействие с timeline. */
 body.demo-mode .topbar .demo-banner,
 body.demo-mode .topbar .demo-login-btn { display: inline-block; }
+/* В demo пул скрыт — но grid у .main всё ещё резервирует под него 340px.
+   Схлопываем первую колонку, чтобы расписание заняло всю ширину. */
+body.demo-mode .main { grid-template-columns: 0 minmax(0, 1fr) !important; }
 body.demo-mode .topbar .stat,
 body.demo-mode .topbar .src-info,
 body.demo-mode #btn-undo,
@@ -1459,7 +1462,7 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
   <span class="stat" id="stat-cands">0</span>
   <span class="src-info" id="src-info">локальные данные</span>
   <span class="demo-banner" id="demo-banner">
-    Демо-версия программы. Актуальная информация — на <a href="https://matema-fest.ru" target="_blank" rel="noopener">matema-fest.ru</a>
+    Демо-версия программы. Актуальная информация будет на <a href="https://matema-fest.ru" target="_blank" rel="noopener">matema-fest.ru</a>
   </span>
   <span class="spacer"></span>
   <button class="demo-login-btn" id="btn-demo-login" onclick="lockProgrammer()">Войти</button>
