@@ -164,19 +164,6 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   border-color: var(--accent-hover) !important;
 }
 
-/* Viewer-режим: бейдж «Просмотр» и кнопка «Выход» */
-.topbar .viewer-badge {
-  display: none;  /* показывается через body.viewer-mode */
-  font-size: 11px; color: rgba(255,255,255,0.78);
-  padding: 4px 10px;
-  border: 1px solid rgba(255,255,255,0.25);
-  font-family: var(--font-mono); letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.topbar .viewer-logout-btn {
-  display: none;  /* показывается через body.viewer-mode */
-}
-
 /* В demo-режиме показываем баннер и кнопку «Войти», скрываем редакторские
    кнопки и весь левый пул, выключаем взаимодействие с timeline. */
 body.demo-mode .topbar .demo-banner,
@@ -224,9 +211,9 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
    можно открывать карточки и читать детали. Но никакого редактирования —
    физически удаляем все редакторские кнопки. Поля input/textarea/select
    делаются disabled через CSS pointer-events.
-   Принцип: убираем элементы, а не блокируем — меньше шанс что-то пропустить. */
-body.viewer-mode .topbar .viewer-badge,
-body.viewer-mode .topbar .viewer-logout-btn { display: inline-block; }
+   Принцип: убираем элементы, а не блокируем — меньше шанс что-то пропустить.
+   Топбар в viewer чистый — никаких бейджей. После ввода пароля интерфейс
+   просто работает в правильном режиме, индикаторы не нужны. */
 
 /* Все редакторские кнопки топбара — убираем */
 body.viewer-mode #btn-undo,
@@ -245,15 +232,16 @@ body.viewer-mode .lane-dropzone,
 body.viewer-mode .add-btn,
 body.viewer-mode .cand-link-btn,
 body.viewer-mode #unassigned,
-/* В timeline сверху были фильтры категорий редактора — убираем */
-body.viewer-mode .timeline-cat-filters,
 /* В detail-view убираем ВСЕ кнопки. Все они мутируют (Сохранить, Удалить,
    Отказ, Принять, +ссылка). Заменить нечем — открыть карточку в просмотре
    достаточно, остального не нужно. */
-body.viewer-mode .detail-view button,
-/* Стрелки сворачивания пула тоже не нужны в viewer */
-body.viewer-mode #collapse-toggle,
-body.viewer-mode #expand-toggle { display: none !important; }
+/* В detail-view убираем все мутирующие кнопки. Кнопку «‹ Назад» оставляем —
+   это навигация интерфейса (закрыть карточку, вернуться к списку), не
+   редактирование данных. */
+body.viewer-mode .detail-view button:not(.detail-back) { display: none !important; }
+/* #collapse-toggle и #expand-toggle (стрелки сворачивания пула) — это
+   тоже навигация интерфейса. Оставляем — пользователь может настроить
+   ширину панелей под себя. */
 
 /* Поля формы в detail-view — серые и некликабельные, выглядят как read-only
    (по запросу пользователя — disabled-стиль). */
@@ -1592,10 +1580,8 @@ body.viewer-mode .event-pill { cursor: pointer; }
   <span class="demo-banner" id="demo-banner">
     Демо-версия программы. Актуальная информация будет на <a href="https://matema-fest.ru" target="_blank" rel="noopener">matema-fest.ru</a>
   </span>
-  <span class="viewer-badge" id="viewer-badge">Просмотр</span>
   <span class="spacer"></span>
   <button class="demo-login-btn" id="btn-demo-login" onclick="lockProgrammer()">Войти</button>
-  <button class="viewer-logout-btn" id="btn-viewer-logout" onclick="exitViewerToDemo()">Выход</button>
   <button onclick="undoLastChange()" id="btn-undo" title="Отменить последнее изменение (Ctrl+Z)" disabled>↶ Отменить</button>
   <button onclick="saveLocally()" id="btn-save-local" title="Сохранить текущее состояние локально (в браузере). Безопасно — не публикует, никуда не отправляет.">💾 Сохранить</button>
   <button onclick="reloadAll()" id="btn-reload" title="Перечитать программу с сайта и заявки">↻ Обновить</button>
