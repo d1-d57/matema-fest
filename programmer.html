@@ -320,36 +320,13 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 .conflicts ul { margin: 0; padding-left: 18px; color: var(--ink); }
 
 /* ====== TIMELINE ====== */
-.cat-legend {
-  position: sticky; top: 0; z-index: 30;
-  display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
-  padding: 8px 12px; margin-bottom: 6px;
-  background: rgba(244, 236, 216, 0.95);
-  backdrop-filter: blur(4px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  font-size: 12px; color: var(--ink-soft);
-  letter-spacing: 0.02em;
+/* Цветная точка рядом с названием вкладки — заменяет отдельную полоску-легенду.
+   Совмещает функцию: «вот цвет категории» + «клик переключает вкладку». */
+.right-tab .tab-dot {
+  display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+  margin-right: 5px; vertical-align: 1px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
 }
-.cat-legend-item {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: transparent; border: none; padding: 3px 6px;
-  cursor: pointer; color: inherit; font-size: inherit;
-  border-radius: 3px; transition: background 0.12s, opacity 0.12s;
-}
-.cat-legend-item:hover { background: rgba(0,0,0,0.05); }
-.cat-legend-item.dim { opacity: 0.4; }
-.cat-legend-item.active { background: rgba(0,0,0,0.08); font-weight: 500; }
-.cat-legend-dot {
-  width: 12px; height: 12px; border-radius: 50%;
-  display: inline-block; flex-shrink: 0;
-  border: 1px solid rgba(0,0,0,0.15);
-}
-.timeline-toolbar {
-  display: flex; gap: 12px; align-items: center; margin-bottom: 12px;
-  font-size: 12px; color: var(--ink-soft); flex-shrink: 0;
-  font-family: var(--font-mono); letter-spacing: 0.04em;
-}
-.timeline-toolbar input[type="range"] { width: 140px; }
 
 #timeline-wrap {
   flex: 1; overflow: auto; min-height: 0;
@@ -1452,29 +1429,15 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
     <button class="expand-toggle" onclick="cyclePane('wider')" title="Расширить пул кандидатов" id="expand-toggle">›</button>
     <div class="right-tabs">
       <button class="right-tab active" data-view="all">Всё <span class="tab-count" id="stat-all">—</span></button>
-      <button class="right-tab" data-view="popsci">Научпоп <span class="tab-count" id="stat-popsci">—</span></button>
-      <button class="right-tab" data-view="open-apps">Станции <span class="tab-count" id="stat-open-apps">—</span></button>
-      <button class="right-tab" data-view="social">Общение <span class="tab-count" id="stat-social">—</span></button>
-      <button class="right-tab" data-view="cinema">Кино <span class="tab-count" id="stat-cinema">—</span></button>
-      <button class="right-tab" data-view="music">Музыка <span class="tab-count" id="stat-music">—</span></button>
-      <button class="right-tab" data-view="art">Искусство <span class="tab-count" id="stat-art">—</span></button>
+      <button class="right-tab" data-view="popsci"><span class="tab-dot" style="background:#b3956a"></span>Научпоп <span class="tab-count" id="stat-popsci">—</span></button>
+      <button class="right-tab" data-view="open-apps"><span class="tab-dot" style="background:#7a9b6e"></span>Станции <span class="tab-count" id="stat-open-apps">—</span></button>
+      <button class="right-tab" data-view="social"><span class="tab-dot" style="background:#6f8aa3"></span>Общение <span class="tab-count" id="stat-social">—</span></button>
+      <button class="right-tab" data-view="cinema"><span class="tab-dot" style="background:#a06070"></span>Кино <span class="tab-count" id="stat-cinema">—</span></button>
+      <button class="right-tab" data-view="music"><span class="tab-dot" style="background:#c47862"></span>Музыка <span class="tab-count" id="stat-music">—</span></button>
+      <button class="right-tab" data-view="art"><span class="tab-dot" style="background:#957490"></span>Искусство <span class="tab-count" id="stat-art">—</span></button>
     </div>
     <div class="right-content">
       <section class="section active" id="section-timeline">
-        <div class="timeline-toolbar">
-          <span>Масштаб:</span>
-          <input type="range" id="zoom" min="0.8" max="2.5" step="0.1" value="1.1">
-          <span id="zoom-label">×1.1</span>
-          <span style="margin-left:auto; font-size:11px; color:#888">Esc — отмена · большой бар: 2 подколонки</span>
-        </div>
-        <div class="cat-legend" id="cat-legend">
-          <button class="cat-legend-item" data-view="popsci"><span class="cat-legend-dot" style="background:#b3956a"></span>Научпоп</button>
-          <button class="cat-legend-item" data-view="open-apps"><span class="cat-legend-dot" style="background:#7a9b6e"></span>Станции</button>
-          <button class="cat-legend-item" data-view="social"><span class="cat-legend-dot" style="background:#6f8aa3"></span>Общение</button>
-          <button class="cat-legend-item" data-view="cinema"><span class="cat-legend-dot" style="background:#a06070"></span>Кино</button>
-          <button class="cat-legend-item" data-view="music"><span class="cat-legend-dot" style="background:#c47862"></span>Музыка</button>
-          <button class="cat-legend-item" data-view="art"><span class="cat-legend-dot" style="background:#957490"></span>Искусство</button>
-        </div>
         <div class="timeline-cat-filters" id="cat-filters-timeline"></div>
         <div class="conflicts" id="conflicts"></div>
         <div class="unassigned" id="unassigned" style="display:none">
@@ -3304,10 +3267,13 @@ function renderTimeline() {
   let html = `<div class="tl-header time-header">время</div>`;
   VENUE_ORDER.forEach(vid => {
     const v = state.data.venues[vid]; if (!v) return;
-    const lanes = getVenueLanes(vid);
+    // Сокращаем длинные имена: «Библиотека Достоевского» → «Библиотека».
+    // Остальные имена (Зал Мандельброт, Бар Серпинский и т.д.) уже компактные.
+    // Подсказку про «N подколонки» убрали — подколонки видны по самой сетке.
+    let displayName = v.display || vid;
+    displayName = displayName.replace(/\s+Достоевского\s*$/i, '');
     html += `<div class="tl-header">
-      <div class="vh-tech">${esc(v.display || vid)}</div>
-      ${lanes > 1 ? `<div class="vh-lanes">${lanes} подколонки</div>` : ''}
+      <div class="vh-tech">${esc(displayName)}</div>
     </div>`;
   });
 
@@ -6716,7 +6682,8 @@ document.getElementById('search').addEventListener('input', e => {
   renderCatFiltersPool();
   renderCandidates();
 });
-// Переключение вкладки. Срабатывает и от right-tab сверху, и от cat-legend (sticky-полоса).
+// Переключение вкладки. Только от right-tab — отдельная sticky-полоска убрана,
+// её функцию выполняют цветные точки прямо в кнопках вкладок.
 function switchView(viewName) {
   state.view = viewName;
   state.catFilter = 'all';
@@ -6724,16 +6691,6 @@ function switchView(viewName) {
   document.querySelectorAll('.right-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.view === viewName);
   });
-  // Подсветка точки в легенде. На вкладке 'all' — все точки одинаковые;
-  // на специализированной вкладке — активная подсвечена, остальные приглушены.
-  document.querySelectorAll('.cat-legend-item').forEach(item => {
-    item.classList.remove('active', 'dim');
-    if (viewName !== 'all') {
-      if (item.dataset.view === viewName) item.classList.add('active');
-      else item.classList.add('dim');
-    }
-  });
-  // Какая секция активна — таймлайн или экспонаты
   const cfg = VIEW_CONFIG[viewName] || VIEW_CONFIG['all'];
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('section-' + cfg.showSection).classList.add('active');
@@ -6745,23 +6702,24 @@ function switchView(viewName) {
 document.querySelectorAll('.right-tab').forEach(tab => {
   tab.addEventListener('click', () => switchView(tab.dataset.view));
 });
-document.querySelectorAll('.cat-legend-item').forEach(item => {
-  item.addEventListener('click', () => {
-    // Двойное нажатие на ту же точку = вернуться на «Всё»
-    if (state.view === item.dataset.view) switchView('all');
-    else switchView(item.dataset.view);
-  });
-});
-document.getElementById('zoom').addEventListener('input', e => {
-  state.zoom = parseFloat(e.target.value);
-  document.getElementById('zoom-label').textContent = `×${state.zoom.toFixed(1)}`;
+
+// Zoom: слайдер убран из toolbar для компактности. Дефолт 1.1, сохраняется в
+// localStorage. Управляется горячими клавишами «+» (увеличить на 0.1) и «-»
+// (уменьшить на 0.1). Диапазон 0.8–2.5.
+function adjustZoom(delta) {
+  const next = Math.min(2.5, Math.max(0.8, state.zoom + delta));
+  state.zoom = Math.round(next * 10) / 10;  // защита от 1.7000000000001
   document.documentElement.style.setProperty('--content-scale', state.zoom);
-  localStorage.setItem('festtool-zoom', String(state.zoom));  // запоминаем между сессиями
+  localStorage.setItem('festtool-zoom', String(state.zoom));
   renderTimeline();
+}
+document.addEventListener('keydown', (e) => {
+  // Игнорируем когда фокус в input/textarea (чтобы +/- не перехватывались при наборе текста)
+  if (e.target.matches('input, textarea, select, [contenteditable]')) return;
+  if (e.key === '+' || e.key === '=') { adjustZoom(0.1); e.preventDefault(); }
+  if (e.key === '-' || e.key === '_') { adjustZoom(-0.1); e.preventDefault(); }
 });
-// При старте: применяем стартовый zoom (может быть != 1.0 если был сохранён)
-document.getElementById('zoom').value = state.zoom;
-document.getElementById('zoom-label').textContent = `×${state.zoom.toFixed(1)}`;
+// При старте применяем сохранённый zoom
 document.documentElement.style.setProperty('--content-scale', state.zoom);
 
 (async () => {
