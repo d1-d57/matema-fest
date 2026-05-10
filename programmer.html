@@ -344,9 +344,9 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 #timeline-wrap .tl-header .vh-lanes {
   font-size: inherit;
 }
-#timeline-wrap .tl-header .vh-tech { font-size: calc(13px * var(--content-scale, 1)); }
-#timeline-wrap .tl-header .vh-display { font-size: calc(11px * var(--content-scale, 1)); }
-#timeline-wrap .tl-header .vh-lanes { font-size: calc(10px * var(--content-scale, 1)); }
+#timeline-wrap .tl-header .vh-tech { font-size: calc(11px * var(--content-scale, 1)); }
+#timeline-wrap .tl-header .vh-display { font-size: calc(10px * var(--content-scale, 1)); }
+#timeline-wrap .tl-header .vh-lanes { font-size: calc(9.5px * var(--content-scale, 1)); }
 #timeline-wrap .tl-tick { font-size: calc(11px * var(--content-scale, 1)); }
 #timeline-wrap .slot-label { font-size: calc(10px * var(--content-scale, 1)); }
 #timeline-wrap .stations-band-label { font-size: calc(11px * var(--content-scale, 1)); }
@@ -368,23 +368,23 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--rule-soft); border-right: 1px solid var(--rule-soft);
-  padding: 11px 12px; font-size: 12px; font-weight: 600; color: var(--ink);
+  padding: 7px 12px; font-size: 12px; font-weight: 500; color: var(--ink);
   position: sticky; top: 0; z-index: 10;
 }
 .tl-header.time-header { background: rgba(232, 236, 212, 0.96); width: 60px; min-width: 60px; }
 .tl-header .vh-tech {
   font-family: var(--font-body);
-  font-weight: 600; font-size: 13px;
-  letter-spacing: 0.04em; text-transform: uppercase;
+  font-weight: 500; font-size: 11px;
+  letter-spacing: 0.02em;
 }
 .tl-header .vh-display {
   font-family: var(--font-mono); font-weight: 400;
-  color: var(--ink-soft); font-size: 10.5px; margin-top: 3px;
+  color: var(--ink-soft); font-size: 10px; margin-top: 2px;
   letter-spacing: 0.04em;
 }
 .tl-header .vh-lanes {
-  font-size: 10px; color: var(--ink-quiet);
-  margin-top: 2px; font-family: var(--font-mono);
+  font-size: 9.5px; color: var(--ink-quiet);
+  margin-top: 1px; font-family: var(--font-mono);
   letter-spacing: 0.04em;
 }
 
@@ -396,9 +396,10 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   position: absolute; left: 0; right: 0; padding: 2px 6px;
   font-size: 11px; color: var(--ink-soft);
   font-family: var(--font-mono); letter-spacing: 0.02em;
-  border-top: 1px solid var(--rule-faint); height: 1px;
+  border-top: 1px solid rgba(0,0,0,0.04);  /* почти невидимая получасовая линия */
+  height: 1px;
 }
-.tl-tick.major { border-top-color: var(--rule-soft); color: var(--ink); font-weight: 500; }
+.tl-tick.major { border-top-color: rgba(0,0,0,0.12); color: var(--ink); font-weight: 500; }
 .tl-tick.day-break { border-top: 2px solid var(--accent); color: var(--accent); font-weight: 600; padding-top: 4px; }
 
 .tl-venue-col {
@@ -420,19 +421,23 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
 .slot-bg {
   position: absolute; left: 2px; right: 2px;
   background: rgba(232, 240, 232, 0.4);
-  border: 1px dashed #c8d8c8; border-radius: 3px;
+  border: none; border-radius: 3px;
   pointer-events: none; z-index: 1;
 }
-/* Цвет фона слота по категории Аполлония — earth-tone палитра, 6 цветов
-   равноудалены по цветовому кругу, одинаковая насыщенность и светлота.
-   Все приглушённые, чтобы карточки событий поверх читались. */
-.slot-bg.kind-popsci     { background: rgba(179, 149, 106, 0.15); border-color: #b3956a; }  /* золотистая охра */
-.slot-bg.kind-station    { background: rgba(122, 155, 110, 0.15); border-color: #7a9b6e; }  /* мшистый зелёный */
-.slot-bg.kind-social     { background: rgba(111, 138, 163, 0.15); border-color: #6f8aa3; }  /* приглушённая лазурь */
-.slot-bg.kind-cinema     { background: rgba(160, 96, 112, 0.13); border-color: #a06070; }  /* винное-розовое */
-.slot-bg.kind-music      { background: rgba(196, 120, 98, 0.15); border-color: #c47862; }  /* терракота */
-.slot-bg.kind-music-par  { background: rgba(196, 120, 98, 0.10); border-color: #b06550; border-style: dotted; }  /* музыка параллельная */
-.slot-bg.kind-art        { background: rgba(149, 116, 144, 0.15); border-color: #957490; }  /* винтажный лавандовый */
+/* Цвет фона слота по категории Аполлония — earth-tone палитра.
+   Без рамок: цветной фон сам несёт информацию, рамка — лишняя. */
+.slot-bg.kind-popsci     { background: rgba(179, 149, 106, 0.18); }  /* золотистая охра */
+.slot-bg.kind-station    { background: rgba(122, 155, 110, 0.18); }  /* мшистый зелёный */
+.slot-bg.kind-social     { background: rgba(111, 138, 163, 0.18); }  /* приглушённая лазурь */
+.slot-bg.kind-cinema     { background: rgba(160, 96, 112, 0.16); }  /* винное-розовое */
+.slot-bg.kind-music      { background: rgba(196, 120, 98, 0.18); }  /* терракота */
+.slot-bg.kind-art        { background: rgba(149, 116, 144, 0.18); }  /* винтажный лавандовый */
+/* music-par — единственный случай где визуальный сигнал нужен:
+   параллельная сцена должна отличаться от главной. Оставляем тонкий пунктир. */
+.slot-bg.kind-music-par {
+  background: rgba(196, 120, 98, 0.12);
+  border: 1px dotted rgba(176, 101, 80, 0.6);
+}
 
 /* Приглушённое состояние — для слотов/событий/баннеров вне фокуса текущей вкладки.
    Карта таймлайна общая для всех вкладок: видно всё, но релевантное яркое, остальное в полутени. */
@@ -500,22 +505,27 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   opacity: 0.7;
 }
 
-/* "Свободное окно" между слотами на активной площадке — кликабельное */
+/* "Свободное окно" между слотами — кликабельное, но визуально тихое.
+   Цель: пустые промежутки не отвлекают взгляд от занятых ячеек. Только
+   при наведении проявляется лёгкая рамка и бледный текст с временем. */
 .discovery-zone {
   position: absolute; left: 4px; right: 4px;
-  background: var(--accent-dim);
-  border: 1.5px dashed var(--accent-line);
+  background: transparent; border: none;
   z-index: 2; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  font-size: 10.5px; color: var(--accent); font-weight: 600;
-  font-family: var(--font-mono); letter-spacing: 0.08em;
-  transition: background 0.15s;
+  transition: background 0.12s, border-color 0.12s;
 }
 .discovery-zone:hover {
-  background: rgba(255, 240, 180, 0.7);
-  border-color: #b8a060;
+  background: rgba(0, 0, 0, 0.025);
+  border: 1px dashed rgba(0, 0, 0, 0.18);
 }
-.discovery-zone span { padding: 2px 6px; }
+.discovery-zone span {
+  font-size: 10px; color: rgba(0, 0, 0, 0.35);
+  font-family: var(--font-mono); letter-spacing: 0.06em;
+  padding: 2px 6px; opacity: 0;
+  transition: opacity 0.12s;
+}
+.discovery-zone:hover span { opacity: 1; }
 
 /* Дроп-зоны для каждой lane */
 .lane-dropzone {
@@ -561,7 +571,15 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   font-weight: 600; line-height: 1.25; font-size: 13px;
   color: var(--ink);
 }
-.event-pill .ev-speaker { font-size: 11.5px; color: var(--ink-soft); line-height: 1.3; margin-top: 3px; font-weight: 400; }
+.event-pill .ev-meta {
+  font-size: 11px; color: var(--ink-soft); line-height: 1.3; margin-top: 3px;
+  font-weight: 400; display: flex; align-items: baseline; flex-wrap: wrap;
+}
+.event-pill .ev-meta .ev-speaker { color: var(--ink-soft); }
+.event-pill .ev-meta .ev-subcat { color: var(--ink-quiet); font-size: 10px; }
+.event-pill .ev-meta .ev-meta-sep { color: var(--ink-quiet); margin: 0 1px; }
+/* Старые отдельные правила для совместимости — на случай если рендер где-то ещё */
+.event-pill .ev-speaker { font-size: 11px; color: var(--ink-soft); line-height: 1.3; font-weight: 400; }
 .event-pill .ev-cat {
   font-size: 9.5px; color: var(--ink-quiet); margin-top: auto; padding-top: 4px;
   text-transform: uppercase; letter-spacing: 0.12em; font-family: var(--font-mono); font-weight: 500;
@@ -571,7 +589,9 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   position: absolute; top: 3px; right: 4px; width: 18px; height: 18px;
   border: none; background: transparent; cursor: pointer; font-size: 14px;
   color: var(--ink-quiet); line-height: 1; z-index: 6; padding: 0;
+  opacity: 0; transition: opacity 0.12s;  /* появляется только при hover карточки */
 }
+.event-pill:hover .ev-remove { opacity: 1; }
 .event-pill .ev-remove:hover { color: var(--accent); }
 .event-pill.dragging { opacity: 0.4; }
 
@@ -1595,8 +1615,6 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
         громкая музыка делает невозможными станции рядом).
       </div>
     </div>
-    <h3 style="font-size:14px;margin-top:14px">Привязанные события</h3>
-    <div id="se-events-list" style="font-size:13px;background:#faf8ed;padding:10px;border-left:2px solid #ddd"></div>
     <h3 style="font-size:14px;margin-top:14px">Покрытие папоротником</h3>
     <p style="font-size:11px;color:#888;margin:4px 0">Лист — это «ячейка» во фрактальной визуализации, в которой слот окажется на сайте. Если ни один лист не покрывает слот по времени — он не отобразится во фрактале (только в текстовом расписании).</p>
     <div id="se-fern-coverage" style="font-size:13px;background:#faf8ed;padding:10px;border-left:2px solid #ddd"></div>
@@ -3283,7 +3301,10 @@ function renderTimeline() {
     const isHour = m % 60 === 0;
     const isDayBreak = (FEST_START_HOUR * 60 + m) % (24 * 60) === 0 && m > 0;
     const cls = isDayBreak ? 'day-break' : (isHour ? 'major' : '');
-    html += `<div class="tl-tick ${cls}" style="top:${m * ppm}px">${minToTime(m)}</div>`;
+    // Получасовые тики оставляем только как линию-разделитель — текст не выводим,
+    // чтобы колонка времени читалась как «список часов», а не «список 30-мин засечек».
+    const label = (isHour || isDayBreak) ? minToTime(m) : '';
+    html += `<div class="tl-tick ${cls}" style="top:${m * ppm}px">${label}</div>`;
   }
   html += `</div>`;
 
@@ -3359,8 +3380,10 @@ function renderTimeline() {
                              left:calc(${leftPct}% + 4px);width:calc(${widthPct}% - 8px)">
           <button class="ev-remove" title="Открепить">×</button>
           <div class="ev-title">${esc(ev.title || '(без названия)')}</div>
-          ${ev.speaker ? `<div class="ev-speaker">${esc(ev.speaker)}</div>` : ''}
-          ${subcatLabel ? `<div class="ev-subcat">${esc(subcatLabel)}</div>` : ''}
+          ${(ev.speaker || subcatLabel) ? `<div class="ev-meta">${
+            ev.speaker ? `<span class="ev-speaker">${esc(ev.speaker)}</span>` : ''
+          }${(ev.speaker && subcatLabel) ? '<span class="ev-meta-sep"> · </span>' : ''
+          }${subcatLabel ? `<span class="ev-subcat">${esc(subcatLabel)}</span>` : ''}</div>` : ''}
         </div>`;
       });
     });
@@ -6252,15 +6275,10 @@ function openSlotEditModal(sid) {
   populateVenueOptions(document.getElementById('se-venue'), s.venue || '', true);
   populateSubcategoryOptions(s.category, document.getElementById('se-subcategory'), s.subcategory);
 
-  // Список привязанных событий
-  const attached = state.data.events.filter(e => e.slot === sid);
-  const eventsBlock = document.getElementById('se-events-list');
-  eventsBlock.innerHTML = attached.length
-    ? attached.map(e => `<div style="padding:3px 0">• <strong>${esc(e.title || '(без названия)')}</strong>${e.speaker ? ' — ' + esc(e.speaker) : ''}</div>`).join('')
-    : '<em style="color:#888">Нет привязанных событий</em>';
+  // Список привязанных событий не показываем в форме слота — он и так виден
+  // в timeline. Меньше шума в карточке редактирования.
 
   // Покрытие фракталом — рисуем сразу и обновляем при изменении start/venue.
-  // leaf и type больше не редактируются вручную (выводятся автоматически).
   const renderCov = () => renderFernCoverageBlock(
     document.getElementById('se-start').value,
     document.getElementById('se-end').value,
