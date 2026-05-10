@@ -226,13 +226,20 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
     padding: 6px 10px; font-size: 12px;
   }
   body.demo-mode .right-tabs { display: none; }
-  body.demo-mode .tl-header { padding: 5px 6px; }
-  body.demo-mode .tl-header .vh-tech { font-size: 10px; }
 }
-/* Длинные слова в названиях карточек — переносить, чтобы не вылезать
-   за границы 140px колонки */
-.event-pill .ev-title { word-break: break-word; overflow-wrap: anywhere; }
-.event-pill .ev-meta  { word-break: break-word; overflow-wrap: anywhere; }
+/* Длинные слова в названиях карточек — переносить по пробелам в первую очередь
+   (overflow-wrap: break-word). Если слово всё равно длиннее колонки — браузер
+   расставит мягкий перенос по слогам (hyphens: auto работает с lang="ru"
+   на <html>). Раньше было overflow-wrap: anywhere — это резало слова посимвольно
+   даже когда не нужно, без знака переноса. */
+.event-pill .ev-title {
+  word-break: normal; overflow-wrap: break-word;
+  -webkit-hyphens: auto; hyphens: auto;
+}
+.event-pill .ev-meta  {
+  word-break: normal; overflow-wrap: break-word;
+  -webkit-hyphens: auto; hyphens: auto;
+}
 .topbar .menu-dropdown {
   position: absolute; top: 100%; right: 0; margin-top: 4px;
   background: var(--paper); color: var(--ink);
@@ -484,6 +491,9 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
   font-family: var(--font-body);
   font-weight: 600; font-size: 11px;
   letter-spacing: 0.02em; text-align: center;
+  /* Защита: на самой узкой колонке (140px) название «Зал Мандельброт» помещается,
+     но если будет venue с очень длинным именем — обрежется с «…», а не вылезет. */
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .tl-header .vh-display {
   font-family: var(--font-mono); font-weight: 400;
@@ -3408,11 +3418,18 @@ function renderTimeline() {
 
   const tl = document.getElementById('timeline');
 
-  // Динамически строим grid-template-columns: время 60px + venues с минимумом 140px.
-  // На мобиле это даёт горизонтальный скролл (таблица 760px на 390 viewport),
-  // но текст в карточках читается нормально. Колонка времени sticky слева
-  // (см. CSS .tl-time-col), поэтому при скролле она остаётся видимой.
-  const cols = ['60px', ...VENUE_ORDER.map(v => `minmax(140px, ${VENUE_WIDTH_FR[v]}fr)`)].join(' ');
+  // Динамически строим grid-template-columns: время 60px + venues с минимумом
+  // PER_LANE_MIN на каждый lane. Venue с lanes=2 (как big_bar/Бар Серпинский,
+  // в котором одновременно идут 2 станции) получает min PER_LANE_MIN×2 — иначе
+  // её внутренние подколонки сжимаются и текст рвётся. Размер 160px подобран
+  // эмпирически: самое длинное русское слово в данных («Лингвистические»,
+  // 122.6px при шрифте 14.3px) + padding 20px = 143px ВПРИТЫК; 160px даёт
+  // надёжный запас. На десктопе fr-пропорции расширят колонки сверх минимума.
+  const PER_LANE_MIN = 160;
+  const cols = ['60px', ...VENUE_ORDER.map(v => {
+    const lanes = state.data?.venues[v]?.lanes || 1;
+    return `minmax(${PER_LANE_MIN * lanes}px, ${VENUE_WIDTH_FR[v]}fr)`;
+  })].join(' ');
   tl.style.gridTemplateColumns = cols;
 
   let html = `<div class="tl-header time-header">время</div>`;
