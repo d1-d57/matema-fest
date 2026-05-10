@@ -227,6 +227,14 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
   }
   body.demo-mode .right-tabs { display: none; }
 }
+/* Landscape на телефоне: высота viewport <500px, и так почти ничего не помещается.
+   В demo-режиме скрываем всё кроме таблицы — пользователь видит расписание на
+   весь экран. Кнопка «Войти» и баннер недоступны в landscape — это нормально,
+   landscape это режим «посмотреть», а не «администрировать». */
+@media (orientation: landscape) and (max-height: 500px) {
+  body.demo-mode .topbar { display: none; }
+  body.demo-mode .right-tabs { display: none; }
+}
 /* Длинные слова в названиях карточек — переносить по пробелам в первую очередь
    (overflow-wrap: break-word). Если слово всё равно длиннее колонки — браузер
    расставит мягкий перенос по слогам (hyphens: auto работает с lang="ru"
