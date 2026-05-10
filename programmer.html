@@ -209,7 +209,10 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
 /* Мобильная адаптация demo. На узких экранах:
    — баннер в одну строку без бордюра-разделителя
    — топбар плотнее, шрифт мельче
-   — счётчик заявок на вкладке прячем (он информативен только редактору) */
+   — счётчик заявок на вкладке прячем (он информативен только редактору)
+   — вкладки целиком скрыты в demo: пользователю на узком экране важнее
+     горизонтально проскроллить таблицу, а не выбирать тип. На «Всё» и так
+     видно весь день, цвета указывают тип. */
 @media (max-width: 700px) {
   body.demo-mode .topbar { padding: 8px 12px; gap: 8px; }
   body.demo-mode .topbar h1 { font-size: 11px; letter-spacing: 0.08em; }
@@ -222,13 +225,14 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
   body.demo-mode .topbar .demo-login-btn {
     padding: 6px 10px; font-size: 12px;
   }
-  body.demo-mode .right-tab .tab-count { display: none; }
-  body.demo-mode .right-tab { padding: 8px 10px; font-size: 12px; }
+  body.demo-mode .right-tabs { display: none; }
   body.demo-mode .tl-header { padding: 5px 6px; }
   body.demo-mode .tl-header .vh-tech { font-size: 10px; }
-  body.demo-mode .tl-time-col { width: 44px; min-width: 44px; }
-  body.demo-mode .tl-header.time-header { width: 44px; min-width: 44px; }
 }
+/* Длинные слова в названиях карточек — переносить, чтобы не вылезать
+   за границы 140px колонки */
+.event-pill .ev-title { word-break: break-word; overflow-wrap: anywhere; }
+.event-pill .ev-meta  { word-break: break-word; overflow-wrap: anywhere; }
 .topbar .menu-dropdown {
   position: absolute; top: 100%; right: 0; margin-top: 4px;
   background: var(--paper); color: var(--ink);
@@ -422,7 +426,8 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
 
 #timeline-wrap {
   flex: 1; overflow: auto; min-height: 0;
-  border: 1px solid #ddd; border-radius: 4px; background: #fff;
+  border: 1px solid #ddd; border-radius: 4px;
+  background: var(--paper);  /* был #fff — на мобиле проступал в просветах между ячейками */
   /* масштаб контента — управляется через --content-scale */
   font-size: calc(13px * var(--content-scale, 1));
 }
@@ -3403,13 +3408,11 @@ function renderTimeline() {
 
   const tl = document.getElementById('timeline');
 
-  // Динамически строим grid-template-columns: время + venues по их fr.
-  // На мобиле (≤700px) колонки ужимаем чтобы помещалось больше venue в viewport
-  // и уменьшаем горизонтальный скролл.
-  const isMobile = window.innerWidth <= 700;
-  const timeColW = isMobile ? '44px' : '60px';
-  const venueMin = isMobile ? '100px' : '140px';
-  const cols = [timeColW, ...VENUE_ORDER.map(v => `minmax(${venueMin}, ${VENUE_WIDTH_FR[v]}fr)`)].join(' ');
+  // Динамически строим grid-template-columns: время 60px + venues с минимумом 140px.
+  // На мобиле это даёт горизонтальный скролл (таблица 760px на 390 viewport),
+  // но текст в карточках читается нормально. Колонка времени sticky слева
+  // (см. CSS .tl-time-col), поэтому при скролле она остаётся видимой.
+  const cols = ['60px', ...VENUE_ORDER.map(v => `minmax(140px, ${VENUE_WIDTH_FR[v]}fr)`)].join(' ');
   tl.style.gridTemplateColumns = cols;
 
   let html = `<div class="tl-header time-header">время</div>`;
