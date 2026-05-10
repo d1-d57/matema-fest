@@ -168,9 +168,15 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
    кнопки и весь левый пул, выключаем взаимодействие с timeline. */
 body.demo-mode .topbar .demo-banner,
 body.demo-mode .topbar .demo-login-btn { display: inline-block; }
-/* В demo пул скрыт — но grid у .main всё ещё резервирует под него 340px.
-   Схлопываем первую колонку, чтобы расписание заняло всю ширину. */
+/* В demo пул схлопываем через width/visibility, не display:none — иначе он
+   выпадает из grid и .right-pane попадает в нулевую первую колонку. */
 body.demo-mode .main { grid-template-columns: 0 minmax(0, 1fr) !important; }
+body.demo-mode #candidates-pane {
+  visibility: hidden;
+  width: 0; min-width: 0;
+  padding: 0; border: none;
+  overflow: hidden;
+}
 body.demo-mode .topbar .stat,
 body.demo-mode .topbar .src-info,
 body.demo-mode #btn-undo,
@@ -178,7 +184,6 @@ body.demo-mode #btn-save-local,
 body.demo-mode #btn-reload,
 body.demo-mode #btn-publish,
 body.demo-mode .menu-wrap,
-body.demo-mode #candidates-pane,
 body.demo-mode #collapse-toggle,
 body.demo-mode #expand-toggle,
 body.demo-mode #conflicts,
@@ -187,7 +192,8 @@ body.demo-mode .ev-remove,
 body.demo-mode .lane-dropzone,
 body.demo-mode .filter-btn,
 body.demo-mode .add-btn,
-body.demo-mode .timeline-cat-filters { display: none !important; }
+body.demo-mode .timeline-cat-filters,
+body.demo-mode #unassigned { display: none !important; }
 /* Никаких подсказок «можно перетаскивать»: события и слоты в демо некликабельны. */
 body.demo-mode .event-pill,
 body.demo-mode .slot-bg,
@@ -199,6 +205,30 @@ body.demo-mode .slot-label,
 body.demo-mode .stations-band-label { pointer-events: none; }
 /* «х» спрятана через display:none выше — но на всякий и через opacity */
 body.demo-mode .event-pill .ev-remove { display: none !important; }
+
+/* Мобильная адаптация demo. На узких экранах:
+   — баннер в одну строку без бордюра-разделителя
+   — топбар плотнее, шрифт мельче
+   — счётчик заявок на вкладке прячем (он информативен только редактору) */
+@media (max-width: 700px) {
+  body.demo-mode .topbar { padding: 8px 12px; gap: 8px; }
+  body.demo-mode .topbar h1 { font-size: 11px; letter-spacing: 0.08em; }
+  body.demo-mode .topbar .demo-banner {
+    border-left: none;
+    padding: 0 4px;
+    font-size: 11px; line-height: 1.3;
+    flex: 1 1 100%; order: 3;
+  }
+  body.demo-mode .topbar .demo-login-btn {
+    padding: 6px 10px; font-size: 12px;
+  }
+  body.demo-mode .right-tab .tab-count { display: none; }
+  body.demo-mode .right-tab { padding: 8px 10px; font-size: 12px; }
+  body.demo-mode .tl-header { padding: 5px 6px; }
+  body.demo-mode .tl-header .vh-tech { font-size: 10px; }
+  body.demo-mode .tl-time-col { width: 44px; min-width: 44px; }
+  body.demo-mode .tl-header.time-header { width: 44px; min-width: 44px; }
+}
 .topbar .menu-dropdown {
   position: absolute; top: 100%; right: 0; margin-top: 4px;
   background: var(--paper); color: var(--ink);
