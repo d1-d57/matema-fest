@@ -3403,8 +3403,13 @@ function renderTimeline() {
 
   const tl = document.getElementById('timeline');
 
-  // Динамически строим grid-template-columns: время + venues по их fr
-  const cols = ['60px', ...VENUE_ORDER.map(v => `minmax(140px, ${VENUE_WIDTH_FR[v]}fr)`)].join(' ');
+  // Динамически строим grid-template-columns: время + venues по их fr.
+  // На мобиле (≤700px) колонки ужимаем чтобы помещалось больше venue в viewport
+  // и уменьшаем горизонтальный скролл.
+  const isMobile = window.innerWidth <= 700;
+  const timeColW = isMobile ? '44px' : '60px';
+  const venueMin = isMobile ? '100px' : '140px';
+  const cols = [timeColW, ...VENUE_ORDER.map(v => `minmax(${venueMin}, ${VENUE_WIDTH_FR[v]}fr)`)].join(' ');
   tl.style.gridTemplateColumns = cols;
 
   let html = `<div class="tl-header time-header">время</div>`;
