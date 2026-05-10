@@ -164,6 +164,19 @@ body.locked > *:not(.lock-overlay) { display: none !important; }
   border-color: var(--accent-hover) !important;
 }
 
+/* Viewer-режим: бейдж «Просмотр» и кнопка «Выход» */
+.topbar .viewer-badge {
+  display: none;  /* показывается через body.viewer-mode */
+  font-size: 11px; color: rgba(255,255,255,0.78);
+  padding: 4px 10px;
+  border: 1px solid rgba(255,255,255,0.25);
+  font-family: var(--font-mono); letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.topbar .viewer-logout-btn {
+  display: none;  /* показывается через body.viewer-mode */
+}
+
 /* В demo-режиме показываем баннер и кнопку «Войти», скрываем редакторские
    кнопки и весь левый пул, выключаем взаимодействие с timeline. */
 body.demo-mode .topbar .demo-banner,
@@ -205,6 +218,57 @@ body.demo-mode .slot-label,
 body.demo-mode .stations-band-label { pointer-events: none; }
 /* «х» спрятана через display:none выше — но на всякий и через opacity */
 body.demo-mode .event-pill .ev-remove { display: none !important; }
+
+/* ====== VIEWER-РЕЖИМ ======
+   Промежуточный режим между demo и admin: видна левая панель (пул заявок),
+   можно открывать карточки и читать детали. Но никакого редактирования —
+   физически удаляем все редакторские кнопки. Поля input/textarea/select
+   делаются disabled через CSS pointer-events.
+   Принцип: убираем элементы, а не блокируем — меньше шанс что-то пропустить. */
+body.viewer-mode .topbar .viewer-badge,
+body.viewer-mode .topbar .viewer-logout-btn { display: inline-block; }
+
+/* Все редакторские кнопки топбара — убираем */
+body.viewer-mode #btn-undo,
+body.viewer-mode #btn-save-local,
+body.viewer-mode #btn-reload,
+body.viewer-mode #btn-publish,
+body.viewer-mode .menu-wrap,
+body.viewer-mode .topbar .stat,
+body.viewer-mode .topbar .src-info,
+body.viewer-mode #conflicts,
+/* В timeline убираем плюсики и дроп-зоны */
+body.viewer-mode .discovery-zone,
+body.viewer-mode .ev-remove,
+body.viewer-mode .lane-dropzone,
+/* В пуле убираем «+ идея» и «связать». Фильтры/поиск оставляем — полезны для просмотра */
+body.viewer-mode .add-btn,
+body.viewer-mode .cand-link-btn,
+body.viewer-mode #unassigned,
+/* В timeline сверху были фильтры категорий редактора — убираем */
+body.viewer-mode .timeline-cat-filters,
+/* В detail-view убираем ВСЕ кнопки. Все они мутируют (Сохранить, Удалить,
+   Отказ, Принять, +ссылка). Заменить нечем — открыть карточку в просмотре
+   достаточно, остального не нужно. */
+body.viewer-mode .detail-view button,
+/* Стрелки сворачивания пула тоже не нужны в viewer */
+body.viewer-mode #collapse-toggle,
+body.viewer-mode #expand-toggle { display: none !important; }
+
+/* Поля формы в detail-view — серые и некликабельные, выглядят как read-only
+   (по запросу пользователя — disabled-стиль). */
+body.viewer-mode .detail-view input,
+body.viewer-mode .detail-view textarea,
+body.viewer-mode .detail-view select {
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.03);
+  opacity: 0.9;
+  cursor: default;
+}
+/* Drag&drop отключаем визуально — карточки кликабельны, но не таскаются */
+body.viewer-mode .cand-card,
+body.viewer-mode .event-pill { -webkit-user-drag: none; user-drag: none; }
+body.viewer-mode .event-pill { cursor: pointer; }
 
 /* Мобильная адаптация demo. На узких экранах:
    — баннер в одну строку без бордюра-разделителя
@@ -1528,8 +1592,10 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
   <span class="demo-banner" id="demo-banner">
     Демо-версия программы. Актуальная информация будет на <a href="https://matema-fest.ru" target="_blank" rel="noopener">matema-fest.ru</a>
   </span>
+  <span class="viewer-badge" id="viewer-badge">Просмотр</span>
   <span class="spacer"></span>
   <button class="demo-login-btn" id="btn-demo-login" onclick="lockProgrammer()">Войти</button>
+  <button class="viewer-logout-btn" id="btn-viewer-logout" onclick="exitViewerToDemo()">Выход</button>
   <button onclick="undoLastChange()" id="btn-undo" title="Отменить последнее изменение (Ctrl+Z)" disabled>↶ Отменить</button>
   <button onclick="saveLocally()" id="btn-save-local" title="Сохранить текущее состояние локально (в браузере). Безопасно — не публикует, никуда не отправляет.">💾 Сохранить</button>
   <button onclick="reloadAll()" id="btn-reload" title="Перечитать программу с сайта и заявки">↻ Обновить</button>
@@ -1949,7 +2015,15 @@ body.demo-mode .event-pill .ev-remove { display: none !important; }
 // - 15 минут неактивности (нет mouse/keyboard) → блокировка
 // - Скрытая вкладка >5 минут → при возврате блокировка
 // ============================================================
-const PASSWORD_HASH = 'a53c75a6ee1b3ef1b4b8f1d9d6f235634aec96411f7209f1bbc15d5108078688';
+// ТРИ РЕЖИМА:
+// — demo (без пароля): только расписание, никаких заявок
+// — viewer (пароль discovery23): + левая панель с пулом и detail-view, но read-only
+// — admin (пароль mathesis23): полный доступ
+//
+// Хранится в sessionStorage как "admin:<timestamp>" или "viewer:<timestamp>".
+// Старый формат — просто число — интерпретируется как admin (обратная совместимость).
+const ADMIN_PASSWORD_HASH  = 'a53c75a6ee1b3ef1b4b8f1d9d6f235634aec96411f7209f1bbc15d5108078688';  // mathesis23
+const VIEWER_PASSWORD_HASH = 'ed46ada4dbf68c5bcbb81fbb8d3a5dcfcd27a715849ede8802c8df8c3ee8591b';  // discovery23
 const UNLOCK_KEY = 'programmer.unlocked';
 const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
 const HIDDEN_TIMEOUT_MS = 5 * 60 * 1000;
@@ -1960,32 +2034,42 @@ async function _sha256(text) {
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+function _setMode(mode) {
+  // mode: 'admin' | 'viewer' | 'demo'
+  document.body.classList.remove('demo-mode', 'viewer-mode');
+  if (mode === 'demo') document.body.classList.add('demo-mode');
+  else if (mode === 'viewer') document.body.classList.add('viewer-mode');
+  // admin — без класса
+}
+
 async function tryUnlock() {
   const inputEl = document.getElementById('lock-input');
   const errEl = document.getElementById('lock-error');
   const input = inputEl.value;
   if (!input) return;
   const hash = await _sha256(input);
-  if (hash === PASSWORD_HASH) {
-    sessionStorage.setItem(UNLOCK_KEY, String(Date.now()));
-    inputEl.value = '';
-    errEl.textContent = '';
-    document.getElementById('lock-overlay').classList.remove('active');
-    document.body.classList.remove('locked');
-    document.body.classList.remove('demo-mode');  // выходим из demo, открываем полный редактор
-    _resetIdleTimer();
-  } else {
+  let mode = null;
+  if (hash === ADMIN_PASSWORD_HASH) mode = 'admin';
+  else if (hash === VIEWER_PASSWORD_HASH) mode = 'viewer';
+  if (!mode) {
     errEl.textContent = 'Неверный пароль';
     inputEl.select();
+    return;
   }
+  sessionStorage.setItem(UNLOCK_KEY, mode + ':' + Date.now());
+  inputEl.value = '';
+  errEl.textContent = '';
+  document.getElementById('lock-overlay').classList.remove('active');
+  document.body.classList.remove('locked');
+  _setMode(mode);
+  _resetIdleTimer();
+  if (typeof rerenderAll === 'function') rerenderAll();
 }
 
-// Показать password-форму для входа из demo. Также используется по таймауту
-// неактивности — после 15 мин без действий пользователь снова в demo и должен
-// ввести пароль чтобы продолжить редактирование.
+// Показать password-форму. По таймауту неактивности возвращаемся в demo.
 function lockProgrammer() {
   sessionStorage.removeItem(UNLOCK_KEY);
-  document.body.classList.add('demo-mode');
+  _setMode('demo');
   document.getElementById('lock-overlay').classList.add('active');
   setTimeout(() => {
     const el = document.getElementById('lock-input');
@@ -1993,28 +2077,46 @@ function lockProgrammer() {
   }, 100);
 }
 
-// Закрыть password-форму без входа — остаёмся в demo-режиме
+// Закрыть password-форму без входа — остаёмся в текущем режиме
 function cancelUnlock() {
   document.getElementById('lock-overlay').classList.remove('active');
   document.getElementById('lock-input').value = '';
   document.getElementById('lock-error').textContent = '';
 }
 
-function _checkLockOnLoad() {
-  const ts = sessionStorage.getItem(UNLOCK_KEY);
-  if (!ts || isNaN(parseInt(ts, 10))) {
-    // По дефолту — demo-режим. Полный редактор открывается только после ввода
-    // пароля через кнопку «Войти» в топбаре.
-    document.body.classList.add('demo-mode');
-    return false;
-  }
-  return true;
+// Выход из viewer обратно в demo (для кнопки «Выход»)
+function exitViewerToDemo() {
+  sessionStorage.removeItem(UNLOCK_KEY);
+  _setMode('demo');
+  if (typeof rerenderAll === 'function') rerenderAll();
 }
 
-// Возвращает true если сейчас demo (read-only). Используется как guard в
-// функциях которые меняют состояние.
+function _checkLockOnLoad() {
+  const raw = sessionStorage.getItem(UNLOCK_KEY);
+  if (!raw) {
+    _setMode('demo');
+    return false;
+  }
+  // Старый формат — просто timestamp без префикса — это admin (обратная совместимость)
+  if (/^\d+$/.test(raw)) return true;
+  const [mode] = raw.split(':');
+  if (mode === 'admin') return true;
+  if (mode === 'viewer') { _setMode('viewer'); return true; }
+  // Неизвестный формат — сброс в demo
+  sessionStorage.removeItem(UNLOCK_KEY);
+  _setMode('demo');
+  return false;
+}
+
 function isDemoMode() {
   return document.body.classList.contains('demo-mode');
+}
+function isViewerMode() {
+  return document.body.classList.contains('viewer-mode');
+}
+// Любой не-admin режим — нельзя редактировать данные
+function isReadOnly() {
+  return isDemoMode() || isViewerMode();
 }
 
 let _idleTimer;
@@ -2457,7 +2559,7 @@ window.addEventListener('beforeunload', e => {
 // Явное «Сохранить локально» — то же что persistState + уведомление пользователю.
 // Главное: даёт человеку чёткий мысленный якорь "вот я сохранил, можно не бояться F5".
 function saveLocally() {
-  if (isDemoMode()) return;
+  if (isReadOnly()) return;
   persistState();
   _saveAutoBackup('manual-save');
   const btn = document.getElementById('btn-save-local');
@@ -3969,7 +4071,7 @@ function renderUnassigned() {
 // DROP
 // ============================================================
 function handleDrop(slotId, venueId, laneIdx, e) {
-  if (isDemoMode()) return;
+  if (isReadOnly()) return;
   const kind = e.dataTransfer.getData('kind');
   const id = e.dataTransfer.getData('id');
   const slot = state.data.time_slots[slotId];
@@ -4513,6 +4615,7 @@ function bindDetailHandlers() {
 }
 
 function detailUpdateCandSubtype(appId) {
+  if (isReadOnly()) return;
   const typeSel = document.getElementById('detail-target-cat');
   const wrap = document.getElementById('detail-target-subtype-wrap');
   const sel = document.getElementById('detail-target-subtype');
@@ -4530,6 +4633,7 @@ function detailUpdateCandSubtype(appId) {
 }
 
 function detailSaveCandOverride(appId) {
+  if (isReadOnly()) return;
   const typeSel = document.getElementById('detail-target-cat');
   const subSel = document.getElementById('detail-target-subtype');
   if (!typeSel) return;
@@ -4542,6 +4646,7 @@ function detailSaveCandOverride(appId) {
 }
 
 function detailUpdateExhibitSubcat() {
+  if (isReadOnly()) return;
   const cat = document.getElementById('detail-ex-kind').value;
   const sel = document.getElementById('detail-ex-subcategory');
   const wrap = document.getElementById('detail-ex-subcategory-wrap');
@@ -4557,6 +4662,7 @@ function detailUpdateExhibitSubcat() {
 }
 
 function detailUpdateSubcat() {
+  if (isReadOnly()) return;
   const cat = document.getElementById('detail-ev-category').value;
   const sel = document.getElementById('detail-ev-subcategory');
   const wrap = document.getElementById('detail-ev-subcategory-wrap');
@@ -4572,6 +4678,7 @@ function detailUpdateSubcat() {
 }
 
 function detailAddLink() {
+  if (isReadOnly()) return;
   const wrap = document.getElementById('detail-ev-links') || document.getElementById('detail-ex-links');
   if (!wrap) return;
   const idx = wrap.querySelectorAll('.detail-link-row').length;
@@ -4586,6 +4693,7 @@ function detailAddLink() {
 }
 
 function detailRemoveLink(idx) {
+  if (isReadOnly()) return;
   const wrap = document.getElementById('detail-ev-links') || document.getElementById('detail-ex-links');
   if (!wrap) return;
   const row = wrap.querySelector(`.detail-link-row:has([data-link-idx="${idx}"])`);
@@ -4605,12 +4713,14 @@ function detailGetLinks() {
 }
 
 function detailMarkApp(status) {
+  if (isReadOnly()) return;
   pushHistory();
   state.appStatuses[_detailContext.id] = status;
   markDirty(); rerenderAll(); persistState(); hideDetail();
 }
 
 function detailDeleteIdea() {
+  if (isReadOnly()) return;
   if (!_detailContext || _detailContext.type !== 'idea') return;
   if (!confirm('Удалить идею?\n\n(Заявки из Sheets удалить нельзя — только пометить «отказ» или «дубль». Идеи живут только локально, их можно удалить.)')) return;
   pushHistory();
@@ -4620,6 +4730,7 @@ function detailDeleteIdea() {
 }
 
 function detailConvertApp() {
+  if (isReadOnly()) return;
   pushHistory();
   const c = buildCandidates().find(x => x.id === _detailContext.id);
   if (!c) return;
@@ -4833,6 +4944,7 @@ function _convertExhibitToEvent(ex, newCategory, newSubcategory) {
 }
 
 function detailSaveEvent() {
+  if (isReadOnly()) return;
   pushHistory();
   const ev = state.data.events.find(e => e.id === _detailContext.id);
   if (!ev) return;
@@ -4878,6 +4990,7 @@ function detailSaveEvent() {
 }
 
 function detailDeleteEvent() {
+  if (isReadOnly()) return;
   if (!confirm('Удалить событие?')) return;
   pushHistory();
   state.data.events = state.data.events.filter(e => e.id !== _detailContext.id);
@@ -4886,6 +4999,7 @@ function detailDeleteEvent() {
 }
 
 function detailUnplaceEvent() {
+  if (isReadOnly()) return;
   pushHistory();
   const ev = state.data.events.find(e => e.id === _detailContext.id);
   if (ev) { ev.slot = null; ev.venue = null; delete ev.lane; }
@@ -4894,6 +5008,7 @@ function detailUnplaceEvent() {
 }
 
 function detailSaveExhibit() {
+  if (isReadOnly()) return;
   pushHistory();
   const ex = state.data.exhibits.find(x => x.id === _detailContext.id);
   if (!ex) return;
@@ -4929,6 +5044,7 @@ function detailSaveExhibit() {
 }
 
 function detailDeleteExhibit() {
+  if (isReadOnly()) return;
   if (!confirm('Удалить экспонат?')) return;
   pushHistory();
   state.data.exhibits = state.data.exhibits.filter(x => x.id !== _detailContext.id);
@@ -6428,7 +6544,7 @@ closeStructureView = function() {
 };
 
 function openSlotEditModal(sid) {
-  if (isDemoMode()) return;
+  if (isReadOnly()) return;
   const s = state.data.time_slots[sid];
   if (!s) return;
   document.getElementById('slot-edit-modal-title').textContent = `Слот · ${s.tool_label || s.label_for_zoom || sid}`;
@@ -6633,7 +6749,7 @@ function deleteExhibit() {
 // СОЗДАНИЕ НОВЫХ
 // ============================================================
 function addNewEvent() {
-  if (isDemoMode()) return;
+  if (isReadOnly()) return;
   const title = prompt('Название нового события:');
   if (!title) return;
   const id = 'ev-' + Date.now();
@@ -6661,7 +6777,7 @@ function addNewSlot() {
   openSlotEditModal(id);
 }
 function addNewIdea() {
-  if (isDemoMode()) return;
+  if (isReadOnly()) return;
   const name = prompt('Кого/что зовём?');
   if (!name) return;
   state.ideas.push({ id: 'idea-' + Date.now(), name, title: name, status: 'new' });
@@ -6818,7 +6934,7 @@ function exportJSON() {
 window.exportJSON = exportJSON;
 
 async function publishToGitHub() {
-  if (isDemoMode()) return;
+  if (isReadOnly()) return;
   if (!CONFIG.ghToken || !CONFIG.ghRepo || !CONFIG.ghPath) { alert('Сначала настрой GitHub в ⚙'); return; }
   const apiBase = `https://api.github.com/repos/${CONFIG.ghRepo}/contents/${CONFIG.ghPath}`;
   const branch = CONFIG.ghBranch || 'main';
