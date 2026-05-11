@@ -803,6 +803,25 @@ body:not(.demo-mode):not(.viewer-mode) .slot-placeholder:hover {
 .event-pill .ev-remove:hover { color: var(--accent); }
 .event-pill.dragging { opacity: 0.4; }
 
+/* Коммуникационные значки (admin-only) — что осталось сделать по карточке.
+   Порядок по убыванию срочности: знает → анонс → пост → время.
+   Клик по значку гасит его (пункт сделан). Вернуть можно из редактора карточки.
+   В demo/viewer режимах не видны. */
+.event-pill .comm-badges {
+  position: absolute; top: 3px; right: 22px; z-index: 6;
+  display: flex; gap: 2px; line-height: 1; user-select: none;
+}
+.event-pill .comm-badge {
+  cursor: pointer; padding: 1px 2px;
+  font-size: 11px; opacity: 0.85;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+.event-pill .comm-badge:hover {
+  opacity: 1; transform: scale(1.25);
+}
+body.demo-mode .comm-badges,
+body.viewer-mode .comm-badges { display: none !important; }
+
 .unassigned {
   background: var(--paper); border-left: 3px solid var(--ink);
   padding: 12px 16px; margin-bottom: 12px; flex-shrink: 0;
@@ -1254,6 +1273,24 @@ body:not(.demo-mode):not(.viewer-mode) .slot-placeholder:hover {
   min-height: 70px; line-height: 1.5; resize: vertical;
 }
 .team-notes-textarea:focus { outline: none; border-color: var(--ink); }
+
+/* Раздел «Коммуникация» в редакторе карточки — те же галочки что значки на ленте */
+.comm-section { margin-top: 18px; padding: 14px 16px; background: var(--paper); border: 1px solid var(--rule-soft); }
+.comm-section .detail-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-soft); font-weight: 600;
+  margin-bottom: 10px; display: block;
+}
+.comm-checks { display: flex; flex-direction: column; gap: 6px; }
+.comm-check-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; cursor: pointer; padding: 4px 0;
+}
+.comm-check-row input { margin: 0; cursor: pointer; }
+.comm-check-emoji { font-size: 14px; width: 20px; text-align: center; }
+.comm-check-label { color: var(--ink-soft); }
+.comm-check-row:hover .comm-check-label { color: var(--ink); }
 
 /* ====== Фильтры по категориям (левая панель + правая панель) ====== */
 .cat-filters {
@@ -2848,6 +2885,7 @@ function v31_decompressCardsToLegacy(data) {
       apollo_slot: card.apollo_slot,
       links: card.links,
       team_notes: card.team_notes,
+      _admin: card._admin,  // admin-чек-лист (значки коммуникации на ленте)
     };
     if (card._source_app) item._source_app = card._source_app;
 
@@ -2952,6 +2990,7 @@ function v31_compressLegacyToCards(obj) {
       lane: ev.lane,
       links: ev.links,
       team_notes: ev.team_notes,
+      _admin: ev._admin,  // admin-чек-лист коммуникации (значки на карточках)
     });
     // Если есть связанная заявка
     if (ev._source_app) {
@@ -3940,6 +3979,47 @@ function getSlotLaneInVenue(sid, slot, vid) {
   return getSlotLaneInfoInVenue(sid, slot, vid).lane;
 }
 
+// === Коммуникационные значки на карточках (admin-only) ===
+// Чек-лист по событию: что осталось сделать (написать автору, получить анонс,
+// опубликовать пост, согласовать время). Показывается ТОЛЬКО для категорий,
+// которыми занимается куратор-админ напрямую (popsci, station, social);
+// для music/cinema/art это ведут другие кураторы, значки не нужны.
+//
+// Состояние живёт на самой карточке в ev._admin.{knows,has_announce,
+// has_channel_post,time_final}. Если поле отсутствует или false — пункт «не
+// сделано» и значок горит. Клик по значку → пункт = true, значок гаснет.
+// Вернуть можно через редактор карточки (там 4 чекбокса).
+//
+// Порядок слева направо — по убыванию срочности.
+const COMM_BADGES = [
+  { key: 'knows',            emoji: '❗',  title: 'Не знает, что в программе' },
+  { key: 'has_announce',     emoji: '✍️', title: 'Нет анонса от автора (этап «собираем материал»)' },
+  { key: 'has_channel_post', emoji: '📣', title: 'Нет поста в канале (этап «опубликовали наружу»)' },
+  { key: 'time_final',       emoji: '⏰', title: 'Время не финальное' },
+];
+const COMM_BADGES_CATS = new Set(['popsci', 'workshop', 'experiment', 'social']);
+
+function commBadgesHtml(ev) {
+  if (!ev || !COMM_BADGES_CATS.has(ev.category)) return '';
+  if (ev.status === 'placeholder' || ev.status === 'rejected') return '';
+  const a = ev._admin || {};
+  const pending = COMM_BADGES.filter(b => !a[b.key]);
+  if (!pending.length) return '';
+  return '<div class="comm-badges">' + pending.map(b =>
+    `<span class="comm-badge" data-comm-key="${b.key}" title="${esc(b.title)} (клик — отметить сделанным)">${b.emoji}</span>`
+  ).join('') + '</div>';
+}
+
+function recordCommDone(evId, key) {
+  if (isReadOnly()) return;
+  const ev = state.data.events.find(x => x.id === evId);
+  if (!ev) return;
+  pushHistory();
+  if (!ev._admin) ev._admin = {};
+  ev._admin[key] = true;
+  markDirty(); rerenderAll(); persistState();
+}
+
 function renderTimeline() {
   const ppm = 1.6 * state.zoom;  // базовая плотность × масштаб
   document.documentElement.style.setProperty('--content-scale', state.zoom);
@@ -4062,6 +4142,7 @@ function renderTimeline() {
                       style="top:${startPx + labelOffset}px;height:${heightPx - labelOffset - 4}px;
                              left:calc(${leftPct}% + 4px);width:calc(${widthPct}% - 8px)">
           <button class="ev-remove" title="Открепить">×</button>
+          ${commBadgesHtml(ev)}
           <div class="ev-title">${esc(ev.title || '(без названия)')}</div>
           ${(ev.speaker || subcatLabel) ? `<div class="ev-meta">${
             ev.speaker ? `<span class="ev-speaker">${esc(ev.speaker)}</span>` : ''
@@ -4202,6 +4283,13 @@ function renderTimeline() {
   tl.querySelectorAll('.event-pill').forEach(pill => {
     pill.addEventListener('click', e => {
       if (e.target.classList.contains('ev-remove')) return;
+      // Клик по коммуникационному значку — гасим значок (не открываем редактор).
+      const badge = e.target.closest('.comm-badge');
+      if (badge) {
+        e.stopPropagation();
+        recordCommDone(pill.dataset.event, badge.dataset.commKey);
+        return;
+      }
       showDetail('event', pill.dataset.event);
     });
     pill.addEventListener('dragstart', e => {
@@ -4270,7 +4358,13 @@ function placeBandLabels(ppm) {
   // (б) группа из нескольких слотов с одинаковым tool_label+временем, охватывающих >1 venue (v17+).
   const { groups } = getSlotBandGroups();
 
+  // ⚠ Баннеры «СТАНЦИИ N · 16:30–17:30» поверх multi-venue зон отключены
+  // (Иван попросил оставить только цветовую подложку slot-bg, без подписей).
+  // Чтобы вернуть — убрать раннее return ниже.
+  const STATION_BAND_LABELS_ENABLED = false;
+
   groups.forEach(entries => {
+    if (!STATION_BAND_LABELS_ENABLED) return;
     const allVenues = new Set();
     entries.forEach(({ sid, s }) => {
       getAllowedVenues(sid, s).forEach(v => allVenues.add(v));
@@ -4865,6 +4959,21 @@ function renderEventDetail(id) {
       <label class="detail-label">Наши заметки <span class="detail-label-hint">— только для нас, на сайт не идут</span></label>
       <textarea id="detail-ev-team-notes" class="team-notes-textarea" placeholder="Договорённости с автором, пометки команды, что нужно подготовить, контекст…">${esc(ev.team_notes || '')}</textarea>
     </div>
+
+    ${COMM_BADGES_CATS.has(ev.category) ? `
+    <div class="detail-section comm-section">
+      <label class="detail-label">Коммуникация <span class="detail-label-hint">— значки на ленте; отметь сделанное</span></label>
+      <div class="comm-checks">
+        ${COMM_BADGES.map(b => `
+          <label class="comm-check-row">
+            <input type="checkbox" data-comm-key="${b.key}" ${(ev._admin && ev._admin[b.key]) ? 'checked' : ''}>
+            <span class="comm-check-emoji">${b.emoji}</span>
+            <span class="comm-check-label">${esc(b.title.replace(/^Не |^Нет /, '').replace(' (этап ', ' · '))}</span>
+          </label>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
   `;
 
   const appBody = srcApp ? renderAppFieldsReadOnly(srcApp) : '';
@@ -5407,6 +5516,17 @@ function detailSaveEvent() {
     const links = detailGetLinks();
     if (links.length) ev.links = links; else delete ev.links;
     if (teamNotesEl) ev.team_notes = teamNotesEl.value || null;
+    // Коммуникационные галочки (admin-чек-лист). Снимаем все ключи, заново
+    // ставим только отмеченные. Если ни одна не отмечена — поле удаляем.
+    if (COMM_BADGES_CATS.has(ev.category)) {
+      const adm = {};
+      let anyChecked = false;
+      for (const b of COMM_BADGES) {
+        const cb = document.querySelector('.comm-check-row input[data-comm-key="' + b.key + '"]');
+        if (cb && cb.checked) { adm[b.key] = true; anyChecked = true; }
+      }
+      if (anyChecked) ev._admin = adm; else delete ev._admin;
+    }
     // Унификация типа: если выбрали art — переводим в exhibit с kind=subtype.
     if (_isArtType(newType)) {
       const newExId = _convertEventToExhibit(ev, newSubtype || 'art');
