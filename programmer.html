@@ -2420,58 +2420,115 @@ function persistState() {
 }
 
 // ============================================================
-// АВТОРАСПРЕДЕЛЕНИЕ APOLLO ПО СЛОТАМ
-// Группировка: по (slot.category, slot.subcategory). Если subcategory нет —
-// один контейнер на всю category. Лимит 10 слотов в группе. Распределение
-// по убыванию «размера» = длина title главного события в слоте (или
-// tool_label если событий нет). Большие → big-1/2/3, средние → mid-, малые
-// → ear-, центр в середине.
-// Если в группе >10 — alert и пропускаем эту группу.
+// АВТОРАСПРЕДЕЛЕНИЕ APOLLO ПО КАРТОЧКАМ
+// Группировка: по (category, subcategory) — берём с event/exhibit,
+// fallback на slot.category/subcategory.
+// Apollo_slot живёт на event/exhibit (не на слоте). Это устраняет
+// дубли в слотах с lane=2 (где на одном time_slot сидят 2 события).
+// Алгоритм минимально инвазивный: сохраняет уже заданные уникальные
+// apollo_slot, перераспределяет только дубли и пустые.
+// Сортировка стабильная — по времени слота (карточки без слота — в конец).
+// Лимит 10 позиций на группу. Если в группе больше — alert и пропуск.
 // ============================================================
-function _slotMainTitleLength(slotId, slot) {
-  const evs = (state.data?.events || []).filter(e => e.slot === slotId);
-  if (evs.length > 0) {
-    // Берём максимум по длине из всех событий в слоте
-    return Math.max(...evs.map(e => (e.title || '').length));
+function _apolloSortKey(item, slots) {
+  if (item.slot && slots[item.slot]) {
+    return (slots[item.slot].start || '') + '_' + item.id;
   }
-  return (slot.tool_label || slot.label_for_zoom || '').length;
+  return 'zzz_' + item.id;
 }
 
 const APOLLO_ORDER = ['big-1', 'big-2', 'big-3', 'mid-1', 'mid-2', 'mid-3', 'center', 'ear-1', 'ear-2', 'ear-3'];
 
 function recomputeApolloSlots(data) {
-  if (!data || !data.time_slots) return;
-  // Собираем слоты с typed category. Без category слот в Apollo не участвует.
-  const groups = {};  // ключ "category::subcategory|*" → [{id, slot, size}]
-  Object.entries(data.time_slots).forEach(([sid, slot]) => {
-    if (!slot.category) return;
-    const subKey = slot.subcategory || '*';
-    const key = slot.category + '::' + subKey;
-    if (!groups[key]) groups[key] = [];
-    groups[key].push({id: sid, slot, size: _slotMainTitleLength(sid, slot)});
-  });
-  const overflows = [];
-  Object.entries(groups).forEach(([key, arr]) => {
-    if (arr.length > APOLLO_ORDER.length) {
-      const [cat, sub] = key.split('::');
-      overflows.push({key: cat + (sub !== '*' ? '/' + sub : ''), n: arr.length});
-      return;  // пропускаем эту группу — Apollo не назначаем
+  if (!data) return;
+  const slots = data.time_slots || {};
+  const groups = {};  // ключ "category::subcategory|*" → [event_or_exhibit]
+
+  // События: category/subcategory — с event, fallback на slot
+  if (Array.isArray(data.events)) {
+    for (const ev of data.events) {
+      const slot = ev.slot ? slots[ev.slot] : null;
+      const cat = ev.category || (slot && slot.category);
+      const sub = ev.subcategory || (slot && slot.subcategory);
+      if (!cat) continue;
+      const key = cat + '::' + (sub || '*');
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(ev);
     }
-    // Сортируем по убыванию размера (большие в первую очередь)
-    arr.sort((a, b) => b.size - a.size);
-    arr.forEach((item, idx) => {
-      const apollo = APOLLO_ORDER[idx];
-      if (item.slot.apollo_slot !== apollo) {
-        item.slot.apollo_slot = apollo;
-      }
+  }
+  // Exhibits: всегда art, subcategory из exhibit.subcategory/kind
+  if (Array.isArray(data.exhibits)) {
+    for (const ex of data.exhibits) {
+      const cat = ex.category || 'art';
+      const sub = ex.subcategory || ex.kind || 'art';
+      const key = cat + '::' + sub;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(ex);
+    }
+  }
+
+  const overflows = [];
+  Object.entries(groups).forEach(([key, items]) => {
+    if (items.length > APOLLO_ORDER.length) {
+      const [cat, sub] = key.split('::');
+      overflows.push({key: cat + (sub !== '*' ? '/' + sub : ''), n: items.length});
+      return;
+    }
+    // Стабильная сортировка по времени слота
+    items.sort((a, b) => {
+      const ka = _apolloSortKey(a, slots);
+      const kb = _apolloSortKey(b, slots);
+      return ka < kb ? -1 : (ka > kb ? 1 : 0);
     });
+    // Сначала фиксируем уникальные существующие apollo_slot
+    const occupied = new Set();
+    const needsReassign = [];
+    for (const item of items) {
+      if (item.apollo_slot && !occupied.has(item.apollo_slot)) {
+        occupied.add(item.apollo_slot);
+      } else {
+        needsReassign.push(item);
+      }
+    }
+    // Дублям и пустым раздаём первую свободную позицию из APOLLO_ORDER
+    for (const item of needsReassign) {
+      for (const pos of APOLLO_ORDER) {
+        if (!occupied.has(pos)) {
+          item.apollo_slot = pos;
+          occupied.add(pos);
+          break;
+        }
+      }
+    }
+    // apollo_slot теперь живёт на самом event/exhibit (мы только что назначили).
+    // Если оно было ранее помечено как «обогащённое со слота» — снимаем эту
+    // пометку, иначе buildExportText удалит apollo_slot вместе со снятием
+    // enriched-полей.
+    for (const item of items) {
+      if (Array.isArray(item._enriched_fields)) {
+        item._enriched_fields = item._enriched_fields.filter(f => f !== 'apollo_slot');
+        if (item._enriched_fields.length === 0) delete item._enriched_fields;
+      }
+    }
   });
+
+  // Apollo_slot теперь живёт на карточках. Со слотов убираем — это
+  // устаревший дубль, который мешает (на сайте Apollo использует
+  // ev.apollo_slot || slot.apollo_slot, и без удаления слотового значения
+  // дубли могут вернуться).
+  // slot.subcategory НЕ трогаем — UI редактирования слота пишет в него.
+  if (data.time_slots) {
+    for (const sid in data.time_slots) {
+      delete data.time_slots[sid].apollo_slot;
+    }
+  }
+
   if (overflows.length > 0) {
-    const msg = overflows.map(o => `«${o.key}»: ${o.n} слотов (макс 10)`).join('\n');
+    const msg = overflows.map(o => `«${o.key}»: ${o.n} карточек (макс ${APOLLO_ORDER.length})`).join('\n');
     if (!window._apolloOverflowWarned) {
       console.warn('[programmer] Apollo overflow:\n' + msg);
       window._apolloOverflowWarned = true;
-      setTimeout(() => alert('Превышен лимит 10 кругов Аполлония в группе:\n\n' + msg + '\n\nApollo для этих групп не пересчитан. Уменьши количество слотов или раздели по подтипам.'), 100);
+      setTimeout(() => alert('Превышен лимит кругов Аполлония в группе:\n\n' + msg + '\n\nApollo для этих групп не пересчитан. Раздели на подкатегории или удали лишние карточки.'), 100);
     }
   } else {
     window._apolloOverflowWarned = false;
@@ -2862,28 +2919,35 @@ function v31_compressLegacyToCards(obj) {
   const appStatuses = obj._app_statuses || {};
   const usedAppIds = new Set();  // какие заявки уже привязаны к event/exhibit
 
-  // 1) Из events
+  // 1) Из events. category/subcategory/apollo_slot могут жить либо
+  //    прямо на event (v17+ legacy с обогащением), либо на слоте (v17+
+  //    без обогащения). Поэтому делаем fallback через slot.
+  const srcSlots = obj.time_slots || {};
   for (const ev of (obj.events || [])) {
+    const slot = ev.slot ? srcSlots[ev.slot] : null;
+    const evCategory = ev.category || (slot && slot.category);
+    const evSubcategory = ev.subcategory || (slot && slot.subcategory);
+    const evApolloSlot = ev.apollo_slot || (slot && slot.apollo_slot);
     let type, subtype;
-    if (STATION_LEGACY.has(ev.category)) {
+    if (STATION_LEGACY.has(evCategory)) {
       type = 'station';
-      subtype = ev.category;  // workshop|experiment как subtype
+      subtype = evCategory;  // workshop|experiment как subtype
     } else {
-      type = ev.category;
-      subtype = ev.subcategory;
+      type = evCategory;
+      subtype = evSubcategory;
     }
     const card = _v31_stripUndef({
       id: ev.id,
       status: 'accepted',
       type, subtype,
-      apollo_slot: ev.apollo_slot,
+      apollo_slot: evApolloSlot,
       title: ev.title,
       subtitle: ev.subtitle,
       speaker: ev.speaker,
       speaker_role: ev.speaker_role,
       description: ev.description,
       slot: ev.slot,
-      venue: ev.venue,
+      venue: ev.venue || (slot && slot.venue),
       duration_override: ev.duration_override,
       lane: ev.lane,
       links: ev.links,
@@ -3064,8 +3128,52 @@ async function loadFestivalData() {
 // Чтобы не загрязнять экспорт, инжектированные поля помечаются в массиве
 // ev._enriched_fields. buildExportText их снимает перед сериализацией —
 // round-trip чистый: что прочитали, то и записали.
+
+// Архитектурная миграция legacy v30 → v31-станционная архитектура.
+// В v30 у слота с категорией station стоял slot.category = 'workshop' или
+// 'experiment' (подкатегория жила на слоте). В v31 на слоте всегда
+// slot.category = 'station', а workshop/experiment — это card.subtype.
+// Эта функция приводит загруженные данные к v31-архитектуре в памяти:
+//   - Для events на слотах с category workshop/experiment: переносим
+//     workshop/experiment в ev.category напрямую (не через _enriched_fields,
+//     чтобы значение пережило buildExportText).
+//   - Слот получает category = 'station'.
+//   - В data.categories гарантируется запись 'station' (для UI цвета ячеек).
+// Идемпотентна: при повторных вызовах ничего не делает.
+function _migrateLegacyStationCategory(data) {
+  if (!data || !data.time_slots) return;
+  for (const sid of Object.keys(data.time_slots)) {
+    const slot = data.time_slots[sid];
+    if (slot.category === 'workshop' || slot.category === 'experiment') {
+      const subtypeFromSlot = slot.category;
+      if (Array.isArray(data.events)) {
+        for (const ev of data.events) {
+          if (ev.slot !== sid) continue;
+          // Если у события явно НЕ задана категория — наследует со слота как
+          // subtype (workshop|experiment). Если задана (например ev.category =
+          // 'experiment' на workshop-слоте) — не перетираем.
+          if (!ev.category) ev.category = subtypeFromSlot;
+        }
+      }
+      slot.category = 'station';
+    }
+  }
+  if (!data.categories) data.categories = {};
+  if (!data.categories.station) {
+    data.categories.station = {
+      display: 'станции',
+      size: 'big',
+      comment: 'мастерские и эксперименты — два круга на Аполлонии в типе station',
+    };
+  }
+}
+
 function enrichEventsFromSlots(data) {
   if (!data || !data.events || !data.time_slots) return;
+  // Сначала — миграция legacy slot.category=workshop/experiment → station.
+  // Делаем до общего enrichment, чтобы category не была захвачена в
+  // _enriched_fields (иначе buildExportText её снимет).
+  _migrateLegacyStationCategory(data);
   const FIELDS = ['category', 'apollo_slot', 'subcategory', 'venue'];
   for (const ev of data.events) {
     if (!ev.slot) continue;
@@ -4290,20 +4398,33 @@ function renderConflicts() {
     if (!s.venue && !(s.allowed_venues && s.allowed_venues.length)) issues.push(`Слот ${sid} — нет venue/allowed_venues`);
     if (!s.label_for_zoom) issues.push(`Слот ${sid} — нет label_for_zoom`);
   });
-  // Дубли apollo_slot на уровне слотов (внутри одной category, с учётом subcategory).
-  // На сайте позиции на круге Аполлония определяются ключом category:subcategory:apollo_slot.
-  // Subcategory разносит слоты по подкругам внутри категории
-  // (например music: main_stage / big_bar / courtyard — каждый со своим набором позиций).
-  const slotApollo = {};
-  Object.entries(state.data.time_slots).forEach(([sid, s]) => {
-    if (!s.apollo_slot || !s.category) return;
-    let k = s.category;
-    if (s.subcategory) k += '/' + s.subcategory;
-    k += '::' + s.apollo_slot;
-    (slotApollo[k] = slotApollo[k] || []).push(sid);
-  });
-  Object.entries(slotApollo).forEach(([k, list]) => {
-    if (list.length > 1) issues.push(`Slot apollo дубль ${k}: ${list.join(', ')}`);
+  // Дубли apollo_slot на уровне карточек (event/exhibit). После
+  // recomputeApolloSlots дублей быть не должно, но проверка остаётся как
+  // sanity check на случай если что-то пошло не так (например, ручное
+  // редактирование apollo_slot в детальной форме).
+  const slots = state.data.time_slots || {};
+  const apolloByKey = {};
+  const collectApollo = (item, type) => {
+    if (!item.apollo_slot) return;
+    let cat, sub;
+    if (type === 'exhibit') {
+      cat = item.category || 'art';
+      sub = item.subcategory || item.kind || 'art';
+    } else {
+      const slot = item.slot ? slots[item.slot] : null;
+      cat = item.category || (slot && slot.category);
+      sub = item.subcategory || (slot && slot.subcategory);
+    }
+    if (!cat) return;
+    let k = cat;
+    if (sub) k += '/' + sub;
+    k += '::' + item.apollo_slot;
+    (apolloByKey[k] = apolloByKey[k] || []).push(item.id);
+  };
+  (state.data.events || []).forEach(e => collectApollo(e, 'event'));
+  (state.data.exhibits || []).forEach(x => collectApollo(x, 'exhibit'));
+  Object.entries(apolloByKey).forEach(([k, list]) => {
+    if (list.length > 1) issues.push(`Apollo дубль ${k}: ${list.join(', ')}`);
   });
   // Перегруз lanes
   const byCell = {};
@@ -7233,20 +7354,16 @@ function buildExportText() {
   if (state.data.subcategories) obj.subcategories = state.data.subcategories;
   if (state.data.fern_leaves) obj.fern_leaves = state.data.fern_leaves;
 
-  // v31: если данные были загружены в новом формате — компрессируем обратно
-  // в cards перед записью. Иначе сохраняем в legacy-формате (для обратной
-  // совместимости при работе с очень старым файлом).
-  if (state.data._v31_was_cards) {
-    const v31obj = v31_compressLegacyToCards(obj);
-    return `// === База событий фестиваля «Фрактальная Одиссея» v31 ===
+  // v31: всегда компрессируем в cards перед записью. Это даёт два эффекта:
+  //   1) единый формат данных на сайте (одна архитектурная сущность — карточка),
+  //   2) apollo_slot живёт на карточке, что устраняет дубли в слотах с lane=2.
+  // При загрузке старого v30-файла compat-слой развернёт его в legacy view
+  // внутри программера; при сохранении мы вернём v31. То есть первая же
+  // публикация переводит систему на v31.
+  const v31obj = v31_compressLegacyToCards(obj);
+  return `// === База событий фестиваля «Фрактальная Одиссея» v31 ===
 // Автоматически сгенерировано programmer-tool ${new Date().toISOString()}
 window.FESTIVAL_DATA = ${JSON.stringify(v31obj, null, 2)};
-`;
-  }
-
-  return `// === База событий фестиваля «Фрактальная Одиссея» ===
-// Автоматически сгенерировано programmer-tool ${new Date().toISOString()}
-window.FESTIVAL_DATA = ${JSON.stringify(obj, null, 2)};
 `;
 }
 function exportJSON() {

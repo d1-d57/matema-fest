@@ -4763,7 +4763,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-11c"></script>
+  <script src="festival-data.js?v=2026-05-11d"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -4846,30 +4846,21 @@ window.addEventListener('resize', ()=>{
       }
     }
 
-    // 3. Восстанавливаем slot.category=workshop|experiment из station по карточкам.
-    //    Если на слоте несколько карточек (lanes=2 в big_bar) — приоритет experiment.
-    //    Это нужно потому что Аполлоний на сайте обогащает event со слота
-    //    (берёт slot.category/apollo_slot и т.д.).
+    // 3. Архитектурное правило: slot.category для станционных слотов всегда
+    //    остаётся 'station'. Разделение на workshop/experiment живёт на
+    //    КАРТОЧКЕ (event.category), не на слоте — это закрытый пункт #1 ТЗ
+    //    («категорий 6, не 7»). Аполлоний ниже читает ev.category напрямую
+    //    (см. правка F2) и разносит по двум кругам внутри типа station.
+    //
+    //    Со слота для совместимости переносим только apollo_slot и subcategory —
+    //    на случай если какое-то ev осталось без них (legacy v9/v17-данные).
     if (data.time_slots) {
       for (var sid in data.time_slots) {
         var slot = data.time_slots[sid];
-        if (slot.category === 'station') {
-          var onSlot = events.filter(function(e){return e.slot === sid;});
-          if (onSlot.length === 0) slot.category = 'workshop';
-          else if (onSlot.length === 1) slot.category = onSlot[0].category;
-          else {
-            var hasExp = onSlot.some(function(e){return e.category === 'experiment';});
-            slot.category = hasExp ? 'experiment' : onSlot[0].category;
-          }
-        }
-        // Так как Аполлоний берёт apollo_slot со слота — переносим обратно
-        // с первой карточки на этом слоте, если у слота apollo_slot пуст.
-        // Это нужно только для совместимости со старым кодом Аполлония.
         if (!slot.apollo_slot) {
           var cardOnSlot = events.find(function(e){return e.slot === sid;});
           if (cardOnSlot && cardOnSlot.apollo_slot) slot.apollo_slot = cardOnSlot.apollo_slot;
         }
-        // subcategory тоже могла быть нужна (для cinema feature/short/animation).
         if (!slot.subcategory) {
           var cardOnSlot2 = events.find(function(e){return e.slot === sid;});
           if (cardOnSlot2 && cardOnSlot2.subcategory) slot.subcategory = cardOnSlot2.subcategory;
@@ -5617,13 +5608,15 @@ window.addEventListener('resize', ()=>{
         const slot = ev.slot ? slots[ev.slot] : null;
         if (slot) {
           // Привязанное к слоту событие — атрибуты места берём со слота,
-          // но если на самом событии уже прописан apollo_slot или subcategory
+          // но если на самом событии уже прописан apollo_slot/subcategory/category
           // (v31 cards-модель: они хранятся на карточке, а не на слоте),
-          // то приоритет у события. Это backward-compatible: в v30 у событий
-          // этих полей не было, поэтому fallback на slot работает как раньше.
+          // то приоритет у события. Для category это особенно важно: slot.category
+          // станционного слота — 'station' (один из 6 типов), а event.category
+          // — это card.subtype 'workshop'/'experiment' (закрытый пункт #1 и #2
+          // ТЗ). Аполлоний раскладывает на круги по event.category.
           apolloItems.push({
             ...ev,
-            category: slot.category,
+            category: ev.category || slot.category,
             apollo_slot: ev.apollo_slot || slot.apollo_slot,
             subcategory: ev.subcategory || slot.subcategory,
             venue: ev.venue || slot.venue,
