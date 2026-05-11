@@ -3087,6 +3087,15 @@ async function loadFestivalData() {
     }
     enrichEventsFromSlots(state.data);
 
+    // Архитектурное правило: apollo_slot — производное служебное поле, его
+    // должен раздавать сам программер, а не человек. Запускаем пересчёт
+    // сразу при загрузке — это лечит любые legacy-дубли apollo_slot в
+    // исходном файле (например когда на одном слоте сидят две карточки
+    // разных подкатегорий — обе унаследовали один slot.apollo_slot).
+    // Идемпотентно: если всё уже уникально, recompute ничего не меняет.
+    try { recomputeApolloSlots(state.data); }
+    catch(e) { console.warn('[programmer] apollo recompute on load failed:', e); }
+
     // Восстановление статусов заявок из data._app_statuses (если в локальном
     // state.appStatuses ничего нет — например при первой загрузке, открытии с
     // другого устройства или после очистки кеша). Локальный state имеет приоритет:
