@@ -1,5 +1,5 @@
 // === База событий фестиваля «Фрактальная Одиссея» v31 ===
-// Автоматически сгенерировано programmer-tool 2026-05-11T10:11:38.490Z
+// Автоматически сгенерировано programmer-tool 2026-05-11T10:34:57.607Z
 window.FESTIVAL_DATA = {
   "_meta": {
     "version": "2026-05-09-v30-handfix-yakovlev",
@@ -15,7 +15,7 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-11T10:11:38.489Z",
+    "last_modified": "2026-05-11T10:34:57.606Z",
     "modified_by": "programmer-tool",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\"."
@@ -90,6 +90,11 @@ window.FESTIVAL_DATA = {
       "display": "общение",
       "size": "big",
       "comment": "коллективные действия: дискуссии, квизы, совместное решение задач, нетворкинг, спид-дейтинг, перформансы, танцпол. Критерий: люди делают что-то вместе, в отличие от лекции, где есть выступающий и слушатели."
+    },
+    "station": {
+      "display": "станции",
+      "size": "big",
+      "comment": "мастерские и эксперименты — два круга на Аполлонии в типе station"
     }
   },
   "subcategories": {
@@ -712,7 +717,7 @@ window.FESTIVAL_DATA = {
       "status": "accepted",
       "type": "station",
       "subtype": "workshop",
-      "apollo_slot": "big-2",
+      "apollo_slot": "mid-3",
       "title": "Тай-дай: космические яйца",
       "speaker": "Ольга",
       "description": "Окрашивание тканей с фрактальными разводами. На выходе — узор, никогда не повторяющийся.",
@@ -789,7 +794,7 @@ window.FESTIVAL_DATA = {
       "status": "accepted",
       "type": "station",
       "subtype": "experiment",
-      "apollo_slot": "mid-2",
+      "apollo_slot": "center",
       "title": "Эволюция графов",
       "speaker": "Александр Николаичев",
       "description": "Интерактивная демонстрация — как графы растут, ломаются, перестраиваются. Игра с динамикой связей.",
@@ -879,7 +884,7 @@ window.FESTIVAL_DATA = {
       "id": "mc-fractal-tiles",
       "status": "accepted",
       "type": "station",
-      "subtype": "experiment",
+      "subtype": "workshop",
       "apollo_slot": "big-2",
       "title": "Фрактал-Ателье: напечатай свой тайлинг",
       "speaker": "Татьяна Зайцева",
@@ -1073,6 +1078,7 @@ window.FESTIVAL_DATA = {
       "status": "accepted",
       "type": "cinema",
       "subtype": "short",
+      "apollo_slot": "big-3",
       "title": "Fractal universe?",
       "description": "Could our universe be fractal? Может ли простая математика создать целую вселенную? Что общего у брокколи с Большим взрывом? И какое отношение это имеет к таким видеоиграм, как «No Man's Sky» или «Minecraft»?"
     },
@@ -1262,8 +1268,8 @@ window.FESTIVAL_DATA = {
       "status": "accepted",
       "type": "station",
       "subtype": "experiment",
-      "apollo_slot": "big-3",
-      "title": "Лингвистические станции",
+      "apollo_slot": "ear-1",
+      "title": "Лингвистическая станция",
       "speaker": "Мастерская Летней школы",
       "speaker_role": "команда летней школы",
       "description": "Серия лингвистических станций от мастерской Летней школы. Формат уточняется командой Летней школы.",
@@ -1277,7 +1283,7 @@ window.FESTIVAL_DATA = {
       "status": "accepted",
       "type": "station",
       "subtype": "experiment",
-      "apollo_slot": "big-3",
+      "apollo_slot": "ear-2",
       "title": "Ковер Аполлония, дерево Пифагора",
       "speaker": "Math cool",
       "speaker_role": "онлайн-школа олимпиадной математики",
@@ -1544,6 +1550,7 @@ window.FESTIVAL_DATA = {
       "status": "accepted",
       "type": "art",
       "subtype": "art",
+      "apollo_slot": "big-2",
       "title": "Мини-выставка работ современных художников с фрактальной концепцией",
       "speaker": "Ирина Богатикова (куратор)",
       "description": "Мини-выставка работ современных художников, работающих с темами сакральной геометрии, орнамента, повторяющихся структур и фрактальной эстетики. Куратор — Ирина Богатикова.",
@@ -1588,6 +1595,7 @@ window.FESTIVAL_DATA = {
       "status": "accepted",
       "type": "art",
       "subtype": "art",
+      "apollo_slot": "big-3",
       "title": "Лентикулярная печать фракталов",
       "speaker": "Художник (контакт через знакомого)",
       "description": "Лентикулярная (объёмная) печать фракталов. Художник пока официальную заявку не подал — связь через знакомого. Мы решили его взять."
