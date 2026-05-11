@@ -4763,7 +4763,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-11a"></script>
+  <script src="festival-data.js?v=2026-05-11b"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -5616,13 +5616,17 @@ window.addEventListener('resize', ()=>{
       for (const ev of FESTIVAL_DATA.events) {
         const slot = ev.slot ? slots[ev.slot] : null;
         if (slot) {
-          // Привязанное к слоту событие — атрибуты места берём со слота.
+          // Привязанное к слоту событие — атрибуты места берём со слота,
+          // но если на самом событии уже прописан apollo_slot или subcategory
+          // (v31 cards-модель: они хранятся на карточке, а не на слоте),
+          // то приоритет у события. Это backward-compatible: в v30 у событий
+          // этих полей не было, поэтому fallback на slot работает как раньше.
           apolloItems.push({
             ...ev,
             category: slot.category,
-            apollo_slot: slot.apollo_slot,
-            subcategory: slot.subcategory,
-            venue: slot.venue,
+            apollo_slot: ev.apollo_slot || slot.apollo_slot,
+            subcategory: ev.subcategory || slot.subcategory,
+            venue: ev.venue || slot.venue,
           });
         } else {
           // Событие-сирота (банк cinema/animation) — поля прямо на нём.
