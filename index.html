@@ -946,62 +946,6 @@
     }
 
     /* ============================================
-       CHAPTER MARKERS — крупная полупрозрачная цифра-главы
-       в углу каждой секции; перекликается с «50» в About.
-       ============================================ */
-    .chapter-num {
-      position: absolute;
-      font-family: var(--font-display);
-      font-style: italic;
-      font-weight: 500;
-      /* Mobile-first: на узком экране цифра — небольшая marginalia
-         в углу. На desktop (≥901px) — крупный декоративный знак. */
-      font-size: clamp(60px, 16vw, 120px);
-      line-height: 0.85;
-      letter-spacing: -0.04em;
-      pointer-events: none;
-      user-select: none;
-      z-index: 1;
-    }
-    @media (min-width: 901px) {
-      .chapter-num { font-size: clamp(140px, 22vw, 320px); }
-    }
-    .chapter-num--dark { color: rgba(200, 154, 61, 0.18); }
-    .chapter-num--light { color: rgba(184, 169, 138, 0.30); }
-    .chapter-num--top-right { top: clamp(20px, 4vw, 60px); right: clamp(20px, 4vw, 80px); }
-    .chapter-num--top-left { top: clamp(20px, 4vw, 60px); left: clamp(20px, 4vw, 80px); }
-    .chapter-num--bottom-right { bottom: clamp(20px, 4vw, 60px); right: clamp(20px, 4vw, 80px); }
-
-    /* Mobile: левые цифры переезжают вправо — на узком экране они
-       наезжают на заголовки, а правый угол всегда свободнее. */
-    @media (max-width: 900px) {
-      .chapter-num--top-left {
-        left: auto;
-        right: clamp(16px, 4vw, 32px);
-      }
-    }
-
-    /* Маленькая каллиграфическая «глава» под номером.
-       Декоративный label — на mobile/tablet скрываем, иначе наезжает на цифру. */
-    .chapter-label {
-      position: absolute;
-      font-family: var(--font-body);
-      font-size: clamp(10px, 0.75vw, 12px);
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      pointer-events: none;
-      user-select: none;
-      z-index: 1;
-      opacity: 0.5;
-      display: none;
-    }
-    @media (min-width: 901px) {
-      .chapter-label { display: block; }
-    }
-    .chapter-label--dark { color: var(--color-bg-light); }
-    .chapter-label--light { color: #6B5F49; }
-
-    /* ============================================
        TRACKS — Аполлонова развёртка + правая панель
        Структура (desktop): два столбца grid'ом — анимация слева, панель
        информации справа. Анимация прижата к разделительной линии (вариант
@@ -1063,9 +1007,6 @@
       min-height: 100vh;
       max-height: 100vh;
       overflow-y: auto;
-      /* над римской цифрой "iii" в углу: цифра — chapter-num, position:absolute
-         относительно секции, она просвечивает фоном панели. Это ОК — у неё
-         alpha 0.18, читаемость текста сохраняется. */
       z-index: 2;
     }
 
@@ -1215,6 +1156,14 @@
     .zoom-back.visible {
       opacity: 1;
       pointer-events: auto;
+      color: var(--color-accent);
+      animation: zoomBackPulse 1800ms ease-out 1;
+    }
+    @keyframes zoomBackPulse {
+      0%   { transform: translateX(0); }
+      30%  { transform: translateX(-3px); }
+      60%  { transform: translateX(0); }
+      100% { transform: translateX(0); }
     }
     .zoom-back:hover { color: var(--color-accent); }
     .zoom-back .arrow { transition: transform 220ms ease; }
@@ -1344,11 +1293,10 @@
         inset: auto;
       }
 
-      /* Тулбар — absolute в правом верхнем углу, опущен ниже chapter-num "iii"
-         (font-size до 120px + top до 60px → low-y ~155px; ставим toolbar ниже этого). */
+      /* Тулбар — absolute в правом верхнем углу. */
       .tracks-toolbar {
         position: absolute;
-        top: clamp(85px, 16vh, 145px);
+        top: clamp(20px, 5vw, 40px);
         right: clamp(16px, 5vw, 24px);
         flex-direction: column;
         align-items: flex-end;
@@ -1630,6 +1578,19 @@
       background: var(--color-bg-light);
       color: var(--color-bg-dark);
       border-color: rgba(22, 20, 15, 0.55);
+    }
+    /* TimePad: подгоняем под нативные ~720px со скроллом — снимаем min-height,
+       чтобы карточка не висела пустой пока iframe ещё не вставился. */
+    #cta-timepad-widget.cta-card--loaded {
+      min-height: 0;
+    }
+    /* Содержимое появляется плавно — убирает «прыжок» при подмене кнопки на iframe. */
+    .cta-card--loaded .cta-card-widget {
+      animation: ctaWidgetFadeIn 320ms ease-out 1;
+    }
+    @keyframes ctaWidgetFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
     /* TimePad: нативная высота ~720px, не растягиваем карточку — оставляем
        max-height 440 со скроллом внутри (как было раньше). Yandex map (400px)
@@ -1983,8 +1944,10 @@
       .speaker-initials {
         font-size: clamp(80px, 18vw, 120px);
       }
-      .marquee-item {
-        padding: 0 var(--space-md);
+      /* Бегущая строка на мобиле визуально дублирует hero и тянет
+         бесконечную animation. Скрываем — на узком экране она лишний шум. */
+      .marquee-wrap {
+        display: none;
       }
     }
     /* ============================================
@@ -2605,11 +2568,6 @@
       .speakers-content {
         padding: clamp(40px, 8vw, 80px) clamp(20px, 5vw, 32px);
       }
-      /* Заголовок секции имеет цифру-главу в правом углу — даём ему
-         padding-right под её ширину чтобы текст не попадал под цифру. */
-      .speakers-header .speakers-title {
-        padding-right: clamp(70px, 18vw, 130px);
-      }
 
       /* Schedule: на мобильном список идёт вертикально, папоротник скрыт.
          Колонка списка перестаёт быть фиксированной 420px — занимает всю
@@ -2741,7 +2699,7 @@
   <!-- ====== PRELOADER ====== -->
   <div id="preloader">
     <div class="preloader-title" id="preloader-title"></div>
-    <div class="preloader-slogan" id="preloader-slogan">научпоп · искусство · музыка · мастерские</div>
+    <div class="preloader-slogan" id="preloader-slogan">23 мая · фестиваль о красоте математики</div>
     <div class="preloader-progress">
       <div class="preloader-progress-fill"></div>
     </div>
@@ -2756,7 +2714,6 @@
   <main>
   <!-- ====== HERO ====== -->
   <section id="hero" class="section" data-theme="dark">
-    <span class="chapter-num chapter-num--dark chapter-num--bottom-right" aria-hidden="true">i</span>
     <canvas id="hero-canvas"></canvas>
     <div class="hero-content">
       <div class="hero-label" id="hero-label">Matema-фест 2026 · Фестиваль о красоте математики</div>
@@ -2790,8 +2747,6 @@
 
   <!-- ====== ABOUT ====== -->
   <section id="about" class="section" data-theme="light">
-    <span class="chapter-num chapter-num--light chapter-num--top-left" aria-hidden="true">ii</span>
-    <span class="chapter-label chapter-label--light" style="top: clamp(40px, 8vw, 90px); left: calc(clamp(20px, 4vw, 80px) + clamp(80px, 16vw, 130px));" aria-hidden="true">Глава · Манифест</span>
     <picture><source type="image/webp" srcset="assets/about-50.webp"><img class="about-watermark" src="assets/about-50.png" alt="" aria-hidden="true"></picture>
     <span class="about-watermark-caption" aria-hidden="true">лет работе<br>Бенуа Мандельброта<br>«Fractal Geometry<br>of Nature»</span>
     <div class="about-content">
@@ -2813,7 +2768,6 @@
 
   <!-- ====== TRACKS ====== -->
   <section id="tracks" class="section" data-theme="dark">
-    <span class="chapter-num chapter-num--dark chapter-num--top-right" aria-hidden="true">iii</span>
     <div class="tracks-stage">
       <div class="tracks-anim-col">
         <div class="apollon-container">
@@ -2865,7 +2819,6 @@
 
   <!-- ====== SPEAKERS ====== -->
   <section id="speakers" class="section" data-theme="dark">
-    <span class="chapter-num chapter-num--dark chapter-num--top-left" aria-hidden="true">iv</span>
     <div class="speakers-content">
       <div class="speakers-header">
         <h2 class="speakers-title reveal">Действующие лица</h2>
@@ -2948,7 +2901,6 @@
 
   <!-- ====== SCHEDULE ====== -->
   <section id="schedule" class="section section--schedule" data-theme="dark">
-    <span class="chapter-num chapter-num--dark chapter-num--top-right" aria-hidden="true">v</span>
     <div class="schedule-shell">
       <aside class="schedule-list-col">
         <div class="schedule-toolbar">
@@ -4668,12 +4620,12 @@ window.addEventListener('resize', ()=>{
   <!-- ====== MARQUEE ====== -->
   <div class="marquee-wrap">
     <div class="marquee-track" id="marquee-track">
-      <span class="marquee-item">Фрактальная Одиссея <span class="accent">·</span> 23 мая <span class="accent">·</span> Чистые пруды <span class="accent">·</span> 18+</span>
-      <span class="marquee-item">лекции <span class="accent">·</span> мастерские <span class="accent">·</span> инсталляции <span class="accent">·</span> музыка</span>
-      <span class="marquee-item">Фрактальная Одиссея <span class="accent">·</span> 23 мая <span class="accent">·</span> Чистые пруды <span class="accent">·</span> 18+</span>
-      <span class="marquee-item">лекции <span class="accent">·</span> мастерские <span class="accent">·</span> инсталляции <span class="accent">·</span> музыка</span>
-      <span class="marquee-item">Фрактальная Одиссея <span class="accent">·</span> 23 мая <span class="accent">·</span> Чистые пруды <span class="accent">·</span> 18+</span>
-      <span class="marquee-item">лекции <span class="accent">·</span> мастерские <span class="accent">·</span> инсталляции <span class="accent">·</span> музыка</span>
+      <span class="marquee-item">23 мая <span class="accent">·</span> фестиваль о красоте математики</span>
+      <span class="marquee-item">23 мая <span class="accent">·</span> фестиваль о красоте математики</span>
+      <span class="marquee-item">23 мая <span class="accent">·</span> фестиваль о красоте математики</span>
+      <span class="marquee-item">23 мая <span class="accent">·</span> фестиваль о красоте математики</span>
+      <span class="marquee-item">23 мая <span class="accent">·</span> фестиваль о красоте математики</span>
+      <span class="marquee-item">23 мая <span class="accent">·</span> фестиваль о красоте математики</span>
     </div>
   </div>
 
@@ -4746,7 +4698,7 @@ window.addEventListener('resize', ()=>{
 
       <div class="footer-meta">
         <div class="footer-meta-left">
-          <div class="footer-logo">Фрактальная Одиссея · Matema-фест 2026</div>
+          <div class="footer-logo">Фестиваль о красоте математики</div>
           <div>По вопросам — Ваня Яковлев · <a href="https://t.me/d1_d57">@d1_d57</a> · Подробнее в <a href="https://t.me/turings_crossword">канале «Кроссворд Тьюринга»</a></div>
         </div>
         <div class="footer-copy">© 2026 · 18+</div>
@@ -5866,11 +5818,43 @@ window.addEventListener('resize', ()=>{
       c.drawDuration = c.drawEnd - c.drawStart;
     }
 
-    // Лейблы — появляются под конец рисовки круга
+    // Лейблы — ансамблевая схема для семи кликабельных кругов.
+    // Идея: у кругов разные угловые скорости (разные drawStart/drawEnd),
+    // но они собираются в один общий момент. Подписи строятся по тому же
+    // принципу: разные старты, ОБЩИЙ КОНЕЦ — единое «хоровое» проявление.
+    // Кликабельность каждого круга включается чуть раньше конца его подписи
+    // (см. LABEL_CLICK_AT в findHovered / click-handlers ниже).
+    //
+    // Семь кликабельных категорий и моменты их появления (по прогрессу 0..1):
+    const LABEL_TIMELINE = {
+      // tier 0 — открывают хор
+      'научпоп':    0.04,
+      'музыка':     0.08,
+      'искусство':  0.12,
+      // tier 1 — вторая волна, перекрывают хвосты первых
+      'мастерские': 0.18,
+      'эксперименты': 0.25,
+      'кино':       0.32,
+      // центр — последняя нота, но не слишком поздно: вступает близко к финалу
+      'общение':    0.42,
+    };
+    // Общий конец проявления всех подписей. Раньше, чем заканчивается рисование
+    // (structural circles ~0.80–0.90) — чтобы подписи стали финальным узким моментом
+    // ансамбля, а не плелись в хвосте.
+    const LABEL_END = 0.62;
+    // Не-кликабельные tier-3 (decorative) появляются как раньше — по своему кругу.
     for (const c of sorted) {
-      c.labelStart = Math.min(0.985, c.drawStart + c.drawDuration * 0.85);
-      c.labelDur = 0.04;
+      if (LABEL_TIMELINE[c.tag] !== undefined) {
+        c.labelStart = LABEL_TIMELINE[c.tag];
+        c.labelDur = Math.max(0.05, LABEL_END - c.labelStart);
+      } else {
+        c.labelStart = Math.min(0.985, c.drawStart + c.drawDuration * 0.85);
+        c.labelDur = 0.04;
+      }
     }
+    // Кликабельность включается, когда подпись проявилась на эту долю своей длительности.
+    // Чуть раньше конца — пользователь может тыкнуть, пока буквы ещё доводятся.
+    const LABEL_CLICK_AT = 0.55;
 
     // (нормализация и labelStart уже посчитаны выше)
 
@@ -6012,8 +5996,10 @@ window.addEventListener('resize', ()=>{
         ctx.fill();
       }
 
-      // Подпись — на корневом уровне (на вложенных пока без надписей)
-      if (allowPen && c.tag && dp >= 0.85 && labelMul > 0.001) {
+      // Подпись — управляется LABEL_TIMELINE (см. выше). Привязка к dp снята:
+      // подпись может появиться раньше, чем круг полностью прорисован, —
+      // это и есть «хоровое» включение в ансамбль.
+      if (allowPen && c.tag && labelMul > 0.001) {
         const lp = getLabelProgress(c);
         if (lp > 0) {
           const fontSize = fontSizeForTier(c.tier, wr, s.scale);
@@ -6472,6 +6458,7 @@ window.addEventListener('resize', ()=>{
       'научпоп':    { title: 'Научпоп',    desc: 'Лекции от учёных и популяризаторов о том, что происходит на переднем крае знания.' },
       'музыка':     { title: 'Музыка',     desc: 'Концерты, импровизации и DJ-сеты в течение всего дня.' },
       'искусство':  { title: 'Искусство',  desc: 'Работы художников на стыке науки, природы и эстетики.' },
+      'эксперименты':{ title: 'Эксперименты', desc: 'Интерактивные станции: руками постигать физические явления и математические идеи.' },
       'опыты':      { title: 'Опыты',      desc: 'Станции, где можно руками постигать физические явления и математические идеи.' },
       'мастерские': { title: 'Мастерские', desc: 'Делать вместе с экспертами и создавать своё.' },
       'кино':       { title: 'Кино',       desc: 'Документальные и научно-популярные фильмы.' },
@@ -6481,15 +6468,24 @@ window.addEventListener('resize', ()=>{
     let hoveredCircle = null;
     let needsRedraw = true;
 
-    // Анимация рисования закончилась — можно начинать взаимодействовать.
-    // Не ждём progress=1 (полная анимация 18 секунд, в конце дорисовывается
-    // декоративная мелочь). Открываем клики как только закруглился последний
-    // кликабельный круг (3 крупных + 3 средних + центр) — это происходит
-    // примерно на 50–70% от общей длительности.
-    const INTERACTIVE_THRESHOLD = clickableCircles.reduce(
-      (m, c) => Math.max(m, (c.drawEnd != null ? c.drawEnd : 1)), 0
-    );
-    function isInteractive() { return progress >= INTERACTIVE_THRESHOLD; }
+    // Кликабельность работает по-кругу: каждый из 7 кругов открывается тогда,
+    // когда его собственная подпись проявилась на LABEL_CLICK_AT (см. выше).
+    // Глобальный isInteractive — есть ли вообще хоть один открытый круг.
+    // В зуме (zoomedCircle) кликабельность всегда включена — мы уже внутри
+    // категории, дальше работают inner-круги без проверки.
+    function isCircleClickable(c) {
+      if (!c || !isClickable(c)) return false;
+      const lp = getLabelProgress(c);
+      return lp >= LABEL_CLICK_AT;
+    }
+    function isInteractive() {
+      if (zoomedCircle) return true;
+      // На root-уровне: открыт если хоть один кликабельный круг прошёл порог.
+      for (const c of clickableCircles) {
+        if (getLabelProgress(c) >= LABEL_CLICK_AT) return true;
+      }
+      return false;
+    }
 
     function findHovered(mx, my) {
       if (!isInteractive()) return null;
@@ -6584,8 +6580,9 @@ window.addEventListener('resize', ()=>{
         return null;
       }
 
-      // Верхний уровень
+      // Верхний уровень — кликабелен только круг, у которого подпись уже проявилась
       for (const c of clickableCircles) {
+        if (!isCircleClickable(c)) continue;
         const s = worldToScreen(c.x, c.y);
         const rPx = Math.abs(c.r) * s.scale;
         const dx = mx - s.px, dy = my - s.py;
