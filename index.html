@@ -4715,7 +4715,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-15b"></script>
+  <script src="festival-data.js?v=2026-05-15c"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -6531,11 +6531,10 @@ window.addEventListener('resize', ()=>{
         }
 
         if (hasSubs) {
-          // Случай Б: ищем sub-cat круг (только big-1/2/3, tier=0)
+          // Случай Б: ищем sub-cat круг (на любой позиции с apollo_slot — big/center/mid)
           for (const c of CIRCLES) {
             if (c.sign === -1) continue;
             if (!c.apollo_slot) continue;
-            if (c.tier !== 0) continue;  // sub-cat живут только на больших
             const subEntry = subcatByCatAndSlot[catId + ':' + c.apollo_slot];
             if (!subEntry) continue;
             const wx = px + c.x * pr;
