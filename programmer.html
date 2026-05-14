@@ -1706,7 +1706,7 @@ body.viewer-mode .comm-badges { display: none !important; }
       <button class="right-tab" data-view="social"><span class="tab-dot" style="background:#6f8aa3"></span>Общение <span class="tab-count" id="stat-social">—</span></button>
       <button class="right-tab" data-view="cinema"><span class="tab-dot" style="background:#a06070"></span>Кино <span class="tab-count" id="stat-cinema">—</span></button>
       <button class="right-tab" data-view="music"><span class="tab-dot" style="background:#c47862"></span>Музыка <span class="tab-count" id="stat-music">—</span></button>
-      <button class="right-tab" data-view="art"><span class="tab-dot" style="background:#957490"></span>Искусство <span class="tab-count" id="stat-art">—</span></button>
+      <button class="right-tab" data-view="art"><span class="tab-dot" style="background:#957490"></span>Art + Digital <span class="tab-count" id="stat-art">—</span></button>
     </div>
     <div class="right-content">
       <section class="section active" id="section-timeline">
@@ -1724,7 +1724,7 @@ body.viewer-mode .comm-badges { display: none !important; }
         <p style="font-size:12px;color:var(--ink-quiet);flex-shrink:0;margin:0 0 10px">
           Постоянные арт-объекты, не привязанные к времени. <strong>Галерея</strong> и <strong>инсталляции</strong> — то что стоит/висит весь вечер. <strong>Медиа-арт</strong> — фоновые проекции, идут параллельно событиям, не занимают слотов.
         </p>
-        <div id="exhibits-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;flex:1;overflow:auto"></div>
+        <div id="exhibits-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;flex:1;overflow:auto"></div>
       </section>
     </div>
   </main>
@@ -3023,6 +3023,7 @@ function v31_compressLegacyToCards(obj) {
       description: ex.description,
       links: ex.links,
       team_notes: ex.team_notes,
+      _admin: ex._admin,  // сохраняем admin-чек-лист (значки коммуникации) при round-trip
     });
     if (ex._source_app) {
       card._source_app = ex._source_app;
@@ -3632,9 +3633,9 @@ function updateViewTabCounters() {
     if (c.kind === 'exhibit') return 'art';
     const ovr = state.candCategoryOverrides?.[c.id];
     if (ovr && typeof ovr === 'object') return ovr.type;
-    if (typeof ovr === 'string') return ['art','installation','media'].includes(ovr) ? 'art' : ovr;
+    if (typeof ovr === 'string') return ['art','installation','media','digital'].includes(ovr) ? 'art' : ovr;
     let cat = c._suggested_category || null;
-    if (cat === 'installation' || cat === 'media') cat = 'art';
+    if (cat === 'installation' || cat === 'media' || cat === 'digital') cat = 'art';
     return cat;
   };
   const countByCats = (cats) => pendingCands.filter(c => cats.includes(candType(c))).length;
@@ -3658,10 +3659,10 @@ function renderCandCard(c) {
   else {
     const ovr = state.candCategoryOverrides?.[c.id];
     if (ovr && typeof ovr === 'object') cat = ovr.type;
-    else if (typeof ovr === 'string') cat = ['art','installation','media'].includes(ovr) ? 'art' : ovr;
+    else if (typeof ovr === 'string') cat = ['art','installation','media','digital'].includes(ovr) ? 'art' : ovr;
     else {
       cat = c._suggested_category || null;
-      if (cat === 'installation' || cat === 'media') cat = 'art';
+      if (cat === 'installation' || cat === 'media' || cat === 'digital') cat = 'art';
     }
   }
   const catClass = cat ? ` cat-${majorCat(cat)}` : '';
@@ -3776,7 +3777,7 @@ function appWorld(app) {
   const sc = (app._suggested_category || '').toLowerCase();
 
   // Явное переопределение командой: art в _suggested_category → искусство, cinema → кино, music → музыка
-  if (sc === 'art' || sc === 'installation' || sc === 'media') return 'art';
+  if (sc === 'art' || sc === 'installation' || sc === 'media' || sc === 'digital') return 'art';
   if (sc === 'cinema') return 'cinema';
   if (sc === 'music') return 'music';
 
@@ -4411,7 +4412,7 @@ function renderExhibits() {
   const exh = (state.data.exhibits || []).filter(e =>
     e.status === 'confirmed' || e.status === 'tentative'
   );
-  const byKind = {art: [], installation: [], media: []};
+  const byKind = {art: [], installation: [], media: [], digital: []};
   exh.forEach(e => { (byKind[e.kind] || (byKind[e.kind] = [])).push(e); });
 
   const grid = document.getElementById('exhibits-grid');
@@ -4419,7 +4420,8 @@ function renderExhibits() {
   const cols = [
     {kind: 'art', title: 'Галерея', hint: 'Картины, объекты — то что стоит/висит весь вечер.'},
     {kind: 'installation', title: 'Инсталляции', hint: 'Физические инсталляции, занимают место в пространстве.'},
-    {kind: 'media', title: 'Медиа-арт', hint: 'Видео, проекции — выводится на проекторе в перебивах.'}
+    {kind: 'media', title: 'Медиа-арт', hint: 'Видео, проекции — выводится на проекторе в перебивах.'},
+    {kind: 'digital', title: 'Digital', hint: 'Компьютерные/VR-программы — гость садится в уголок, без таймслота.'}
   ];
   grid.innerHTML = cols.map(c => {
     const items = byKind[c.kind] || [];
@@ -4472,7 +4474,7 @@ function addExhibit(kind) {
   const title = prompt(`Название нового экспоната (${kind}):`);
   if (!title) return;
   const id = 'exh-' + Date.now();
-  const subcatDefault = kind === 'art' ? 'art' : (kind === 'installation' ? 'installation' : 'media');
+  const subcatDefault = kind === 'art' ? 'art' : (kind === 'installation' ? 'installation' : (kind === 'digital' ? 'digital' : 'media'));
   state.data.exhibits = state.data.exhibits || [];
   state.data.exhibits.push({
     id, kind, status: 'tentative',
@@ -4632,9 +4634,9 @@ function handleDrop(slotId, venueId, laneIdx, e) {
       // У заявки тип определяется так же как при создании: override > suggested
       const ovr = state.candCategoryOverrides?.[id];
       if (ovr && typeof ovr === 'object') candCat = ovr.type;
-      else if (typeof ovr === 'string') candCat = (['art','installation','media'].includes(ovr) ? 'art' : ovr);
+      else if (typeof ovr === 'string') candCat = (['art','installation','media','digital'].includes(ovr) ? 'art' : ovr);
       else candCat = cand?._suggested_category || null;
-      if (candCat === 'installation' || candCat === 'media') candCat = 'art';
+      if (candCat === 'installation' || candCat === 'media' || candCat === 'digital') candCat = 'art';
     }
     if (candCat && majorCat(candCat) !== majorCat(slot.category)) {
       const slotCat = state.data.categories?.[slot.category]?.display || slot.category;
