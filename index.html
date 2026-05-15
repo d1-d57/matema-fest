@@ -1869,6 +1869,61 @@
       line-height: 1.45;
     }
 
+    /* Генеральный партнёр — отдельный блок над «Делают вместе». Одна
+       карточка во всю ширину, золотая рамка для акцента, опциональный
+       логотип слева. Визуально отделена от обычной сетки партнёров. */
+    .footer-general-partner-block { width: 100%; }
+    .footer-general-partner-card {
+      display: flex;
+      align-items: center;
+      gap: clamp(18px, 2vw, 32px);
+      padding: clamp(18px, 2vw, 26px) clamp(20px, 2.2vw, 32px);
+      border: 1px solid var(--color-accent);
+      border-radius: 4px;
+      background: rgba(200, 154, 61, 0.04);
+      color: var(--color-bg-light);
+      transition: background 200ms, border-color 200ms;
+      text-decoration: none;
+    }
+    .footer-general-partner-card:hover {
+      background: rgba(200, 154, 61, 0.08);
+    }
+    .footer-general-partner-logo {
+      height: clamp(36px, 3.6vw, 52px);
+      width: auto;
+      flex-shrink: 0;
+      opacity: 0.92;
+    }
+    .footer-general-partner-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .footer-general-partner-name {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(18px, 1.4vw, 22px);
+      font-weight: 500;
+      line-height: 1.2;
+      color: var(--color-bg-light);
+    }
+    .footer-general-partner-role {
+      font-family: var(--font-body);
+      font-size: clamp(11px, 0.85vw, 13px);
+      color: var(--color-muted);
+      letter-spacing: 0.04em;
+      line-height: 1.5;
+    }
+    /* На совсем узких — лого над текстом. */
+    @media (max-width: 480px) {
+      .footer-general-partner-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+    }
+
     .footer-meta {
       display: flex;
       flex-wrap: wrap;
@@ -4809,13 +4864,20 @@ window.addEventListener('resize', ()=>{
   <!-- ====== FOOTER ====== -->
   <footer id="footer">
     <div class="footer-content">
+      <div class="footer-general-partner-block">
+        <div class="footer-partners-label">Генеральный партнёр</div>
+        <a class="footer-general-partner-card" href="https://leaderstech.ru/" target="_blank" rel="noopener">
+          <img class="footer-general-partner-logo" src="assets/logo_tlf_main_white.svg" alt="TLF — Technology Leaders of the Future">
+          <div class="footer-general-partner-text">
+            <div class="footer-general-partner-name">Technology Leaders of the Future</div>
+            <div class="footer-general-partner-role">Международная стипендиальная программа с усиленным STEM-треком для школьников 14–17 лет</div>
+          </div>
+        </a>
+      </div>
+
       <div class="footer-partners-block">
         <div class="footer-partners-label">Делают вместе</div>
         <div class="footer-partners-grid">
-          <a class="footer-partner" href="https://leaderstech.ru/" target="_blank" rel="noopener">
-            <div class="footer-partner-name">TLF</div>
-            <div class="footer-partner-role">Стипендиальная STEM-программа для ребят 14–17 лет</div>
-          </a>
           <a class="footer-partner" href="https://t.me/turings_crossword" target="_blank" rel="noopener">
             <div class="footer-partner-name">Кроссворд Тьюринга</div>
             <div class="footer-partner-role">Канал о математике</div>
@@ -4862,7 +4924,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-15j"></script>
+  <script src="festival-data.js?v=2026-05-15k"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
