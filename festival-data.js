@@ -1,5 +1,5 @@
 // === База событий фестиваля «Фрактальная Одиссея» v31 ===
-// Автоматически сгенерировано programmer-tool 2026-05-15T22:31:26.640Z
+// Автоматически сгенерировано programmer-tool 2026-05-15T23:09:31.322Z
 window.FESTIVAL_DATA = {
   "_meta": {
     "version": "2026-05-09-v30-handfix-yakovlev",
@@ -15,10 +15,11 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-15T22:31:26.638Z",
-    "modified_by": "programmer-tool",
+    "last_modified": "2026-05-15T23:21:58.893Z",
+    "modified_by": "claude-links-merge",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
-    "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\"."
+    "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\".",
+    "changes_v31": "Массовое добавление поля links у 36 карточек по links-table.md: arts, music, popsci, social, stations. 4 карточки с мусорными ссылками (Карнаухов, Серомаха, FracLife/Юля, Математический арт/Андрей) пересобраны в чистый формат [{label,url}]. У Гусева ссылка TLF проставлена и на лекции (talk-gusev-nn), и на станции (station-gusev-chaos)."
   },
   "venues": {
     "library": {
@@ -528,7 +529,17 @@ window.FESTIVAL_DATA = {
       "venue": "library",
       "_admin": {
         "knows": true
-      }
+      },
+      "links": [
+        {
+          "label": "Telegram «Кроссворд Тьюринга»",
+          "url": "https://t.me/turings_crossword"
+        },
+        {
+          "label": "Сайт",
+          "url": "https://matemateachka.com/mathteacheryakovlev"
+        }
+      ]
     },
     {
       "id": "talk-evdokimov",
@@ -547,7 +558,17 @@ window.FESTIVAL_DATA = {
         "has_announce": true,
         "has_channel_post": true,
         "time_final": true
-      }
+      },
+      "links": [
+        {
+          "label": "Журнал «Квантик»",
+          "url": "https://kvantik.com/"
+        },
+        {
+          "label": "Квантландия",
+          "url": "https://math.kvantland.com/"
+        }
+      ]
     },
     {
       "id": "talk-tarasevich",
@@ -560,7 +581,13 @@ window.FESTIVAL_DATA = {
       "speaker_role": "научный журналист",
       "description": "Командный квиз в формате ЧГК с вопросами на стыке науки и искусства. Играть можно семьями, с детьми, школьниками — или без них.",
       "slot": "slot-tarasevich",
-      "venue": "small_bar"
+      "venue": "small_bar",
+      "links": [
+        {
+          "label": "Кот Шрёдингера",
+          "url": "https://t.me/kot_sh"
+        }
+      ]
     },
     {
       "id": "social-rosetka",
@@ -576,7 +603,17 @@ window.FESTIVAL_DATA = {
       "venue": "big_bar",
       "_admin": {
         "knows": true
-      }
+      },
+      "links": [
+        {
+          "label": "Сайт",
+          "url": "https://rozetka.team/"
+        },
+        {
+          "label": "Instagram",
+          "url": "https://www.instagram.com/obrazovantsy/"
+        }
+      ]
     },
     {
       "id": "talk-gelfand",
@@ -591,7 +628,13 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage",
       "_admin": {
         "knows": true
-      }
+      },
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/mikhail_s_gelfand"
+        }
+      ]
     },
     {
       "id": "talk-rajgorodski",
@@ -606,7 +649,17 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage",
       "_admin": {
         "knows": true
-      }
+      },
+      "links": [
+        {
+          "label": "Wiki МФТИ",
+          "url": "https://wiki.mipt.tech/index.php/Райгородский_Андрей_Михайлович"
+        },
+        {
+          "label": "Страница на МФТИ",
+          "url": "https://mipt.ru/education/chairs/dm/staff/raigorodskii.php"
+        }
+      ]
     },
     {
       "id": "talk-skripchenko",
@@ -621,7 +674,13 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage",
       "_admin": {
         "knows": true
-      }
+      },
+      "links": [
+        {
+          "label": "Страница на ВШЭ",
+          "url": "https://www.hse.ru/org/persons/114685975/"
+        }
+      ]
     },
     {
       "id": "puzzle-fractal-3d",
@@ -662,7 +721,13 @@ window.FESTIVAL_DATA = {
         "capacity": "15 и больше",
         "fractal_link": "да, мы собственно вырезаем два фрактала",
         "special": "нет, но наверное нужно побольше стульев и столов так как станция может вместить много людей"
-      }
+      },
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/maomao_les"
+        }
+      ]
     },
     {
       "id": "mc-calligraphy",
@@ -707,7 +772,13 @@ window.FESTIVAL_DATA = {
         "special": "В идеале только чтобы не было ветра и осадков",
         "time_constraints": "Хотелось бы иметь 1-2 окна или перерыва по 30 минут, чтобы самой также принять участие в Одиссее",
         "extra": "Все прекрасно, буду рада поделиться знаниями о японской каллиграфии. Открыта к сотрудничеству и вопросам"
-      }
+      },
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/natashasensei"
+        }
+      ]
     },
     {
       "id": "puzzle-engineering-origami",
@@ -748,7 +819,13 @@ window.FESTIVAL_DATA = {
         "capacity": "15 и больше",
         "fractal_link": "не(",
         "special": "опять таки побольше стульев"
-      }
+      },
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/maomao_les"
+        }
+      ]
     },
     {
       "id": "mc-tie-dye",
@@ -790,7 +867,13 @@ window.FESTIVAL_DATA = {
         "capacity": "5–15",
         "fractal_link": "Повторение рисунка при раскручивании будет подобно повторяющейся детализации, что гениально и невероятно просто.",
         "special": "Возможно понадобится микрофон-петелька, зависит от того, насколько шумное будет в целом помещение"
-      }
+      },
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/djokatkova"
+        }
+      ]
     },
     {
       "id": "mc-theremin",
@@ -884,7 +967,13 @@ window.FESTIVAL_DATA = {
       "speaker_role": "музыкант, научно-технический рэп",
       "description": "Единственная группа в России, играющая нердкор — интеллектуальный хип-хоп. Песни — про реалии жизни IT-специалистов, биографии учёных и популярные теоремы. Влад программист, в прошлом сотрудник теорсектора Ландау. Группа основана в 2014 году «с целью нести свет знания в небытие хип-хопа».",
       "slot": "slot-rap-evening",
-      "venue": "courtyard"
+      "venue": "courtyard",
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/ntr1_0"
+        }
+      ]
     },
     {
       "id": "mc-fractal-tiles",
@@ -969,7 +1058,13 @@ window.FESTIVAL_DATA = {
         "source_detail": "увидела пост в каком-то канале с подборками опен-коллов",
         "extra": "Я могу варьировать форматом в зависимости от ваших возможностей, возьму на себя полное подключение звука (с любыми настройками отстройками), помимо своего выступления. Но что касается строительства привлекающего к себе интерактивного объекта - здесь мне нужна помощь, нет возможности в одиночку сделать его заранее или привезти заблаговременно. При этом объект может быть любым - влияние на звук происходит путем передачи вибраций от удара/прикосновения на пьезодатчик, который передаёт сигнал в мою систему. Также, когда появится понимание в какой именно точке происходит спектакль, какие размеры помещения, сцены, сколько зрителей и т.д. - смогу набросать эскизы объектов. Ну и к тому же ко всем вариантам объектов можно предусмотреть и подсветку - но тут снова будет нужна помочь с пайкой, физически, к сожалению, не смогу осилить и звук настроить и свет спаять. Нужно будет рационально оценить силы, команду и время настройки. \n\nПри невозможности помощи с созданием интерактивных объектов - \"Точка-Ноль\", само собой, может остаться просто музыкальным спектаклем.",
         "_warning": "Музыкальный спектакль по Хармсу — берём, формат уточняется"
-      }
+      },
+      "links": [
+        {
+          "label": "Сайт",
+          "url": "https://alina.asomnia.art"
+        }
+      ]
     },
     {
       "id": "discussion-tba",
@@ -1088,7 +1183,13 @@ window.FESTIVAL_DATA = {
       "speaker": "Пётр Термен",
       "description": "Пётр Термен (Peter Theremin) — один из ведущих исполнителей на терменвоксе в мире, академический и электронный музыкант, руководитель школы терменвокса ThereminFamilySchool, правнук Льва Термена. Как композитор — лауреат премий Creativepool и Clio Music.",
       "slot": "slot-music-1",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "links": [
+        {
+          "label": "Сайт",
+          "url": "https://peter.theremintimes.ru/"
+        }
+      ]
     },
     {
       "id": "music-main-23",
@@ -1099,7 +1200,17 @@ window.FESTIVAL_DATA = {
       "title": "Stropharia",
       "description": "Московский live-проект, сформирован Дмитрием Поликарповым в 1993 году. Умная электроника, радикальный бит, цифровой хардкор, эйсид-транс. Выступление поддержит видео-арт-художник vj forrrest.",
       "slot": "slot-music-2",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "links": [
+        {
+          "label": "Блог",
+          "url": "http://blog.stropharia.ru/"
+        },
+        {
+          "label": "Bandcamp",
+          "url": "https://stropharia.bandcamp.com/"
+        }
+      ]
     },
     {
       "id": "music-main-00",
@@ -1110,7 +1221,17 @@ window.FESTIVAL_DATA = {
       "title": "Rombix",
       "description": "Роман Вороновский — музыкант, продюсер, основатель лейбла 24919. Исследует процессы плёночной звукозаписи и манипуляции с лентой: шелест плёночных петель, спонтанные вмешательства и непредсказуемое наложение звуков порождают постоянно меняющийся поток.",
       "slot": "slot-music-3",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "links": [
+        {
+          "label": "LiveJournal",
+          "url": "https://rombix.livejournal.com/"
+        },
+        {
+          "label": "Discogs",
+          "url": "https://www.discogs.com/artist/115618-Rombix"
+        }
+      ]
     },
     {
       "id": "music-main-01",
@@ -1121,7 +1242,21 @@ window.FESTIVAL_DATA = {
       "title": "Womba",
       "description": "Сольный проект Тихона Кубова. Звуковые конструкты построены на деформированных кассетных и полевых сэмплах, полуразложившихся home-fi гармониях, конвульсивных синтетических вибрациях с дерзкими вокальными экзерсисами.",
       "slot": "slot-music-5",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "links": [
+        {
+          "label": "Bandcamp",
+          "url": "https://womba.bandcamp.com/music"
+        },
+        {
+          "label": "VK",
+          "url": "https://vk.com/club7401126"
+        },
+        {
+          "label": "Instagram",
+          "url": "https://www.instagram.com/modulor_archives/"
+        }
+      ]
     },
     {
       "id": "music-main-02",
@@ -1132,7 +1267,17 @@ window.FESTIVAL_DATA = {
       "title": "Hobboth",
       "description": "Эмбиент-проект, вдохновлённый земным и космическим воплощениями природы. Мелодические секвенции наслаиваются друг на друга и плавно переходят в шумы и дроны.",
       "slot": "slot-music-6",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/HobbothMusic"
+        },
+        {
+          "label": "YouTube",
+          "url": "https://youtube.com/@hobbothmusic"
+        }
+      ]
     },
     {
       "id": "music-pink-2130",
@@ -1143,7 +1288,17 @@ window.FESTIVAL_DATA = {
       "title": "Brinstaar",
       "description": "Проект московского художника и музыканта Михаила Мясоедова. Соучредитель лейбла Kotä, преподаёт саунд-арт в Школе дизайна НИУ ВШЭ. К фестивалю готовит специальный сетап, в котором звук генерируется процедурными алгоритмами, в том числе на основе фракталов.",
       "slot": "slot-music-parallel-1",
-      "venue": "big_bar"
+      "venue": "big_bar",
+      "links": [
+        {
+          "label": "Bandcamp",
+          "url": "https://brinstaar.bandcamp.com/"
+        },
+        {
+          "label": "Лейбл Kotä",
+          "url": "https://kotaerecords.com/artists/brinstaar"
+        }
+      ]
     },
     {
       "id": "music-pink-2230",
@@ -1154,7 +1309,13 @@ window.FESTIVAL_DATA = {
       "title": "Spiralfractal",
       "description": "В основе проекта — спиральность и фрактальность всего сущего. Во время его выступления архаичные ритмы, этнические мелодии и басовые волны формируют на танцполе узоры сакральной геометрии.",
       "slot": "slot-music-parallel-2",
-      "venue": "big_bar"
+      "venue": "big_bar",
+      "links": [
+        {
+          "label": "VK",
+          "url": "https://m.vk.com/public205955884"
+        }
+      ]
     },
     {
       "id": "music-pink-2330",
@@ -1165,7 +1326,21 @@ window.FESTIVAL_DATA = {
       "title": "Morakh",
       "description": "Резидент лейблов «Местность» и Shelter Tapes. Звучание проекта Morakh — синтез интеллигентного техно, брейкбита, IDM и future garage, энергичная и эмоциональная музыка для больших площадок. Его альбомы сравнивали с работами Moderat, Bicep и Overmono.",
       "slot": "slot-music-parallel-3",
-      "venue": "big_bar"
+      "venue": "big_bar",
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/morakhmusic"
+        },
+        {
+          "label": "VK",
+          "url": "https://vk.com/morakhmusic"
+        },
+        {
+          "label": "Instagram",
+          "url": "https://instagram.com/morakhmusic"
+        }
+      ]
     },
     {
       "id": "music-pink-0030",
@@ -1176,7 +1351,17 @@ window.FESTIVAL_DATA = {
       "title": "ænsof",
       "description": "В каббалистической традиции есть непознаваемая сущность Б-га, дословно — «бесконечное». Дуэт использует абсолютно современный инструментарий, но, не размениваясь в своём звуке на сиюминутные веяния моды, исследует сквозь призму классических индустриальных и дабовых техник полубессознательные и порой архетипические образы.",
       "slot": "slot-music-parallel-4",
-      "venue": "big_bar"
+      "venue": "big_bar",
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/aensofsound"
+        },
+        {
+          "label": "Instagram",
+          "url": "http://instagram.com/aensofsound"
+        }
+      ]
     },
     {
       "id": "music-pink-0130",
@@ -1187,7 +1372,13 @@ window.FESTIVAL_DATA = {
       "title": "garish_cyborg",
       "description": "Московский экспериментатор, работающий в разных жанрах — от гипнотического дабстепа до самых шумных форм индастриала. Основатель лейблов KILL EGO, «Бегущий Человек», «Такое».",
       "slot": "slot-music-parallel-5",
-      "venue": "big_bar"
+      "venue": "big_bar",
+      "links": [
+        {
+          "label": "Ссылки",
+          "url": "https://taplink.cc/garish_cyborg"
+        }
+      ]
     },
     {
       "id": "music-pink-0230",
@@ -1198,7 +1389,13 @@ window.FESTIVAL_DATA = {
       "title": "The Darkest Supernova",
       "description": "Дискотека под шумы. Витчхаус и нойз, дрон и брейкбит — создатель проекта стирает рамки между стилями, приводя их к общему знаменателю — музыке как таковой.",
       "slot": "slot-music-parallel-6",
-      "venue": "big_bar"
+      "venue": "big_bar",
+      "links": [
+        {
+          "label": "VK",
+          "url": "https://vk.com/id885725241"
+        }
+      ]
     },
     {
       "id": "ev-1778338476401-960j",
@@ -1213,8 +1410,12 @@ window.FESTIVAL_DATA = {
       "venue": "courtyard",
       "links": [
         {
-          "label": "из заявки",
-          "url": "https://internat.msu.ru/physics/sotrudniki-kafedry-fiziki-sunts-mgu/kornauhov-stanislav-sergeevich/https://internat.msu.ru/suncz-mgu-na-festivale-nauki-2025/"
+          "label": "Страница на сайте СУНЦ МГУ",
+          "url": "https://internat.msu.ru/physics/sotrudniki-kafedry-fiziki-sunts-mgu/kornauhov-stanislav-sergeevich/"
+        },
+        {
+          "label": "СУНЦ на Фестивале науки 2025",
+          "url": "https://internat.msu.ru/suncz-mgu-na-festivale-nauki-2025/"
         }
       ],
       "_admin": {
@@ -1323,7 +1524,13 @@ window.FESTIVAL_DATA = {
       "team_notes": "Подтверждено устно. Заявку команда ещё не подавала, но мы их берём.",
       "_admin": {
         "knows": true
-      }
+      },
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/lsh_linguistics"
+        }
+      ]
     },
     {
       "id": "ev-maskul-prefractals",
@@ -1341,7 +1548,17 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true,
         "has_announce": true
-      }
+      },
+      "links": [
+        {
+          "label": "Сайт",
+          "url": "https://math-cool.com/"
+        },
+        {
+          "label": "Telegram",
+          "url": "https://t.me/math_cool_rus"
+        }
+      ]
     },
     {
       "id": "ev-1778769282894-6x65",
@@ -1356,8 +1573,16 @@ window.FESTIVAL_DATA = {
       "venue": "courtyard",
       "links": [
         {
-          "label": "из заявки",
-          "url": "Seromakha.ruhttps://disk.yandex.ru/i/QZJO4CaFOeA9ow Cv художника https://disk.yandex.ru/i/ZzA7R26U5UoSFg Портфолио"
+          "label": "Сайт",
+          "url": "https://seromakha.ru"
+        },
+        {
+          "label": "Превью работ (Я.Диск)",
+          "url": "https://disk.yandex.ru/i/QZJO4CaFOeA9ow"
+        },
+        {
+          "label": "Портфолио (Я.Диск)",
+          "url": "https://disk.yandex.ru/i/ZzA7R26U5UoSFg"
         }
       ],
       "_admin": {
@@ -1408,7 +1633,13 @@ window.FESTIVAL_DATA = {
       "speaker": "Вячеслав Гусев",
       "description": "Вячеслав Гусев, учитель AI & Computer Science в проекте TLF — короткое выступление о том, как фракталы возникают в обучающихся нейросетях.",
       "slot": "slot-gusev-talk",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "links": [
+        {
+          "label": "TLF",
+          "url": "https://leaderstech.ru/"
+        }
+      ]
     },
     {
       "id": "station-gusev-chaos",
@@ -1423,7 +1654,13 @@ window.FESTIVAL_DATA = {
       "venue": "big_bar",
       "_admin": {
         "knows": true
-      }
+      },
+      "links": [
+        {
+          "label": "TLF",
+          "url": "https://leaderstech.ru/"
+        }
+      ]
     },
     {
       "id": "cinema-short-fractal-universe",
@@ -1456,8 +1693,12 @@ window.FESTIVAL_DATA = {
       "description": "Интерактивная видеоинсталляция: на экране оживают фракталы, к ним идёт звук. Двигаешь руками — меняется количество итераций, тип фрактала, можно углубиться в структуру или деформировать изображение. Работает на ноутбуке с камерой — порог входа нулевой.",
       "links": [
         {
-          "label": "из заявки",
-          "url": "https://www.instagram.com/jell_ixx/\nвидео некоторых проектов: https://disk.yandex.ru/d/sj_-YzlY4_-xdQ"
+          "label": "Instagram",
+          "url": "https://www.instagram.com/jell_ixx/"
+        },
+        {
+          "label": "Видео проектов (Я.Диск)",
+          "url": "https://disk.yandex.ru/d/sj_-YzlY4_-xdQ"
         }
       ],
       "_admin": {
@@ -1510,8 +1751,40 @@ window.FESTIVAL_DATA = {
       "description": "Интерактивная установка, в которой можно играть с фракталами, шумом и другими математическими объектами — и собирать собственные. Андрей покажет, как пользоваться, и расскажет, как из простых формул рождается визуальная красота.",
       "links": [
         {
-          "label": "из заявки",
-          "url": "мой сайт https://spherus.ru/\nнесколько моих видео по теме\nhttps://rutube.ru/shorts/da56803ed2a2dd0e975ed2b8f04994eb/?playlist=530134\nhttps://rutube.ru/video/83266cb1cd2ee9aad68ed468941a1ec3/?playlist=530134\nhttps://rutube.ru/video/df284853b8ad9b5226a62ca52b15bf62/?playlist=530134\nhttps://rutube.ru/video/868965d1440d1b523bb38ac5e905c575/?playlist=530134\nhttps://rutube.ru/video/2aee4c8e3f547ed7ffd0f4baacbb6f39/?playlist=530134\n\nнесколько моих статей на Хабре по теме\nhttps://habr.com/ru/companies/sberbank/articles/952102/\nhttps://habr.com/ru/companies/sberbank/articles/954726/\nhttps://habr.com/ru/companies/sberbank/articles/957194/"
+          "label": "Сайт",
+          "url": "https://spherus.ru/"
+        },
+        {
+          "label": "Видео на Rutube #1",
+          "url": "https://rutube.ru/shorts/da56803ed2a2dd0e975ed2b8f04994eb/?playlist=530134"
+        },
+        {
+          "label": "Видео на Rutube #2",
+          "url": "https://rutube.ru/video/83266cb1cd2ee9aad68ed468941a1ec3/?playlist=530134"
+        },
+        {
+          "label": "Видео на Rutube #3",
+          "url": "https://rutube.ru/video/df284853b8ad9b5226a62ca52b15bf62/?playlist=530134"
+        },
+        {
+          "label": "Видео на Rutube #4",
+          "url": "https://rutube.ru/video/868965d1440d1b523bb38ac5e905c575/?playlist=530134"
+        },
+        {
+          "label": "Видео на Rutube #5",
+          "url": "https://rutube.ru/video/2aee4c8e3f547ed7ffd0f4baacbb6f39/?playlist=530134"
+        },
+        {
+          "label": "Статья на Хабре #1",
+          "url": "https://habr.com/ru/companies/sberbank/articles/952102/"
+        },
+        {
+          "label": "Статья на Хабре #2",
+          "url": "https://habr.com/ru/companies/sberbank/articles/954726/"
+        },
+        {
+          "label": "Статья на Хабре #3",
+          "url": "https://habr.com/ru/companies/sberbank/articles/957194/"
         }
       ],
       "_source_app": "app-23",
@@ -1577,7 +1850,13 @@ window.FESTIVAL_DATA = {
         "inst_size": "Большое пространство 4×4 м+",
         "inst_duration": "Несколько часов",
         "author_presence": "Нет, объект справится сам"
-      }
+      },
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/yav_zone"
+        }
+      ]
     },
     {
       "id": "inst-tetraquark",
@@ -1618,7 +1897,13 @@ window.FESTIVAL_DATA = {
         "inst_size": "Отдельный угол ~2×2 м",
         "inst_duration": "Весь вечер",
         "author_presence": "Нет, объект справится сам"
-      }
+      },
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/alex_abstraction_art"
+        }
+      ]
     },
     {
       "id": "inst-polyhedral-exhibit",
@@ -1689,7 +1974,13 @@ window.FESTIVAL_DATA = {
         "inst_size": "Отдельный угол ~2×2 м",
         "inst_duration": "Весь вечер",
         "author_presence": "Волонтёр-смотрящий периодически"
-      }
+      },
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/processus_i"
+        }
+      ]
     },
     {
       "id": "inst-mimesis",
@@ -1773,7 +2064,13 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "mid-1",
       "title": "Свет иных пространств",
       "speaker": "Пётр Николаев",
-      "description": "Каждая картина Николаева — это фрагмент фрактала, бесконечной математической структуры, выросшей из простой формулы. И каждая картина — это фрагмент целого мира, в котором можно было бы выхватить любое другое место."
+      "description": "Каждая картина Николаева — это фрагмент фрактала, бесконечной математической структуры, выросшей из простой формулы. И каждая картина — это фрагмент целого мира, в котором можно было бы выхватить любое другое место.",
+      "links": [
+        {
+          "label": "Статья в АиФ",
+          "url": "https://aif.ru/culture/art/portal-v-inye-miry-uchyonyy-sozdayot-kartiny-v-zhanre-fraktalnogo-iskusstva"
+        }
+      ]
     },
     {
       "id": "exh-bogatikova-mini",
