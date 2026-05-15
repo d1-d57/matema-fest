@@ -2019,6 +2019,69 @@
       .marquee-wrap {
         display: none;
       }
+
+      /* Мобильная раскладка карточки спикера: квадратное фото 120×120
+         слева, имя + роль справа, вертикально центрированы. Bio скрыт
+         (для краткой плашки на мобильном это лишнее). */
+      .speakers-grid--compact .speaker-card.has-photo {
+        display: grid !important;
+        grid-template-columns: 120px 1fr !important;
+        grid-template-rows: 1fr 1fr !important;
+        gap: 4px 14px !important;
+        height: 120px !important;
+        min-height: 120px !important;
+        padding: 0 !important;
+        overflow: hidden;
+        align-items: stretch !important;
+        justify-content: stretch !important;
+        aspect-ratio: auto !important;
+      }
+      .speakers-grid--compact .speaker-card.has-photo > picture {
+        grid-column: 1;
+        grid-row: 1 / -1;
+        width: 120px;
+        height: 120px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 4px 0 0 4px;
+      }
+      .speakers-grid--compact .speaker-card.has-photo .speaker-photo {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        mix-blend-mode: normal;
+        opacity: 1;
+        filter: grayscale(1) sepia(0.30) contrast(1.05) brightness(0.85);
+      }
+      .speakers-grid--compact .speaker-card.has-photo::after {
+        display: none;
+      }
+      .speakers-grid--compact .speaker-card.has-photo .speaker-name {
+        grid-column: 2;
+        grid-row: 1;
+        align-self: end;
+        position: static;
+        opacity: 1 !important;
+        text-shadow: none;
+        padding-right: 14px;
+        font-size: clamp(16px, 4vw, 20px);
+        margin: 0;
+      }
+      .speakers-grid--compact .speaker-card.has-photo .speaker-role {
+        grid-column: 2;
+        grid-row: 2;
+        align-self: start;
+        position: static;
+        opacity: 1 !important;
+        padding-right: 14px;
+        font-size: 10px;
+        margin: 0;
+      }
+      .speakers-grid--compact .speaker-card.has-photo .speaker-bio {
+        display: none;
+      }
     }
     /* ============================================
        НОВЫЕ ПРАВИЛА (интеграция папоротника, манифеста, хедлайнеров)
@@ -2121,6 +2184,9 @@
       .speakers-grid--compact .col-l1 { grid-column: 1 / span 2; }
       .speakers-grid--compact .col-l2 { grid-column: 3 / span 2; }
       .speakers-grid--compact .col-l3 { grid-column: 5 / span 2; }
+      /* Музыкальный ряд — 2 карточки, центрированы. */
+      .speakers-grid--compact .col-m1 { grid-column: 2 / span 2; }
+      .speakers-grid--compact .col-m2 { grid-column: 4 / span 2; }
     }
 
     /* Фото-фон карточки. Применяется sepia/luminosity/opacity-обработка из ТЗ
@@ -2753,7 +2819,13 @@
     @media (max-width: 700px) {
       .tlf-corner-label { display: none; }
       .tlf-corner-logo { height: 28px; }
-      .tlf-corner { top: 16px; right: 16px; }
+      /* На мобильном — в нижний правый угол, чтобы не перебивать
+         главный заголовок «МАТЕМА-ФЕСТ 2026» вверху. */
+      .tlf-corner {
+        top: auto;
+        bottom: 16px;
+        right: 16px;
+      }
     }
 
     /* TLF support-block — под папоротником на странице расписания. */
@@ -3004,7 +3076,7 @@
         <!-- Ряд 1 · научпоп / открытие -->
 
         <div class="speaker-card has-photo col-c1" data-stagger="0">
-          <picture><source media="(min-width: 901px)" srcset="assets/speaker-evdokimov.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Михаил Евдокимов" loading="lazy" decoding="async"></picture>
+          <picture><source srcset="assets/speaker-evdokimov.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Михаил Евдокимов" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Михаил Евдокимов</div>
           <div class="speaker-role">Автор задач</div>
           <div class="speaker-bio">
@@ -3013,7 +3085,7 @@
         </div>
 
         <div class="speaker-card has-photo col-c2" data-stagger="1">
-          <picture><source media="(min-width: 901px)" srcset="assets/speaker-tarasevich.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Григорий Тарасевич" loading="lazy" decoding="async"></picture>
+          <picture><source srcset="assets/speaker-tarasevich.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Григорий Тарасевич" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Григорий Тарасевич</div>
           <div class="speaker-role">Научный журналист</div>
           <div class="speaker-bio">
@@ -3022,11 +3094,11 @@
         </div>
 
         <div class="speaker-card has-photo col-c3" data-stagger="2">
-          <picture><source media="(min-width: 901px)" srcset="assets/speaker-gusev.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Вячеслав Гусев" loading="lazy" decoding="async"></picture>
+          <picture><source srcset="assets/speaker-gusev.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Вячеслав Гусев" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Вячеслав Гусев</div>
           <div class="speaker-role">Учитель AI &amp; Computer Science в проекте TLF</div>
           <div class="speaker-bio">
-            <div class="speaker-bio-text">Короткое выступление перед основной программой и стенд про хаос обучения нейросетей. Партнёр фестиваля от TLF.</div>
+            <div class="speaker-bio-text">Короткое выступление перед основной программой и стенд про хаос обучения нейросетей. От партнёра фестиваля — TLF.</div>
           </div>
         </div>
 
@@ -3034,7 +3106,7 @@
         <!-- Ряд 2 · лекции -->
 
         <div class="speaker-card has-photo col-l1" data-stagger="3">
-          <picture><source media="(min-width: 901px)" srcset="assets/speaker-gelfand.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Михаил Гельфанд" loading="lazy" decoding="async"></picture>
+          <picture><source srcset="assets/speaker-gelfand.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Михаил Гельфанд" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Михаил Гельфанд</div>
           <div class="speaker-role">Биоинформатик</div>
           <div class="speaker-bio">
@@ -3043,7 +3115,7 @@
         </div>
 
         <div class="speaker-card has-photo col-l2" data-stagger="4">
-          <picture><source media="(min-width: 901px)" srcset="assets/speaker-raigorodski.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Андрей Райгородский" loading="lazy" decoding="async"></picture>
+          <picture><source srcset="assets/speaker-raigorodski.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Андрей Райгородский" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Андрей Райгородский</div>
           <div class="speaker-role">Математик</div>
           <div class="speaker-bio">
@@ -3052,7 +3124,7 @@
         </div>
 
         <div class="speaker-card has-photo col-l3" data-stagger="5">
-          <picture><source media="(min-width: 901px)" srcset="assets/speaker-skripchenko.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Александра Скрипченко" loading="lazy" decoding="async"></picture>
+          <picture><source srcset="assets/speaker-skripchenko.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Александра Скрипченко" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Александра Скрипченко</div>
           <div class="speaker-role">Математик</div>
           <div class="speaker-bio">
@@ -3063,8 +3135,8 @@
 
         <!-- Ряд 3 · музыка -->
 
-        <div class="speaker-card has-photo col-c1" data-stagger="5">
-          <picture><source media="(min-width: 901px)" srcset="assets/speaker-termen.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Пётр Термен" loading="lazy" decoding="async"></picture>
+        <div class="speaker-card has-photo col-m1" data-stagger="5">
+          <picture><source srcset="assets/speaker-termen.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Пётр Термен" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Пётр Термен</div>
           <div class="speaker-role">Музыкант · терменвокс</div>
           <div class="speaker-bio">
@@ -3072,8 +3144,8 @@
           </div>
         </div>
 
-        <div class="speaker-card has-photo col-c2" data-stagger="6">
-          <picture><source media="(min-width: 901px)" srcset="assets/speaker-gorelov.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Влад Горелов" loading="lazy" decoding="async"></picture>
+        <div class="speaker-card has-photo col-m2" data-stagger="6">
+          <picture><source srcset="assets/speaker-gorelov.jpg"><img class="speaker-photo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Влад Горелов" loading="lazy" decoding="async"></picture>
           <div class="speaker-name">Влад Горелов</div>
           <div class="speaker-role">Солист «Научно-технического рэпа»</div>
           <div class="speaker-bio">
@@ -4924,7 +4996,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-15k"></script>
+  <script src="festival-data.js?v=2026-05-15l"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
