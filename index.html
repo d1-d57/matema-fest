@@ -3657,6 +3657,11 @@ function buildSpotsFromData(raw){
     const slotEvents = evBySlot[slotId] || [];
     const time = (sl.start &amp;&amp; sl.end) ? (sl.start + '–' + sl.end) : '';
     if(slotEvents.length === 0){
+      // Пустые станционные слоты не показываем в расписании. Архитектурно слот
+      // = «привязка места», карточка = «наполнение». Без карточки скрываем.
+      // Для остальных категорий placeholder остаётся (полезен как анонс).
+      const isStation = sl.category === 'station' || sl.category === 'workshop' || sl.category === 'experiment' || sl.type === 'station';
+      if (isStation) return null;
       return {
         id: 'zone-' + slotId,
         slotId: slotId,
@@ -3688,6 +3693,7 @@ function buildSpotsFromData(raw){
   for(const leaf of leaves){
     const slotIds = slotsByLeaf[leaf.id] || [];
     const zones = slotIds.map(slotToZone)
+      .filter(z => z !== null)
       .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
 
     if(leaf.side === 'tail'){
@@ -4715,7 +4721,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-15d"></script>
+  <script src="festival-data.js?v=2026-05-15e"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -7178,6 +7184,11 @@ window.addEventListener('resize', ()=>{
             var sid2 = slotIds[0];
             var sl2 = slots[sid2];
             var ev = evBySlot[sid2];
+            // Пустой станционный слот — скрываем пункт целиком.
+            if(!ev){
+              var isSt1 = sl2.category === 'station' || sl2.category === 'workshop' || sl2.category === 'experiment' || sl2.type === 'station';
+              if(isSt1) continue;
+            }
             var pt = {
               id: sid2,
               slot: sid2,
@@ -7196,6 +7207,11 @@ window.addEventListener('resize', ()=>{
               var ssid = slotIds[si];
               var ssl = slots[ssid];
               var sev = evBySlot[ssid];
+              // Пустые станционные слоты не показываем — без карточки нечего анонсировать.
+              if(!sev){
+                var isSt = ssl.category === 'station' || ssl.category === 'workshop' || ssl.category === 'experiment' || ssl.type === 'station';
+                if(isSt) continue;
+              }
               var sub = {
                 id: ssid,
                 slot: ssid,
@@ -7211,6 +7227,10 @@ window.addEventListener('resize', ()=>{
               if(sev && sev.speaker) sub.who = sev.speaker;
               subs.push(sub);
             }
+
+            // Если все substations были станционными и без события — массив пуст,
+            // пункт скрываем целиком.
+            if(subs.length === 0) continue;
 
             // venue листа — список уникальных площадок.
             var venueSet = {};
