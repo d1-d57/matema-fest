@@ -1,5 +1,5 @@
 // === База событий фестиваля «Фрактальная Одиссея» v31 ===
-// Автоматически сгенерировано programmer-tool 2026-05-15T12:10:27.450Z
+// Автоматически сгенерировано programmer-tool 2026-05-15T22:27:57.899Z
 window.FESTIVAL_DATA = {
   "_meta": {
     "version": "2026-05-09-v30-handfix-yakovlev",
@@ -15,8 +15,8 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-15T13:18:33.000Z",
-    "modified_by": "phase13-cleanup-descriptions",
+    "last_modified": "2026-05-15T22:27:57.897Z",
+    "modified_by": "programmer-tool",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\"."
   },
@@ -163,7 +163,8 @@ window.FESTIVAL_DATA = {
       "tool_label": "Квиз",
       "type": "talk",
       "category": "popsci",
-      "venue": "small_bar"
+      "venue": "small_bar",
+      "exclusive": true
     },
     "slot-gelfand": {
       "start": "16:00",
@@ -363,15 +364,6 @@ window.FESTIVAL_DATA = {
       "category": "cinema",
       "venue": "library"
     },
-    "slot-interlude-1": {
-      "start": "17:00",
-      "end": "17:30",
-      "label_for_zoom": "Перебив · 17:00",
-      "tool_label": "Короткометражки 1",
-      "type": "interlude",
-      "category": "cinema",
-      "venue": "main_stage"
-    },
     "slot-interlude-2": {
       "start": "18:30",
       "end": "19:00",
@@ -382,13 +374,13 @@ window.FESTIVAL_DATA = {
       "venue": "main_stage"
     },
     "slot-interlude-3": {
-      "start": "20:00",
-      "end": "20:30",
+      "start": "20:45",
+      "end": "21:30",
       "label_for_zoom": "Перебив · 20:00",
       "tool_label": "Перфоманс ",
       "type": "interlude",
       "category": "social",
-      "venue": "main_stage",
+      "venue": "courtyard",
       "leaf": null
     },
     "slot-rap-evening": {
@@ -486,7 +478,7 @@ window.FESTIVAL_DATA = {
     "slot-networking": {
       "start": "20:30",
       "end": "21:30",
-      "venue": "courtyard",
+      "venue": "big_bar",
       "type": null,
       "category": "social",
       "exclusive": true,
@@ -505,7 +497,7 @@ window.FESTIVAL_DATA = {
       "leaf": "leaf-side-morning"
     },
     "slot-gusev-talk": {
-      "start": "17:15",
+      "start": "17:00",
       "end": "17:30",
       "label_for_zoom": "Вячеслав Гусев · 17:15",
       "tool_label": "Партнёрское выступление",
@@ -531,12 +523,12 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "mid-1",
       "title": "Фракталы вокруг нас",
       "speaker": "Иван Яковлев",
+      "description": "Открывающая лекция фестиваля — введение в тему. Расскажем, что такое фракталы, как они устроены, и покажем, где их можно найти: в природе, в искусстве, в математике, в нашей повседневной жизни. Эта лекция задаёт тон всему, что будет происходить на фестивале дальше.",
       "slot": "slot-yakovlev",
       "venue": "library",
       "_admin": {
         "knows": true
-      },
-      "description": "Открывающая лекция фестиваля — введение в тему. Расскажем, что такое фракталы, как они устроены, и покажем, где их можно найти: в природе, в искусстве, в математике, в нашей повседневной жизни. Эта лекция задаёт тон всему, что будет происходить на фестивале дальше."
+      }
     },
     {
       "id": "talk-evdokimov",
@@ -561,7 +553,7 @@ window.FESTIVAL_DATA = {
       "id": "talk-tarasevich",
       "status": "accepted",
       "type": "popsci",
-      "apollo_slot": "mid-3",
+      "apollo_slot": "center",
       "title": "Научпоп-квиз",
       "subtitle": "командный квиз",
       "speaker": "Григорий Тарасевич",
@@ -574,14 +566,14 @@ window.FESTIVAL_DATA = {
       "id": "social-rosetka",
       "status": "accepted",
       "type": "social",
-      "apollo_slot": "big-3",
+      "apollo_slot": "big-2",
       "title": "Аттрактор",
       "subtitle": "Нетворкинг",
       "speaker": "Бюро «Розетка»",
       "speaker_role": "образовательное бюро",
       "description": "Сеанс знакомств, построенный по принципу фрактала: сначала участники представляются в парах, потом пары соединяются в четвёрки, четвёрки в группы по восемь, восемь в шестнадцать. На каждом этапе ищут общий паттерн между собой, сохраняют его или меняют. К концу часа группы из шестнадцати человек собирают карту своих связей — каждый уходит с контактами всех, с кем успел познакомиться.",
       "slot": "slot-networking",
-      "venue": "courtyard",
+      "venue": "big_bar",
       "_admin": {
         "knows": true
       }
@@ -940,12 +932,17 @@ window.FESTIVAL_DATA = {
       "id": "social-tochka-nol",
       "status": "accepted",
       "type": "social",
-      "apollo_slot": "big-2",
+      "apollo_slot": "big-3",
       "title": "Точка-ноль",
       "speaker": "Алина Асомния",
       "description": "Музыкальный спектакль по тексту Хармса «Нуль и ноль». Алина плетёт звуковую среду в реальном времени, в зале — физический объект-нуль, к которому зритель может прикоснуться. Каждое прикосновение включает свой звуковой эффект, спектакль реагирует на действия зала. Можно ничего не делать — спектакль всё равно идёт сам.",
       "slot": "slot-interlude-3",
-      "venue": "main_stage",
+      "venue": "courtyard",
+      "_admin": {
+        "knows": true,
+        "has_announce": true,
+        "has_channel_post": true
+      },
       "_source_app": "app-26",
       "application": {
         "_suggested_category": "social",
@@ -1068,9 +1065,7 @@ window.FESTIVAL_DATA = {
       "subtype": "short",
       "apollo_slot": "big-1",
       "title": "Big Brains, Small Films",
-      "description": "Фильм основан на последнем интервью Бенуа Мандельброта, записанном в 2010 году за 19 дней до его смерти. Отец фракталов вспоминает свой путь в математике и рассказывает, как его взгляд на мир привёл к открытию фрактальной геометрии.",
-      "slot": "slot-interlude-1",
-      "venue": "main_stage"
+      "description": "Фильм основан на последнем интервью Бенуа Мандельброта, записанном в 2010 году за 19 дней до его смерти. Отец фракталов вспоминает свой путь в математике и рассказывает, как его взгляд на мир привёл к открытию фрактальной геометрии."
     },
     {
       "id": "cinema-short-menger-eiffel",
@@ -1222,6 +1217,9 @@ window.FESTIVAL_DATA = {
           "url": "https://internat.msu.ru/physics/sotrudniki-kafedry-fiziki-sunts-mgu/kornauhov-stanislav-sergeevich/https://internat.msu.ru/suncz-mgu-na-festivale-nauki-2025/"
         }
       ],
+      "_admin": {
+        "knows": true
+      },
       "_source_app": "app-37",
       "application": {
         "_suggested_category": null,
@@ -1362,6 +1360,9 @@ window.FESTIVAL_DATA = {
           "url": "Seromakha.ruhttps://disk.yandex.ru/i/QZJO4CaFOeA9ow Cv художника https://disk.yandex.ru/i/ZzA7R26U5UoSFg Портфолио"
         }
       ],
+      "_admin": {
+        "knows": true
+      },
       "_source_app": "app-40",
       "application": {
         "_suggested_category": null,
@@ -1402,7 +1403,7 @@ window.FESTIVAL_DATA = {
       "id": "talk-gusev-nn",
       "status": "accepted",
       "type": "popsci",
-      "apollo_slot": "center",
+      "apollo_slot": "mid-3",
       "title": "Внутри нейросети живут фракталы",
       "speaker": "Вячеслав Гусев",
       "description": "Вячеслав Гусев, учитель AI & Computer Science в проекте TLF — короткое выступление о том, как фракталы возникают в обучающихся нейросетях.",
@@ -1419,7 +1420,10 @@ window.FESTIVAL_DATA = {
       "speaker": "Вячеслав Гусев",
       "description": "Вячеслав Гусев, учитель AI & Computer Science в проекте TLF — стенд с визуализациями хаотических процессов обучения нейросетей.",
       "slot": "slot-stations-4-2",
-      "venue": "big_bar"
+      "venue": "big_bar",
+      "_admin": {
+        "knows": true
+      }
     },
     {
       "id": "cinema-short-fractal-universe",
@@ -1429,6 +1433,17 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "big-3",
       "title": "Fractal universe?",
       "description": "Может ли наша вселенная быть фрактальной? Может ли простая математика создать целую вселенную? Что общего у брокколи с Большим взрывом? И при чём здесь видеоигры No Man's Sky и Minecraft?"
+    },
+    {
+      "id": "cinema-feature-doc-order",
+      "status": "accepted",
+      "type": "cinema",
+      "subtype": "feature",
+      "apollo_slot": "big-2",
+      "title": "Документальный фильм про фракталы",
+      "description": "Полнометражное документальное кино про фракталы. Название и подробности уточним ближе к дате фестиваля.",
+      "slot": "slot-cinema-1",
+      "venue": "library"
     },
     {
       "id": "ev-1778338408747-r7tp",
@@ -2530,16 +2545,6 @@ window.FESTIVAL_DATA = {
         "inst_duration": "",
         "author_presence": ""
       }
-    },
-    {
-      "id": "cinema-feature-doc-order",
-      "status": "accepted",
-      "type": "cinema",
-      "subtype": "feature",
-      "title": "Документальный фильм про фракталы",
-      "slot": "slot-cinema-1",
-      "venue": "library",
-      "description": "Полнометражное документальное кино про фракталы. Название и подробности уточним ближе к дате фестиваля."
     }
   ],
   "fern_leaves": [
