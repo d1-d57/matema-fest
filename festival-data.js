@@ -15,7 +15,7 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-15T12:53:53.000Z",
+    "last_modified": "2026-05-15T13:18:33.000Z",
     "modified_by": "phase13-cleanup-descriptions",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\"."
@@ -1405,7 +1405,7 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "center",
       "title": "Внутри нейросети живут фракталы",
       "speaker": "Вячеслав Гусев",
-      "description": "Вячеслав Гусев, учитель Computer Science в проекте TLF — короткое выступление о том, как фракталы возникают в обучающихся нейросетях.",
+      "description": "Вячеслав Гусев, учитель AI & Computer Science в проекте TLF — короткое выступление о том, как фракталы возникают в обучающихся нейросетях.",
       "slot": "slot-gusev-talk",
       "venue": "main_stage"
     },
@@ -1417,7 +1417,7 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "center",
       "title": "Как выглядит хаос обучения ИИ",
       "speaker": "Вячеслав Гусев",
-      "description": "Вячеслав Гусев, учитель Computer Science в проекте TLF — стенд с визуализациями хаотических процессов обучения нейросетей.",
+      "description": "Вячеслав Гусев, учитель AI & Computer Science в проекте TLF — стенд с визуализациями хаотических процессов обучения нейросетей.",
       "slot": "slot-stations-4-2",
       "venue": "big_bar"
     },
