@@ -2281,14 +2281,25 @@ let CONFIG = loadConfig();
 // Дефолты для незаполненного конфига — программер открывается и сразу читает живой v21,
 // без ручной настройки в ⚙. Если пользователь уже что-то сохранил в localStorage, его
 // значения остаются (вписанные в ⚙ имеют приоритет над дефолтами).
+// ВАЖНО: baseUrl — ОТНОСИТЕЛЬНЫЙ путь. На любом домене (matemafes.ru,
+// d1-d57.github.io) fetch резолвится к festival-data.js на том же origin —
+// никаких CORS-проблем при кросс-доменных fetch на github.io.
 const CONFIG_DEFAULTS = {
-  baseUrl: 'https://d1-d57.github.io/matema-fest-2026-preview/festival-data.js',
+  baseUrl: 'festival-data.js',
   ghRepo: 'd1-d57/matema-fest-2026-preview',
   ghPath: 'festival-data.js',
   ghBranch: 'main',
 };
 for (const k in CONFIG_DEFAULTS) {
   if (!CONFIG[k]) CONFIG[k] = CONFIG_DEFAULTS[k];
+}
+// Миграция: если у пользователя в localStorage сохранён старый абсолютный URL
+// на d1-d57.github.io — на новом домене matemafes.ru fetch падает из-за CORS
+// (GitHub Pages не отдаёт Access-Control-Allow-Origin для .js). Переписываем
+// на относительный, чтобы программер ожил.
+if (typeof CONFIG.baseUrl === 'string' && /d1-d57\.github\.io/.test(CONFIG.baseUrl)) {
+  CONFIG.baseUrl = CONFIG_DEFAULTS.baseUrl;
+  saveConfigData(CONFIG);
 }
 
 const FEST_START_HOUR = 14;
