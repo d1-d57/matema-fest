@@ -7522,27 +7522,61 @@ async function publishToGitHub() {
   if (!CONFIG.ghToken || !CONFIG.ghRepo || !CONFIG.ghPath) { alert('Сначала настрой GitHub в ⚙'); return; }
   const apiBase = `https://api.github.com/repos/${CONFIG.ghRepo}/contents/${CONFIG.ghPath}`;
   const branch = CONFIG.ghBranch || 'main';
+
+  // Сообщение коммита спрашиваем один раз; готовим контент один раз.
+  let message = null;
+  const text = buildExportText();
+  const b64 = btoa(unescape(encodeURIComponent(text)));
+
   try {
-    const getResp = await fetch(`${apiBase}?ref=${branch}`, {
-      headers: { Authorization: `Bearer ${CONFIG.ghToken}`, Accept: 'application/vnd.github+json' }
-    });
-    if (!getResp.ok) throw new Error(`GET failed: ${getResp.status}`);
-    const cur = await getResp.json();
-    const currentSha = cur.sha;
-    if (state.remoteSha && state.remoteSha !== currentSha) {
-      if (!confirm('Файл изменился на GitHub после загрузки. Перезаписать всё равно?')) return;
+    // До 3 попыток при 409 — это race condition по SHA на стороне GitHub
+    // (например, CDN-кеш контента возвращает старую SHA, а коммит-пайплайн
+    // уже сдвинул main). Каждый раз делаем свежий GET с cache-buster и
+    // no-store, чтобы получить актуальную SHA.
+    let attempt = 0;
+    let result = null;
+    let lastErr = null;
+    while (attempt < 3) {
+      attempt++;
+      const getResp = await fetch(`${apiBase}?ref=${branch}&_t=${Date.now()}`, {
+        headers: { Authorization: `Bearer ${CONFIG.ghToken}`, Accept: 'application/vnd.github+json' },
+        cache: 'no-store'
+      });
+      if (!getResp.ok) throw new Error(`GET failed: ${getResp.status}`);
+      const cur = await getResp.json();
+      const currentSha = cur.sha;
+
+      // Проверку «файл изменили на сервере» делаем только на первой попытке —
+      // дальше у нас уже сознательное «перезаписать».
+      if (attempt === 1 && state.remoteSha && state.remoteSha !== currentSha) {
+        if (!confirm('Файл изменился на GitHub после загрузки. Перезаписать всё равно?')) return;
+      }
+
+      if (message === null) {
+        message = prompt('Сообщение коммита:', 'Update festival-data via programmer-tool');
+        if (!message) return;
+      }
+
+      const putResp = await fetch(apiBase, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${CONFIG.ghToken}`, Accept: 'application/vnd.github+json' },
+        body: JSON.stringify({ message, content: b64, sha: currentSha, branch })
+      });
+
+      if (putResp.ok) {
+        result = await putResp.json();
+        break;
+      }
+
+      lastErr = `${putResp.status} — ${await putResp.text()}`;
+      // 409 = SHA mismatch, повторяем со свежим GET. Любая другая ошибка — сразу throw.
+      if (putResp.status !== 409) throw new Error(`PUT failed: ${lastErr}`);
+      console.warn(`publishToGitHub: 409 на попытке ${attempt}, повторяю со свежим SHA`);
+      await new Promise(r => setTimeout(r, 400 * attempt));
     }
-    const text = buildExportText();
-    const b64 = btoa(unescape(encodeURIComponent(text)));
-    const message = prompt('Сообщение коммита:', 'Update festival-data via programmer-tool');
-    if (!message) return;
-    const putResp = await fetch(apiBase, {
-      method: 'PUT',
-      headers: { Authorization: `Bearer ${CONFIG.ghToken}`, Accept: 'application/vnd.github+json' },
-      body: JSON.stringify({ message, content: b64, sha: currentSha, branch })
-    });
-    if (!putResp.ok) throw new Error(`PUT failed: ${putResp.status} — ${await putResp.text()}`);
-    const result = await putResp.json();
+
+    if (!result) throw new Error(`PUT failed (после 3 попыток): ${lastErr}`);
+
     state.remoteSha = result.content.sha;
     state.isDirty = false;
     _initUndoBaseline();
