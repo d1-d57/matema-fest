@@ -354,11 +354,20 @@
       transform: translateX(8px);
       transition: opacity 280ms var(--ease-out-expo), transform 280ms var(--ease-out-expo);
       pointer-events: none;
+      /* Лейбл позиционируем абсолютно справа от кружка, чтобы он не занимал
+         место в flex-flow и не расширял зону клика .dot-link. Клик попадает
+         только на сам 10px кружок — пространство правее остаётся свободным
+         для других интерактивов (например, листьев папоротника на странице
+         расписания), а не перехватывает их. */
+      position: absolute;
+      right: calc(100% + 12px);
+      top: 50%;
+      transform: translate(8px, -50%);
     }
 
     .dot-link:hover .dot-label {
       opacity: 1;
-      transform: translateX(0);
+      transform: translate(0, -50%);
     }
 
     .dot-circle {
@@ -1487,8 +1496,14 @@
       align-items: center;
       gap: clamp(14px, 1.6vw, 24px);
       flex-wrap: wrap;
-      margin: 0 0 18px;
-      padding: 6px 10px 6px 0;
+      /* Расширяем фон до краёв колонки (через отрицательные margin) и заменяем
+         нижний margin на padding, чтобы плашка плотно перекрывала расписание под
+         собой, когда sticky прокручивается. Тонкая нижняя линия + лёгкая тень —
+         чёткий визуальный разделитель «панель навигации vs расписание». */
+      margin: 0 calc(-1 * clamp(28px, 3vw, 44px)) 0 calc(-1 * clamp(60px, 6vw, 92px));
+      padding: 10px clamp(28px, 3vw, 44px) 12px clamp(60px, 6vw, 92px);
+      border-bottom: 1px solid rgba(184, 169, 138, 0.18);
+      box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.5);
     }
     /* Внутри тулбара кнопка .schedule-back перестаёт быть sticky
        (тулбар сам sticky), и приводится к тому же padding/font-size
@@ -2592,6 +2607,16 @@
       /* Кнопка «к общему виду» на мобильном тоже не нужна — папоротника нет. */
       .schedule-back {
         display: none;
+      }
+      /* Toolbar на мобильном без отрицательных margin (тут другой padding
+         колонки, иначе фон вылезет за края) и без sticky — папоротника
+         справа нет, держать кнопки в липучке нет смысла. */
+      .schedule-toolbar {
+        position: static;
+        margin: 0 0 18px;
+        padding: 0;
+        border-bottom: 0;
+        box-shadow: none;
       }
       /* Touch-таргеты ≥ 44px высоты — Apple/WCAG минимум. */
       .sch-block-head { padding: 18px 4px; min-height: 44px; }
@@ -4721,7 +4746,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-15e"></script>
+  <script src="festival-data.js?v=2026-05-15f"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
