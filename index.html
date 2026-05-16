@@ -2338,6 +2338,119 @@
       font-size: clamp(50px, 5vw, 76px);
     }
 
+    /* Ссылки внутри bio спикера — компактные пилюли в общем стиле.
+       На desktop появляются вместе с bio при hover. */
+    .speaker-bio-links {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .speaker-bio-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      font-family: var(--font-body);
+      font-size: clamp(11px, 0.85vw, 12.5px);
+      line-height: 1.2;
+      color: var(--color-accent);
+      background: rgba(200, 154, 61, 0.10);
+      border: 1px solid rgba(200, 154, 61, 0.40);
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background 180ms ease, border-color 180ms ease;
+      pointer-events: auto;
+    }
+    .speaker-bio-link:hover {
+      background: rgba(200, 154, 61, 0.20);
+      border-color: rgba(200, 154, 61, 0.7);
+    }
+
+    /* ----- Модалка спикера — открывается tap'ом на mobile.
+       На desktop hover уже показывает bio, модалка по умолчанию скрыта,
+       но JS делает её доступной и через клик — на случай длинного bio. */
+    .speaker-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(22, 20, 15, 0.78);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .speaker-modal.visible { display: flex; }
+    .speaker-modal-card {
+      max-width: 480px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #1c1a14;
+      border: 1px solid rgba(200, 154, 61, 0.35);
+      border-radius: 8px;
+      padding: 22px 22px 24px;
+      position: relative;
+    }
+    .speaker-modal-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: transparent;
+      border: 0;
+      color: var(--color-bg-light);
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0.7;
+      padding: 6px 10px;
+    }
+    .speaker-modal-close:hover { opacity: 1; }
+    .speaker-modal-photo {
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 12px;
+      filter: grayscale(0.15);
+    }
+    .speaker-modal-name {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 28px;
+      color: var(--color-bg-light);
+      margin: 0 0 4px;
+    }
+    .speaker-modal-role {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--color-accent);
+      letter-spacing: 0.04em;
+      margin-bottom: 14px;
+    }
+    .speaker-modal-bio {
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.55;
+      color: rgba(236, 227, 208, 0.82);
+      margin-bottom: 16px;
+    }
+    .speaker-modal-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* На mobile карточка спикера становится явно кликабельной — курсор-указатель,
+       лёгкая обратная связь при тапе. */
+    @media (max-width: 900px) {
+      .speakers-grid--compact .speaker-card.has-photo {
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(200, 154, 61, 0.15);
+      }
+    }
+
     /* ----- Schedule: интеграция папоротника ----- */
     .section--schedule {
       background: var(--color-bg-dark);
@@ -2583,6 +2696,35 @@
       margin-bottom: 8px;
     }
     .sch-event-detail.placeholder { font-style: italic; opacity: 0.7; }
+
+    /* Ссылки внутри карточки события расписания — мелкие компактные чипы
+       под описанием. Не должны триггерить toggle строки расписания —
+       JS .stopPropagation() при клике по data-stop. */
+    .sch-event-links {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .sch-event-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 9px;
+      font-family: var(--font-body);
+      font-size: 11px;
+      line-height: 1.2;
+      color: var(--color-accent);
+      background: rgba(200, 154, 61, 0.08);
+      border: 1px solid rgba(200, 154, 61, 0.38);
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background 180ms ease, border-color 180ms ease;
+    }
+    .sch-event-link:hover {
+      background: rgba(200, 154, 61, 0.18);
+      border-color: rgba(200, 154, 61, 0.7);
+    }
 
     /* Под-станции */
     .sch-substations {
@@ -4995,10 +5137,6 @@ window.addEventListener('resize', ()=>{
             <div class="footer-partner-name">Георгий Яковлев</div>
             <div class="footer-partner-role">Продюсер программы</div>
           </a>
-          <div class="footer-partner">
-            <div class="footer-partner-name">Библиотека Достоевского</div>
-            <div class="footer-partner-role">Библиотека на Чистых прудах</div>
-          </div>
           <a class="footer-partner" href="https://vk.com/lachesisgroves" target="_blank" rel="noopener">
             <div class="footer-partner-name">Лахесис</div>
             <div class="footer-partner-role">Поэтический клуб</div>
@@ -5025,7 +5163,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-16b"></script>
+  <script src="festival-data.js?v=2026-05-15m"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -7441,6 +7579,47 @@ window.addEventListener('resize', ()=>{
       }, 50);
     })();
 
+    // ============================================================
+    // Mobile drawer в #tracks: swipe-down закрывает карточку.
+    // На mobile drawer едет снизу при tap на круг (info-panel.visible).
+    // Закрыть его раньше было нечем — закрывалось только tap'ом по другому
+    // кругу. Этот блок ловит вертикальный жест вниз и снимает .visible.
+    // Десктоп не трогает: matchMedia блокирует.
+    // ============================================================
+    (function setupTracksDrawerSwipe() {
+      if (!window.matchMedia || !window.matchMedia('(max-width: 900px)').matches) return;
+      const body  = document.querySelector('.tracks-info-body');
+      const panel = document.getElementById('tracks-info-panel');
+      if (!body || !panel) return;
+
+      let startY = null;
+      let startScrollTop = 0;
+      let tracking = false;
+
+      body.addEventListener('touchstart', (e) => {
+        if (!panel.classList.contains('visible')) return;
+        if (e.touches.length !== 1) return;
+        startY = e.touches[0].clientY;
+        startScrollTop = body.scrollTop;
+        tracking = true;
+      }, { passive: true });
+
+      body.addEventListener('touchmove', (e) => {
+        if (!tracking || startY === null) return;
+        const dy = e.touches[0].clientY - startY;
+        // Закрываем только при свайпе строго вниз и если drawer прокручен
+        // до самого верха — иначе пользователь просто скроллит длинное описание.
+        if (dy > 60 && startScrollTop <= 0 && body.scrollTop <= 0) {
+          panel.classList.remove('visible');
+          tracking = false;
+          startY = null;
+        }
+      }, { passive: true });
+
+      const reset = () => { tracking = false; startY = null; };
+      body.addEventListener('touchend',    reset, { passive: true });
+      body.addEventListener('touchcancel', reset, { passive: true });
+    })();
   </script>
 
   <!-- ============================================================
@@ -7628,6 +7807,7 @@ window.addEventListener('resize', ()=>{
               placeholder: !ev,
             };
             if(ev && ev.speaker) pt.speaker = ev.speaker;
+            if(ev && Array.isArray(ev.links) && ev.links.length) pt.links = ev.links;
             blockOut.events.push(pt);
           } else {
             // Несколько слотов на листе — пункт с substations. Время — рамки листа.
@@ -7654,6 +7834,7 @@ window.addEventListener('resize', ()=>{
                 sub.when = ssl.start + '–' + ssl.end;
               }
               if(sev && sev.speaker) sub.who = sev.speaker;
+              if(sev && Array.isArray(sev.links) && sev.links.length) sub.links = sev.links;
               subs.push(sub);
             }
 
@@ -7773,6 +7954,19 @@ window.addEventListener('resize', ()=>{
               if(ev.speaker) html += '<span class="speaker">'+esc(ev.speaker)+'</span>';
               if(ev.venue) html += '<div class="venue">'+esc(resolveVenue(ev.venue))+'</div>';
               html += '<div>'+esc(ev.detail)+'</div>';
+              if(Array.isArray(ev.links) && ev.links.length){
+                html += '<div class="sch-event-links">';
+                for(var li2 = 0; li2 < ev.links.length; li2++){
+                  var ln = ev.links[li2];
+                  if(!ln || !ln.url || !ln.label) continue;
+                  html += '<a class="sch-event-link" href="'+esc(ln.url)
+                       +  '" target="_blank" rel="noopener noreferrer"'
+                       +  ' data-stop>'
+                       +  esc(ln.label)
+                       +  '<span aria-hidden="true">→</span></a>';
+                }
+                html += '</div>';
+              }
               html += '</div>';
             }
             if(isActive && hasSub){
@@ -7795,7 +7989,21 @@ window.addEventListener('resize', ()=>{
                 else html += '<span class="sch-sub-where"><span class="sch-sub-chev">'+(subActive?'—':'+')+'</span></span>';
                 html += '</div>';
                 if(subActive){
-                  html += '<div class="sch-sub-detail">'+esc(s.detail)+'</div>';
+                  html += '<div class="sch-sub-detail">'+esc(s.detail);
+                  if(Array.isArray(s.links) && s.links.length){
+                    html += '<div class="sch-event-links">';
+                    for(var lj = 0; lj < s.links.length; lj++){
+                      var sln = s.links[lj];
+                      if(!sln || !sln.url || !sln.label) continue;
+                      html += '<a class="sch-event-link" href="'+esc(sln.url)
+                           +  '" target="_blank" rel="noopener noreferrer"'
+                           +  ' data-stop>'
+                           +  esc(sln.label)
+                           +  '<span aria-hidden="true">→</span></a>';
+                    }
+                    html += '</div>';
+                  }
+                  html += '</div>';
                 }
                 html += '</div>';
               }
@@ -7928,6 +8136,8 @@ window.addEventListener('resize', ()=>{
 
     // === Click delegation ===
     listEl.addEventListener('click', function(e){
+      // Клик по чипу-ссылке: даём браузеру открыть href, не сворачиваем строку.
+      if(e.target.closest('[data-stop]')) return;
       var head = e.target.closest('[data-action="toggle-block"]');
       if(head){ toggleBlock(head.getAttribute('data-block-id')); return; }
       var row = e.target.closest('[data-action="toggle-event"]');
@@ -8071,6 +8281,148 @@ window.addEventListener('resize', ()=>{
           modal.classList.contains('visible')) {
         close();
       }
+    });
+  })();
+  </script>
+
+  <!-- ============================================================
+       SPEAKER MODAL — открывается tap'ом на карточку спикера (mobile)
+       или кликом (desktop). Закрытие: ✕, клик по подложке, Escape.
+       ============================================================ -->
+  <div class="speaker-modal" id="speaker-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="speaker-modal-card">
+      <button class="speaker-modal-close" type="button" aria-label="Закрыть">×</button>
+      <img class="speaker-modal-photo" id="speaker-modal-photo" alt="">
+      <h2 class="speaker-modal-name" id="speaker-modal-name"></h2>
+      <div class="speaker-modal-role" id="speaker-modal-role"></div>
+      <div class="speaker-modal-bio" id="speaker-modal-bio"></div>
+      <div class="speaker-modal-links" id="speaker-modal-links"></div>
+    </div>
+  </div>
+
+  <script>
+  // Speakers → подтягиваем links по имени спикера из FESTIVAL_DATA.cards.
+  // Вставляем чипы в .speaker-bio (видны при hover на desktop), плюс на mobile
+  // делаем карточку tap-кликабельной — открывается модалка со всем контентом.
+  (function setupSpeakers() {
+    const data = window.FESTIVAL_DATA;
+    if (!data || !Array.isArray(data.cards)) return;
+
+    function escHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      })[c]);
+    }
+
+    // Имя → links. Берём первую найденную карточку с этим speaker и валидным
+    // ev.links. У Гусева в двух карточках одинаковые ссылки — сработает первая.
+    function findLinksForName(name) {
+      const target = name.trim().toLowerCase();
+      for (const c of data.cards) {
+        if (c.status !== 'accepted' && c.status !== 'tentative') continue;
+        const sp = (c.speaker || c.author || '').trim().toLowerCase();
+        if (sp !== target) continue;
+        if (Array.isArray(c.links) && c.links.length > 0) {
+          const valid = c.links.filter(l =>
+            l && typeof l === 'object' && l.url && l.label
+          );
+          if (valid.length > 0) return valid;
+        }
+      }
+      return null;
+    }
+
+    // Модалка
+    const modal = document.getElementById('speaker-modal');
+    const mPhoto = document.getElementById('speaker-modal-photo');
+    const mName  = document.getElementById('speaker-modal-name');
+    const mRole  = document.getElementById('speaker-modal-role');
+    const mBio   = document.getElementById('speaker-modal-bio');
+    const mLinks = document.getElementById('speaker-modal-links');
+    const mClose = modal && modal.querySelector('.speaker-modal-close');
+
+    function openModal(payload) {
+      if (!modal) return;
+      if (payload.photo) {
+        mPhoto.src = payload.photo;
+        mPhoto.alt = '';  // имя есть в заголовке, alt дублировать не нужно
+        mPhoto.style.display = '';
+      } else {
+        mPhoto.style.display = 'none';
+      }
+      mName.textContent = payload.name || '';
+      mRole.textContent = payload.role || '';
+      mBio.textContent  = payload.bio  || '';
+      let linksHtml = '';
+      for (const l of (payload.links || [])) {
+        linksHtml += '<a class="info-panel-link" href="' + escHtml(l.url)
+                  + '" target="_blank" rel="noopener noreferrer">'
+                  + escHtml(l.label)
+                  + '<span class="arrow" aria-hidden="true">→</span></a>';
+      }
+      mLinks.innerHTML = linksHtml;
+      modal.classList.add('visible');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+      if (!modal) return;
+      modal.classList.remove('visible');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+    if (mClose) mClose.addEventListener('click', closeModal);
+    if (modal) modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'Escape' || e.key === 'Esc') &&
+          modal && modal.classList.contains('visible')) {
+        closeModal();
+      }
+    });
+
+    // Пробегаем по карточкам спикеров
+    const cards = document.querySelectorAll('.speakers-grid--compact .speaker-card.has-photo');
+    cards.forEach(card => {
+      const nameEl = card.querySelector('.speaker-name');
+      const roleEl = card.querySelector('.speaker-role');
+      const bioEl  = card.querySelector('.speaker-bio-text');
+      const photoEl = card.querySelector('.speaker-photo');
+      if (!nameEl) return;
+
+      const name = nameEl.textContent.trim();
+      const links = findLinksForName(name);
+
+      // Чипы внутрь bio (видны на desktop при hover)
+      if (links && bioEl) {
+        const wrap = document.createElement('div');
+        wrap.className = 'speaker-bio-links';
+        for (const l of links) {
+          const a = document.createElement('a');
+          a.className = 'speaker-bio-link';
+          a.href = l.url;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.innerHTML = escHtml(l.label) + ' <span aria-hidden="true">→</span>';
+          // Чтобы клик по ссылке не открывал заодно модалку.
+          a.addEventListener('click', (e) => e.stopPropagation());
+          wrap.appendChild(a);
+        }
+        bioEl.parentNode.appendChild(wrap);
+      }
+
+      // Tap/click по карточке → модалка. На desktop тоже работает —
+      // удобно если bio длинное и нужно посмотреть весь текст.
+      card.addEventListener('click', () => {
+        openModal({
+          photo: photoEl ? photoEl.src : '',
+          name: name,
+          role: roleEl ? roleEl.textContent.trim() : '',
+          bio:  bioEl  ? bioEl.textContent.trim()  : '',
+          links: links || []
+        });
+      });
     });
   })();
   </script>
