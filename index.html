@@ -1064,14 +1064,14 @@
     .tracks-info-default p {
       margin: 0;
       font-family: var(--font-body);
-      font-size: clamp(14px, 1.05vw, 16px);
-      line-height: 1.55;
+      font-size: clamp(15px, 1.15vw, 17px);
+      line-height: 1.6;
       color: rgba(236, 227, 208, 0.78);
     }
     .tracks-info-hint {
       font-family: var(--font-display);
       font-style: italic;
-      font-size: clamp(13px, 0.95vw, 15px);
+      font-size: clamp(14px, 1.05vw, 16px);
       color: rgba(200, 154, 61, 0.85);
     }
 
@@ -1121,9 +1121,45 @@
     .info-panel p {
       margin: 0;
       font-family: var(--font-body);
-      font-size: clamp(14px, 1.05vw, 16px);
-      line-height: 1.55;
+      font-size: clamp(16px, 1.25vw, 19px);
+      line-height: 1.6;
       color: rgba(236, 227, 208, 0.78);
+    }
+
+    /* Блок ссылок в карточке события — пилюли-чипы с
+       подписью + стрелкой. Появляется только когда у события есть links. */
+    .info-panel-links {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .info-panel-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      font-family: var(--font-body);
+      font-size: clamp(13px, 0.95vw, 14px);
+      line-height: 1.2;
+      color: var(--color-accent);
+      background: rgba(200, 154, 61, 0.08);
+      border: 1px solid rgba(200, 154, 61, 0.35);
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+    }
+    .info-panel-link:hover {
+      background: rgba(200, 154, 61, 0.18);
+      border-color: rgba(200, 154, 61, 0.7);
+    }
+    .info-panel-link .arrow {
+      opacity: 0.7;
+      transition: transform 180ms ease;
+    }
+    .info-panel-link:hover .arrow {
+      transform: translateX(3px);
+      opacity: 1;
     }
 
     /* Тулбар управления панелью — две кнопки наверху, как в расписании.
@@ -1328,6 +1364,10 @@
        Position: fixed относительно viewport, обновляется на mousemove
        из IIFE анимации. ============================================ */
     .tracks-hover-tip {
+      /* Плашка отключена: дублировала описание правой панели.
+         CSS оставлен ради быстрого отката одной строкой. JS продолжает
+         работать без ошибок (.classList.add/remove идут вхолостую). */
+      display: none;
       position: fixed;
       pointer-events: none;
       z-index: 8;
@@ -4985,7 +5025,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-16a"></script>
+  <script src="festival-data.js?v=2026-05-16b"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -5044,6 +5084,7 @@ window.addEventListener('resize', ()=>{
         id: card.id,
         status: 'confirmed',
         title: card.title,
+        short_title: card.short_title,
         subtitle: card.subtitle,
         speaker: card.speaker,
         speaker_role: card.speaker_role,
@@ -6283,59 +6324,66 @@ window.addEventListener('resize', ()=>{
     }
 
     // labelForEvent — что показывать в круге события.
-    // Кеш: результат зависит только от ev (immutable из JSON). Раньше эта
-    // функция вызывалась каждый кадр при зуме на каждом круге с событием —
-    // строка-разбор, regex, lowerCase. Теперь WeakMap кеширует по ссылке.
-    const _labelCache = new WeakMap();
-    function labelForEvent(ev) {
+    // Кеш: результат зависит от ev И от isMobile (на mobile применяется
+    // short_title для коротких подписей в маленьких кругах). Два кеша,
+    // оба WeakMap'ом по ссылке на ev.
+    const _labelCacheDesktop = new WeakMap();
+    const _labelCacheMobile  = new WeakMap();
+    function labelForEvent(ev, isMobile) {
       if (!ev) return { line1: 'TBA', line2: '' };
-      const cached = _labelCache.get(ev);
+      const cache = isMobile ? _labelCacheMobile : _labelCacheDesktop;
+      const cached = cache.get(ev);
       if (cached) return cached;
-      const result = _labelForEventImpl(ev);
-      _labelCache.set(ev, result);
+      const result = _labelForEventImpl(ev, isMobile);
+      cache.set(ev, result);
       return result;
     }
-    function _labelForEventImpl(ev) {
+    function _labelForEventImpl(ev, isMobile) {
       // Для exhibits author используется как speaker — нормализуем сюда.
       const author = ev.speaker || ev.author || '';
 
       const isEmpty = ev.status === 'placeholder' || (!ev.title && !author);
       if (isEmpty) return { line1: 'TBA', line2: '' };
 
+      // short_title — короткая подпись для маленьких кругов Аполлония.
+      // Применяется ТОЛЬКО на mobile — там круги мельче и места под
+      // длинный title нет. На desktop места хватает, рисуем полный title.
+      const titleForCircle = (isMobile && ev.short_title) ? ev.short_title : ev.title;
+
       const cat = ev.category;
       let line1 = '', line2 = '';
       if (cat === 'popsci') {
-        line1 = author || ev.title || 'TBA';
-        if (author && ev.title) {
+        line1 = author || titleForCircle || 'TBA';
+        if (author && titleForCircle) {
           // Не показываем title, если он дублирует имя: "Лекция X" или
           // содержит основу фамилии (slice(0,-2) — учёт русских падежей,
           // "Райгородский" → "Райгородск" → находится в "Райгородского").
-          const titleL = ev.title.toLowerCase().trim();
+          const titleL = titleForCircle.toLowerCase().trim();
           const lastName = author.split(' ').pop().toLowerCase();
           const stem = lastName.length > 5 ? lastName.slice(0, -2) : lastName;
           if (!titleL.startsWith('лекция ') && !titleL.includes(stem)) {
-            line2 = ev.title;
+            line2 = titleForCircle;
           }
         }
       } else if (cat === 'music') {
-        // Music: основная подпись — название группы/исполнителя (или title).
-        // Если title и author разные (как у "Научно-технический рэп" / "Влад Горелов") —
-        // показываем оба: название первым, имя автора второй строкой.
-        line1 = ev.title || author || 'TBA';
-        if (author && ev.title && author !== ev.title) {
-          // Не дублируем если title содержит имя автора или наоборот.
-          const a = author.toLowerCase(), t = ev.title.toLowerCase();
+        line1 = titleForCircle || author || 'TBA';
+        if (author && titleForCircle && author !== titleForCircle) {
+          const a = author.toLowerCase(), t = titleForCircle.toLowerCase();
           if (!t.includes(a) && !a.includes(t)) {
             line2 = author;
           }
         }
       } else if (cat === 'workshop') {
-        line1 = ev.title || author || 'TBA';
-        if (author && ev.title) line2 = author;
+        line1 = titleForCircle || author || 'TBA';
+        if (author && titleForCircle) line2 = author;
+      } else if (cat === 'art') {
+        // У art в кругах Аполлония показываем только title (название работы).
+        // Автор всё равно есть в правой панели/drawer.
+        line1 = titleForCircle || author || 'TBA';
       } else {
-        // art/social/cinema/experiment: title + author.
-        line1 = ev.title || author || 'TBA';
-        if (author && ev.title && author !== ev.title) line2 = author;
+        // social/cinema/experiment: title + author.
+        line1 = titleForCircle || author || 'TBA';
+        if (author && titleForCircle && author !== titleForCircle) line2 = author;
       }
       return { line1, line2 };
     }
@@ -6373,7 +6421,11 @@ window.addEventListener('resize', ()=>{
       const rPx = wr * s.scale;
       if (rPx < 16) return;
 
-      const labels = labelForEvent(ev);
+      // isMobile нужен раньше — передаётся в labelForEvent чтобы выбрать
+      // short_title (только на mobile) vs полный title (всегда на desktop).
+      const isMobile = window.innerWidth <= 768;
+
+      const labels = labelForEvent(ev, isMobile);
       if (!labels.line1) return;
 
       const maxWidth = rPx * 1.65;
@@ -6386,30 +6438,87 @@ window.addEventListener('resize', ()=>{
       const words = labels.line1.split(' ');
       const canWrap = words.length >= 2 && !isTBA;
 
+      // На mobile разрешаем больше строк — лучше 3-4 строки помельче,
+      // чем огромная единственная строка, обрезанная по краям круга.
+      const maxLines = isMobile ? 4 : 2;
+
+      // Жадный wrap: для данного размера шрифта набивает слова в строки
+      // подряд; если строка переполняется — переходит на новую.
+      // allowOverflow=true: разрешаем единичным словам быть шире maxWidth
+      // (иначе одно длинное слово, например "Эксперименты:" с двоеточием,
+      // блокирует всё и даёт некрасивый single-line fallback).
+      function tryWrap(size, allowOverflow) {
+        setFont(`italic ${size}px 'Cormorant Garamond', Georgia, serif`);
+        const lines = [];
+        let cur = words[0];
+        for (let i = 1; i < words.length; i++) {
+          const cand = cur + ' ' + words[i];
+          if (ctx.measureText(cand).width <= maxWidth) {
+            cur = cand;
+          } else {
+            lines.push(cur);
+            cur = words[i];
+            if (lines.length >= maxLines) return null;
+          }
+        }
+        lines.push(cur);
+        if (lines.length > maxLines) return null;
+        if (!allowOverflow) {
+          for (const ln of lines) {
+            if (ctx.measureText(ln).width > maxWidth) return null;
+          }
+        }
+        return lines;
+      }
+
       let mainLines, mainSize, subText = '', subSize = 0;
       if (canWrap) {
         let found = false;
+        // Первый проход: ищем размер где все строки строго в ширине
         for (let size = maxFont; size >= minFont; size--) {
-          setFont(`italic ${size}px 'Cormorant Garamond', Georgia, serif`);
-          let l1 = words[0], l2 = '';
-          for (let i = 1; i < words.length; i++) {
-            const cand = l1 + ' ' + words[i];
-            if (ctx.measureText(cand).width <= maxWidth) l1 = cand;
-            else { l2 = words.slice(i).join(' '); break; }
-          }
-          if (!l2 && words.length >= 2) {
-            const half = Math.ceil(words.length / 2);
-            l1 = words.slice(0, half).join(' ');
-            l2 = words.slice(half).join(' ');
-          }
-          if (ctx.measureText(l1).width <= maxWidth && ctx.measureText(l2).width <= maxWidth) {
-            mainLines = [l1, l2];
+          const lines = tryWrap(size, false);
+          if (lines) {
+            mainLines = lines;
             mainSize = size;
             found = true;
             break;
           }
         }
+        // Спец-случай: если перенос разорвал короткий title на «слово + хвостик»
+        // (например «Элемент 1» → ['Элемент', '1']), это уродливо. Лучше
+        // показать single-line с чуть уменьшенным шрифтом. Запускаем только
+        // если: мало слов (≤3), последняя строка короткая (1-2 символа),
+        // и single-line при минимальном шрифте занимает разумный размер.
+        if (found && mainLines.length >= 2) {
+          const lastLine = mainLines[mainLines.length - 1];
+          const orphan = lastLine.length <= 2 && words.length <= 3;
+          if (orphan) {
+            const singleSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
+            // singleSize ≥ 60% от mainSize → single-line всё ещё читаемая,
+            // не унижается до minFont
+            if (singleSize >= mainSize * 0.6) {
+              mainLines = [labels.line1];
+              mainSize = singleSize;
+            }
+          }
+        }
+        // Второй проход: если ни один размер не дал чистого результата
+        // (обычно из-за одного супер-длинного слова), разрешаем overflow.
+        // Лучше показать N строк, одна из которых чуть вылазит, чем
+        // single-line с минимальным шрифтом на весь круг.
         if (!found) {
+          for (let size = maxFont; size >= minFont; size--) {
+            const lines = tryWrap(size, true);
+            if (lines) {
+              mainLines = lines;
+              mainSize = size;
+              found = true;
+              break;
+            }
+          }
+        }
+        if (!found) {
+          // Последний fallback — single-line с подобранным шрифтом
           mainSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
           mainLines = [labels.line1];
         }
@@ -6417,7 +6526,10 @@ window.addEventListener('resize', ()=>{
         mainSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
         mainLines = [labels.line1];
       }
-      if (labels.line2 && mainLines.length === 1 && mainSize >= maxFont * 0.85) {
+      // Подзаголовок (line2) — только на desktop, и только когда основная строка
+      // уместилась в одну линию с крупным шрифтом. На mobile sub не рисуем
+      // вообще: круги маленькие, основной текст уже может занимать 3-4 строки.
+      if (!isMobile && labels.line2 && mainLines.length === 1 && mainSize >= maxFont * 0.85) {
         subText = labels.line2;
         subSize = fitFontSize(labels.line2, Math.round(mainSize * 0.78), minFont, maxWidth);
       }
@@ -6526,7 +6638,11 @@ window.addEventListener('resize', ()=>{
       const rPx = wr * s.scale;
       if (rPx < 16) return;
 
-      const labels = hasConfirmedEvent ? labelForEvent(ev) : { line1: 'TBA', line2: '' };
+      // isMobile нужен раньше — передаётся в labelForEvent чтобы выбрать
+      // short_title (только на mobile) vs полный title (всегда на desktop).
+      const isMobile = window.innerWidth <= 768;
+
+      const labels = hasConfirmedEvent ? labelForEvent(ev, isMobile) : { line1: 'TBA', line2: '' };
       if (!labels.line1) return;
 
       const maxWidth = rPx * 1.65;  // диаметр с небольшим запасом по бокам
@@ -6538,47 +6654,75 @@ window.addEventListener('resize', ()=>{
       // Стратегия: для имён/названий с 2+ слов — стараемся всегда показать на двух
       // строках. Это и красивее, и гарантирует что строка не вылезет за круг (даже на
       // маленьких). Для TBA или одиночных слов — одна строка.
-      // Алгоритм: перебираем размеры от maxFont к minFont, для каждого ищем разбиение
-      // на 2 сбалансированные строки которые обе влезают в maxWidth. Берём первый
-      // подходящий размер.
+      // На mobile разрешаем до 4 строк, чтобы длинные подписи помещались.
       const isTBA = labels.line1 === 'TBA';
       const words = labels.line1.split(' ');
       const canWrap = words.length >= 2 && !isTBA;
+      const maxLines = isMobile ? 4 : 2;
+
+      function tryWrap(size, allowOverflow) {
+        setFont(`italic ${size}px 'Cormorant Garamond', Georgia, serif`);
+        const lines = [];
+        let cur = words[0];
+        for (let i = 1; i < words.length; i++) {
+          const cand = cur + ' ' + words[i];
+          if (ctx.measureText(cand).width <= maxWidth) {
+            cur = cand;
+          } else {
+            lines.push(cur);
+            cur = words[i];
+            if (lines.length >= maxLines) return null;
+          }
+        }
+        lines.push(cur);
+        if (lines.length > maxLines) return null;
+        if (!allowOverflow) {
+          for (const ln of lines) {
+            if (ctx.measureText(ln).width > maxWidth) return null;
+          }
+        }
+        return lines;
+      }
 
       let mainLines, mainSize, subText = '', subSize = 0;
 
       if (canWrap) {
         let found = false;
         for (let size = maxFont; size >= minFont; size--) {
-          setFont(`italic ${size}px 'Cormorant Garamond', Georgia, serif`);
-          // Greedy left→right: набираем максимум слов в первую строку при текущем размере
-          let l1 = words[0], l2 = '';
-          for (let i = 1; i < words.length; i++) {
-            const cand = l1 + ' ' + words[i];
-            if (ctx.measureText(cand).width <= maxWidth) {
-              l1 = cand;
-            } else {
-              l2 = words.slice(i).join(' ');
-              break;
-            }
-          }
-          // Если все слова влезли в первую строку, искусственно делим пополам
-          // (для имени из 2 слов на двух строках выглядит лучше чем одной)
-          if (!l2 && words.length >= 2) {
-            const half = Math.ceil(words.length / 2);
-            l1 = words.slice(0, half).join(' ');
-            l2 = words.slice(half).join(' ');
-          }
-          // Обе строки должны влезать
-          if (ctx.measureText(l1).width <= maxWidth && ctx.measureText(l2).width <= maxWidth) {
-            mainLines = [l1, l2];
+          const lines = tryWrap(size, false);
+          if (lines) {
+            mainLines = lines;
             mainSize = size;
             found = true;
             break;
           }
         }
+        // Спец-случай orphan: см. drawNestedEventLabelForEvent.
+        if (found && mainLines.length >= 2) {
+          const lastLine = mainLines[mainLines.length - 1];
+          const orphan = lastLine.length <= 2 && words.length <= 3;
+          if (orphan) {
+            const singleSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
+            if (singleSize >= mainSize * 0.6) {
+              mainLines = [labels.line1];
+              mainSize = singleSize;
+            }
+          }
+        }
         if (!found) {
-          // Даже на minFont не влезло (одно слово слишком длинное) — fallback
+          // Второй проход: разрешаем overflow по одному слишком длинному слову
+          for (let size = maxFont; size >= minFont; size--) {
+            const lines = tryWrap(size, true);
+            if (lines) {
+              mainLines = lines;
+              mainSize = size;
+              found = true;
+              break;
+            }
+          }
+        }
+        if (!found) {
+          // Последний fallback — одна строка с подобранным шрифтом
           mainSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
           mainLines = [labels.line1];
         }
@@ -6588,9 +6732,9 @@ window.addEventListener('resize', ()=>{
         mainLines = [labels.line1];
       }
 
-      // Подзаголовок (тема лекции) — рисуем только если основная подпись уместилась
-      // в ОДНУ строку с крупным шрифтом (≥85% от max). На двух строках уже нет места.
-      if (labels.line2 && mainLines.length === 1 && mainSize >= maxFont * 0.85) {
+      // Подзаголовок — только на desktop. На mobile основной title может занимать
+      // 3-4 строки, и место под подзаголовок просто не остаётся.
+      if (!isMobile && labels.line2 && mainLines.length === 1 && mainSize >= maxFont * 0.85) {
         subText = labels.line2;
         subSize = fitFontSize(labels.line2, Math.round(mainSize * 0.78), minFont, maxWidth);
       }
@@ -6879,7 +7023,7 @@ window.addEventListener('resize', ()=>{
         } else if (hoveredCircle._isNested && hoveredCircle._event) {
           // Внутренний круг: показываем event
           const ev = hoveredCircle._event;
-          const labels = labelForEvent(ev);
+          const labels = labelForEvent(ev, false);
           title = labels.line1 || '';
           if (ev.description) desc = ev.description;
           else if (labels.line2) desc = labels.line2;
@@ -7068,7 +7212,9 @@ window.addEventListener('resize', ()=>{
       if (!titleEl || !descEl) return;
       if (panelEl) panelEl.classList.add('visible');  // на mobile подымает drawer
 
-      const labels = labelForEvent(ev);
+      // В правой панели / mobile-drawer всегда показываем полный title,
+      // не short_title — у нас тут есть пространство.
+      const labels = labelForEvent(ev, false);
       titleEl.textContent = labels.line1 || (ev.speaker || ev.title || 'TBA');
 
       // Meta: время + место. Берём display из FESTIVAL_DATA.venues, чтобы имена были
@@ -7105,6 +7251,25 @@ window.addEventListener('resize', ()=>{
       } else if (ev.status === 'placeholder' || ev.status === 'tentative') {
         html += '<p style="opacity:0.7;font-style:italic;margin:0;">Подробности уточняются.</p>';
       }
+
+      // Блок ссылок: рисуем только если ev.links — непустой массив объектов
+      // вида {label, url}. Битые/строковые links игнорируем тихо, чтобы
+      // не показать сломанный UI.
+      if (Array.isArray(ev.links) && ev.links.length > 0) {
+        const valid = ev.links.filter(l => l && typeof l === 'object' && l.url && l.label);
+        if (valid.length > 0) {
+          html += '<div class="info-panel-links">';
+          for (const l of valid) {
+            html += '<a class="info-panel-link" href="' + escHtml(l.url)
+                 +  '" target="_blank" rel="noopener noreferrer">'
+                 +  escHtml(l.label)
+                 +  '<span class="arrow" aria-hidden="true">→</span>'
+                 +  '</a>';
+          }
+          html += '</div>';
+        }
+      }
+
       descEl.innerHTML = html;
     }
 
