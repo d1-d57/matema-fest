@@ -20,6 +20,7 @@ window.FESTIVAL_DATA = {
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\".",
     "changes_v31": "Массовое добавление поля links у 36 карточек по links-table.md: arts, music, popsci, social, stations. 4 карточки с мусорными ссылками (Карнаухов, Серомаха, FracLife/Юля, Математический арт/Андрей) пересобраны в чистый формат [{label,url}]. У Гусева ссылка TLF проставлена и на лекции (talk-gusev-nn), и на станции (station-gusev-chaos).",
+    "changes_v32": "Переразбиение станций на 45-минутные волны. Старые slot-stations-X-Y (4 часовые волны) удалены. Введены 24 новых station-слота slot-st-{sb1,sb2,bb,cy}-{A..F}: 6 волн по 45 минут (16:00, 16:45, 17:30, 18:15, 19:00, 19:45→20:30) × 4 lanes (small_bar L1+L2, big_bar, courtyard). 11 станций удвоены через card.slots: [...] (multi-slot инфраструктура v31), оставшиеся 2 карточки Полины Романовой — на одном 45-минутном слоте каждая (slot:). Никакая пара не идёт в смежных волнах: разрыв ≥ 2 волн между двумя половинами одной станции. leaf-side-1 расширен с 16:30 на 16:00, чтобы поймать новую волну A — остальная геометрия папоротника не менялась. Каждая 45-минутка попадает на side-лист по slot.start через findLeafForSlot. Расположение случайное (Иван переставит позже).",
     "changes_v32": "Музыкальная программа переразвязана. Main (Зал Мандельброт) — добавлен Misha Nikitin на финальный слот 03:00-04:00 (slot-dance переделан с type=dance в type=music; категория не изменилась). Pink (Бар Серпинский) — добавлен новый исполнитель S66 в 23:30, после него все смещены: Morakh 00:15, ænsof 01:10, garish_cyborg 02:10, The Darkest Supernova 03:00 (финал). Новые длительности сетов: 45/55/60/50/60 мин. Добавлен slot-music-parallel-7 (03:00-04:00) для финала Pink. id карточек music-pink-XXXX остаются стабильными ключами, но больше не соответствуют времени по имени — заменены title/description/links по своим slot-ам."
   },
   "venues": {
@@ -177,38 +178,242 @@ window.FESTIVAL_DATA = {
       "category": "popsci",
       "venue": "main_stage"
     },
-    "slot-stations-1-1": {
-      "start": "16:30",
-      "end": "17:30",
-      "label_for_zoom": "Первый блок · 16:30",
-      "tool_label": "Станции 1",
+    "slot-st-sb1-A": {
+      "start": "16:00",
+      "end": "16:45",
+      "label_for_zoom": "Станции · волна 1 · 16:00",
+      "tool_label": "Станции · волна 1",
       "type": "station",
       "category": "station",
       "venue": "small_bar"
+    ,
+      "lane": 0
     },
-    "slot-stations-1-2": {
-      "start": "16:30",
-      "end": "17:30",
-      "label_for_zoom": "Первый блок · 16:30",
-      "tool_label": "Станции 1",
+    "slot-st-sb2-A": {
+      "start": "16:00",
+      "end": "16:45",
+      "label_for_zoom": "Станции · волна 1 · 16:00",
+      "tool_label": "Станции · волна 1",
       "type": "station",
       "category": "station",
       "venue": "small_bar"
+    ,
+      "lane": 1
     },
-    "slot-stations-1-3": {
-      "start": "16:30",
-      "end": "17:30",
-      "label_for_zoom": "Первый блок · 16:30",
-      "tool_label": "Станции 1",
+    "slot-st-bb-A": {
+      "start": "16:00",
+      "end": "16:45",
+      "label_for_zoom": "Станции · волна 1 · 16:00",
+      "tool_label": "Станции · волна 1",
       "type": "station",
       "category": "station",
       "venue": "big_bar"
     },
-    "slot-stations-1-4": {
-      "start": "16:30",
+    "slot-st-cy-A": {
+      "start": "16:00",
+      "end": "16:45",
+      "label_for_zoom": "Станции · волна 1 · 16:00",
+      "tool_label": "Станции · волна 1",
+      "type": "station",
+      "category": "station",
+      "venue": "courtyard"
+    },
+    "slot-st-sb1-B": {
+      "start": "16:45",
       "end": "17:30",
-      "label_for_zoom": "Первый блок · 16:30",
-      "tool_label": "Станции 1",
+      "label_for_zoom": "Станции · волна 2 · 16:45",
+      "tool_label": "Станции · волна 2",
+      "type": "station",
+      "category": "station",
+      "venue": "small_bar"
+    ,
+      "lane": 0
+    },
+    "slot-st-sb2-B": {
+      "start": "16:45",
+      "end": "17:30",
+      "label_for_zoom": "Станции · волна 2 · 16:45",
+      "tool_label": "Станции · волна 2",
+      "type": "station",
+      "category": "station",
+      "venue": "small_bar"
+    ,
+      "lane": 1
+    },
+    "slot-st-bb-B": {
+      "start": "16:45",
+      "end": "17:30",
+      "label_for_zoom": "Станции · волна 2 · 16:45",
+      "tool_label": "Станции · волна 2",
+      "type": "station",
+      "category": "station",
+      "venue": "big_bar"
+    },
+    "slot-st-cy-B": {
+      "start": "16:45",
+      "end": "17:30",
+      "label_for_zoom": "Станции · волна 2 · 16:45",
+      "tool_label": "Станции · волна 2",
+      "type": "station",
+      "category": "station",
+      "venue": "courtyard"
+    },
+    "slot-st-sb1-C": {
+      "start": "17:30",
+      "end": "18:15",
+      "label_for_zoom": "Станции · волна 3 · 17:30",
+      "tool_label": "Станции · волна 3",
+      "type": "station",
+      "category": "station",
+      "venue": "small_bar"
+    ,
+      "lane": 0
+    },
+    "slot-st-sb2-C": {
+      "start": "17:30",
+      "end": "18:15",
+      "label_for_zoom": "Станции · волна 3 · 17:30",
+      "tool_label": "Станции · волна 3",
+      "type": "station",
+      "category": "station",
+      "venue": "small_bar"
+    ,
+      "lane": 1
+    },
+    "slot-st-bb-C": {
+      "start": "17:30",
+      "end": "18:15",
+      "label_for_zoom": "Станции · волна 3 · 17:30",
+      "tool_label": "Станции · волна 3",
+      "type": "station",
+      "category": "station",
+      "venue": "big_bar"
+    },
+    "slot-st-cy-C": {
+      "start": "17:30",
+      "end": "18:15",
+      "label_for_zoom": "Станции · волна 3 · 17:30",
+      "tool_label": "Станции · волна 3",
+      "type": "station",
+      "category": "station",
+      "venue": "courtyard"
+    },
+    "slot-st-sb1-D": {
+      "start": "18:15",
+      "end": "19:00",
+      "label_for_zoom": "Станции · волна 4 · 18:15",
+      "tool_label": "Станции · волна 4",
+      "type": "station",
+      "category": "station",
+      "venue": "small_bar"
+    ,
+      "lane": 0
+    },
+    "slot-st-sb2-D": {
+      "start": "18:15",
+      "end": "19:00",
+      "label_for_zoom": "Станции · волна 4 · 18:15",
+      "tool_label": "Станции · волна 4",
+      "type": "station",
+      "category": "station",
+      "venue": "small_bar"
+    ,
+      "lane": 1
+    },
+    "slot-st-bb-D": {
+      "start": "18:15",
+      "end": "19:00",
+      "label_for_zoom": "Станции · волна 4 · 18:15",
+      "tool_label": "Станции · волна 4",
+      "type": "station",
+      "category": "station",
+      "venue": "big_bar"
+    },
+    "slot-st-cy-D": {
+      "start": "18:15",
+      "end": "19:00",
+      "label_for_zoom": "Станции · волна 4 · 18:15",
+      "tool_label": "Станции · волна 4",
+      "type": "station",
+      "category": "station",
+      "venue": "courtyard"
+    },
+    "slot-st-sb1-E": {
+      "start": "19:00",
+      "end": "19:45",
+      "label_for_zoom": "Станции · волна 5 · 19:00",
+      "tool_label": "Станции · волна 5",
+      "type": "station",
+      "category": "station",
+      "venue": "small_bar"
+    ,
+      "lane": 0
+    },
+    "slot-st-sb2-E": {
+      "start": "19:00",
+      "end": "19:45",
+      "label_for_zoom": "Станции · волна 5 · 19:00",
+      "tool_label": "Станции · волна 5",
+      "type": "station",
+      "category": "station",
+      "venue": "small_bar"
+    ,
+      "lane": 1
+    },
+    "slot-st-bb-E": {
+      "start": "19:00",
+      "end": "19:45",
+      "label_for_zoom": "Станции · волна 5 · 19:00",
+      "tool_label": "Станции · волна 5",
+      "type": "station",
+      "category": "station",
+      "venue": "big_bar"
+    },
+    "slot-st-cy-E": {
+      "start": "19:00",
+      "end": "19:45",
+      "label_for_zoom": "Станции · волна 5 · 19:00",
+      "tool_label": "Станции · волна 5",
+      "type": "station",
+      "category": "station",
+      "venue": "courtyard"
+    },
+    "slot-st-sb1-F": {
+      "start": "19:45",
+      "end": "20:30",
+      "label_for_zoom": "Станции · волна 6 · 19:45",
+      "tool_label": "Станции · волна 6",
+      "type": "station",
+      "category": "station",
+      "venue": "small_bar"
+    ,
+      "lane": 0
+    },
+    "slot-st-sb2-F": {
+      "start": "19:45",
+      "end": "20:30",
+      "label_for_zoom": "Станции · волна 6 · 19:45",
+      "tool_label": "Станции · волна 6",
+      "type": "station",
+      "category": "station",
+      "venue": "small_bar"
+    ,
+      "lane": 1
+    },
+    "slot-st-bb-F": {
+      "start": "19:45",
+      "end": "20:30",
+      "label_for_zoom": "Станции · волна 6 · 19:45",
+      "tool_label": "Станции · волна 6",
+      "type": "station",
+      "category": "station",
+      "venue": "big_bar"
+    },
+    "slot-st-cy-F": {
+      "start": "19:45",
+      "end": "20:30",
+      "label_for_zoom": "Станции · волна 6 · 19:45",
+      "tool_label": "Станции · волна 6",
       "type": "station",
       "category": "station",
       "venue": "courtyard"
@@ -222,33 +427,6 @@ window.FESTIVAL_DATA = {
       "category": "popsci",
       "venue": "main_stage"
     },
-    "slot-stations-2-1": {
-      "start": "17:30",
-      "end": "18:30",
-      "label_for_zoom": "Второй блок · 17:30",
-      "tool_label": "Станции 2",
-      "type": "station",
-      "category": "station",
-      "venue": "small_bar"
-    },
-    "slot-stations-2-2": {
-      "start": "17:30",
-      "end": "18:30",
-      "label_for_zoom": "Второй блок · 17:30",
-      "tool_label": "Станции 2",
-      "type": "station",
-      "category": "station",
-      "venue": "courtyard"
-    },
-    "slot-stations-2-3": {
-      "start": "17:30",
-      "end": "18:30",
-      "label_for_zoom": "Второй блок · 17:30",
-      "tool_label": "Станции 2",
-      "type": "station",
-      "category": "station",
-      "venue": "big_bar"
-    },
     "slot-skripchenko": {
       "start": "19:00",
       "end": "20:00",
@@ -257,60 +435,6 @@ window.FESTIVAL_DATA = {
       "type": "talk",
       "category": "popsci",
       "venue": "main_stage"
-    },
-    "slot-stations-3-1": {
-      "start": "18:30",
-      "end": "19:30",
-      "label_for_zoom": "Третий блок · 18:30",
-      "tool_label": "Станции 3",
-      "type": "station",
-      "category": "station",
-      "venue": "big_bar"
-    },
-    "slot-stations-3-2": {
-      "start": "18:30",
-      "end": "19:30",
-      "label_for_zoom": "Третий блок · 18:30",
-      "tool_label": "Станции 3",
-      "type": "station",
-      "category": "station",
-      "venue": "small_bar"
-    },
-    "slot-stations-3-3": {
-      "start": "18:30",
-      "end": "19:30",
-      "label_for_zoom": "Третий блок · 18:30",
-      "tool_label": "Станции 3",
-      "type": "station",
-      "category": "station",
-      "venue": "courtyard"
-    },
-    "slot-stations-4-1": {
-      "start": "19:30",
-      "end": "20:30",
-      "label_for_zoom": "Четвёртый блок · 19:30",
-      "tool_label": "Станции 4",
-      "type": "station",
-      "category": "station",
-      "venue": "small_bar"
-    },
-    "slot-stations-4-2": {
-      "start": "19:30",
-      "end": "20:30",
-      "label_for_zoom": "Четвёртый блок · 19:30",
-      "tool_label": "Станции 4",
-      "type": "station",
-      "category": "station",
-      "venue": "big_bar"
-    },
-    "slot-stations-4-3": {
-      "start": "19:30",
-      "end": "20:30",
-      "label_for_zoom": "Четвёртый блок · 19:30",
-      "tool_label": "Станции 4",
-      "type": "station",
-      "category": "station",
-      "venue": "courtyard"
     },
     "slot-music-1": {
       "start": "22:00",
@@ -702,8 +826,9 @@ window.FESTIVAL_DATA = {
       "title": "Сделай 3D-фрактал из бумаги",
       "speaker": "Полина Романова",
       "description": "Многие видели книги с выдвижными иллюстрациями. Оказывается, можно создать раскладывающуюся открытку с фракталом в технике pop up. На мастер-классе участники смогут прочувствовать, что такое самоподобие и сделать свои собственные трехмерные модели фракталов.",
-      "slot": "slot-stations-1-1",
+      "slot": "slot-st-sb1-A",
       "venue": "small_bar",
+      
       "_admin": {
         "knows": true
       },
@@ -749,7 +874,7 @@ window.FESTIVAL_DATA = {
       "title": "Каллиграфия как фрактал",
       "speaker": "Наташа Евдокимова",
       "description": "Японская каллиграфия — фрактальная: каждая черта повторяет форму целого иероглифа, и каждый штрих неповторим. Возьмём кисть и тушь, попробуем сами — без задачи «сделать красиво», с задачей прочувствовать, как одно движение разворачивается в форму.",
-      "slot": "slot-stations-1-2",
+      "slots": ["slot-st-sb2-A", "slot-st-sb1-D"],
       "venue": "small_bar",
       "_admin": {
         "knows": true,
@@ -800,9 +925,9 @@ window.FESTIVAL_DATA = {
       "title": "Инженерное оригами",
       "speaker": "Полина Романова",
       "description": "Соберём подвижные модели солнечных панелей в технике оригами: по чертежу, со сборкой и инструкцией. Складные конструкции из бумаги работают по строгим математическим правилам, поэтому их применяют в инженерии — от солнечных батарей до медицинских стентов.",
-      "slot": "slot-stations-3-2",
+      "slot": "slot-st-sb2-D",
       "venue": "small_bar",
-      "lane": "left",
+      
       "_admin": {
         "knows": true
       },
@@ -847,7 +972,7 @@ window.FESTIVAL_DATA = {
       "title": "Тай-дай: космические яйца",
       "speaker": "Ольга",
       "description": "Техника «Космические яйца»: складываем ткань определённым образом, стягиваем вощёной нитью и заливаем кипятком с красителями. Через полчаса разворачиваем — получается фрактальный узор, который никогда не повторится.",
-      "slot": "slot-stations-2-2",
+      "slots": ["slot-st-cy-B", "slot-st-cy-E"],
       "venue": "courtyard",
       "_admin": {
         "knows": true
@@ -895,7 +1020,7 @@ window.FESTIVAL_DATA = {
       "title": "Терменвокс: попробовать самому",
       "speaker": "Лора Заиконникова",
       "description": "Терменвокс — электромузыкальный инструмент, который сто лет назад изобрёл в Петербурге Лев Термен. Музыкант играет руками в воздухе, не касаясь инструмента. Лора расскажет, как это устроено физически, и даст попробовать всем, кто захочет. Подготовки никакой не нужно — приходите и пробуйте.",
-      "slot": "slot-stations-2-3",
+      "slots": ["slot-st-bb-A", "slot-st-bb-D"],
       "venue": "big_bar",
       "_source_app": "app-19",
       "application": {
@@ -933,9 +1058,9 @@ window.FESTIVAL_DATA = {
       "title": "Фрактальные витражи",
       "speaker": "Ася",
       "description": "Рисуем витражные краски по гибкому пластику. По линиям и формам получается фрактальный узор — каждый забирает свою работу с собой.",
-      "slot": "slot-stations-2-1",
+      "slots": ["slot-st-sb1-B", "slot-st-sb1-E"],
       "venue": "small_bar",
-      "lane": "left",
+      
       "_admin": {
         "knows": true
       },
@@ -994,7 +1119,7 @@ window.FESTIVAL_DATA = {
       "title": "Фрактал-Ателье",
       "speaker": "Татьяна Зайцева",
       "description": "Татьяна занимается фрактальными замощениями — это её основная научная работа на мехмате. На станции можно выбрать форму фрактала и цветовую гамму, программа сгенерирует замощение, а маленький термопринтер тут же напечатает результат. Получается персональный паттерн — можно унести с собой, можно отправить файлом и потом напечатать на чём угодно.",
-      "slot": "slot-stations-1-3",
+      "slots": ["slot-st-bb-C", "slot-st-bb-F"],
       "venue": "big_bar",
       "_admin": {
         "knows": true
@@ -1431,7 +1556,7 @@ window.FESTIVAL_DATA = {
       "short_title": "От мира идей к миру вещей",
       "speaker": "Станислав Карнаухов",
       "description": "Станция с экспериментами, которые можно потрогать руками. В этом году у Стаса магистральная линия — от спектроскопии и химии к квантовой механике. Идея простая: показать, как обычные опыты открывают свою квантовую природу, и дать прикоснуться к квантовой механике руками.",
-      "slot": "slot-stations-3-3",
+      "slots": ["slot-st-cy-C", "slot-st-cy-F"],
       "venue": "courtyard",
       "links": [
         {
@@ -1491,9 +1616,9 @@ window.FESTIVAL_DATA = {
       "title": "Симметрия наноматериалов",
       "speaker": "Анастасия",
       "description": "Наноматериалы состоят из элементарных ячеек — самой маленькой повторяющейся части. На станции можно изучить срезы разных наноматериалов и попробовать найти элементарную ячейку самому, по разным уровням сложности. Рядом — напечатанная на 3D-принтере структура двухслойного графена, которую можно поворачивать руками.",
-      "slot": "slot-stations-3-2",
+      "slots": ["slot-st-sb2-C", "slot-st-sb2-F"],
       "venue": "small_bar",
-      "lane": "right",
+      
       "_admin": {
         "knows": true
       },
@@ -1544,9 +1669,9 @@ window.FESTIVAL_DATA = {
       "speaker": "Тёма Бойко",
       "speaker_role": "команда летней школы",
       "description": "Человеческие языки могут порой казаться довольно хаотичными, но всё же в них есть место системе, и иногда эта система очень элегантная. Мы предлагаем решить несколько лингвистических задач, показывающих структуры с самоподобием и гармонией в различных языках.",
-      "slot": "slot-stations-2-1",
+      "slots": ["slot-st-sb2-B", "slot-st-sb2-E"],
       "venue": "small_bar",
-      "lane": "right",
+      
       "team_notes": "Подтверждено устно. Заявку команда ещё не подавала, но мы их берём.",
       "_admin": {
         "knows": true
@@ -1568,8 +1693,9 @@ window.FESTIVAL_DATA = {
       "speaker": "Math cool",
       "speaker_role": "онлайн-школа олимпиадной математики",
       "description": "Сначала построим дерево Пифагора и попробуем понять, конечна ли его площадь. Затем с помощью циркуля и формулы Декарта достроим ковёр Аполлония, обсудим его раскраски и связь с цепными дробями. Будем работать руками — и разбираться, как фракталы устроены.",
-      "slot": "slot-stations-3-1",
+      "slots": ["slot-st-sb1-C", "slot-st-sb1-F"],
       "venue": "big_bar",
+      
       "team_notes": "Подтверждено. Команда дорабатывает формат.",
       "_admin": {
         "knows": true,
@@ -1595,7 +1721,7 @@ window.FESTIVAL_DATA = {
       "title": "Фрактальная природа моря",
       "speaker": "Серомаха Екатерина",
       "description": "Екатерина — science-art-художник, который вокруг морской биологии выстраивает интересные визуальные сюжеты. Раковины, аммониты, кораллы — почти все формы морской жизни фрактальны, и фестиваль — повод их рассмотреть подробнее. Формат станции уточняется.",
-      "slot": "slot-stations-1-4",
+      "slots": ["slot-st-cy-A", "slot-st-cy-D"],
       "venue": "courtyard",
       "links": [
         {
@@ -1677,7 +1803,7 @@ window.FESTIVAL_DATA = {
       "short_title": "Хаос обучения ИИ",
       "speaker": "Вячеслав Гусев",
       "description": "Вячеслав Гусев, учитель AI & Computer Science в проекте TLF — стенд с визуализациями хаотических процессов обучения нейросетей.",
-      "slot": "slot-stations-4-2",
+      "slots": ["slot-st-bb-B", "slot-st-bb-E"],
       "venue": "big_bar",
       "_admin": {
         "knows": true
@@ -2930,7 +3056,7 @@ window.FESTIVAL_DATA = {
         3
       ],
       "side": "side",
-      "start": "16:30",
+      "start": "16:00",
       "end": "17:30"
     },
     {
