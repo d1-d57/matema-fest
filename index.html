@@ -6593,42 +6593,31 @@ window.addEventListener('resize', ()=>{
       return size;
     }
 
-    // Подпись события на внутреннем круге при зуме внутрь категории.
-    // Шрифт крупный — подбирается под ширину каждого конкретного круга.
-    // Универсальная версия: принимает event-объект напрямую (не идёт в lookup).
-    // Используется в 3-уровневом зуме (внутри sub-cat круга).
-    function drawNestedEventLabelForEvent(c, wx, wy, wr, alpha, ev) {
-      if (!isVisibleInViewport(wx, wy, wr)) return;
-      const s = worldToScreen(wx, wy);
-      const rPx = wr * s.scale;
-      if (rPx < 16) return;
-
-      // isMobile нужен раньше — передаётся в labelForEvent чтобы выбрать
-      // short_title (только на mobile) vs полный title (всегда на desktop).
-      const isMobile = window.innerWidth <= 768;
-
-      const labels = labelForEvent(ev, isMobile);
-      if (!labels.line1) return;
-
-      const maxWidth = rPx * 1.65;
+    // ============================================================
+    // chooseLabelLayout — выбирает шрифт и разбиение на строки.
+    // renderLabel — рисует уже выбранный layout.
+    // 
+    // Извлечены из drawNestedEventLabel и drawNestedEventLabelForEvent —
+    // там был дублирующийся код. Логика подбора 1:1 как раньше; объединяя
+    // взял правильную геометрию из drawNestedEventLabel для рисования
+    // подзаголовка (sub-line учитывал свой lineHeight).
+    // ============================================================
+    function chooseLabelLayout(labels, rPx, tier, isMobile) {
+      const maxWidth = rPx * 1.65;  // диаметр круга с небольшим запасом по бокам
       let maxFont, minFont;
-      if (c.tier === 0)      { maxFont = 38; minFont = 13; }
-      else if (c.tier === 1) { maxFont = 28; minFont = 10; }
-      else                   { maxFont = 18; minFont = 8;  }
+      if (tier === 0)      { maxFont = 38; minFont = 13; }
+      else if (tier === 1) { maxFont = 28; minFont = 10; }
+      else                 { maxFont = 18; minFont = 8;  }
 
       const isTBA = labels.line1 === 'TBA';
       const words = labels.line1.split(' ');
       const canWrap = words.length >= 2 && !isTBA;
-
-      // На mobile разрешаем больше строк — лучше 3-4 строки помельче,
-      // чем огромная единственная строка, обрезанная по краям круга.
       const maxLines = isMobile ? 4 : 2;
 
-      // Жадный wrap: для данного размера шрифта набивает слова в строки
-      // подряд; если строка переполняется — переходит на новую.
-      // allowOverflow=true: разрешаем единичным словам быть шире maxWidth
-      // (иначе одно длинное слово, например "Эксперименты:" с двоеточием,
-      // блокирует всё и даёт некрасивый single-line fallback).
+      // Жадный wrap: для данного размера набивает слова в строки.
+      // allowOverflow=true — разрешаем слову быть шире maxWidth (для случая
+      // когда одно длинное слово блокирует весь подбор; лучше один overflow
+      // чем single-line на минимальном шрифте).
       function tryWrap(size, allowOverflow) {
         setFont(`italic ${size}px 'Cormorant Garamond', Georgia, serif`);
         const lines = [];
@@ -6653,69 +6642,88 @@ window.addEventListener('resize', ()=>{
         return lines;
       }
 
+      // Геометрическая проверка: вписан ли блок строк целиком в круг радиуса rPx?
+      // Применяется ТОЛЬКО на mobile — там это критично, потому что круги мелкие
+      // и блок текста 3-4 строки часто упирается в верх/низ круга, а не в бока.
+      // Алгоритм: для каждой строки строим bbox высотой lineH (1.05 × размер шрифта)
+      // и шириной = ctx.measureText. Проверяем что 4 угла bbox внутри круга.
+      // На bbox-проверке используем lineH (а не actualBoundingBox), чтобы был
+      // небольшой запас прочности — реальные глифы чуть меньше lineH.
+      // На desktop не вызываем — там размеры кругов больше, проблема не проявляется,
+      // и не хочется случайно затронуть проверенную верстку.
+      function fitsInCircle(lines, size) {
+        setFont(`italic ${size}px 'Cormorant Garamond', Georgia, serif`);
+        const lineH = size * 1.05;
+        const totalH = lines.length * lineH;
+        let yCenter = -totalH/2 + lineH/2;  // y центра первой строки от центра круга
+        for (const line of lines) {
+          const w = ctx.measureText(line).width;
+          const dx = w / 2;
+          const yTop = yCenter - lineH/2;
+          const yBot = yCenter + lineH/2;
+          // Симметрия по X — достаточно проверить один знак dx (берём положительный).
+          if (dx*dx + yTop*yTop > rPx*rPx) return false;
+          if (dx*dx + yBot*yBot > rPx*rPx) return false;
+          yCenter += lineH;
+        }
+        return true;
+      }
+
       let mainLines, mainSize, subText = '', subSize = 0;
       if (canWrap) {
         let found = false;
-        // Первый проход: ищем размер где все строки строго в ширине
+        // Первый проход: ищем размер где все строки помещаются по ширине
+        // (а на mobile дополнительно — целиком вписаны в круг).
         for (let size = maxFont; size >= minFont; size--) {
           const lines = tryWrap(size, false);
-          if (lines) {
-            mainLines = lines;
-            mainSize = size;
-            found = true;
-            break;
-          }
+          if (!lines) continue;
+          if (isMobile && !fitsInCircle(lines, size)) continue;
+          mainLines = lines; mainSize = size; found = true; break;
         }
-        // Спец-случай: если перенос разорвал короткий title на «слово + хвостик»
-        // (например «Элемент 1» → ['Элемент', '1']), это уродливо. Лучше
-        // показать single-line с чуть уменьшенным шрифтом. Запускаем только
-        // если: мало слов (≤3), последняя строка короткая (1-2 символа),
-        // и single-line при минимальном шрифте занимает разумный размер.
+        // Спец-случай orphan: title разорвался на «слово + хвостик» (например
+        // «Элемент 1» → ['Элемент', '1']). Лучше single-line чуть мельче.
+        // Условие: ≤3 слова и последняя строка ≤2 символа.
         if (found && mainLines.length >= 2) {
           const lastLine = mainLines[mainLines.length - 1];
           const orphan = lastLine.length <= 2 && words.length <= 3;
           if (orphan) {
             const singleSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
-            // singleSize ≥ 60% от mainSize → single-line всё ещё читаемая,
-            // не унижается до minFont
             if (singleSize >= mainSize * 0.6) {
               mainLines = [labels.line1];
               mainSize = singleSize;
             }
           }
         }
-        // Второй проход: если ни один размер не дал чистого результата
-        // (обычно из-за одного супер-длинного слова), разрешаем overflow.
-        // Лучше показать N строк, одна из которых чуть вылазит, чем
-        // single-line с минимальным шрифтом на весь круг.
+        // Второй проход: разрешаем overflow по одному супер-длинному слову
         if (!found) {
           for (let size = maxFont; size >= minFont; size--) {
             const lines = tryWrap(size, true);
-            if (lines) {
-              mainLines = lines;
-              mainSize = size;
-              found = true;
-              break;
-            }
+            if (lines) { mainLines = lines; mainSize = size; found = true; break; }
           }
         }
         if (!found) {
-          // Последний fallback — single-line с подобранным шрифтом
+          // Последний fallback: одна строка с подгонкой
           mainSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
           mainLines = [labels.line1];
         }
       } else {
+        // TBA или одно слово
         mainSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
         mainLines = [labels.line1];
       }
-      // Подзаголовок (line2) — только на desktop, и только когда основная строка
-      // уместилась в одну линию с крупным шрифтом. На mobile sub не рисуем
-      // вообще: круги маленькие, основной текст уже может занимать 3-4 строки.
+
+      // Подзаголовок (line2) — только desktop, и только когда основная подпись
+      // одна строка крупным шрифтом. На mobile места под него нет.
       if (!isMobile && labels.line2 && mainLines.length === 1 && mainSize >= maxFont * 0.85) {
         subText = labels.line2;
         subSize = fitFontSize(labels.line2, Math.round(mainSize * 0.78), minFont, maxWidth);
       }
 
+      return { mainLines, mainSize, subText, subSize };
+    }
+
+    function renderLabel(s, layout, alpha) {
+      const { mainLines, mainSize, subText, subSize } = layout;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       const lineH = mainSize * 1.05;
@@ -6733,8 +6741,26 @@ window.addEventListener('resize', ()=>{
         y += lineH * 0.15;
         setFont(`italic ${subSize}px 'Cormorant Garamond', Georgia, serif`);
         setFill(`rgba(${COLOR_TEXT}, ${0.7 * alpha})`);
-        ctx.fillText(subText, s.px, y);
+        ctx.fillText(subText, s.px, y - lineH/2 + subLineH/2);
       }
+    }
+
+    // Подпись события на внутреннем круге при зуме внутрь категории.
+    // Шрифт крупный — подбирается под ширину каждого конкретного круга.
+    // Универсальная версия: принимает event-объект напрямую (не идёт в lookup).
+    // Используется в 3-уровневом зуме (внутри sub-cat круга).
+    function drawNestedEventLabelForEvent(c, wx, wy, wr, alpha, ev) {
+      if (!isVisibleInViewport(wx, wy, wr)) return;
+      const s = worldToScreen(wx, wy);
+      const rPx = wr * s.scale;
+      if (rPx < 16) return;
+
+      const isMobile = window.innerWidth <= 768;
+      const labels = labelForEvent(ev, isMobile);
+      if (!labels.line1) return;
+
+      const layout = chooseLabelLayout(labels, rPx, c.tier, isMobile);
+      renderLabel(s, layout, alpha);
     }
 
     // Подпись на sub-cat круге (главная сцена / большой бар / двор и т.д.)
@@ -6820,128 +6846,12 @@ window.addEventListener('resize', ()=>{
       const rPx = wr * s.scale;
       if (rPx < 16) return;
 
-      // isMobile нужен раньше — передаётся в labelForEvent чтобы выбрать
-      // short_title (только на mobile) vs полный title (всегда на desktop).
       const isMobile = window.innerWidth <= 768;
-
       const labels = hasConfirmedEvent ? labelForEvent(ev, isMobile) : { line1: 'TBA', line2: '' };
       if (!labels.line1) return;
 
-      const maxWidth = rPx * 1.65;  // диаметр с небольшим запасом по бокам
-      let maxFont, minFont;
-      if (c.tier === 0)      { maxFont = 38; minFont = 13; }
-      else if (c.tier === 1) { maxFont = 28; minFont = 10; }
-      else                   { maxFont = 18; minFont = 8;  }
-
-      // Стратегия: для имён/названий с 2+ слов — стараемся всегда показать на двух
-      // строках. Это и красивее, и гарантирует что строка не вылезет за круг (даже на
-      // маленьких). Для TBA или одиночных слов — одна строка.
-      // На mobile разрешаем до 4 строк, чтобы длинные подписи помещались.
-      const isTBA = labels.line1 === 'TBA';
-      const words = labels.line1.split(' ');
-      const canWrap = words.length >= 2 && !isTBA;
-      const maxLines = isMobile ? 4 : 2;
-
-      function tryWrap(size, allowOverflow) {
-        setFont(`italic ${size}px 'Cormorant Garamond', Georgia, serif`);
-        const lines = [];
-        let cur = words[0];
-        for (let i = 1; i < words.length; i++) {
-          const cand = cur + ' ' + words[i];
-          if (ctx.measureText(cand).width <= maxWidth) {
-            cur = cand;
-          } else {
-            lines.push(cur);
-            cur = words[i];
-            if (lines.length >= maxLines) return null;
-          }
-        }
-        lines.push(cur);
-        if (lines.length > maxLines) return null;
-        if (!allowOverflow) {
-          for (const ln of lines) {
-            if (ctx.measureText(ln).width > maxWidth) return null;
-          }
-        }
-        return lines;
-      }
-
-      let mainLines, mainSize, subText = '', subSize = 0;
-
-      if (canWrap) {
-        let found = false;
-        for (let size = maxFont; size >= minFont; size--) {
-          const lines = tryWrap(size, false);
-          if (lines) {
-            mainLines = lines;
-            mainSize = size;
-            found = true;
-            break;
-          }
-        }
-        // Спец-случай orphan: см. drawNestedEventLabelForEvent.
-        if (found && mainLines.length >= 2) {
-          const lastLine = mainLines[mainLines.length - 1];
-          const orphan = lastLine.length <= 2 && words.length <= 3;
-          if (orphan) {
-            const singleSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
-            if (singleSize >= mainSize * 0.6) {
-              mainLines = [labels.line1];
-              mainSize = singleSize;
-            }
-          }
-        }
-        if (!found) {
-          // Второй проход: разрешаем overflow по одному слишком длинному слову
-          for (let size = maxFont; size >= minFont; size--) {
-            const lines = tryWrap(size, true);
-            if (lines) {
-              mainLines = lines;
-              mainSize = size;
-              found = true;
-              break;
-            }
-          }
-        }
-        if (!found) {
-          // Последний fallback — одна строка с подобранным шрифтом
-          mainSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
-          mainLines = [labels.line1];
-        }
-      } else {
-        // TBA или одно слово — одна строка с подгонкой
-        mainSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
-        mainLines = [labels.line1];
-      }
-
-      // Подзаголовок — только на desktop. На mobile основной title может занимать
-      // 3-4 строки, и место под подзаголовок просто не остаётся.
-      if (!isMobile && labels.line2 && mainLines.length === 1 && mainSize >= maxFont * 0.85) {
-        subText = labels.line2;
-        subSize = fitFontSize(labels.line2, Math.round(mainSize * 0.78), minFont, maxWidth);
-      }
-
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
-      const totalLines = mainLines.length + (subText ? 1 : 0);
-      const lineH = mainSize * 1.05;
-      const subLineH = subSize * 1.05;
-      const totalH = mainLines.length * lineH + (subText ? subLineH + lineH * 0.15 : 0);
-      let y = s.py - totalH / 2 + lineH / 2;
-
-      setFont(`italic ${mainSize}px 'Cormorant Garamond', Georgia, serif`);
-      setFill(`rgba(${COLOR_TEXT}, ${0.95 * alpha})`);
-      for (const line of mainLines) {
-        ctx.fillText(line, s.px, y);
-        y += lineH;
-      }
-      if (subText) {
-        y += lineH * 0.15;
-        setFont(`italic ${subSize}px 'Cormorant Garamond', Georgia, serif`);
-        setFill(`rgba(${COLOR_TEXT}, ${0.7 * alpha})`);
-        ctx.fillText(subText, s.px, y - lineH/2 + subLineH/2);
-      }
+      const layout = chooseLabelLayout(labels, rPx, c.tier, isMobile);
+      renderLabel(s, layout, alpha);
     }
 
     // === Главный рендер ===
