@@ -5207,7 +5207,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-15m"></script>
+  <script src="festival-data.js?v=2026-05-16b"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -6138,7 +6138,80 @@ window.addEventListener('resize', ()=>{
         }
       }
     }
-    // Раздаём события по (cat, sub, slot) для уровня sub-cat — из apolloItems (events+exhibits)
+    // Раздаём события по (cat, sub, slot) для уровня sub-cat — из apolloItems.
+    //
+    // АВТОРАСПРЕДЕЛЕНИЕ: для sub-cat (music, cinema, art) artist'ы и события
+    // сами не знают про позиции на круге Аполлония. Раньше у каждой карточки
+    // хранилось поле apollo_slot, которое надо было руками поддерживать —
+    // при добавлении нового артиста или перестановке времени слоты конфликтовали
+    // (две карточки на одной позиции, lookup перетирает первую).
+    //
+    // Теперь: для каждой пары (catId, subcategory) собираем все её события,
+    // сортируем стабильно по времени слота, раздаём позиции из
+    // [big-1, big-2, big-3, mid-1, mid-2, mid-3] (6 позиций — это всё что есть
+    // на sub-cat уровне; center только на верхнем уровне через тег "общение").
+    //
+    // Если у карточки уже стоит apollo_slot — уважаем (pin). Это нужно для
+    // category-level карточек (talk-tarasevich='center' и т.п.) — они НЕ
+    // имеют subcategory, поэтому в этот блок не попадают и работают как раньше.
+    // На самом sub-cat уровне pin тоже работает: если кто-то жёстко закрепил
+    // позицию — авто-раздача обходит её.
+    //
+    // Если событий больше чем позиций (7 на 6) — последние не получают
+    // apollo_slot и не попадают на круг, но видны в расписании.
+    {
+      const SUB_POSITIONS = ['big-1', 'big-2', 'big-3', 'mid-1', 'mid-2', 'mid-3'];
+      const subGroups = {};
+      for (const ev of apolloItems) {
+        if (!ev.category || !ev.subcategory) continue;
+        const key = ev.category + ':' + ev.subcategory;
+        if (!subGroups[key]) subGroups[key] = [];
+        subGroups[key].push(ev);
+      }
+      const slots = (FESTIVAL_DATA && FESTIVAL_DATA.time_slots) || {};
+      function slotStart(ev) {
+        const s = ev.slot ? slots[ev.slot] : null;
+        if (s && s.start) {
+          // "HH:MM" → минуты от начала суток.
+          // Ночные слоты после полуночи (00:00, 01:00...) должны идти ПОСЛЕ 23:59,
+          // поэтому если start < "12:00" — добавляем 24 часа.
+          const [h, m] = s.start.split(':').map(Number);
+          let mins = h * 60 + m;
+          if (h < 12) mins += 24 * 60;
+          return mins;
+        }
+        return 99999;  // без времени — в конец
+      }
+      for (const key of Object.keys(subGroups)) {
+        const group = subGroups[key];
+        group.sort((a, b) => {
+          const da = slotStart(a), db = slotStart(b);
+          if (da !== db) return da - db;
+          return (a.id || '').localeCompare(b.id || '');  // tiebreaker для стабильности
+        });
+
+        // Собираем "уже занятые" позиции (pinned) — те у кого apollo_slot уже стоит.
+        const pinned = new Set();
+        for (const ev of group) {
+          if (ev.apollo_slot) pinned.add(ev.apollo_slot);
+        }
+        // Свободные позиции — в исходном порядке SUB_POSITIONS, минус уже занятые.
+        const free = SUB_POSITIONS.filter(p => !pinned.has(p));
+        let freeIdx = 0;
+        for (const ev of group) {
+          if (ev.apollo_slot) continue;  // pinned — оставляем как есть
+          if (freeIdx < free.length) {
+            ev.apollo_slot = free[freeIdx++];
+          } else {
+            // Лишние — на круге не появятся, но в расписании останутся.
+            if (window.console && console.log) {
+              console.log('[apollo] нет позиции для', ev.id, '(' + (ev.title||'?') + ') в', key);
+            }
+          }
+        }
+      }
+    }
+
     for (const ev of apolloItems) {
       if (!ev.apollo_slot || !ev.category || !ev.subcategory) continue;
       eventsByCatSubAndSlot[ev.category + ':' + ev.subcategory + ':' + ev.apollo_slot] = ev;
