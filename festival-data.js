@@ -2980,7 +2980,22 @@ window.FESTIVAL_DATA = {
       ],
       "side": "side",
       "start": "20:30",
-      "end": "22:00"
+      "end": "21:30"
+    },
+    {
+      "id": "leaf-music-side-0",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "21:30",
+      "end": "22:30"
     },
     {
       "id": "leaf-music-headline-1",
@@ -3137,6 +3152,42 @@ window.FESTIVAL_DATA = {
       "side": "side",
       "start": "02:00",
       "end": "03:00"
+    },
+    {
+      "id": "leaf-music-headline-6",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "side": "headline",
+      "start": "03:00",
+      "end": "04:00"
+    },
+    {
+      "id": "leaf-music-side-6",
+      "address": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3
+      ],
+      "side": "side",
+      "start": "03:00",
+      "end": "04:00"
     },
     {
       "id": "leaf-tail",

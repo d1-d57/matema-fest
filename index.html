@@ -5207,7 +5207,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-16b"></script>
+  <script src="festival-data.js?v=2026-05-16c"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -6160,7 +6160,13 @@ window.addEventListener('resize', ()=>{
     // Если событий больше чем позиций (7 на 6) — последние не получают
     // apollo_slot и не попадают на круг, но видны в расписании.
     {
-      const SUB_POSITIONS = ['big-1', 'big-2', 'big-3', 'mid-1', 'mid-2', 'mid-3'];
+      // 7 позиций (3 больших, 3 средних, 1 центральный).
+      // Порядок раздачи: сначала большие, потом средние, центр — последний.
+      // Это даёт первому по времени самый крупный круг (big-1), а 7-му —
+      // центральный (он по геометрии меньше big, но крупнее mid, потому что
+      // структурный круг «общение» имеет r=0.18 vs mid r=0.277 и big r=0.395 —
+      // на самом деле меньше mid! Поэтому ставим center последним).
+      const SUB_POSITIONS = ['big-1', 'big-2', 'big-3', 'mid-1', 'mid-2', 'mid-3', 'center'];
       const subGroups = {};
       for (const ev of apolloItems) {
         if (!ev.category || !ev.subcategory) continue;
@@ -7686,13 +7692,15 @@ window.addEventListener('resize', ()=>{
         var fm = festMin(start);
         if(fm < 120) return 'morning';   // < 16:00
         if(fm < 390) return 'day';       // < 20:30
-        return 'evening';
+        if(fm < 450) return 'evening';   // < 21:30 — переходная зона (последние лекции, дискуссия, кино)
+        return 'night';                  // ≥ 21:30 — музыкальная программа (Brinstaar, рэп, главная сцена с 22:00)
       }
 
       var BLOCKS_DEFS = [
         { id:'morning', label:'Утро',  sublabel:'семейная программа', when:'14 — 16',    where:'library' },
         { id:'day',     label:'День',  sublabel:'лекции и станции',   when:'16 — 20:30', where:'Лахесис' },
-        { id:'evening', label:'Вечер', sublabel:'музыка и танцы',     when:'20:30 — 04', where:'Лахесис' },
+        { id:'evening', label:'Вечер', sublabel:'дискуссия и кино',   when:'20:30 — 21:30', where:'Лахесис' },
+        { id:'night',   label:'Ночь',  sublabel:'музыка и танцы',     when:'21:30 — 04',    where:'Лахесис' },
       ];
 
       // Подписи групп слотов по типу.
