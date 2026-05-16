@@ -3189,6 +3189,13 @@ window.FESTIVAL_DATA = {
       "side": "side",
       "start": "03:00",
       "end": "04:00"
+    },
+    {
+      "id": "leaf-tail",
+      "address": "tail",
+      "side": "tail",
+      "start": "03:00",
+      "end": "04:00"
     }
   ],
   "_howto": {
