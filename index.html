@@ -5207,7 +5207,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-16f"></script>
+  <script src="festival-data.js?v=2026-05-16g"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -5283,11 +5283,41 @@ window.addEventListener('resize', ()=>{
         item.subcategory = card.subtype;
         exhibits.push(item);
       } else {
-        if (card.slot) item.slot = card.slot;
         if (card.venue) item.venue = card.venue;
         if (card.duration_override) item.duration_override = card.duration_override;
         if (card.lane != null) item.lane = card.lane;
-        events.push(item);
+
+        // Карточка может занимать один или несколько временных слотов.
+        // Старая модель: card.slot = "slot-x" — карточка на одном слоте.
+        // Новая модель: card.slots = ["slot-x", "slot-y"] — карточка
+        // на нескольких слотах (например, мастерская идёт 2×45 мин подряд).
+        //
+        // Для остального кода (расписание, папоротник) каждая «привязка»
+        // должна быть отдельным event'ом — иначе слот не найдёт своего
+        // события и пункт расписания исчезнет.
+        // Для Аполлония, наоборот, такие event'ы должны схлопываться в один
+        // круг — для этого ставим _groupKey = card.id; Аполлоний дедуплицирует
+        // по нему.
+        var cardSlots = [];
+        if (Array.isArray(card.slots) && card.slots.length) {
+          cardSlots = card.slots.slice();
+        } else if (card.slot) {
+          cardSlots = [card.slot];
+        }
+        if (cardSlots.length <= 1) {
+          if (cardSlots.length) item.slot = cardSlots[0];
+          events.push(item);
+        } else {
+          // Несколько слотов — создаём по event'у на каждый, с суффиксом
+          // в id чтобы они различались.
+          for (var ci = 0; ci < cardSlots.length; ci++) {
+            var clone = Object.assign({}, item);
+            clone.id = card.id + '#' + ci;
+            clone.slot = cardSlots[ci];
+            clone._groupKey = card.id;
+            events.push(clone);
+          }
+        }
       }
     }
 
@@ -6049,7 +6079,22 @@ window.addEventListener('resize', ()=>{
     const apolloItems = [];
     if (FESTIVAL_DATA && FESTIVAL_DATA.events) {
       const slots = FESTIVAL_DATA.time_slots || {};
-      for (const ev of FESTIVAL_DATA.events) {
+      // Карточка может породить несколько event'ов (по одному на каждый из
+      // её slot'ов — см. adapter cards→events выше). В Аполлонии такие
+      // event'ы должны схлопываться в один круг — берём самый ранний по времени.
+      const seenGroups = new Set();
+      const eventsForApollo = FESTIVAL_DATA.events.slice().sort(function(a, b){
+        const sa = a.slot ? (slots[a.slot]||{}).start : '';
+        const sb = b.slot ? (slots[b.slot]||{}).start : '';
+        // Ночь после полуночи (00:00-12:00) идёт ПОСЛЕ вечера (12:00-23:59).
+        function key(s){ if(!s) return '99'; const h = parseInt(s.split(':')[0],10); return (h<12?(24+h):h) + ':' + s.split(':')[1]; }
+        return key(sa).localeCompare(key(sb));
+      });
+      for (const ev of eventsForApollo) {
+        if (ev._groupKey) {
+          if (seenGroups.has(ev._groupKey)) continue;
+          seenGroups.add(ev._groupKey);
+        }
         const slot = ev.slot ? slots[ev.slot] : null;
         if (slot) {
           // Привязанное к слоту событие — атрибуты места берём со слота,
@@ -7704,7 +7749,7 @@ window.addEventListener('resize', ()=>{
       }
 
       var BLOCKS_DEFS = [
-        { id:'morning', label:'Утро',   sublabel:'выступления',        when:'14 — 16',    where:'library' },
+        { id:'morning', label:'Утро',   sublabel:'',                   when:'14 — 16',    where:'library' },
         { id:'day',     label:'День',   sublabel:'лекции и станции',   when:'16 — 20:30', where:'Лахесис' },
         { id:'evening', label:'Вечер',  sublabel:'квиз, дискуссия, кино', when:'20:30 — 22', where:'Лахесис' },
         { id:'night',   label:'Музыка', sublabel:'',                   when:'21:30 — 04', where:'Лахесис' },

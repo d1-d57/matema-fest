@@ -2908,11 +2908,31 @@ function v31_decompressCardsToLegacy(data) {
       exhibits.push(_v31_stripUndef(item));
     } else {
       // events (включая cinema без слота)
-      if (card.slot) item.slot = card.slot;
       if (card.venue) item.venue = card.venue;
       if (card.duration_override) item.duration_override = card.duration_override;
       if (card.lane != null) item.lane = card.lane;
-      events.push(_v31_stripUndef(item));
+
+      // Карточка может занимать один или несколько временных слотов.
+      // card.slots = [s1, s2, ...] — multi-slot (например, мастерская идёт
+      // в нескольких 45-минутных слотах подряд).
+      // card.slot = "s1" — single-slot (legacy).
+      // Для programmer (как и для сайта) каждый slot — отдельный event;
+      // склейка обратно в одну карточку при экспорте — через _groupKey.
+      let cardSlots = [];
+      if (Array.isArray(card.slots) && card.slots.length) cardSlots = card.slots.slice();
+      else if (card.slot) cardSlots = [card.slot];
+      if (cardSlots.length <= 1) {
+        if (cardSlots.length) item.slot = cardSlots[0];
+        events.push(_v31_stripUndef(item));
+      } else {
+        for (let ci = 0; ci < cardSlots.length; ci++) {
+          const clone = Object.assign({}, item);
+          clone.id = card.id + '#' + ci;
+          clone.slot = cardSlots[ci];
+          clone._groupKey = card.id;
+          events.push(_v31_stripUndef(clone));
+        }
+      }
     }
   }
 
@@ -2971,8 +2991,23 @@ function v31_compressLegacyToCards(obj) {
   // 1) Из events. category/subcategory/apollo_slot могут жить либо
   //    прямо на event (v17+ legacy с обогащением), либо на слоте (v17+
   //    без обогащения). Поэтому делаем fallback через slot.
+  //
+  //    Multi-slot карточки: events с одинаковым _groupKey склеиваются в одну
+  //    карточку с card.slots = [slot1, slot2, ...]. Если _groupKey нет —
+  //    событие → одна карточка с card.slot = ev.slot (legacy single-slot).
   const srcSlots = obj.time_slots || {};
+  const groupedEvents = {};  // groupKey → [event1, event2, ...]
+  const singleEvents = [];
   for (const ev of (obj.events || [])) {
+    if (ev._groupKey) {
+      if (!groupedEvents[ev._groupKey]) groupedEvents[ev._groupKey] = [];
+      groupedEvents[ev._groupKey].push(ev);
+    } else {
+      singleEvents.push(ev);
+    }
+  }
+
+  function buildCardFromEvent(ev, extra) {
     const slot = ev.slot ? srcSlots[ev.slot] : null;
     const evCategory = ev.category || (slot && slot.category);
     const evSubcategory = ev.subcategory || (slot && slot.subcategory);
@@ -2985,7 +3020,7 @@ function v31_compressLegacyToCards(obj) {
       type = evCategory;
       subtype = evSubcategory;
     }
-    const card = _v31_stripUndef({
+    const card = _v31_stripUndef(Object.assign({
       id: ev.id,
       status: 'accepted',
       type, subtype,
@@ -2995,14 +3030,18 @@ function v31_compressLegacyToCards(obj) {
       speaker: ev.speaker,
       speaker_role: ev.speaker_role,
       description: ev.description,
-      slot: ev.slot,
       venue: ev.venue || (slot && slot.venue),
       duration_override: ev.duration_override,
       lane: ev.lane,
       links: ev.links,
       team_notes: ev.team_notes,
-      _admin: ev._admin,  // admin-чек-лист коммуникации (значки на карточках)
-    });
+      _admin: ev._admin,
+    }, extra || {}));
+    return card;
+  }
+
+  for (const ev of singleEvents) {
+    const card = buildCardFromEvent(ev, { slot: ev.slot });
     // Если есть связанная заявка
     if (ev._source_app) {
       card._source_app = ev._source_app;
@@ -3012,6 +3051,31 @@ function v31_compressLegacyToCards(obj) {
         delete appCopy.id; delete appCopy.status;
         if (Object.keys(appCopy).length > 0) card.application = appCopy;
         usedAppIds.add(ev._source_app);
+      }
+    }
+    cards.push(card);
+  }
+
+  for (const gk of Object.keys(groupedEvents)) {
+    const group = groupedEvents[gk];
+    // Сортируем по времени слота, чтобы slots[0] был самым ранним
+    group.sort(function(a, b){
+      const sa = a.slot ? (srcSlots[a.slot]||{}).start || '' : '';
+      const sb = b.slot ? (srcSlots[b.slot]||{}).start || '' : '';
+      function key(s){ if(!s) return '99'; const h = parseInt(s.split(':')[0],10); return (h<12?(24+h):h) + ':' + s.split(':')[1]; }
+      return key(sa).localeCompare(key(sb));
+    });
+    const slots = group.map(e => e.slot).filter(Boolean);
+    const card = buildCardFromEvent(group[0], { id: gk, slots: slots });
+    // Связанная заявка — берём с первого event (если у всех одинаковая, что и должно быть)
+    if (group[0]._source_app) {
+      card._source_app = group[0]._source_app;
+      const a = appsById[group[0]._source_app];
+      if (a) {
+        const appCopy = {...a};
+        delete appCopy.id; delete appCopy.status;
+        if (Object.keys(appCopy).length > 0) card.application = appCopy;
+        usedAppIds.add(group[0]._source_app);
       }
     }
     cards.push(card);
