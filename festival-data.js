@@ -15,11 +15,12 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-15T23:21:58.893Z",
-    "modified_by": "claude-links-merge",
+    "last_modified": "2026-05-16T01:13:00.000Z",
+    "modified_by": "claude-music-v32",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\".",
-    "changes_v31": "Массовое добавление поля links у 36 карточек по links-table.md: arts, music, popsci, social, stations. 4 карточки с мусорными ссылками (Карнаухов, Серомаха, FracLife/Юля, Математический арт/Андрей) пересобраны в чистый формат [{label,url}]. У Гусева ссылка TLF проставлена и на лекции (talk-gusev-nn), и на станции (station-gusev-chaos)."
+    "changes_v31": "Массовое добавление поля links у 36 карточек по links-table.md: arts, music, popsci, social, stations. 4 карточки с мусорными ссылками (Карнаухов, Серомаха, FracLife/Юля, Математический арт/Андрей) пересобраны в чистый формат [{label,url}]. У Гусева ссылка TLF проставлена и на лекции (talk-gusev-nn), и на станции (station-gusev-chaos).",
+    "changes_v32": "Музыкальная программа переразвязана. Main (Зал Мандельброт) — добавлен Misha Nikitin на финальный слот 03:00-04:00 (slot-dance переделан с type=dance в type=music; категория не изменилась). Pink (Бар Серпинский) — добавлен новый исполнитель S66 в 23:30, после него все смещены: Morakh 00:15, ænsof 01:10, garish_cyborg 02:10, The Darkest Supernova 03:00 (финал). Новые длительности сетов: 45/55/60/50/60 мин. Добавлен slot-music-parallel-7 (03:00-04:00) для финала Pink. id карточек music-pink-XXXX остаются стабильными ключами, но больше не соответствуют времени по имени — заменены title/description/links по своим slot-ам."
   },
   "venues": {
     "library": {
@@ -341,9 +342,9 @@ window.FESTIVAL_DATA = {
     "slot-dance": {
       "start": "03:00",
       "end": "04:00",
-      "label_for_zoom": "Танцпол · 02:00",
-      "tool_label": "Танцпол",
-      "type": "dance",
+      "label_for_zoom": "Главная сцена · 03:00",
+      "tool_label": "Музыка · финал",
+      "type": "music",
       "category": "music",
       "venue": "main_stage"
     },
@@ -438,7 +439,7 @@ window.FESTIVAL_DATA = {
     },
     "slot-music-parallel-3": {
       "start": "23:30",
-      "end": "00:30",
+      "end": "00:15",
       "label_for_zoom": "Малая сцена · 23:30",
       "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
@@ -447,9 +448,9 @@ window.FESTIVAL_DATA = {
       "exclusive": true
     },
     "slot-music-parallel-4": {
-      "start": "00:30",
-      "end": "01:30",
-      "label_for_zoom": "Малая сцена · 00:30",
+      "start": "00:15",
+      "end": "01:10",
+      "label_for_zoom": "Малая сцена · 00:15",
       "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
@@ -457,9 +458,9 @@ window.FESTIVAL_DATA = {
       "exclusive": true
     },
     "slot-music-parallel-5": {
-      "start": "01:30",
-      "end": "02:30",
-      "label_for_zoom": "Малая сцена · 01:30",
+      "start": "01:10",
+      "end": "02:10",
+      "label_for_zoom": "Малая сцена · 01:10",
       "tool_label": "Музыка (малая сцена)",
       "type": "music-extra",
       "category": "music",
@@ -467,10 +468,20 @@ window.FESTIVAL_DATA = {
       "exclusive": true
     },
     "slot-music-parallel-6": {
-      "start": "02:30",
-      "end": "03:30",
-      "label_for_zoom": "Малая сцена · 02:30",
+      "start": "02:10",
+      "end": "03:00",
+      "label_for_zoom": "Малая сцена · 02:10",
       "tool_label": "Музыка (малая сцена)",
+      "type": "music-extra",
+      "category": "music",
+      "venue": "big_bar",
+      "exclusive": true
+    },
+    "slot-music-parallel-7": {
+      "start": "03:00",
+      "end": "04:00",
+      "label_for_zoom": "Малая сцена · 03:00",
+      "tool_label": "Музыка (малая сцена) · финал",
       "type": "music-extra",
       "category": "music",
       "venue": "big_bar",
@@ -1280,6 +1291,23 @@ window.FESTIVAL_DATA = {
       ]
     },
     {
+      "id": "music-main-03",
+      "status": "accepted",
+      "type": "music",
+      "subtype": "main_stage",
+      "apollo_slot": "big-2",
+      "title": "Misha Nikitin",
+      "description": "Московский продюсер, саунд-дизайнер и диджей. Работает на стыке экспериментальной и танцевальной музыки, любит деконструктивные зарисовки и пост-жанровый подход. Резидент Track ID pls!, Oramica и Aspect, играл на Signal, Outline и Nur, релизы на Judder, Applique, ШУМ, TOH, Oramica и других. На фестивале — пьеса в трёх частях, своеобразный гимн дефрагментации и расщеплению.",
+      "slot": "slot-dance",
+      "venue": "main_stage",
+      "links": [
+        {
+          "label": "SoundCloud",
+          "url": "https://soundcloud.com/mishanikitin"
+        }
+      ]
+    },
+    {
       "id": "music-pink-2130",
       "status": "accepted",
       "type": "music",
@@ -1319,13 +1347,23 @@ window.FESTIVAL_DATA = {
     },
     {
       "id": "music-pink-2330",
-      "status": "accepted",
+      "status": "tentative",
       "type": "music",
       "subtype": "big_bar",
       "apollo_slot": "mid-2",
+      "title": "S66",
+      "slot": "slot-music-parallel-3",
+      "venue": "big_bar"
+    },
+    {
+      "id": "music-pink-0030",
+      "status": "accepted",
+      "type": "music",
+      "subtype": "big_bar",
+      "apollo_slot": "mid-3",
       "title": "Morakh",
       "description": "Резидент лейблов «Местность» и Shelter Tapes. Звучание проекта Morakh — синтез интеллигентного техно, брейкбита, IDM и future garage, энергичная и эмоциональная музыка для больших площадок. Его альбомы сравнивали с работами Moderat, Bicep и Overmono.",
-      "slot": "slot-music-parallel-3",
+      "slot": "slot-music-parallel-4",
       "venue": "big_bar",
       "links": [
         {
@@ -1343,14 +1381,14 @@ window.FESTIVAL_DATA = {
       ]
     },
     {
-      "id": "music-pink-0030",
+      "id": "music-pink-0130",
       "status": "accepted",
       "type": "music",
       "subtype": "big_bar",
-      "apollo_slot": "mid-3",
+      "apollo_slot": "big-3",
       "title": "ænsof",
       "description": "В каббалистической традиции есть непознаваемая сущность Б-га, дословно — «бесконечное». Дуэт использует абсолютно современный инструментарий, но, не размениваясь в своём звуке на сиюминутные веяния моды, исследует сквозь призму классических индустриальных и дабовых техник полубессознательные и порой архетипические образы.",
-      "slot": "slot-music-parallel-4",
+      "slot": "slot-music-parallel-5",
       "venue": "big_bar",
       "links": [
         {
@@ -1364,14 +1402,14 @@ window.FESTIVAL_DATA = {
       ]
     },
     {
-      "id": "music-pink-0130",
+      "id": "music-pink-0230",
       "status": "accepted",
       "type": "music",
       "subtype": "big_bar",
-      "apollo_slot": "big-3",
+      "apollo_slot": "big-1",
       "title": "garish_cyborg",
       "description": "Московский экспериментатор, работающий в разных жанрах — от гипнотического дабстепа до самых шумных форм индастриала. Основатель лейблов KILL EGO, «Бегущий Человек», «Такое».",
-      "slot": "slot-music-parallel-5",
+      "slot": "slot-music-parallel-6",
       "venue": "big_bar",
       "links": [
         {
@@ -1381,14 +1419,14 @@ window.FESTIVAL_DATA = {
       ]
     },
     {
-      "id": "music-pink-0230",
+      "id": "music-pink-final",
       "status": "accepted",
       "type": "music",
       "subtype": "big_bar",
-      "apollo_slot": "big-1",
+      "apollo_slot": "mid-1",
       "title": "The Darkest Supernova",
-      "description": "Дискотека под шумы. Витчхаус и нойз, дрон и брейкбит — создатель проекта стирает рамки между стилями, приводя их к общему знаменателю — музыке как таковой.",
-      "slot": "slot-music-parallel-6",
+      "description": "Дискотека под шумы. Витчхаус и нойз, дрон и брейкбит — создатель проекта стирает рамки между стилями, приводя их к общему знаменателю — музыке как таковой. Финал ночной программы в Баре Серпинский.",
+      "slot": "slot-music-parallel-7",
       "venue": "big_bar",
       "links": [
         {
