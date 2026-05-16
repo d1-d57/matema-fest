@@ -5207,7 +5207,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-16d"></script>
+  <script src="festival-data.js?v=2026-05-16e"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -7704,7 +7704,7 @@ window.addEventListener('resize', ()=>{
       }
 
       var BLOCKS_DEFS = [
-        { id:'morning', label:'Утро',   sublabel:'семейная программа', when:'14 — 16',    where:'library' },
+        { id:'morning', label:'Утро',   sublabel:'выступления',        when:'14 — 16',    where:'library' },
         { id:'day',     label:'День',   sublabel:'лекции и станции',   when:'16 — 20:30', where:'Лахесис' },
         { id:'evening', label:'Вечер',  sublabel:'квиз, дискуссия, кино', when:'20:30 — 22', where:'Лахесис' },
         { id:'night',   label:'Музыка', sublabel:'',                   when:'21:30 — 04', where:'Лахесис' },
@@ -7799,12 +7799,12 @@ window.addEventListener('resize', ()=>{
         // Сортировка по времени.
         blockLeaves.sort(function(a, b){ return festMin(a.start) - festMin(b.start); });
 
-        // Вечер и ночь — плоский список слотов в хронологическом порядке.
+        // Утро, вечер и музыка — плоский список слотов в хронологическом порядке.
         // Без подгруппировки в «Параллельные события» / «Музыка»: эти блоки
         // и так смысловые единицы, дополнительная иерархия внутри только мешает.
         // Дневная программа (станции) остаётся со своей группировкой
         // «Блок станций» — через стандартный путь ниже.
-        if(blockDef.id === 'evening' || blockDef.id === 'night'){
+        if(blockDef.id === 'morning' || blockDef.id === 'evening' || blockDef.id === 'night'){
           // Собираем все слоты со всех листьев этого блока в один список,
           // отсортированный по времени старта.
           var flatSlots = [];
