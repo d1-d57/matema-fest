@@ -1539,10 +1539,11 @@ window.FESTIVAL_DATA = {
       "type": "station",
       "subtype": "experiment",
       "apollo_slot": "mid-2",
-      "title": "Лингвистическая станция",
-      "speaker": "Мастерская Летней школы",
+      "title": "Задачи, которые придумали лингвисты, которые придумали задачи, которые...",
+      "short_title": "Задачи, которые придумали лингвисты, которые ...",
+      "speaker": "Тёма Бойко",
       "speaker_role": "команда летней школы",
-      "description": "Серия лингвистических станций от мастерской Летней школы. Формат уточняется командой Летней школы.",
+      "description": "Человеческие языки могут порой казаться довольно хаотичными, но всё же в них есть место системе, и иногда эта система очень элегантная. Мы предлагаем решить несколько лингвистических задач, показывающих структуры с самоподобием и гармонией в различных языках.",
       "slot": "slot-stations-2-1",
       "venue": "small_bar",
       "lane": "right",
@@ -2094,7 +2095,7 @@ window.FESTIVAL_DATA = {
       "links": [
         {
           "label": "Статья в АиФ",
-          "url": "https://aif.ru/culture/art/portal-v-inye-miry-uchyonyy-sozdayot-kartiny-v-zhanre-fraktalnogo-iskusstva"
+          "url": "https://aif.ru/culture/art/portal-v-inye-miry-uchyonyy-sozdayot-kartiny-v-zhanre-fraktalnoy-zhivopisi"
         }
       ]
     },
@@ -3186,13 +3187,6 @@ window.FESTIVAL_DATA = {
         3
       ],
       "side": "side",
-      "start": "03:00",
-      "end": "04:00"
-    },
-    {
-      "id": "leaf-tail",
-      "address": "tail",
-      "side": "tail",
       "start": "03:00",
       "end": "04:00"
     }
