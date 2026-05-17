@@ -3300,14 +3300,24 @@ async function loadFestivalData() {
 
 function enrichEventsFromSlots(data) {
   if (!data || !data.events || !data.time_slots) return;
-  // Гарантируем что синтетическая категория 'station' есть в справочнике —
-  // нужна для UI цвета ячеек в режимах где код смотрит data.categories.
+  // Гарантируем что синтетические категории есть в справочнике —
+  // нужны для UI (цвет ячеек, отображение в eyebrow detail-панели).
+  // 'station' — обёртка над workshop/experiment в legacy-формате слотов.
+  // 'interactive' — подкатегория станций без таймслота (живёт в центре круга
+  // эксперименты на Аполлонии).
   if (!data.categories) data.categories = {};
   if (!data.categories.station) {
     data.categories.station = {
       display: 'станции',
       size: 'big',
       comment: 'мастерские и эксперименты — два круга на Аполлонии в типе station',
+    };
+  }
+  if (!data.categories.interactive) {
+    data.categories.interactive = {
+      display: 'интерактивы',
+      size: 'big',
+      comment: 'постоянные интерактивные станции — VR/компьютерные программы без таймслота',
     };
   }
   const FIELDS = ['category', 'apollo_slot', 'subcategory', 'venue'];
