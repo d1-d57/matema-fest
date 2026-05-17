@@ -21,7 +21,8 @@ window.FESTIVAL_DATA = {
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\".",
     "changes_v31": "Массовое добавление поля links у 36 карточек по links-table.md: arts, music, popsci, social, stations. 4 карточки с мусорными ссылками (Карнаухов, Серомаха, FracLife/Юля, Математический арт/Андрей) пересобраны в чистый формат [{label,url}]. У Гусева ссылка TLF проставлена и на лекции (talk-gusev-nn), и на станции (station-gusev-chaos).",
     "changes_v32": "Музыкальная программа переразвязана. Main (Зал Мандельброт) — добавлен Misha Nikitin на финальный слот 03:00-04:00 (slot-dance переделан с type=dance в type=music; категория не изменилась). Pink (Бар Серпинский) — добавлен новый исполнитель S66 в 23:30, после него все смещены: Morakh 00:15, ænsof 01:10, garish_cyborg 02:10, The Darkest Supernova 03:00 (финал). Новые длительности сетов: 45/55/60/50/60 мин. Добавлен slot-music-parallel-7 (03:00-04:00) для финала Pink. id карточек music-pink-XXXX остаются стабильными ключами, но больше не соответствуют времени по имени — заменены title/description/links по своим slot-ам.",
-    "changes_v33": "Художественная программа. Удалены inst-mimesis (Мимесис) и exh-bogatikova-mini (Фрактал в современном искусстве). Добавлены 4 новых art-карточки: art-monads-mirrors (Монады — зеркала души, А. Алеф Вайсман, art/art, big-2), inst-anthill-sierpinski (Муравейник Серпинского, арт-дуэт EVPRAXIS, art/installation, big-3), media-cactus-juice (Cactus Juice, art/media, big-3), media-fractal-reflection (Фрактальное Отражение, Артём Ткач, art/media, mid-1). Имена дополнены/исправлены: art-plato + Солеев в описании, art-other-spaces + Петра в описании, inst-element1 speaker «Ира» → «Ирина Канделариа», inst-tetraquark speaker «Alex Mu» → «Алекс Мухин», inst-polyhedral-exhibit speaker «Максимилиан» → «Максимилиано» и встроено в описание. Музыка: music-main-22 title «Сет Петра Термена» → «Пётр Термен». Подзаголовок subcategories.art.installation.display «инсталляции» → «объекты». В index.html подзаголовок категории Музыка «DJ-сеты в течение всего дня» → «live-выступления»."
+    "changes_v33": "Художественная программа. Удалены inst-mimesis (Мимесис) и exh-bogatikova-mini (Фрактал в современном искусстве). Добавлены 4 новых art-карточки: art-monads-mirrors (Монады — зеркала души, А. Алеф Вайсман, art/art, big-2), inst-anthill-sierpinski (Муравейник Серпинского, арт-дуэт EVPRAXIS, art/installation, big-3), media-cactus-juice (Cactus Juice, art/media, big-3), media-fractal-reflection (Фрактальное Отражение, Артём Ткач, art/media, mid-1). Имена дополнены/исправлены: art-plato + Солеев в описании, art-other-spaces + Петра в описании, inst-element1 speaker «Ира» → «Ирина Канделариа», inst-tetraquark speaker «Alex Mu» → «Алекс Мухин», inst-polyhedral-exhibit speaker «Максимилиан» → «Максимилиано» и встроено в описание. Музыка: music-main-22 title «Сет Петра Термена» → «Пётр Термен». Подзаголовок subcategories.art.installation.display «инсталляции» → «объекты». В index.html подзаголовок категории Музыка «DJ-сеты в течение всего дня» → «live-выступления».",
+    "changes_v34": "Большое обновление: убрали подкатегорию art/digital, перенесли её содержимое (3 карточки FracLife, Математический арт, Эволюция графов) в station/interactive. Добавлена subcategories.experiment.interactive со slot=center — теперь центр круга «эксперименты» на Аполлонии занят кругом «интерактивы». Партнёрская склейка Гусева: удалена station-gusev-chaos, talk-gusev-nn превращена в multi-slot карточку с 3 слотами (slot-gusev-talk + slot-st-bb-B + slot-st-bb-E), описание объединено. Категория Гусева на Аполлонии — popsci (одна карточка). Центр круга эксперименты теперь свободен от Гусева и занят кругом интерактивов."
   },
   "venues": {
     "library": {
@@ -141,10 +142,12 @@ window.FESTIVAL_DATA = {
       "media": {
         "slot": "big-3",
         "display": "медиа-арт"
-      },
-      "digital": {
+      }
+    },
+    "experiment": {
+      "interactive": {
         "slot": "center",
-        "display": "digital"
+        "display": "интерактивы"
       }
     }
   },
@@ -1333,15 +1336,18 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "mid-3",
       "title": "Внутри нейросети живут фракталы",
       "speaker": "Вячеслав Гусев",
-      "description": "Вячеслав Гусев, учитель AI & Computer Science в проекте TLF — короткое выступление о том, как фракталы возникают в обучающихся нейросетях.",
-      "venue": "main_stage",
+      "description": "Вячеслав Гусев, учитель AI & Computer Science в проекте TLF. На сцене — короткое выступление о том, как фракталы возникают в обучающихся нейросетях. Параллельно в Большом баре в две сессии работает стенд Гусева с визуализациями хаотических процессов обучения нейросетей — можно подойти и поразбираться вживую.",
       "links": [
         {
           "label": "TLF",
           "url": "https://leaderstech.ru/"
         }
       ],
-      "slot": "slot-gusev-talk"
+      "slots": [
+        "slot-gusev-talk",
+        "slot-st-bb-B",
+        "slot-st-bb-E"
+      ]
     },
     {
       "id": "cinema-short-fractal-universe",
@@ -1844,36 +1850,12 @@ window.FESTIVAL_DATA = {
         "author_presence": ""
       }
     },
-    {
-      "id": "station-gusev-chaos",
-      "status": "accepted",
-      "type": "station",
-      "subtype": "experiment",
-      "apollo_slot": "center",
-      "title": "Как выглядит хаос обучения ИИ",
-      "speaker": "Вячеслав Гусев",
-      "description": "Вячеслав Гусев, учитель AI & Computer Science в проекте TLF — стенд с визуализациями хаотических процессов обучения нейросетей.",
-      "venue": "big_bar",
-      "links": [
         {
-          "label": "TLF",
-          "url": "https://leaderstech.ru/"
-        }
-      ],
-      "_admin": {
-        "knows": true
-      },
-      "slots": [
-        "slot-st-bb-B",
-        "slot-st-bb-E"
-      ]
-    },
-    {
       "id": "ev-1778338408747-r7tp",
       "status": "accepted",
-      "type": "art",
-      "subtype": "digital",
-      "apollo_slot": "big-2",
+      "type": "station",
+      "subtype": "interactive",
+      "apollo_slot": "big-1",
       "title": "FracLife",
       "speaker": "Юля",
       "description": "Интерактивная видеоинсталляция: на экране оживают фракталы, к ним идёт звук. Двигаешь руками — меняется количество итераций, тип фрактала, можно углубиться в структуру или деформировать изображение. Работает на ноутбуке с камерой — порог входа нулевой.",
@@ -1929,9 +1911,9 @@ window.FESTIVAL_DATA = {
     {
       "id": "ev-1778360794899-4bwi",
       "status": "accepted",
-      "type": "art",
-      "subtype": "digital",
-      "apollo_slot": "big-1",
+      "type": "station",
+      "subtype": "interactive",
+      "apollo_slot": "big-2",
       "title": "Математический арт",
       "speaker": "Андрей",
       "description": "Интерактивная установка, в которой можно играть с фракталами, шумом и другими математическими объектами — и собирать собственные. Андрей покажет, как пользоваться, и расскажет, как из простых формул рождается визуальная красота.",
@@ -2285,8 +2267,8 @@ window.FESTIVAL_DATA = {
     {
       "id": "exh-1779028883221",
       "status": "accepted",
-      "type": "art",
-      "subtype": "digital",
+      "type": "station",
+      "subtype": "interactive",
       "apollo_slot": "big-3",
       "title": "Эволюция графов",
       "speaker": "Александр Николаичев",

@@ -5207,7 +5207,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-17d"></script>
+  <script src="festival-data.js?v=2026-05-17e"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -5254,12 +5254,20 @@ window.addEventListener('resize', ()=>{
       // 2. Только accepted идут в events/exhibits для показа на сайте
       if (card.status !== 'accepted') continue;
 
-      // Категории: station-карточка → workshop|experiment (legacy)
+      // Категории: station-карточка → workshop|experiment|interactive (legacy)
+      // Для interactive: эта подкатегория живёт ВНУТРИ круга experiment как
+      // sub-category «интерактивы» (центр круга экспериментов).
+      // Для workshop и experiment: остаются как отдельные категории-круги.
       var cat = card.type;
       var sub = card.subtype || null;
       if (card.type === 'station') {
-        cat = card.subtype || 'workshop';
-        sub = null;
+        if (card.subtype === 'interactive') {
+          cat = 'experiment';
+          sub = 'interactive';
+        } else {
+          cat = card.subtype || 'workshop';
+          sub = null;
+        }
       }
 
       var item = stripUndef({
@@ -6144,9 +6152,13 @@ window.addEventListener('resize', ()=>{
 
     // Lookup: ключ "category:apollo_slot" → item (event или exhibit). Пробегаем один раз
     // на инициализации, потом O(1) на каждый внутренний круг при рендере.
+    // События с subcategory сюда НЕ попадают — они в eventsByCatSubAndSlot ниже,
+    // а на category-уровне их слот занят subcat-кругом (например, центр experiment
+    // занят кругом «интерактивы»).
     const eventsByCatAndSlot = {};
     for (const ev of apolloItems) {
       if (!ev.apollo_slot || !ev.category) continue;
+      if (ev.subcategory) continue;
       eventsByCatAndSlot[ev.category + ':' + ev.apollo_slot] = ev;
     }
 
@@ -7018,8 +7030,10 @@ window.addEventListener('resize', ()=>{
         const catId = tagToCatId[zoomedCircle.tag];
         const hasSubs = catId && CATS_WITH_SUBS.has(catId);
 
-        if (zoomedSubcategory && hasSubs) {
-          // Случай В: рисуем sub-cat круг как «родителя» и события внутри него
+        if (zoomedSubcategory) {
+          // Случай В: рисуем sub-cat круг как «родителя» и события внутри него.
+          // Срабатывает для любой категории — и из CATS_WITH_SUBS, и из гибридных
+          // (как experiment, где только center занят subcat-кругом «интерактивы»).
           const subSlot = zoomedSubcategory.slotCircle;  // структурный круг tier=0 родительского sub-cat
           const subWx = px + subSlot.x * pr;
           const subWy = py + subSlot.y * pr;
@@ -7050,8 +7064,12 @@ window.addEventListener('resize', ()=>{
             const wr = Math.abs(c.r) * pr;
             drawCircleAt(c, wx, wy, wr, nestedAlpha, false);
             if (!catId) continue;
-            if (hasSubs) {
-              // Случай Б: только sub-cat подписи на big-1/2/3
+            // Гибридный режим: на слотах с subcat-записью рисуем subcat-label,
+            // на остальных — event-label. CATS_WITH_SUBS-категории попадают сюда
+            // же — у них есть subcat-запись на всех нужных слотах.
+            const slotHasSubcat = c.apollo_slot && subcatByCatAndSlot[catId + ':' + c.apollo_slot];
+            if (slotHasSubcat) {
+              // Случай Б: sub-cat подпись (например, «интерактивы» в центре экспериментов)
               drawSubcategoryLabel(c, wx, wy, wr, nestedAlpha, catId);
             } else {
               // Случай А: подписи событий
@@ -7184,6 +7202,31 @@ window.addEventListener('resize', ()=>{
             }
           }
           return null;
+        }
+
+        // Гибрид: сначала пробуем subcat-хит на слотах с subcat-записью
+        // (например, «интерактивы» в центре экспериментов), потом — event-хит
+        // на остальных слотах.
+        for (const c of CIRCLES) {
+          if (c.sign === -1) continue;
+          if (!c.apollo_slot) continue;
+          const subEntry = subcatByCatAndSlot[catId + ':' + c.apollo_slot];
+          if (!subEntry) continue;
+          const wx = px + c.x * pr;
+          const wy = py + c.y * pr;
+          const wr = Math.abs(c.r) * pr;
+          const s = worldToScreen(wx, wy);
+          const rPx = wr * s.scale;
+          const dx = mx - s.px, dy = my - s.py;
+          if (dx*dx + dy*dy <= rPx*rPx) {
+            return {
+              tier: c.tier, apollo_slot: c.apollo_slot,
+              _wx: wx, _wy: wy, _wr: wr,
+              _isSubcategory: true,
+              _subId: subEntry.id, _subDisplay: subEntry.display,
+              _slotCircle: c
+            };
+          }
         }
 
         // Случай А: ищем event на category-уровне (как было)

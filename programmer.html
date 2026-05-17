@@ -1703,10 +1703,11 @@ body.viewer-mode .comm-badges { display: none !important; }
       <button class="right-tab active" data-view="all">Всё <span class="tab-count" id="stat-all">—</span></button>
       <button class="right-tab" data-view="popsci"><span class="tab-dot" style="background:#b3956a"></span>Научпоп <span class="tab-count" id="stat-popsci">—</span></button>
       <button class="right-tab" data-view="open-apps"><span class="tab-dot" style="background:#7a9b6e"></span>Станции <span class="tab-count" id="stat-open-apps">—</span></button>
+      <button class="right-tab" data-view="interactive"><span class="tab-dot" style="background:#9a8870"></span>Интерактивы <span class="tab-count" id="stat-interactive">—</span></button>
       <button class="right-tab" data-view="social"><span class="tab-dot" style="background:#6f8aa3"></span>Общение <span class="tab-count" id="stat-social">—</span></button>
       <button class="right-tab" data-view="cinema"><span class="tab-dot" style="background:#a06070"></span>Кино <span class="tab-count" id="stat-cinema">—</span></button>
       <button class="right-tab" data-view="music"><span class="tab-dot" style="background:#c47862"></span>Музыка <span class="tab-count" id="stat-music">—</span></button>
-      <button class="right-tab" data-view="art"><span class="tab-dot" style="background:#957490"></span>Art + Digital <span class="tab-count" id="stat-art">—</span></button>
+      <button class="right-tab" data-view="art"><span class="tab-dot" style="background:#957490"></span>Искусство <span class="tab-count" id="stat-art">—</span></button>
     </div>
     <div class="right-content">
       <section class="section active" id="section-timeline">
@@ -1722,9 +1723,9 @@ body.viewer-mode .comm-badges { display: none !important; }
       </section>
       <section class="section" id="section-exhibits">
         <p style="font-size:12px;color:var(--ink-quiet);flex-shrink:0;margin:0 0 10px">
-          Постоянные арт-объекты, не привязанные к времени. <strong>Галерея</strong> и <strong>инсталляции</strong> — то что стоит/висит весь вечер. <strong>Медиа-арт</strong> — фоновые проекции, идут параллельно событиям, не занимают слотов.
+          Постоянные арт-объекты, не привязанные к времени. <strong>Галерея</strong> и <strong>объекты</strong> — то что стоит/висит весь вечер. <strong>Медиа-арт</strong> — фоновые проекции, идут параллельно событиям, не занимают слотов.
         </p>
-        <div id="exhibits-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;flex:1;overflow:auto"></div>
+        <div id="exhibits-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;flex:1;overflow:auto"></div>
       </section>
     </div>
   </main>
@@ -2375,7 +2376,16 @@ function slotIsRelevant(sid) {
 function eventIsRelevant(ev) {
   const cfg = VIEW_CONFIG[state.view] || VIEW_CONFIG['all'];
   if (!cfg.timelineCats) return true;
-  return cfg.timelineCats.includes(ev.category);
+  if (cfg.timelineCats.includes(ev.category)) return true;
+  // Для multi-slot карточек с _groupKey: гостевая половина (event.category
+  // отличается от категории слота) подсвечивается также под вкладкой
+  // «родной» для слота категории. Так Гусев-лекция (popsci) на станционном
+  // слоте релевантен и в Научпоп, и в Станции.
+  if (ev._groupKey && ev.slot) {
+    const slot = state.data?.time_slots?.[ev.slot];
+    if (slot && slot.category && cfg.timelineCats.includes(slot.category)) return true;
+  }
+  return false;
 }
 
 function getVenueLanes(vid) {
@@ -2425,6 +2435,14 @@ const VIEW_CONFIG = {
     timelineCats: ['workshop', 'experiment'],
     poolWorlds: ['station'],
     poolStationCats: ['workshop', 'experiment'],
+  },
+  'interactive': {
+    label: 'интерактивы',
+    showSection: 'timeline',
+    timelineCats: ['interactive'],
+    poolWorlds: ['station'],
+    poolStationCats: ['interactive'],
+    helpText: 'Постоянные интерактивные станции — VR/компьютерные программы и интерактивные инсталляции. Гость подходит и играется, тайм-слот не нужен. На Аполлонии живут в центре круга «эксперименты».'
   },
   'social': {
     label: 'общение',
@@ -2946,23 +2964,28 @@ function v31_decompressCardsToLegacy(data) {
     }
   }
 
-  // 3) Восстанавливаем slot.category из station → workshop|experiment
+  // 3) Восстанавливаем slot.category из station → workshop|experiment|interactive
   //    по карточкам, которые на этом слоте лежат. Если разнотипицы — приоритет
   //    experiment (более «общий» подтип в нашей таксономии).
   //    Для пустых station-слотов — оставляем workshop как дефолт.
+  //    Multi-slot карточки могут оставлять «гостевую» половину на станционном слоте
+  //    (например Гусев: лекция popsci лежит на slot-gusev-talk и попутно на двух
+  //    станционных слотах). Для таких слотов оставляем дефолт workshop —
+  //    слот визуально остаётся станционным в расписании.
+  const STATION_NATIVE = new Set(['workshop', 'experiment', 'interactive']);
   for (const sid of Object.keys(data.time_slots || {})) {
     const slot = data.time_slots[sid];
     if (slot.category === 'station') {
       const cardsOnSlot = events.filter(e => e.slot === sid);
-      if (cardsOnSlot.length === 0) {
-        slot.category = 'workshop';  // дефолт для пустого станционного слота
-      } else if (cardsOnSlot.length === 1) {
-        slot.category = cardsOnSlot[0].category;
+      const nativeCards = cardsOnSlot.filter(e => STATION_NATIVE.has(e.category));
+      if (nativeCards.length === 0) {
+        slot.category = 'workshop';  // дефолт для пустого или «гостевого» station-слота
+      } else if (nativeCards.length === 1) {
+        slot.category = nativeCards[0].category;
       } else {
-        // На слоте несколько карточек — пытаемся брать первую,
-        // но если есть experiment — приоритет ему
-        const hasExp = cardsOnSlot.some(e => e.category === 'experiment');
-        slot.category = hasExp ? 'experiment' : cardsOnSlot[0].category;
+        // На слоте несколько родных карточек — приоритет experiment
+        const hasExp = nativeCards.some(e => e.category === 'experiment');
+        slot.category = hasExp ? 'experiment' : nativeCards[0].category;
       }
       // Помечаем для обратного компресса
       slot._v31_was_station = true;
@@ -2988,7 +3011,7 @@ function _v31_stripUndef(o) {
 // возвращает obj в v31-формате (cards вместо events/exhibits/applications).
 function v31_compressLegacyToCards(obj) {
   const cards = [];
-  const STATION_LEGACY = new Set(['workshop', 'experiment']);
+  const STATION_LEGACY = new Set(['workshop', 'experiment', 'interactive']);
 
   // Индекс применений
   const apps = obj.applications || [];
@@ -3278,6 +3301,10 @@ function _migrateLegacyStationCategory(data) {
   if (!data || !data.time_slots) return;
   for (const sid of Object.keys(data.time_slots)) {
     const slot = data.time_slots[sid];
+    // Если декомпрессия v31 уже обработала этот слот (поставила _v31_was_station),
+    // category уже установлена правильно (workshop/experiment/interactive с учётом
+    // STATION_NATIVE-фильтра). Эту миграцию пропускаем.
+    if (slot._v31_was_station) continue;
     if (slot.category === 'workshop' || slot.category === 'experiment') {
       const subtypeFromSlot = slot.category;
       if (Array.isArray(data.events)) {
@@ -3726,6 +3753,7 @@ function updateViewTabCounters() {
   set('stat-all', pendingCands.length);
   set('stat-popsci', countByCats(['popsci']));
   set('stat-open-apps', countByCats(['workshop', 'experiment']));
+  set('stat-interactive', countByCats(['interactive']));
   set('stat-social', countByCats(['social']));
   set('stat-cinema', countByCats(['cinema']));
   set('stat-music', countByCats(['music']));
@@ -4224,7 +4252,12 @@ function renderTimeline() {
         const leftPct = isExclusive ? 0 : (pos.start / lanes) * 100;
         const widthPct = isExclusive ? 100 : (pos.span / lanes) * 100;
         const dimClass = eventIsRelevant(ev) ? '' : ' dim';
-        html += `<div class="event-pill s-${ev.status} cat-${majorCat(ev.category)||'unknown'}${dimClass}" draggable="true" data-event="${ev.id}"
+        // Цвет event-pill: для multi-slot карточек с _groupKey берём цвет СЛОТА,
+        // а не события. Это нужно для «гостевых» половин (Гусев popsci-лекция,
+        // которая сидит на станционных слотах). На родных половинах ev.category
+        // совпадает с slot.category, эффект — нулевой.
+        const pillCat = ev._groupKey && s.category ? majorCat(s.category) : majorCat(ev.category);
+        html += `<div class="event-pill s-${ev.status} cat-${pillCat||'unknown'}${dimClass}" draggable="true" data-event="${ev.id}"
                       style="top:${startPx + labelOffset}px;height:${heightPx - labelOffset - 4}px;
                              left:calc(${leftPct}% + 4px);width:calc(${widthPct}% - 8px)">
           <button class="ev-remove" title="Открепить">×</button>
@@ -4495,16 +4528,15 @@ function renderExhibits() {
   const exh = (state.data.exhibits || []).filter(e =>
     e.status === 'confirmed' || e.status === 'tentative'
   );
-  const byKind = {art: [], installation: [], media: [], digital: []};
+  const byKind = {art: [], installation: [], media: []};
   exh.forEach(e => { (byKind[e.kind] || (byKind[e.kind] = [])).push(e); });
 
   const grid = document.getElementById('exhibits-grid');
   if (!grid) return;
   const cols = [
     {kind: 'art', title: 'Галерея', hint: 'Картины, объекты — то что стоит/висит весь вечер.'},
-    {kind: 'installation', title: 'Инсталляции', hint: 'Физические инсталляции, занимают место в пространстве.'},
+    {kind: 'installation', title: 'Объекты', hint: 'Физические инсталляции, занимают место в пространстве.'},
     {kind: 'media', title: 'Медиа-арт', hint: 'Видео, проекции — выводится на проекторе в перебивах.'},
-    {kind: 'digital', title: 'Digital', hint: 'Компьютерные/VR-программы — гость садится в уголок, без таймслота.'}
   ];
   grid.innerHTML = cols.map(c => {
     const items = byKind[c.kind] || [];
@@ -5571,8 +5603,9 @@ function _entityTypeOptionsHtml(currentValue) {
 function _entitySubtypes(type) {
   if (type === 'station') {
     return [
-      {value: 'workshop',   label: 'Мастерская'},
-      {value: 'experiment', label: 'Опыт / эксперимент'}
+      {value: 'workshop',    label: 'Мастерская'},
+      {value: 'experiment',  label: 'Опыт / эксперимент'},
+      {value: 'interactive', label: 'Интерактив (без таймслота)'}
     ];
   }
   const subs = state.data.subcategories?.[type] || {};
@@ -5693,6 +5726,24 @@ function detailSaveEvent() {
     } else {
       ev.category = newType;
       if (newSubtype) ev.subcategory = newSubtype; else delete ev.subcategory;
+    }
+  }
+  // Multi-slot синхронизация: если у события есть _groupKey (это одна из половин
+  // multi-slot карточки), пропатчиваем содержательные поля (title/subtitle/speaker/
+  // speaker_role/description/links/_admin) на ВСЕ events с тем же _groupKey.
+  // Время/слот/категория остаются у каждой половины свои.
+  if (ev._groupKey) {
+    const SYNC_FIELDS = ['title', 'subtitle', 'speaker', 'speaker_role', 'description', 'links', '_admin', 'team_notes'];
+    for (const other of state.data.events) {
+      if (other === ev) continue;
+      if (other._groupKey !== ev._groupKey) continue;
+      for (const f of SYNC_FIELDS) {
+        if (ev[f] === undefined || ev[f] === null) {
+          delete other[f];
+        } else {
+          other[f] = ev[f];
+        }
+      }
     }
   }
   // На вкладке «Заявка» сохраняем что было собрано раньше — ev уже актуально
