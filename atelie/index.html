@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Галерея фрактального ателье</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* --- Палитра «Фрактальной Одиссеи» — приглушённые правки авторского
+           светлого дизайна без потери его сути --- */
+        :root {
+            --fest-bg: #ECE3D0;          /* тёплая кремовая бумага */
+            --fest-surface: #F6EFDD;     /* чуть светлее для карточек */
+            --fest-ink: #16140F;         /* тёплый чёрный */
+            --fest-ink-soft: #4A4234;    /* основной текст */
+            --fest-muted: #8A7E66;       /* приглушённый */
+            --fest-accent: #C89A3D;      /* золото */
+            --fest-accent-deep: #B8623C; /* тёрракот для hover */
+            --fest-rule: #D6C9A8;        /* разделители */
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--fest-bg);
+            color: var(--fest-ink-soft);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+        ::selection { background: var(--fest-accent); color: var(--fest-bg); }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* Вступительный текст */
+        .intro {
+            background: var(--fest-surface);
+            padding: 2.25rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 0 rgba(22, 20, 15, 0.04), 0 6px 20px -10px rgba(22, 20, 15, 0.12);
+            margin-bottom: 2.5rem;
+            text-align: center;
+            border: 1px solid var(--fest-rule);
+        }
+
+        .intro h1 {
+            font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+            font-size: 2.6rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--fest-ink);
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .intro p {
+            font-size: 1.05rem;
+            color: var(--fest-ink-soft);
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .intro a.external-link {
+            color: var(--fest-accent-deep);
+            text-decoration: underline;
+            text-decoration-color: var(--fest-rule);
+            text-underline-offset: 3px;
+            text-decoration-thickness: 1px;
+            transition: color .15s, text-decoration-color .15s;
+        }
+        .intro a.external-link:hover {
+            color: var(--fest-accent);
+            text-decoration-color: currentColor;
+        }
+
+        /* Блок фильтра */
+        .filter-section {
+            background: var(--fest-surface);
+            border-radius: 999px;
+            padding: 0.4rem;
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.25rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 1px 0 rgba(22, 20, 15, 0.04);
+            border: 1px solid var(--fest-rule);
+            width: 100%;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: none;
+            padding: 0.6rem 1.6rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            color: var(--fest-ink-soft);
+            font-family: inherit;
+            letter-spacing: 0.01em;
+        }
+
+        .filter-btn.active {
+            background: var(--fest-ink);
+            color: var(--fest-bg);
+            box-shadow: 0 2px 6px rgba(22, 20, 15, 0.15);
+        }
+
+        .filter-btn:hover:not(.active) {
+            background: rgba(22, 20, 15, 0.06);
+            color: var(--fest-ink);
+        }
+
+        /* Сетка галереи */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.8rem;
+        }
+
+        .gallery-item {
+            background: var(--fest-surface);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 0 rgba(22, 20, 15, 0.04), 0 8px 22px -14px rgba(22, 20, 15, 0.25);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: 1px solid var(--fest-rule);
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 1px 0 rgba(22, 20, 15, 0.05), 0 14px 28px -12px rgba(22, 20, 15, 0.3);
+        }
+
+        .gallery-img {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover .gallery-img {
+            transform: scale(1.02);
+        }
+
+        .item-caption {
+            padding: 0.85rem 0.75rem;
+            text-align: center;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.78rem;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            color: var(--fest-muted);
+            border-top: 1px solid var(--fest-rule);
+            background: var(--fest-surface);
+        }
+
+        /* Модальное окно (лайтбокс) */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .lightbox-image {
+            max-width: 90vw;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            background: #0f0d08;
+        }
+
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 60px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+            color: #0f172a;
+        }
+
+        .prev-btn {
+            left: 20px;
+        }
+
+        .next-btn {
+            right: 20px;
+        }
+
+        .close-lightbox {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 2.5rem;
+            color: white;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+            z-index: 1001;
+        }
+
+        .close-lightbox:hover {
+            color: #f87171;
+            transform: scale(1.1);
+        }
+
+        .lightbox-counter {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: rgba(255,255,255,.85);
+            background: rgba(0, 0, 0, 0.5);
+            width: fit-content;
+            margin: 0 auto;
+            padding: 0.3rem 1rem;
+            border-radius: 999px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Пустое состояние */
+        .empty-message {
+            text-align: center;
+            padding: 3rem;
+            background: var(--fest-surface);
+            border: 1px solid var(--fest-rule);
+            border-radius: 12px;
+            color: var(--fest-muted);
+            font-size: 1.05rem;
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: var(--fest-muted);
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
+        }
+
+        @media (max-width: 640px) {
+            .filter-btn {
+                padding: 0.5rem 1.1rem;
+                font-size: 0.85rem;
+            }
+            .intro h1 {
+                font-size: 2rem;
+            }
+            .intro {
+                padding: 1.75rem 1.25rem;
+            }
+        }
+
+
+
+        /* Большое изображение (Hero) */
+.hero-image {
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2rem;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--fest-bg);
+    border: 1px solid var(--fest-rule);
+}
+
+.hero-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+/* Если carts.jpg отсутствует — JS ниже скрывает блок целиком */
+.hero-image.is-missing { display: none; }
+
+.hero-caption {
+    text-align: center;
+    padding: 10px 12px;
+    background: var(--fest-surface);
+    color: var(--fest-muted);
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    border-top: 1px solid var(--fest-rule);
+}
+
+@media (max-width: 768px) {
+    .hero-caption {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+    }
+    .hero-image img {
+        max-height: 250px;
+    }
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Вступительный текст -->
+    <div class="intro">
+        <h1>Фрактал-Ателье</h1>
+        <p>Добро пожаловать! На станции можно сгенерировать собственное фрактальное замощение (тайлинг) и либо распечатать его на станции на минипринтере, либо получить электронный файл. Можно также заказать шарф или платок с выбранным принтом.</p>
+ <br>
+        <p>Число мест на станции ограничено. Хотите точно успеть? Заполните <a href="https://forms.gle/rBNq6xjeLRt238vn6" target="_blank" rel="noopener noreferrer" class="external-link">форму</a> и мы свяжемся с вами.</p>
+ <br>
+        <!-- Большое изображение после вступления -->
+<div class="hero-image">
+    <img src="./images/carts.jpg" alt="изображение" loading="eager" onerror="this.closest('.hero-image').classList.add('is-missing')">
+    <div class="hero-caption">Примеры напечатанных карточек</div>
+</div>
+
+        <p>Выберите из предложенных форм то, что хотели бы напечатать. Есть три категории: 1) один фрактал; 2) разбиение фрактала на одинаковые части, подобные ему; 3) замощение с данным фракталом. 
+            Цвета нужно выбрать отдельно. Галерея будет обновляться. 
+        </p>
+    </div>
+
+    <!-- Фильтр категорий -->
+    <div style="display: flex; justify-content: center;">
+        <div class="filter-section" id="filterBar">
+            <button class="filter-btn active" data-filter="all">Все изображения</button>
+            <button class="filter-btn" data-filter="one">Один фрактал</button>
+            <button class="filter-btn" data-filter="partition">Разбиение фракталов</button>
+            <button class="filter-btn" data-filter="tiling">Замощения</button>
+        </div>
+    </div>
+
+    <!-- Контейнер галереи -->
+    <div id="galleryContainer" class="gallery"></div>
+    <footer>© 2026 · Нажмите на изображение, чтобы открыть просмотр</footer>
+</div>
+
+<!-- Модальное окно (лайтбокс) -->
+<div id="lightbox" class="lightbox">
+    <button class="close-lightbox" id="closeLightboxBtn">&times;</button>
+    <div class="lightbox-content">
+        <button class="nav-btn prev-btn" id="prevBtn">‹</button>
+        <img class="lightbox-image" id="lightboxImg" alt="Увеличенное фото">
+        <button class="nav-btn next-btn" id="nextBtn">›</button>
+        <div class="lightbox-counter" id="lightboxCounter"></div>
+    </div>
+</div>
+
+<script>
+    // ---------- БАЗА ДАННЫХ ИЗОБРАЖЕНИЙ (имитация товаров/фотографий) ----------
+    // Каждое изображение имеет: id, категорию, название, путь к картинке (используем placeholder images / unsplash)
+    // Для наглядности используются реальные качественные фото из открытого источника (picsum / демо)
+    const imagesDataset = [
+        { id: -2, category: "one", title: "row1 Dragon", src: "./images/row1.png", largeSrc: "./images/row1.png" },
+        { id: -1, category: "partition", title: "row1 Dragon partition", src: "./images/row1_split.png", largeSrc: "./images/row1_split.png" },
+        { id: 0, category: "tiling", title: "row1 Dragon tiling", src: "./images/row1_tiling.png", largeSrc: "./images/row1_tiling.png" },
+        { id: 1, category: "one", title: "row2 Bear", src: "./images/row2.png", largeSrc: "./images/row2.png" },
+        { id: 2, category: "partition", title: "row2 Bear partition", src: "./images/row2_split.png", largeSrc: "./images/row2_split.png" },
+        { id: 3, category: "tiling", title: "row2 Bear tiling", src: "./images/row2_tiling.png", largeSrc: "./images/row2_tiling.png" },
+        { id: 4, category: "one", title: "row3", src: "./images/row3.png", largeSrc: "./images/row3.png" },
+        { id: 5, category: "partition", title: "row3 partition", src: "./images/row3_split.png", largeSrc: "./images/row3_split.png" },
+        { id: 6, category: "tiling", title: "row3 tiling", src: "./images/row3_tiling.png", largeSrc: "./images/row3_tiling.png" },
+        { id: 7, category: "one", title: "row4", src: "./images/row4.png", largeSrc: "./images/row4.png" },
+        { id: 8, category: "partition", title: "row4 partition", src: "./images/row4_split.png", largeSrc: "./images/row4_split.png" },
+        { id: 9, category: "tiling", title: "row4 tiling", src: "./images/row4_tiling.png", largeSrc: "./images/row4_tiling.png" },
+        { id: 10, category: "one", title: "row5", src: "./images/row5.png", largeSrc: "./images/row5.png" },
+        { id: 11, category: "partition", title: "row5 partition", src: "./images/row5_split.png", largeSrc: "./images/row5_split.png" },
+        { id: 12, category: "tiling", title: "row5 tiling", src: "./images/row5_tiling.png", largeSrc: "./images/row5_tiling.png" },
+        { id: 13, category: "one", title: "row6", src: "./images/row6.png", largeSrc: "./images/row6.png" },
+        { id: 14, category: "partition", title: "row6 partition", src: "./images/row6_split.png", largeSrc: "./images/row6_split.png" },
+        { id: 15, category: "tiling", title: "row6 tiling", src: "./images/row6_tiling.png", largeSrc: "./images/row6_tiling.png" },
+        { id: 16, category: "one", title: "row7", src: "./images/row7.png", largeSrc: "./images/row7.png" },
+        { id: 17, category: "partition", title: "row7 partition", src: "./images/row7_split.png", largeSrc: "./images/row7_split.png" },
+        { id: 18, category: "tiling", title: "row7 tiling", src: "./images/row7_tiling.png", largeSrc: "./images/row7_tiling.png" },
+        { id: 19, category: "one", title: "row8", src: "./images/row8.png", largeSrc: "./images/row8.png" },
+        { id: 20, category: "partition", title: "row8 partition", src: "./images/row8_split.png", largeSrc: "./images/row8_split.png" },
+        { id: 21, category: "tiling", title: "row8 tiling", src: "./images/row8_tiling.png", largeSrc: "./images/row8_tiling.png" },
+        { id: 22, category: "one", title: "row9", src: "./images/row9.png", largeSrc: "./images/row9.png" },
+        { id: 23, category: "partition", title: "row9 partition", src: "./images/row9_split.png", largeSrc: "./images/row9_split.png" },
+        { id: 24, category: "tiling", title: "row9 tiling", src: "./images/row9_tiling.png", largeSrc: "./images/row9_tiling.png" },
+        { id: 25, category: "one", title: "row10", src: "./images/row10.png", largeSrc: "./images/row10.png" },
+        { id: 26, category: "partition", title: "row10 partition", src: "./images/row10_split.png", largeSrc: "./images/row10_split.png" },
+        { id: 27, category: "tiling", title: "row10 tiling", src: "./images/row10_tiling.png", largeSrc: "./images/row10_tiling.png" },
+ 
+        { id: 34, category: "one", title: "3digit-3", src: "./images/3dig_type3.png", largeSrc: "./images/3dig_type3.png" },
+        { id: 35, category: "partition", title: "3digit-3 partition", src: "./images/3dig_type3_split.png", largeSrc: "./images/3dig_type3_split.png" },
+        { id: 36, category: "tiling", title: "3digit-3 tiling", src: "./images/3dig_type3_tiling.png", largeSrc: "./images/3dig_type3_tiling.png" },
+
+
+    ];
+
+    // ----- Глобальные переменные для модального окна и навигации -----
+    let currentLightboxImages = [];   // массив объектов { src, title, largeSrc } для текущей категории/фильтра
+    let currentIndex = 0;
+
+    // DOM элементы
+    const galleryContainer = document.getElementById('galleryContainer');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const closeLightboxBtn = document.getElementById('closeLightboxBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const lightboxCounter = document.getElementById('lightboxCounter');
+
+    // ----- Функция отображения галереи на основе выбранного фильтра -----
+    function renderGallery(filterValue) {
+        let filteredItems = [];
+        if (filterValue === 'all') {
+            filteredItems = [...imagesDataset];
+        } else {
+            filteredItems = imagesDataset.filter(item => item.category === filterValue);
+        }
+
+        if (filteredItems.length === 0) {
+            galleryContainer.innerHTML = `<div class="empty-message">😕 Нет изображений в этой категории. Выберите другую.</div>`;
+            return;
+        }
+
+        // Отрисовка карточек
+        let html = '';
+        filteredItems.forEach(item => {
+            html += `
+                <div class="gallery-item" data-id="${item.id}" data-category="${item.category}" data-src="${item.src}" data-large="${item.largeSrc}" data-title="${item.title}">
+                    <img class="gallery-img" src="${item.src}" alt="${item.title}" loading="lazy">
+                    <div class="item-caption">${item.title}</div>
+                </div>
+            `;
+        });
+        galleryContainer.innerHTML = html;
+
+        // Добавляем слушатели кликов на каждую карточку (для открытия лайтбокса с возможностью листать именно в рамках текущей категории)
+        const galleryItems = document.querySelectorAll('.gallery-item');
+        galleryItems.forEach((el, idx) => {
+            el.addEventListener('click', (e) => {
+                // При клике на карточку получаем данные
+                const currentItemId = parseInt(el.getAttribute('data-id'));
+                // Собираем массив изображений именно в том порядке и составе, который сейчас отфильтрован
+                const currentFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+                let currentSet = [];
+                if (currentFilter === 'all') {
+                    currentSet = [...imagesDataset];
+                } else {
+                    currentSet = imagesDataset.filter(img => img.category === currentFilter);
+                }
+                // Находим индекс того изображения, на которое кликнули, внутри currentSet
+                const clickedIndex = currentSet.findIndex(img => img.id === currentItemId);
+                if (clickedIndex !== -1) {
+                    openLightbox(currentSet, clickedIndex);
+                } else {
+                    // fallback (подстраховка)
+                    openLightbox(currentSet, 0);
+                }
+            });
+        });
+    }
+
+    // ----- Функция открытия лайтбокса с поддержкой навигации внутри переданного массива -----
+    function openLightbox(imagesArray, startIndex) {
+        if (!imagesArray.length) return;
+        currentLightboxImages = imagesArray;
+        currentIndex = startIndex;
+        updateLightboxImage();
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden'; // блокируем прокрутку фона
+    }
+
+    function updateLightboxImage() {
+        if (!currentLightboxImages.length) return;
+        const currentImage = currentLightboxImages[currentIndex];
+        // используем largeSrc для качественного отображения, либо fallback на обычный src
+        const highResUrl = currentImage.largeSrc || currentImage.src;
+        lightboxImg.src = highResUrl;
+        lightboxImg.alt = currentImage.title || 'Изображение';
+        // Обновляем счетчик (например, "3 / 12")
+        lightboxCounter.textContent = `${currentIndex + 1} / ${currentLightboxImages.length}`;
+    }
+
+    function nextImage() {
+        if (currentLightboxImages.length === 0) return;
+        currentIndex = (currentIndex + 1) % currentLightboxImages.length;
+        updateLightboxImage();
+    }
+
+    function prevImage() {
+        if (currentLightboxImages.length === 0) return;
+        currentIndex = (currentIndex - 1 + currentLightboxImages.length) % currentLightboxImages.length;
+        updateLightboxImage();
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+        // Небольшая очистка для предотвращения багов
+        setTimeout(() => {
+            if (!lightbox.classList.contains('active')) {
+                lightboxImg.src = '';
+            }
+        }, 200);
+    }
+
+    // ----- Инициализация фильтров и обработчиков -----
+    function initFilters() {
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Сменить активную кнопку
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const filterValue = btn.getAttribute('data-filter');
+                renderGallery(filterValue);
+            });
+        });
+    }
+
+    // ----- Обработчики для клавиатуры (стрелки влево/вправо, Escape) -----
+    function handleKeyboard(e) {
+        if (!lightbox.classList.contains('active')) return;
+        if (e.key === 'ArrowRight') {
+            nextImage();
+            e.preventDefault();
+        } else if (e.key === 'ArrowLeft') {
+            prevImage();
+            e.preventDefault();
+        } else if (e.key === 'Escape') {
+            closeLightbox();
+            e.preventDefault();
+        }
+    }
+
+    // ----- Навешиваем глобальные события -----
+    window.addEventListener('load', () => {
+        initFilters();
+        // По умолчанию рендерим все изображения (фильтр "all" активен)
+        renderGallery('all');
+
+        // События для модального окна
+        closeLightboxBtn.addEventListener('click', closeLightbox);
+        prevBtn.addEventListener('click', prevImage);
+        nextBtn.addEventListener('click', nextImage);
+        lightbox.addEventListener('click', (e) => {
+            // Если кликнули на фон (сам оверлей) — закрываем
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+        window.addEventListener('keydown', handleKeyboard);
+    });
+</script>
+</body>
+</html>
