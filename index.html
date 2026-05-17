@@ -5207,7 +5207,7 @@ window.addEventListener('resize', ()=>{
        Этот же файл будет читать админ-страница расписания.
        ?v=YYYY-MM-DD — cache-busting: при правке базы меняй дату,
        чтобы браузер скачал свежий файл, а не закешированный. -->
-  <script src="festival-data.js?v=2026-05-17e"></script>
+  <script src="festival-data.js?v=2026-05-17f"></script>
 
   <!-- ============================================================
        COMPAT LAYER v30↔v31 (вставлен для миграции на cards-модель)
@@ -6124,24 +6124,9 @@ window.addEventListener('resize', ()=>{
           apolloItems.push(ev);
         }
       }
-      // Пустые слоты (без события) тоже нужны Аполлонию — рисуются как TBA.
-      // У них есть category и apollo_slot, но нет event-полей.
-      const slotsWithEvents = new Set(
-        FESTIVAL_DATA.events.filter(e => e.slot).map(e => e.slot)
-      );
-      for (const [slotId, slot] of Object.entries(slots)) {
-        if (slotsWithEvents.has(slotId)) continue;
-        if (!slot.category || !slot.apollo_slot) continue;
-        apolloItems.push({
-          id: 'tba-' + slotId,
-          title: slot.tool_label || 'TBA',
-          category: slot.category,
-          apollo_slot: slot.apollo_slot,
-          subcategory: slot.subcategory,
-          venue: slot.venue,
-          placeholder: true,
-        });
-      }
+      // Пустые слоты больше НЕ дорисовываются как TBA. На Аполлонии видны
+      // только подтверждённые события и subcat-круги. Если в будущем нужно
+      // вернуть «будет ещё» — добавить логику обратно.
     }
     if (FESTIVAL_DATA && FESTIVAL_DATA.exhibits) {
       for (const ex of FESTIVAL_DATA.exhibits) {
@@ -6280,45 +6265,9 @@ window.addEventListener('resize', ()=>{
       eventsByCatSubAndSlot[ev.category + ':' + ev.subcategory + ':' + ev.apollo_slot] = ev;
     }
 
-    // Сколько ВСЕГО кругов показываем в каждой категории (confirmed + TBA-плейсхолдеры).
-    // popsci/social/cinema/music — без TBA: сколько подтверждено, столько и видно.
-    // art/workshop/experiment — допускают TBA: дополнительно дорисовываются круги
-    // в свободных позициях, чтобы зритель видел "будет ещё".
-    const TARGET_FILLED = {
-      popsci: 0, music: 0, cinema: 0, social: 0,
-      art: 6, workshop: 6, experiment: 6
-    };
-    // Порядок заполнения TBA-позиций — сначала с краю (mid-*), потом центр.
-    // Заголовок никогда не ставим в center, если есть свободный mid (визуально аккуратнее).
-    const TBA_FILL_ORDER = ['mid-1', 'mid-2', 'mid-3', 'center'];
-
-    // Для каждой категории собираем Set позиций которые должны рисоваться как TBA.
-    const tbaPositions = {};
-    if (FESTIVAL_DATA && FESTIVAL_DATA.categories) {
-      for (const catId of Object.keys(FESTIVAL_DATA.categories)) {
-        tbaPositions[catId] = new Set();
-        const target = TARGET_FILLED[catId] || 0;
-        if (!target) continue;
-
-        // Подтверждённые на конкретных позициях (не placeholder, есть title/speaker)
-        const confirmed = new Set();
-        for (const ev of apolloItems) {
-          if (ev.category !== catId) continue;
-          if (ev.status === 'placeholder') continue;
-          if (!ev.title && !ev.speaker) continue;
-          if (ev.apollo_slot) confirmed.add(ev.apollo_slot);
-        }
-
-        const tbaNeeded = Math.max(0, target - confirmed.size);
-        let added = 0;
-        for (const pos of TBA_FILL_ORDER) {
-          if (added >= tbaNeeded) break;
-          if (confirmed.has(pos)) continue;  // позиция занята реальным событием
-          tbaPositions[catId].add(pos);
-          added++;
-        }
-      }
-    }
+    // TBA-плейсхолдеры отключены. На Аполлонии видны только подтверждённые
+    // события и subcat-круги. Раньше тут была логика TARGET_FILLED/TBA_FILL_ORDER —
+    // если в будущем понадобятся «будет ещё» заглушки, восстанавливать из истории.
 
     // Размечаем каждому структурному кругу его apollo_slot — позицию
     // внутри категории. Эта же разметка работает и на верхнем уровне,
@@ -6648,7 +6597,7 @@ window.addEventListener('resize', ()=>{
     const _labelCacheDesktop = new WeakMap();
     const _labelCacheMobile  = new WeakMap();
     function labelForEvent(ev, isMobile) {
-      if (!ev) return { line1: 'TBA', line2: '' };
+      if (!ev) return { line1: '', line2: '' };
       const cache = isMobile ? _labelCacheMobile : _labelCacheDesktop;
       const cached = cache.get(ev);
       if (cached) return cached;
@@ -6661,49 +6610,24 @@ window.addEventListener('resize', ()=>{
       const author = ev.speaker || ev.author || '';
 
       const isEmpty = ev.status === 'placeholder' || (!ev.title && !author);
-      if (isEmpty) return { line1: 'TBA', line2: '' };
+      if (isEmpty) return { line1: '', line2: '' };
 
       // short_title — короткая подпись для маленьких кругов Аполлония.
       // Применяется ТОЛЬКО на mobile — там круги мельче и места под
       // длинный title нет. На desktop места хватает, рисуем полный title.
       const titleForCircle = (isMobile && ev.short_title) ? ev.short_title : ev.title;
 
-      const cat = ev.category;
-      let line1 = '', line2 = '';
-      if (cat === 'popsci') {
-        line1 = author || titleForCircle || 'TBA';
-        if (author && titleForCircle) {
-          // Не показываем title, если он дублирует имя: "Лекция X" или
-          // содержит основу фамилии (slice(0,-2) — учёт русских падежей,
-          // "Райгородский" → "Райгородск" → находится в "Райгородского").
-          const titleL = titleForCircle.toLowerCase().trim();
-          const lastName = author.split(' ').pop().toLowerCase();
-          const stem = lastName.length > 5 ? lastName.slice(0, -2) : lastName;
-          if (!titleL.startsWith('лекция ') && !titleL.includes(stem)) {
-            line2 = titleForCircle;
-          }
-        }
-      } else if (cat === 'music') {
-        line1 = titleForCircle || author || 'TBA';
-        if (author && titleForCircle && author !== titleForCircle) {
-          const a = author.toLowerCase(), t = titleForCircle.toLowerCase();
-          if (!t.includes(a) && !a.includes(t)) {
-            line2 = author;
-          }
-        }
-      } else if (cat === 'workshop') {
-        line1 = titleForCircle || author || 'TBA';
-        if (author && titleForCircle) line2 = author;
-      } else if (cat === 'art') {
-        // У art в кругах Аполлония показываем только title (название работы).
-        // Автор всё равно есть в правой панели/drawer.
-        line1 = titleForCircle || author || 'TBA';
+      // Единое правило для всех категорий: в круге Аполлония — ОДНА строка.
+      // Только название (title). Имя автора отображается в правой панели/drawer
+      // при клике, но не в самом круге. Исключение — popsci: там у нас принято
+      // показывать имя лектора, поэтому line1 = author если он есть.
+      let line1;
+      if (ev.category === 'popsci') {
+        line1 = author || titleForCircle || '';
       } else {
-        // social/cinema/experiment: title + author.
-        line1 = titleForCircle || author || 'TBA';
-        if (author && titleForCircle && author !== titleForCircle) line2 = author;
+        line1 = titleForCircle || author || '';
       }
-      return { line1, line2 };
+      return { line1, line2: '' };
     }
 
     // Подгонка fontSize под ширину круга: уменьшаем пока не вписывается.
@@ -6745,9 +6669,8 @@ window.addEventListener('resize', ()=>{
       else if (tier === 1) { maxFont = 28; minFont = 10; }
       else                 { maxFont = 18; minFont = 8;  }
 
-      const isTBA = labels.line1 === 'TBA';
       const words = labels.line1.split(' ');
-      const canWrap = words.length >= 2 && !isTBA;
+      const canWrap = words.length >= 2;
       const maxLines = isMobile ? 4 : 2;
 
       // Жадный wrap: для данного размера набивает слова в строки.
@@ -6843,7 +6766,7 @@ window.addEventListener('resize', ()=>{
           mainLines = [labels.line1];
         }
       } else {
-        // TBA или одно слово
+        // Одно слово — без переноса
         mainSize = fitFontSize(labels.line1, maxFont, minFont, maxWidth);
         mainLines = [labels.line1];
       }
@@ -6971,11 +6894,9 @@ window.addEventListener('resize', ()=>{
 
       // Решаем что показывать:
       //   confirmed/tentative event с title или speaker → рисуем event
-      //   позиция в tbaPositions[catId] и нет confirmed event → рисуем "TBA"
-      //   иначе → ничего (круг остаётся пустой)
+      //   иначе → ничего (круг остаётся пустой). TBA-плейсхолдеры отключены.
       const hasConfirmedEvent = ev && ev.status !== 'placeholder' && (ev.title || ev.speaker);
-      const isTbaSlot = !hasConfirmedEvent && tbaPositions[catId] && tbaPositions[catId].has(c.apollo_slot);
-      if (!hasConfirmedEvent && !isTbaSlot) return;
+      if (!hasConfirmedEvent) return;
 
       if (!isVisibleInViewport(wx, wy, wr)) return;
       const s = worldToScreen(wx, wy);
@@ -6983,7 +6904,7 @@ window.addEventListener('resize', ()=>{
       if (rPx < 16) return;
 
       const isMobile = window.innerWidth <= 768;
-      const labels = hasConfirmedEvent ? labelForEvent(ev, isMobile) : { line1: 'TBA', line2: '' };
+      const labels = labelForEvent(ev, isMobile);
       if (!labels.line1) return;
 
       const layout = chooseLabelLayout(labels, rPx, c.tier, isMobile);
@@ -7474,7 +7395,7 @@ window.addEventListener('resize', ()=>{
       // В правой панели / mobile-drawer всегда показываем полный title,
       // не short_title — у нас тут есть пространство.
       const labels = labelForEvent(ev, false);
-      titleEl.textContent = labels.line1 || (ev.speaker || ev.title || 'TBA');
+      titleEl.textContent = labels.line1 || ev.speaker || ev.title || '';
 
       // Meta: время + место. Берём display из FESTIVAL_DATA.venues, чтобы имена были
       // консистентны с расписанием ("Кантор", "Жюлиа", "Мандельброт"…).
@@ -7917,7 +7838,7 @@ window.addEventListener('resize', ()=>{
               id: sidF,
               slot: sidF,
               time: slF.start + '–' + slF.end,
-              name: evF ? evF.title : (slF.tool_label || TYPE_LABELS[slF.type] || 'TBA'),
+              name: evF ? evF.title : (slF.tool_label || TYPE_LABELS[slF.type] || ''),
               venue: slF.venue,
               detail: evF ? (evF.description || '') : 'Слот зарезервирован, программа уточняется.',
               placeholder: !evF,
@@ -7949,7 +7870,7 @@ window.addEventListener('resize', ()=>{
               id: sid2,
               slot: sid2,
               time: sl2.start + '–' + sl2.end,
-              name: ev ? ev.title : (sl2.tool_label || TYPE_LABELS[sl2.type] || 'TBA'),
+              name: ev ? ev.title : (sl2.tool_label || TYPE_LABELS[sl2.type] || ''),
               venue: sl2.venue,
               detail: ev ? (ev.description || '') : 'Слот зарезервирован, программа уточняется.',
               placeholder: !ev,
@@ -7972,7 +7893,7 @@ window.addEventListener('resize', ()=>{
               var sub = {
                 id: ssid,
                 slot: ssid,
-                name: sev ? sev.title : (ssl.tool_label || TYPE_LABELS[ssl.type] || 'TBA'),
+                name: sev ? sev.title : (ssl.tool_label || TYPE_LABELS[ssl.type] || ''),
                 where: ssl.venue,
                 detail: sev ? (sev.description || '') : 'Слот зарезервирован, программа уточняется.',
                 placeholder: !sev,

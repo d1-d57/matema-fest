@@ -1727,6 +1727,12 @@ body.viewer-mode .comm-badges { display: none !important; }
         </p>
         <div id="exhibits-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;flex:1;overflow:auto"></div>
       </section>
+      <section class="section" id="section-interactives">
+        <p style="font-size:12px;color:var(--ink-quiet);flex-shrink:0;margin:0 0 10px">
+          Интерактивные станции — компьютерные и VR-программы, которые стоят в помещении весь вечер. Гость подходит, играется, идёт дальше. Тайм-слотов нет — это не выступление, а постоянный аттракцион. На Аполлонии живут в центре круга «эксперименты».
+        </p>
+        <div id="interactives-grid" style="display:grid;grid-template-columns:1fr;gap:12px;flex:1;overflow:auto;max-width:900px"></div>
+      </section>
     </div>
   </main>
 </div>
@@ -2438,11 +2444,11 @@ const VIEW_CONFIG = {
   },
   'interactive': {
     label: 'интерактивы',
-    showSection: 'timeline',
-    timelineCats: ['interactive'],
+    showSection: 'interactives',
+    timelineCats: null,
     poolWorlds: ['station'],
     poolStationCats: ['interactive'],
-    helpText: 'Постоянные интерактивные станции — VR/компьютерные программы и интерактивные инсталляции. Гость подходит и играется, тайм-слот не нужен. На Аполлонии живут в центре круга «эксперименты».'
+    helpText: 'Постоянные интерактивные станции — VR/компьютерные программы. Гость подходит и играется, тайм-слот не нужен. На Аполлонии живут в центре круга «эксперименты».'
   },
   'social': {
     label: 'общение',
@@ -4595,6 +4601,70 @@ function addExhibit(kind) {
     id, kind, status: 'tentative',
     title, speaker: null, description: null,
     subcategory: subcatDefault, apollo_slot: null
+  });
+  markDirty(); rerenderAll(); persistState();
+}
+
+// Интерактивы — постоянные интерактивные станции (компьютерные/VR-программы),
+// работают весь вечер без таймслота. На Аполлонии живут в центре круга
+// «эксперименты». Хранятся как events с category='interactive' (после
+// декомпрессии card.type='station', subtype='interactive').
+function renderInteractives() {
+  const items = (state.data.events || []).filter(e =>
+    e.category === 'interactive'
+  );
+  const grid = document.getElementById('interactives-grid');
+  if (!grid) return;
+
+  grid.innerHTML = `<div class="exhibit-col kind-interactive">
+    <h3>Интерактивы <span style="font-weight:400;color:#999;font-size:12px">${items.length}</span></h3>
+    <div class="col-hint">VR/компьютерные программы, работают весь вечер. Без таймслота.</div>
+    <div class="ex-list">
+      ${items.map(item => renderInteractiveCard(item)).join('')}
+    </div>
+    <button class="exhibit-add-btn" onclick="addInteractive()">+ добавить</button>
+  </div>`;
+
+  grid.querySelectorAll('.exhibit-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.classList.contains('ex-remove')) return;
+      showDetail('event', card.dataset.id);
+    });
+  });
+  grid.querySelectorAll('.ex-remove').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = btn.closest('.exhibit-card').dataset.id;
+      if (confirm('Удалить интерактив?')) {
+        state.data.events = state.data.events.filter(x => x.id !== id);
+        markDirty(); rerenderAll(); persistState();
+      }
+    });
+  });
+}
+
+function renderInteractiveCard(item) {
+  const tags = [];
+  if (item.apollo_slot) tags.push(item.apollo_slot);
+  if (item._source_app) tags.push('из ' + item._source_app);
+  return `<div class="exhibit-card s-${item.status||'confirmed'}" data-id="${esc(item.id)}">
+    <button class="ex-remove">×</button>
+    <div class="ex-title">${esc(item.title || '(без названия)')}</div>
+    ${item.speaker ? `<div class="ex-speaker">${esc(item.speaker)}</div>` : ''}
+    ${item.description ? `<div class="ex-desc">${esc(item.description.slice(0, 120))}${item.description.length > 120 ? '…' : ''}</div>` : ''}
+    ${tags.length ? `<div class="ex-tags">${tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+  </div>`;
+}
+
+function addInteractive() {
+  const title = prompt('Название нового интерактива:');
+  if (!title) return;
+  const id = 'ev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  state.data.events = state.data.events || [];
+  state.data.events.push({
+    id, category: 'interactive', status: 'confirmed',
+    title, speaker: null, description: null,
+    apollo_slot: null, slot: null
   });
   markDirty(); rerenderAll(); persistState();
 }
@@ -7777,7 +7847,7 @@ async function publishToGitHub() {
 function rerenderAll() {
   if (!state.data) return;
   renderCatFiltersPool(); renderCatFiltersTimeline();
-  renderCandidates(); renderTimeline(); renderConflicts(); renderUnassigned(); renderExhibits();
+  renderCandidates(); renderTimeline(); renderConflicts(); renderUnassigned(); renderExhibits(); renderInteractives();
 }
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
