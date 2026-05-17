@@ -1,0 +1,1270 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Фрактальная Одиссея — Matema-фест 2026</title>
+<meta name="description" content="Фестиваль для взрослых о фракталах, самоподобии и симметриях. 23 мая, Чистые пруды: библиотека Достоевского, Лахесис и общий двор." />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Фрактальная Одиссея — Matema-фест 2026" />
+<meta property="og:description" content="Фестиваль для взрослых о фракталах, самоподобии и симметриях. 23 мая, Чистые пруды." />
+<meta property="og:site_name" content="Matema-фест 2026" />
+<meta property="og:locale" content="ru_RU" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Фрактальная Одиссея — Matema-фест 2026" />
+<meta name="twitter:description" content="23 мая, Чистые пруды. Фестиваль для взрослых о фракталах, самоподобии и симметриях." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #e8ecd4;
+    --paper: #f1f3e2;
+    --ink: #16191a;
+    --ink-soft: #3a3e36;
+    --rule: #2d3028;
+    --rule-soft: rgba(45, 48, 40, 0.15);
+    --accent: #c93428;
+    --accent-dim: rgba(201, 52, 40, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Golos Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .mono {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing: 0.02em;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  a.link {
+    color: var(--accent);
+    border-bottom: 1px solid rgba(201,52,40,0.4);
+    transition: border-color 0.2s ease;
+  }
+  a.link:hover { border-bottom-color: var(--accent); }
+
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 28px 36px 56px;
+  }
+
+  /* ———— HEADER (top hero strip) ———— */
+  header.top-hero {
+    margin-bottom: 36px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .top-meta-row {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .top-meta-row .meta-item {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.005em;
+    line-height: 1.1;
+  }
+  .top-meta-row .dot {
+    color: var(--accent);
+    font-size: 18px;
+    opacity: 0.55;
+    font-weight: 400;
+  }
+  .meta-deadline-inline {
+    margin-left: auto;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.005em;
+    line-height: 1.1;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .meta-deadline-inline .days-left {
+    background: var(--accent);
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    align-self: center;
+  }
+  .meta-brand {
+    margin-left: auto;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    line-height: 1.1;
+  }
+
+  /* ———— HERO ———— */
+  .hero {
+    margin-bottom: 36px;
+    position: relative;
+    isolation: isolate;
+    padding: 20px 0 0;
+  }
+  .hero-fractal {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .hero-main,
+  .hero-divider,
+  .hero-opencall { position: relative; z-index: 1; }
+
+  .hero-main { min-width: 0; }
+
+  /* Раздел между описанием фестиваля и open call */
+  .hero-divider {
+    border: 0;
+    border-top: 1px solid var(--rule);
+    margin: 28px 0 22px;
+    opacity: 0.5;
+  }
+
+  /* ———— HERO OPEN CALL ———— */
+  .hero-opencall {
+    display: block;
+  }
+  .opencall-text { min-width: 0; }
+  .opencall-label {
+    display: block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 22px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 14px;
+    line-height: 1;
+  }
+  .opencall-text p {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ink);
+    font-weight: 400;
+  }
+  .hero-subtitle {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+  h1.title {
+    font-family: "Golos Text", sans-serif;
+    font-weight: 700;
+    font-size: clamp(40px, 5.4vw, 68px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin-bottom: 22px;
+  }
+  .hero-lede {
+    font-size: 17px;
+    line-height: 1.5;
+    max-width: none;
+    color: var(--ink);
+    font-weight: 400;
+  }
+  .hero-lede strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .hero-lede-sub {
+    margin-top: 14px;
+    font-size: 16.5px;
+    line-height: 1.55;
+    max-width: none;
+    color: var(--ink-soft);
+  }
+  .hero-lede-sub p {
+    margin-bottom: 10px;
+  }
+  .hero-lede-sub p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* ———— SPEAKERS STRIP ———— */
+  .speakers-strip {
+    margin-top: 18px;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding-top: 12px;
+    border-top: 1px dotted rgba(45, 48, 40, 0.25);
+  }
+  .speakers-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .speakers-list {
+    font-family: "Golos Text", sans-serif;
+    font-size: 13.5px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .speakers-list .sep {
+    color: var(--accent);
+    margin: 0 8px;
+    font-weight: 400;
+  }
+
+  /* ———— HERO META — date as hero ———— */
+  .hero-meta {
+    margin-top: 24px;
+    margin-bottom: 28px;
+    padding: 14px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .hero-meta .date {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .hero-meta .meta-sep {
+    color: var(--accent);
+    font-size: 16px;
+    opacity: 0.7;
+  }
+  .hero-meta .meta-item {
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .hero-meta .meta-deadline {
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-left: auto;
+  }
+  .hero-meta .meta-deadline .days-left {
+    background: var(--accent);
+    color: #fff;
+    padding: 3px 8px;
+    margin-left: 6px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  /* ———— PARTNERS STRIP ———— */
+  .partners-strip {
+    margin-top: 8px;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+  }
+  .partners-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .partners-list {
+    font-family: "Golos Text", sans-serif;
+    font-size: 13.5px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .partners-list .sep {
+    color: var(--accent);
+    margin: 0 8px;
+    font-weight: 400;
+  }
+
+  /* ———— STICKY HEADER on scroll ———— */
+  .sticky-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    z-index: 60;
+    transform: translateY(-100%);
+    transition: transform 0.25s ease;
+  }
+  .sticky-header.visible {
+    transform: translateY(0);
+  }
+  .sticky-header-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 36px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+  }
+  .sticky-header .brand {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .sticky-header .meta {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .sticky-header .sticky-deadline {
+    font-family: "JetBrains Mono", monospace;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.1;
+    gap: 2px;
+  }
+  .sticky-header .sticky-deadline .sd-top {
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .sticky-header .sticky-deadline .sd-bot {
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  @media (max-width: 700px) {
+    .sticky-header { height: 50px; }
+    .sticky-header-inner { padding: 0 16px; gap: 10px; }
+    .sticky-header .meta { display: none; }
+    .sticky-header .brand { font-size: 12px; }
+    .sticky-header .sticky-deadline .sd-top { font-size: 11px; }
+    .sticky-header .sticky-deadline .sd-bot { font-size: 9.5px; }
+  }
+
+  /* ———— BEFORE-FORM Q&A note ———— */
+  .form-questions-note {
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: rgba(201, 52, 40, 0.05);
+    border-left: 2px solid var(--accent);
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .form-questions-note a {
+    color: var(--accent);
+    border-bottom: 1px solid rgba(201,52,40,0.4);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .form-questions-note a:hover { border-bottom-color: var(--accent); }
+
+  /* ———— SECTION LABEL ———— */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .section-label .num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .section-label .label {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .section-label .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+    opacity: 0.25;
+  }
+
+  /* ———— MANIFESTO: reworked ———— */
+  .manifesto { margin-bottom: 32px; }
+
+  .manifesto-main {
+    padding: 22px 28px;
+    background: var(--paper);
+    border-left: 3px solid var(--accent);
+    margin-bottom: 20px;
+  }
+  .manifesto-main p {
+    font-size: 17.5px;
+    line-height: 1.45;
+    max-width: 80ch;
+  }
+  .manifesto-main p strong {
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .manifesto-branches {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 32px;
+    padding-left: 28px;
+    margin-bottom: 20px;
+  }
+  .manifesto-branch {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+  }
+  .manifesto-branch .b-mark {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+    padding-top: 3px;
+  }
+  .manifesto-branch p {
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+  .manifesto-branch p strong {
+    font-weight: 600;
+  }
+
+  .manifesto-note {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    padding: 12px 28px;
+    border-top: 1px dashed var(--rule-soft);
+    padding-top: 16px;
+    margin-top: 8px;
+  }
+  .manifesto-note strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ———— FORMATS ———— */
+  .formats { margin-bottom: 36px; }
+  .formats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .format {
+    padding: 16px 20px 18px;
+    border-right: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .format:last-child { border-right: none; }
+  .format-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .format-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .format-time {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .format-desc {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  /* ———— DIRECTIONS: COLLAPSIBLE ———— */
+  .directions { margin-bottom: 44px; }
+
+  .directions-hint {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+
+  /* ———— DIRECTIONS — tiles 5-in-row ———— */
+  .dir-expand-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+  }
+  .dir-expand-all {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: transparent;
+    border: 1px solid var(--accent);
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .dir-expand-all:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .dir-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .dir-tile {
+    position: relative;
+    padding: 18px 16px 18px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    -webkit-tap-highlight-color: rgba(201, 52, 40, 0.15);
+    user-select: none;
+  }
+  /* Дочерние span не должны ловить клик — всё через родителя */
+  .dir-tile > * {
+    pointer-events: none;
+  }
+  /* Но внутри раскрытого t-inline должны работать ссылки/кнопки */
+  .dir-tile .t-inline,
+  .dir-tile .t-inline * {
+    pointer-events: auto;
+  }
+  /* hover только на устройствах с реальным курсором — чтобы на тач не залипал */
+  @media (hover: hover) {
+    .dir-tile:hover {
+      background: #fff;
+      border-color: var(--accent);
+    }
+  }
+  .dir-tile.active {
+    background: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+  .dir-tile .t-num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+  .dir-tile .t-title {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .dir-tile .t-desc {
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    flex: 1;
+  }
+  .dir-tile .t-more {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dotted rgba(45, 48, 40, 0.3);
+  }
+  .dir-tile.active .t-more { color: var(--accent); }
+
+  /* In-tile expand — для мобильного */
+  .t-inline {
+    display: none;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--accent);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .t-inline .ti-desc {
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .t-inline ul {
+    list-style: none;
+  }
+  .t-inline ul li {
+    padding: 3px 0 3px 14px;
+    position: relative;
+  }
+  .t-inline ul li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 6px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* Раскрывающийся блок снизу под рядом */
+  .dir-expand {
+    grid-column: 1 / -1;
+    background: #fff;
+    border: 1px solid var(--accent);
+    padding: 22px 24px 24px;
+    display: none;
+  }
+  .dir-expand.visible { display: block; }
+  .dir-expand .e-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .dir-expand .e-num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .dir-expand .e-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+  }
+  .dir-expand .e-desc {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    max-width: 70ch;
+  }
+  .dir-expand .e-close {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 6px 12px;
+    font-weight: 500;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .dir-expand .e-close:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .dir-expand ul {
+    list-style: none;
+    columns: 2;
+    column-gap: 32px;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+  .dir-expand ul li {
+    padding: 4px 0 4px 14px;
+    position: relative;
+    break-inside: avoid;
+  }
+  .dir-expand ul li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 12px;
+    width: 6px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .dir-expand .e-section {
+    margin-bottom: 22px;
+  }
+  .dir-expand .e-section:last-child { margin-bottom: 0; }
+
+  /* ———— WHAT WE GIVE ———— */
+  .we-give {
+    margin-bottom: 32px;
+  }
+  .wg-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 28px;
+  }
+  .wg-item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--ink);
+    padding: 3px 0;
+  }
+  .wg-item strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .wg-mark {
+    color: var(--accent);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .wg-note {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dotted rgba(45, 48, 40, 0.25);
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 72ch;
+  }
+
+  /* ———— FOOTER ———— */
+  .bottom {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 28px;
+    align-items: end;
+    padding-top: 18px;
+    border-top: 2px solid var(--rule);
+  }
+  .gives {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+    max-width: 80ch;
+  }
+  .about-line {
+    font-size: 13.5px;
+    color: var(--ink);
+  }
+  .share-row {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .share-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 500;
+    margin-right: 4px;
+  }
+  .share-btn {
+    font-family: "Golos Text", sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 7px 12px;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    text-decoration: none;
+    border-radius: 0;
+  }
+  .share-btn:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .share-btn.copied {
+    background: var(--accent);
+    color: #fff;
+  }
+  .gives .label,
+  .contact .label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  .contact {
+    text-align: right;
+    line-height: 1.3;
+  }
+  .contact .name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .contact .handle {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12.5px;
+    color: var(--accent);
+    margin-top: 2px;
+    display: block;
+  }
+  .contact .handle:hover { text-decoration: underline; }
+
+  /* ———— RESPONSIVE ———— */
+  @media (max-width: 900px) {
+    .page { padding: 24px 20px 44px; }
+    header.top-hero { margin-bottom: 28px; }
+    .top-meta-row { gap: 10px; }
+    .top-meta-row .meta-item,
+    .meta-brand { font-size: 17px; }
+    .meta-brand { margin-left: 0; width: 100%; margin-top: 4px; }
+    .hero { padding-top: 10px; }
+    .hero-divider { margin: 22px 0 18px; }
+    .manifesto-branches { grid-template-columns: 1fr; padding-left: 0; }
+    .manifesto-note { padding-left: 0; padding-right: 0; }
+    .formats-grid { grid-template-columns: 1fr; }
+    .format { border-right: none; border-bottom: 1px solid var(--rule); }
+    .format:last-child { border-bottom: none; }
+    .bottom { grid-template-columns: 1fr; gap: 18px; }
+    .contact { text-align: left; }
+    .form-section { padding: 22px 20px 26px; }
+    .form-section h2 { font-size: 26px; }
+    .dir-grid { grid-template-columns: repeat(2, 1fr); }
+    .dir-tile { min-height: auto; }
+    .dir-expand { display: none !important; }
+    .dir-tile.active .t-inline { display: block; }
+    /* На мобильном пятая плитка растягивается на всю ширину если одна осталась */
+    .dir-tile:nth-child(5) { grid-column: 1 / -1; }
+    .wg-grid { grid-template-columns: 1fr; gap: 6px; }
+    /* Улучшаем тап по интерактивным элементам */
+    .dir-tile,
+    .dir-expand-all,
+    .share-btn {
+      -webkit-tap-highlight-color: rgba(201, 52, 40, 0.12);
+    }
+  }
+  @media (max-width: 540px) {
+    h1.title {
+      font-size: 40px;
+      line-height: 1.02;
+      text-wrap: balance;
+    }
+    .dir-grid { grid-template-columns: 1fr; }
+    .dir-tile:nth-child(5) { grid-column: auto; }
+    /* Sticky header + progress не должны налезать на контент */
+    .page { padding-bottom: 60px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- STICKY HEADER (appears on scroll) -->
+<div class="sticky-header" id="stickyHeader">
+  <div class="sticky-header-inner">
+    <span class="brand">Фрактальная Одиссея</span>
+    <span class="meta">23 мая · Чистые пруды · 18+</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <header class="top top-hero">
+    <div class="top-meta-row">
+      <span class="meta-item">23 мая</span>
+      <span class="dot">·</span>
+      <span class="meta-item">Чистые пруды</span>
+      <span class="dot">·</span>
+      <span class="meta-item">18+</span>
+      <span class="meta-brand">Matema-фест · 2026</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <canvas class="hero-fractal" id="heroFractal" aria-hidden="true"></canvas>
+
+    <div class="hero-main">
+      <h1 class="title">Фрактальная Одиссея</h1>
+
+      <p class="hero-lede">
+        Научпоп-фестиваль для взрослых о фракталах, самоподобии и симметриях в жизни, науке и искусстве. В программе около 6 выступлений, <strong>15 часовых станций</strong>, музыка и инсталляции.
+      </p>
+
+      <div class="hero-lede-sub">
+        <p>Продолжение Matema-феста 2025. Два фестиваля в одном: дневной и вечерне-ночной, с утра до поздней ночи. На двух соседних площадках Чистых прудов — библиотеке Достоевского и клубе Лахесис, с общим двором. Начинаем в библиотеке, вечером переходим в клуб. Ночная музыкальная часть работает и как отдельное событие.</p>
+        <p>Аудитория — взрослые, которым интересны наука, искусство и интеллектуальный досуг: технари и гуманитарии, преподаватели, студенты, учёные, журналисты.</p>
+      </div>
+
+      <div class="speakers-strip">
+        <span class="speakers-label">Среди спикеров</span>
+        <span class="speakers-list">Михаил Гельфанд<span class="sep">·</span>Александра Скрипченко<span class="sep">·</span>Григорий Тарасевич</span>
+      </div>
+      <div class="partners-strip">
+        <span class="partners-label">Делают вместе</span>
+        <span class="partners-list">Кроссворд Тьюринга<span class="sep">·</span>Георгий Яковлев<span class="sep">·</span>Летняя Школа<span class="sep">·</span>Розетка<span class="sep">·</span>Лахесис</span>
+      </div>
+    </div>
+
+    <hr class="hero-divider" />
+
+    <div class="hero-opencall">
+      <div class="opencall-text">
+        <div class="opencall-label">Open call</div>
+        <p>Open call программы 2026 года завершён. Спасибо всем, кто прислал свои идеи — фестиваль состоится 23 мая</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="manifesto">
+    <div class="section-label">
+      <span class="num mono">§ 01</span>
+      <span class="label">Что мы ищем</span>
+      <span class="rule"></span>
+    </div>
+
+    <div class="manifesto-main">
+      <p>Станции, инсталляции и выступления, построенные вокруг <strong>опыта, который нельзя получить дома</strong>. Что-то, что работает только вживую — рядом с автором или рядом с самим объектом</p>
+    </div>
+
+    <div class="manifesto-branches">
+      <div class="manifesto-branch">
+        <span class="b-mark">→</span>
+        <p><strong>Визуальность.</strong> На стыке науки и искусства — то, что удивляет и запоминается</p>
+      </div>
+      <div class="manifesto-branch">
+        <span class="b-mark">→</span>
+        <p><strong>Интерактивность.</strong> Что-то делаешь — и уносишь с собой: навык, знание, впечатление</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="formats">
+    <div class="section-label">
+      <span class="num mono">§ 02</span>
+      <span class="label">Три формата</span>
+      <span class="rule"></span>
+    </div>
+
+    <div class="formats-grid">
+      <div class="format">
+        <div class="format-head">
+          <h3 class="format-name">Станция</h3>
+          <span class="format-time">· 1 час</span>
+        </div>
+        <p class="format-desc">Вы на точке весь час. К вам подходят — кто на пять минут, кто на полчаса</p>
+      </div>
+      <div class="format">
+        <div class="format-head">
+          <h3 class="format-name">Инсталляция</h3>
+          <span class="format-time">· весь вечер</span>
+        </div>
+        <p class="format-desc">Объект живёт сам — с постером рядом и волонтёром-смотрящим</p>
+      </div>
+      <div class="format">
+        <div class="format-head">
+          <h3 class="format-name">Выступление</h3>
+          <span class="format-time">· 15–45 мин</span>
+        </div>
+        <p class="format-desc">Работает только вживую: рассказ о математическом явлении, живая музыка, танец, короткое театральное действие</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="directions">
+    <div class="section-label">
+      <span class="num mono">§ 03</span>
+      <span class="label">Пять направлений</span>
+      <span class="rule"></span>
+    </div>
+
+    <p class="directions-hint">Собрали идеи по типу взаимодействия. Нажмите на направление, чтобы посмотреть примеры</p>
+
+    <div class="dir-expand-row">
+      <button type="button" class="dir-expand-all" id="dirExpandAll">Развернуть все →</button>
+    </div>
+
+    <div class="dir-grid" id="dirGrid">
+      <div class="dir-tile" data-dir="0">
+        <span class="t-num">01</span>
+        <span class="t-title">Решают</span>
+        <span class="t-desc">Головоломки, задачи, игры</span>
+        <span class="t-more">6 примеров ↓</span>
+        <div class="t-inline" data-inline="0"></div>
+      </div>
+      <div class="dir-tile" data-dir="1">
+        <span class="t-num">02</span>
+        <span class="t-title">Делают руками</span>
+        <span class="t-desc">Мастер-классы</span>
+        <span class="t-more">8 примеров ↓</span>
+        <div class="t-inline" data-inline="1"></div>
+      </div>
+      <div class="dir-tile" data-dir="2">
+        <span class="t-num">03</span>
+        <span class="t-title">Эксперимен&shy;тируют</span>
+        <span class="t-desc">Опыты и наблюдения</span>
+        <span class="t-more">6 примеров ↓</span>
+        <div class="t-inline" data-inline="2"></div>
+      </div>
+      <div class="dir-tile" data-dir="3">
+        <span class="t-num">04</span>
+        <span class="t-title">Создают вместе</span>
+        <span class="t-desc">Общий объект, который собирают вместе</span>
+        <span class="t-more">5 примеров ↓</span>
+        <div class="t-inline" data-inline="3"></div>
+      </div>
+      <div class="dir-tile" data-dir="4">
+        <span class="t-num">05</span>
+        <span class="t-title">Смотрят и слушают</span>
+        <span class="t-desc">Инсталляции</span>
+        <span class="t-more">10 примеров ↓</span>
+        <div class="t-inline" data-inline="4"></div>
+      </div>
+
+      <div class="dir-expand" id="dirExpand"></div>
+    </div>
+
+    <!--
+      Данные примеров для каждого направления лежат ниже в <script>.
+      Чтобы отредактировать список примеров — ищи "dirData" в <script> внизу страницы.
+    -->
+  </section>
+
+  <!-- ———————————————— WHAT WE GIVE ———————————————— -->
+  <section class="we-give">
+    <div class="section-label">
+      <span class="num mono">§ 04</span>
+      <span class="label">Что мы даём</span>
+      <span class="rule"></span>
+    </div>
+
+    <div class="wg-grid">
+      <div class="wg-item"><span class="wg-mark">→</span>Расскажем о вас нашей аудитории и в соцсетях фестиваля</div>
+      <div class="wg-item"><span class="wg-mark">→</span>Поможем додумать идею</div>
+      <div class="wg-item"><span class="wg-mark">→</span>Оплатим материалы</div>
+      <div class="wg-item"><span class="wg-mark">→</span>Найдём волонтёров-помощников</div>
+      <div class="wg-item"><span class="wg-mark">→</span>Подготовим пространство</div>
+      <div class="wg-item"><span class="wg-mark">→</span>Приведём аудиторию — <strong>250+ заинтересованных взрослых</strong></div>
+    </div>
+
+    <p class="wg-note">Фестиваль некоммерческий, организаторы на нём не зарабатывают. Но мы ищем дополнительное финансирование — в прошлом году у нас получилось заплатить небольшие гонорары лекторам, в этом попробуем снова</p>
+  </section>
+
+  <!-- ———————————————— CLOSED ———————————————— -->
+  <section class="form-section" id="apply">
+    <div class="form-intro">
+      <div class="form-kicker">→ open call</div>
+      <h2>Open call завершён</h2>
+      <p>Программа фестиваля 2026 года собрана. Спасибо всем, кто прислал свои идеи. Фестиваль состоится 23 мая на Чистых прудах — следите за анонсами в канале <a href="https://t.me/turings_crossword" target="_blank" rel="noopener">Кроссворд Тьюринга</a>.</p>
+    </div>
+  </section>
+
+  <footer class="bottom">
+    <div class="gives">
+      <div class="about-line">
+        Подробнее о проекте — в канале <a class="link" href="https://t.me/turings_crossword" target="_blank" rel="noopener">Кроссворд Тьюринга</a>
+      </div>
+      <div class="share-row">
+        <span class="share-label">Знаете кого-то, кому подходит?</span>
+        <button type="button" class="share-btn" id="shareCopy" data-action="copy">Скопировать ссылку</button>
+        <a class="share-btn" href="https://t.me/share/url?url=https%3A%2F%2Fmatema-fest.ru%2Fopencall2026%2F&text=Matema-%D1%84%D0%B5%D1%81%D1%82%202026%20%E2%80%94%20open%20call" target="_blank" rel="noopener">В Telegram</a>
+      </div>
+    </div>
+    <div class="contact">
+      <span class="label">По вопросам</span>
+      <span class="name">Ваня Яковлев</span>
+      <a class="handle" href="https://t.me/d1_d57" target="_blank" rel="noopener">@d1_d57</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+(function() {
+  // Кнопка "Скопировать ссылку"
+  const shareCopyBtn = document.getElementById('shareCopy');
+  if (shareCopyBtn) {
+    shareCopyBtn.addEventListener('click', async () => {
+      const url = window.location.href.split('#')[0];
+      try {
+        await navigator.clipboard.writeText(url);
+        const original = shareCopyBtn.textContent;
+        shareCopyBtn.textContent = 'Скопировано ✓';
+        shareCopyBtn.classList.add('copied');
+        setTimeout(() => {
+          shareCopyBtn.textContent = original;
+          shareCopyBtn.classList.remove('copied');
+        }, 2000);
+      } catch (err) {
+        prompt('Скопируйте ссылку:', url);
+      }
+    });
+  }
+
+  // ———— Sticky header при скролле ————
+  const stickyHeader = document.getElementById('stickyHeader');
+  const heroSection = document.querySelector('.hero');
+  if (stickyHeader && heroSection) {
+    let stickyHeaderShown = false;
+    const checkSticky = () => {
+      const heroBottom = heroSection.getBoundingClientRect().bottom;
+      const shouldShow = heroBottom < 0;
+      if (shouldShow !== stickyHeaderShown) {
+        stickyHeader.classList.toggle('visible', shouldShow);
+        stickyHeaderShown = shouldShow;
+      }
+    };
+    let stickyRaf = null;
+    window.addEventListener('scroll', () => {
+      if (stickyRaf) return;
+      stickyRaf = requestAnimationFrame(() => {
+        checkSticky();
+        stickyRaf = null;
+      });
+    }, { passive: true });
+    checkSticky();
+  }
+
+  // ———— Hero fractal: Koch line ————
+  const heroFractal = document.getElementById('heroFractal');
+  if (heroFractal) {
+    const ACCENT = '#c93428';
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+    function hexToRGBA(hex, a) {
+      const r = parseInt(hex.slice(1,3), 16);
+      const g = parseInt(hex.slice(3,5), 16);
+      const b = parseInt(hex.slice(5,7), 16);
+      return `rgba(${r},${g},${b},${a})`;
+    }
+
+    function kochPoints(p1, p2, depth) {
+      if (depth === 0) return [p1];
+      const dx = p2[0] - p1[0];
+      const dy = p2[1] - p1[1];
+      const a = [p1[0] + dx/3, p1[1] + dy/3];
+      const c = [p1[0] + 2*dx/3, p1[1] + 2*dy/3];
+      const angle = Math.atan2(dy, dx) - Math.PI/3;
+      const len = Math.hypot(dx, dy) / 3;
+      const b = [a[0] + len*Math.cos(angle), a[1] + len*Math.sin(angle)];
+      return [
+        ...kochPoints(p1, a, depth-1),
+        ...kochPoints(a, b, depth-1),
+        ...kochPoints(b, c, depth-1),
+        ...kochPoints(c, p2, depth-1)
+      ];
+    }
+
+    function drawKochLine(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * DPR;
+      canvas.height = rect.height * DPR;
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      const w = rect.width, h = rect.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Горизонтальная линия Коха: концы у нижнего края, центр вырастает вверх
+      const baseY = h * 0.85;
+      const startX = w * 0.04;
+      const endX = w * 0.96;
+      const p1 = [startX, baseY];
+      const p2 = [endX, baseY];
+
+      const depth = 4;
+      const pts = kochPoints(p1, p2, depth);
+      pts.push(p2);
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) {
+        ctx.lineTo(pts[i][0], pts[i][1]);
+      }
+      ctx.strokeStyle = hexToRGBA(ACCENT, 0.16);
+      ctx.lineWidth = 1.2;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    }
+
+    drawKochLine(heroFractal);
+    let kochResizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(kochResizeTimer);
+      kochResizeTimer = setTimeout(() => drawKochLine(heroFractal), 150);
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

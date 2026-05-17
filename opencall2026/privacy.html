@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Политика обработки персональных данных — Matema-фест</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #e8ecd4;
+    --paper: #f1f3e2;
+    --ink: #16191a;
+    --ink-soft: #3a3e36;
+    --rule: #2d3028;
+    --accent: #c93428;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Golos Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 36px 56px;
+  }
+
+  header.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 36px;
+  }
+  .fest-brand {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .back-link {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .back-link:hover { color: var(--accent); }
+
+  h1 {
+    font-family: "Golos Text", sans-serif;
+    font-weight: 700;
+    font-size: 36px;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    margin-bottom: 20px;
+  }
+
+  .lede {
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin-bottom: 36px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(45, 48, 40, 0.2);
+  }
+
+  h2 {
+    font-family: "Golos Text", sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    margin-top: 32px;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+  h2 .num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-right: 10px;
+    font-weight: 500;
+  }
+
+  p {
+    font-size: 14.5px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+  p + p { margin-top: 0; }
+
+  ul {
+    margin: 10px 0 14px 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    font-size: 14.5px;
+    line-height: 1.55;
+    padding: 4px 0 4px 16px;
+    position: relative;
+  }
+  li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 13px;
+    width: 6px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  strong {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  a {
+    color: var(--accent);
+    border-bottom: 1px solid rgba(201,52,40,0.4);
+    text-decoration: none;
+    transition: border-color 0.2s ease;
+  }
+  a:hover { border-bottom-color: var(--accent); }
+
+  .meta {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .meta .accent { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .page { padding: 28px 20px 44px; }
+    h1 { font-size: 28px; }
+    header.top { flex-direction: column; align-items: flex-start; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="top">
+    <span class="fest-brand">Фрактальная Одиссея</span>
+    <a href="index.html" class="back-link">← назад к opencall</a>
+  </header>
+
+  <h1>Политика обработки персональных данных</h1>
+
+  <p class="lede">
+    Документ описывает, как мы собираем и обрабатываем ваши данные при подаче заявки на opencall Matema-феста. Коротко и по делу.
+  </p>
+
+  <h2><span class="num">§ 01</span>Кто оператор</h2>
+  <p>
+    Ваши данные обрабатывает <strong>команда Matema-феста</strong>. Организатор фестиваля — Иван Яковлев. Контакт для связи по любым вопросам про ваши данные — <a href="https://t.me/d1_d57" target="_blank" rel="noopener">Telegram @d1_d57</a>.
+  </p>
+
+  <h2><span class="num">§ 02</span>Какие данные мы собираем</h2>
+  <p>В форме opencall мы просим у вас:</p>
+  <ul>
+    <li>Имя</li>
+    <li>Контакт для связи (телеграм, почта или телефон)</li>
+    <li>Информацию о вас и вашем опыте, которую вы сами указываете в свободной форме</li>
+    <li>Описание вашей идеи для участия в фестивале</li>
+    <li>Технические детали: нужное пространство, материалы, удобное время</li>
+  </ul>
+  <p>
+    Мы не собираем паспортные данные, сведения о здоровье, финансовую информацию и другие специальные категории данных.
+  </p>
+
+  <h2><span class="num">§ 03</span>Зачем мы это делаем</h2>
+  <p>Мы обрабатываем ваши данные только для одной цели: <strong>отбора участников программы фестиваля и связи с вами по поводу вашей заявки</strong>. Мы не используем данные для рекламы, не передаём третьим лицам и не продаём.</p>
+
+  <h2><span class="num">§ 04</span>Где хранятся данные</h2>
+  <p>
+    Заявки автоматически попадают в таблицу Google Sheets на серверах Google (США), а уведомления о новых заявках — в закрытый чат команды фестиваля в Telegram. Это означает <strong>трансграничную передачу данных</strong> — мы сообщаем об этом открыто. Доступ к таблице имеют только организаторы фестиваля.
+  </p>
+
+  <h2><span class="num">§ 05</span>Сколько данные хранятся</h2>
+  <p>
+    Мы храним заявки до завершения фестиваля и ещё месяц после, чтобы завершить все коммуникации. После этого данные удаляются, либо — если вы выразили желание продолжить сотрудничество на следующий год — сохраняются с вашего отдельного согласия.
+  </p>
+
+  <h2><span class="num">§ 06</span>Ваши права</h2>
+  <p>Вы в любой момент можете:</p>
+  <ul>
+    <li>Узнать, какие ваши данные у нас есть</li>
+    <li>Исправить или уточнить их</li>
+    <li>Отозвать согласие на обработку и попросить удалить данные</li>
+    <li>Обжаловать действия оператора в Роскомнадзор</li>
+  </ul>
+  <p>
+    Для любого из этих действий достаточно написать <a href="https://t.me/d1_d57" target="_blank" rel="noopener">@d1_d57</a> в Telegram — отвечаем в течение 3 рабочих дней.
+  </p>
+
+  <h2><span class="num">§ 07</span>Ваше согласие</h2>
+  <p>
+    Отмечая галочку «Я согласен на обработку персональных данных» в форме заявки, вы подтверждаете, что прочли этот документ и согласны с тем, как мы обрабатываем ваши данные. Согласие можно отозвать в любой момент (см. § 06).
+  </p>
+
+  <div class="meta">
+    Редакция <span class="accent">от 21 апреля 2026</span> · Matema-фест 2026
+  </div>
+
+</div>
+
+</body>
+</html>
