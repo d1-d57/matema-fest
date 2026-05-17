@@ -2321,9 +2321,9 @@ const VENUE_ORDER = ['main_stage', 'big_bar', 'small_bar', 'courtyard', 'library
 
 // Относительная ширина колонок (главная сцена шире)
 const VENUE_WIDTH_FR = {
-  main_stage: 2.4,
-  big_bar: 2.0,    // потому что 2 lanes
-  small_bar: 1.3,
+  main_stage: 1.9,    // -0.5: текст лекций короткий, лишняя ширина была
+  big_bar: 1.6,       // -0.4: тоже было с запасом
+  small_bar: 2.0,     // +0.7: внутри 2 lanes — каждая теперь читается
   courtyard: 1.3,
   library: 1.5
 };
@@ -2494,14 +2494,24 @@ function recomputeApolloSlots(data) {
   const slots = data.time_slots || {};
   const groups = {};  // ключ "category::subcategory|*" → [event_or_exhibit]
 
-  // События: category/subcategory — с event, fallback на slot
+  // События: category/subcategory — с event, fallback на slot.
+  // Multi-slot карточки (events с одинаковым _groupKey) для Apollo считаются
+  // одной карточкой — на сайте они схлопываются в один круг. Учитываем это
+  // и при подсчёте лимита, и при распределении apollo_slot: на каждый groupKey
+  // берём первое (самое раннее) событие, остальные пропускаем.
   if (Array.isArray(data.events)) {
+    const seenGroupsPerKey = {};
     for (const ev of data.events) {
       const slot = ev.slot ? slots[ev.slot] : null;
       const cat = ev.category || (slot && slot.category);
       const sub = ev.subcategory || (slot && slot.subcategory);
       if (!cat) continue;
       const key = cat + '::' + (sub || '*');
+      if (ev._groupKey) {
+        if (!seenGroupsPerKey[key]) seenGroupsPerKey[key] = new Set();
+        if (seenGroupsPerKey[key].has(ev._groupKey)) continue;
+        seenGroupsPerKey[key].add(ev._groupKey);
+      }
       if (!groups[key]) groups[key] = [];
       groups[key].push(ev);
     }
