@@ -5161,10 +5161,12 @@ function escMultiline(v) {
 }
 
 function switchDetailTab(tab) {
-  if (!_detailContext || _detailContext.type !== 'event') return;
-  // Сохраняем текущие правки в форме события перед переключением (только если уходим с event)
+  if (!_detailContext) return;
+  if (_detailContext.type !== 'event' && _detailContext.type !== 'exhibit') return;
+  // Сохраняем текущие правки в форме (только если уходим с вкладки события)
   if (state.detailTab !== 'app' && tab === 'app') {
-    detailCollectEventFields();
+    if (_detailContext.type === 'event') detailCollectEventFields();
+    else if (_detailContext.type === 'exhibit') detailCollectExhibitFields();
   }
   state.detailTab = tab;
   showDetail(_detailContext.type, _detailContext.id);
@@ -5194,6 +5196,27 @@ function detailCollectEventFields() {
   if (get('detail-ev-team-notes') !== null) ev.team_notes = get('detail-ev-team-notes') || null;
 }
 
+function detailCollectExhibitFields() {
+  // Симметрично detailCollectEventFields: пишет правки формы экспоната во вью-стейт,
+  // чтобы при переключении на вкладку «Заявка» они не терялись.
+  if (!_detailContext || _detailContext.type !== 'exhibit') return;
+  const ex = (state.data.exhibits || []).find(x => x.id === _detailContext.id);
+  if (!ex) return;
+  const get = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.value : null;
+  };
+  if (get('detail-ex-title') !== null) ex.title = get('detail-ex-title');
+  if (get('detail-ex-speaker') !== null) ex.speaker = get('detail-ex-speaker') || null;
+  if (get('detail-ex-description') !== null) ex.description = get('detail-ex-description') || null;
+  if (get('detail-ex-status') !== null) ex.status = get('detail-ex-status');
+  if (get('detail-ex-kind') !== null) ex.kind = get('detail-ex-kind');
+  const sc = get('detail-ex-subcategory');
+  if (sc !== null) {
+    if (sc) ex.subcategory = sc; else delete ex.subcategory;
+  }
+}
+
 function renderExhibitDetail(id) {
   const ex = (state.data.exhibits || []).find(x => x.id === id);
   if (!ex) return '<div class="detail-body">не найдено</div>';
@@ -5206,13 +5229,21 @@ function renderExhibitDetail(id) {
     </div>
   `).join('');
 
-  return `
-    <div class="detail-header">
-      <button class="detail-back" onclick="hideDetail()">‹ Назад</button>
-      <span class="detail-meta-pill">Экспонат · ${esc(ex.id)}</span>
-      ${ex._source_app ? `<span class="detail-meta-pill">из ${esc(ex._source_app)}</span>` : ''}
+  // Универсальная логика: если у экспоната есть _source_app — показываем таб «Заявка».
+  // Параллельно работает с такой же логикой для events. См. switchDetailTab.
+  const srcAppId = ex._source_app || ex._source;
+  const srcApp = srcAppId ? state.applications.find(a => a.id === srcAppId) : null;
+  const showAppTab = !!srcApp;
+  const activeTab = state.detailTab === 'app' && showAppTab ? 'app' : 'event';
+
+  const tabsHtml = showAppTab ? `
+    <div class="detail-tabs">
+      <button class="detail-tab ${activeTab==='event'?'active':''}" onclick="switchDetailTab('event')">Событие</button>
+      <button class="detail-tab ${activeTab==='app'?'active':''}" onclick="switchDetailTab('app')">Заявка · ${esc(srcAppId)}</button>
     </div>
-    <div class="detail-body">
+  ` : '';
+
+  const exhibitBody = `
       <div class="detail-eyebrow">${esc(kindLabels[ex.kind] || ex.kind)}</div>
       <h1 class="detail-name">${esc(ex.speaker || '—')}</h1>
       <h2 class="detail-title">${esc(ex.title || '')}</h2>
@@ -5256,6 +5287,18 @@ function renderExhibitDetail(id) {
           <button class="detail-add-link" onclick="detailAddLink()">+ ссылка</button>
         </div>
       </div>
+  `;
+
+  const appBody = srcApp ? renderAppFieldsReadOnly(srcApp) : '';
+
+  return `
+    <div class="detail-header">
+      <button class="detail-back" onclick="hideDetail()">‹ Назад</button>
+      <span class="detail-meta-pill">Экспонат · ${esc(ex.id)}</span>
+    </div>
+    ${tabsHtml}
+    <div class="detail-body">
+      ${activeTab === 'event' ? exhibitBody : appBody}
     </div>
     <div class="detail-actions">
       <button onclick="detailDeleteExhibit()" class="danger">Удалить</button>
