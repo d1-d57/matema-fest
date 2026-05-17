@@ -2875,6 +2875,12 @@ function updateSrcBadge() {
 // Никакой другой код программера не меняется — он работает
 // с legacy-представлением в памяти и не знает про cards.
 
+// Подтипы станций: на сайте каждый — отдельный круг Аполлония, в legacy-формате
+// — отдельная категория event.category. В v31-формате они живут как
+// card.subtype при card.type='station'. Используется и при разворачивании,
+// и при сворачивании.
+const STATION_SUBTYPES = new Set(['workshop', 'experiment', 'interactive']);
+
 function v31_decompressCardsToLegacy(data) {
   if (!Array.isArray(data.cards)) return false;  // уже legacy
 
@@ -2978,12 +2984,11 @@ function v31_decompressCardsToLegacy(data) {
   //    (например Гусев: лекция popsci лежит на slot-gusev-talk и попутно на двух
   //    станционных слотах). Для таких слотов оставляем дефолт workshop —
   //    слот визуально остаётся станционным в расписании.
-  const STATION_NATIVE = new Set(['workshop', 'experiment', 'interactive']);
   for (const sid of Object.keys(data.time_slots || {})) {
     const slot = data.time_slots[sid];
     if (slot.category === 'station') {
       const cardsOnSlot = events.filter(e => e.slot === sid);
-      const nativeCards = cardsOnSlot.filter(e => STATION_NATIVE.has(e.category));
+      const nativeCards = cardsOnSlot.filter(e => STATION_SUBTYPES.has(e.category));
       if (nativeCards.length === 0) {
         slot.category = 'workshop';  // дефолт для пустого или «гостевого» station-слота
       } else if (nativeCards.length === 1) {
@@ -2993,8 +2998,6 @@ function v31_decompressCardsToLegacy(data) {
         const hasExp = nativeCards.some(e => e.category === 'experiment');
         slot.category = hasExp ? 'experiment' : nativeCards[0].category;
       }
-      // Помечаем для обратного компресса
-      slot._v31_was_station = true;
     }
   }
 
@@ -3002,7 +3005,6 @@ function v31_decompressCardsToLegacy(data) {
   data.exhibits = exhibits;
   data.applications = applications;
   data._app_statuses = appStatuses;
-  data._v31_was_cards = true;  // флаг для buildExportText: собирать обратно в cards
   // data.cards оставляем для отладки (не используется legacy кодом)
   return true;
 }
@@ -3017,7 +3019,6 @@ function _v31_stripUndef(o) {
 // возвращает obj в v31-формате (cards вместо events/exhibits/applications).
 function v31_compressLegacyToCards(obj) {
   const cards = [];
-  const STATION_LEGACY = new Set(['workshop', 'experiment', 'interactive']);
 
   // Индекс применений
   const apps = obj.applications || [];
@@ -3052,7 +3053,7 @@ function v31_compressLegacyToCards(obj) {
     const evSubcategory = ev.subcategory || (slot && slot.subcategory);
     const evApolloSlot = ev.apollo_slot || (slot && slot.apollo_slot);
     let type, subtype;
-    if (STATION_LEGACY.has(evCategory)) {
+    if (STATION_SUBTYPES.has(evCategory)) {
       type = 'station';
       subtype = evCategory;  // workshop|experiment как subtype
     } else {
@@ -3176,14 +3177,14 @@ function v31_compressLegacyToCards(obj) {
     cards.push(card);
   }
 
-  // 4) Слоты: возвращаем station для workshop/experiment, удаляем _v31_was_station
+  // 4) Слоты: возвращаем station для workshop/experiment/interactive в slot.category.
+  // После decompress slot.category мог стать одним из трёх — нужно свернуть обратно.
   const slots = {};
   for (const sid of Object.keys(obj.time_slots || {})) {
     const s = {...obj.time_slots[sid]};
-    if (s._v31_was_station || STATION_LEGACY.has(s.category)) {
+    if (STATION_SUBTYPES.has(s.category)) {
       s.category = 'station';
     }
-    delete s._v31_was_station;
     delete s.subcategory;
     delete s.apollo_slot;
     slots[sid] = s;
@@ -3292,39 +3293,15 @@ async function loadFestivalData() {
 // ev._enriched_fields. buildExportText их снимает перед сериализацией —
 // round-trip чистый: что прочитали, то и записали.
 
-// Архитектурная миграция legacy v30 → v31-станционная архитектура.
-// В v30 у слота с категорией station стоял slot.category = 'workshop' или
-// 'experiment' (подкатегория жила на слоте). В v31 на слоте всегда
-// slot.category = 'station', а workshop/experiment — это card.subtype.
-// Эта функция приводит загруженные данные к v31-архитектуре в памяти:
-//   - Для events на слотах с category workshop/experiment: переносим
-//     workshop/experiment в ev.category напрямую (не через _enriched_fields,
-//     чтобы значение пережило buildExportText).
-//   - Слот получает category = 'station'.
-//   - В data.categories гарантируется запись 'station' (для UI цвета ячеек).
-// Идемпотентна: при повторных вызовах ничего не делает.
-function _migrateLegacyStationCategory(data) {
-  if (!data || !data.time_slots) return;
-  for (const sid of Object.keys(data.time_slots)) {
-    const slot = data.time_slots[sid];
-    // Если декомпрессия v31 уже обработала этот слот (поставила _v31_was_station),
-    // category уже установлена правильно (workshop/experiment/interactive с учётом
-    // STATION_NATIVE-фильтра). Эту миграцию пропускаем.
-    if (slot._v31_was_station) continue;
-    if (slot.category === 'workshop' || slot.category === 'experiment') {
-      const subtypeFromSlot = slot.category;
-      if (Array.isArray(data.events)) {
-        for (const ev of data.events) {
-          if (ev.slot !== sid) continue;
-          // Если у события явно НЕ задана категория — наследует со слота как
-          // subtype (workshop|experiment). Если задана (например ev.category =
-          // 'experiment' на workshop-слоте) — не перетираем.
-          if (!ev.category) ev.category = subtypeFromSlot;
-        }
-      }
-      slot.category = 'station';
-    }
-  }
+// Архитектурная миграция legacy v30 → v31 раньше жила здесь. Сейчас неактуальна:
+// все v31-данные приходят с slot.category = 'station', а декомпрессия v31 уже
+// расставляет workshop/experiment/interactive по слотам с учётом карточек.
+// Функция удалена. Гарантия data.categories.station переехала в enrichEventsFromSlots.
+
+function enrichEventsFromSlots(data) {
+  if (!data || !data.events || !data.time_slots) return;
+  // Гарантируем что синтетическая категория 'station' есть в справочнике —
+  // нужна для UI цвета ячеек в режимах где код смотрит data.categories.
   if (!data.categories) data.categories = {};
   if (!data.categories.station) {
     data.categories.station = {
@@ -3333,14 +3310,6 @@ function _migrateLegacyStationCategory(data) {
       comment: 'мастерские и эксперименты — два круга на Аполлонии в типе station',
     };
   }
-}
-
-function enrichEventsFromSlots(data) {
-  if (!data || !data.events || !data.time_slots) return;
-  // Сначала — миграция legacy slot.category=workshop/experiment → station.
-  // Делаем до общего enrichment, чтобы category не была захвачена в
-  // _enriched_fields (иначе buildExportText её снимет).
-  _migrateLegacyStationCategory(data);
   const FIELDS = ['category', 'apollo_slot', 'subcategory', 'venue'];
   for (const ev of data.events) {
     if (!ev.slot) continue;
