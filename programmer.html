@@ -4611,7 +4611,18 @@ function renderConflicts() {
     k += '::' + item.apollo_slot;
     (apolloByKey[k] = apolloByKey[k] || []).push(item.id);
   };
-  (state.data.events || []).forEach(e => collectApollo(e, 'event'));
+  // Multi-slot карточки порождают несколько events с одинаковым _groupKey,
+  // и у них одинаковый apollo_slot — это норма (на сайте они схлопываются в
+  // один круг). Чтобы не ругаться на «дубль», берём только первый event на
+  // groupKey, остальные пропускаем.
+  const _apolloSeenGroups = new Set();
+  (state.data.events || []).forEach(e => {
+    if (e._groupKey) {
+      if (_apolloSeenGroups.has(e._groupKey)) return;
+      _apolloSeenGroups.add(e._groupKey);
+    }
+    collectApollo(e, 'event');
+  });
   (state.data.exhibits || []).forEach(x => collectApollo(x, 'exhibit'));
   Object.entries(apolloByKey).forEach(([k, list]) => {
     if (list.length > 1) issues.push(`Apollo дубль ${k}: ${list.join(', ')}`);
@@ -4642,8 +4653,16 @@ function renderConflicts() {
   // Дубли event/exhibit по title (одинаковые названия — почти всегда баг).
   // Это ловит ситуации когда «Переместить →» создаёт второй экземпляр вместо
   // переноса (например когда исходная запись имеет другой _source_app, чем заявка).
+  // Multi-slot карточка после декомпрессии превращается в N events с
+  // одинаковым title и id=cardId#N. Это не дубль, а инфраструктура — берём
+  // только первый event на groupKey.
   const titleMap = {};
+  const _titleSeenGroups = new Set();
   state.data.events.forEach(e => {
+    if (e._groupKey) {
+      if (_titleSeenGroups.has(e._groupKey)) return;
+      _titleSeenGroups.add(e._groupKey);
+    }
     const k = (e.title || '').trim().toLowerCase();
     if (k && k !== '(без названия)' && k !== 'tba') (titleMap[k] = titleMap[k] || []).push(e.id);
   });
