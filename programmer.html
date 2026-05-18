@@ -1735,278 +1735,6 @@ body.viewer-mode .comm-badges { display: none !important; }
   </main>
 </div>
 
-<!-- ===== CAND DETAIL MODAL ===== -->
-<div class="modal-bg" id="cand-modal">
-  <div class="modal">
-    <h2 id="cand-modal-title"></h2>
-    <div class="app-detail" id="cand-modal-detail"></div>
-    <div id="cand-suggest" style="background:#fff8d8;border:1px solid #e0c890;border-radius:4px;padding:10px;margin-bottom:12px;font-size:13px;display:none">
-      <div style="margin-bottom:6px;font-weight:600;color:#864">Предлагаемый тип:</div>
-      <div id="cand-suggest-text" style="margin-bottom:8px"></div>
-      <label style="font-size:12px;color:#666">Тип:</label>
-      <select id="cand-target-category" style="width:100%;padding:5px;font-size:13px;border:1px solid #ccc;border-radius:3px">
-        <option value="popsci">Лекция / выступление (popsci)</option>
-        <option value="experiment">Опыт / эксперимент (experiment)</option>
-        <option value="workshop">Мастерская (workshop)</option>
-        <option value="social">Перформанс / коллективное (social)</option>
-        <option value="art">Галерея (art)</option>
-        <option value="installation">Инсталляция (installation)</option>
-        <option value="media">Медиа-арт (media)</option>
-      </select>
-    </div>
-    <div class="modal-actions">
-      <button onclick="closeCandModal()">Закрыть</button>
-      <button onclick="markCand('rejected')" class="danger">Отказ</button>
-      <button onclick="markCand('considering')">Думаем</button>
-      <button onclick="markCand('duplicate')" title="Скрыть как дубликат">Дубль</button>
-      <button id="btn-convert" onclick="convertCandToTarget()" class="primary">Создать →</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== EVENT EDIT MODAL ===== -->
-<div class="modal-bg" id="event-modal">
-  <div class="modal">
-    <h2 id="event-modal-title">Событие</h2>
-    <input type="hidden" id="ev-id-old">
-    <label>id (стабильный, не меняй после публикации)</label>
-    <input id="ev-id">
-    <label>Название</label>
-    <input id="ev-title">
-    <label>Подзаголовок</label>
-    <input id="ev-subtitle">
-    <label>Спикер / автор</label>
-    <input id="ev-speaker">
-    <label>Роль спикера</label>
-    <input id="ev-speaker-role">
-    <label>Описание</label>
-    <textarea id="ev-description"></textarea>
-    <label>Ссылки (соцсети, хоумпейдж, медиа)</label>
-    <div class="links-editor" id="ev-links-editor"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div>
-        <label>Статус</label>
-        <select id="ev-status">
-          <option value="accepted">принято — в программе</option>
-          <option value="considering">думаем</option>
-          <option value="rejected">отказ</option>
-        </select>
-      </div>
-      <div>
-        <label>Длительность override (мин) <span style="color:#888;font-weight:normal">— если короче слота</span></label>
-        <input type="number" id="ev-duration-override" min="1" step="5">
-      </div>
-    </div>
-    <h3 style="font-size:14px;margin-top:14px">Слот</h3>
-    <select id="ev-slot" onchange="updateSlotInfoBlock()"></select>
-    <div id="ev-slot-info" style="font-size:12px;color:#555;padding:8px 0;background:#faf8ed;padding:10px;border-left:2px solid #ddd;margin-top:6px;display:none"></div>
-    <button onclick="editCurrentSlot()" id="ev-edit-slot-btn" style="margin-top:6px;display:none">→ Редактировать слот</button>
-    <p style="font-size:11px;color:#888;margin-top:6px">Категория, подкатегория, площадка и Apollo-slot живут на слоте. Чтобы их изменить — открой слот.</p>
-    <div id="ev-source-app-block" style="font-size:11px;color:#888;margin-top:8px"></div>
-    <div class="modal-actions">
-      <button onclick="closeEventModal()">Отмена</button>
-      <button class="danger" onclick="deleteEvent()">Удалить</button>
-      <button class="primary" onclick="saveEvent()">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== SLOT EDIT MODAL (детальный редактор одного слота) ===== -->
-<div class="modal-bg" id="slot-edit-modal">
-  <div class="modal" style="max-width:720px">
-    <h2 id="slot-edit-modal-title">Слот</h2>
-    <input type="hidden" id="se-id-old">
-    <label>id (стабильный, не меняй после публикации)</label>
-    <input id="se-id">
-    <label>Название (tool_label) — что показывается в шапке блока</label>
-    <input id="se-tool-label" placeholder="Лекция 1, Станции 1, Короткометражки 1, …">
-    <label>Подпись для зума на сайте (label_for_zoom) — если не задана, берётся из tool_label</label>
-    <input id="se-zoom-label" placeholder="Например: Большое выступление">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div>
-        <label>Начало</label>
-        <input type="time" id="se-start">
-      </div>
-      <div>
-        <label>Конец</label>
-        <input type="time" id="se-end">
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr;gap:8px">
-      <div>
-        <label>Площадка (venue)</label>
-        <select id="se-venue"></select>
-      </div>
-    </div>
-    <h3 style="font-size:14px;margin-top:14px">Категория (круг Аполлония)</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div>
-        <label>Категория</label>
-        <select id="se-category" onchange="updateSlotSubcategoryOptions()">
-          <option value="">—</option>
-          <option value="popsci">научпоп</option>
-          <option value="music">музыка</option>
-          <option value="art">искусство</option>
-          <option value="workshop">мастерские</option>
-          <option value="experiment">эксперименты</option>
-          <option value="cinema">кино</option>
-          <option value="social">общение</option>
-        </select>
-      </div>
-      <div>
-        <label>Подкатегория</label>
-        <select id="se-subcategory"><option value="">—</option></select>
-      </div>
-    </div>
-    <div style="margin-top:14px;padding:10px;background:#faf8ed;border-left:2px solid #c4a847;font-size:12px">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-        <input type="checkbox" id="se-exclusive" style="width:auto;margin:0">
-        <strong>Слот занимает всю площадку</strong>
-      </label>
-      <div style="color:#888;margin-top:4px;line-height:1.4">
-        Если включено, слот в визуализации программера занимает всю ширину venue
-        без разделения на подколонки — параллельные станции в этом venue в это
-        время невозможны. Используется для ситуаций где сама природа слота
-        блокирует другие активности (нетворкинг занимает весь Большой бар,
-        громкая музыка делает невозможными станции рядом).
-      </div>
-    </div>
-    <h3 style="font-size:14px;margin-top:14px">Покрытие папоротником</h3>
-    <p style="font-size:11px;color:#888;margin:4px 0">Лист — это «ячейка» во фрактальной визуализации, в которой слот окажется на сайте. Если ни один лист не покрывает слот по времени — он не отобразится во фрактале (только в текстовом расписании).</p>
-    <div id="se-fern-coverage" style="font-size:13px;background:#faf8ed;padding:10px;border-left:2px solid #ddd"></div>
-    <div class="modal-actions">
-      <button onclick="closeSlotEditModal()">Отмена</button>
-      <button class="danger" onclick="deleteSlotFromEdit()">Удалить</button>
-      <button class="primary" onclick="saveSlotEdit()">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== LEAF EDIT MODAL (минимальный редактор листа фрактала) ===== -->
-<div class="modal-bg" id="leaf-edit-modal">
-  <div class="modal" style="max-width:480px">
-    <h2 id="leaf-edit-modal-title">Лист</h2>
-    <p style="font-size:11px;color:#888;margin:4px 0 12px">Правится только время начала и конца. id, side и address привязаны к фрактальному SVG в index.html — не трогаем.</p>
-    <input type="hidden" id="le-id">
-    <label>id (read-only)</label>
-    <input id="le-id-display" disabled style="color:#888;font-family:var(--font-mono);font-size:12px">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-      <div>
-        <label>Сторона (read-only)</label>
-        <input id="le-side-display" disabled style="color:#888">
-      </div>
-      <div>
-        <label>address (read-only)</label>
-        <input id="le-address-display" disabled style="color:#888;font-family:var(--font-mono);font-size:12px">
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-      <div>
-        <label>Начало</label>
-        <input type="time" id="le-start">
-      </div>
-      <div>
-        <label>Конец</label>
-        <input type="time" id="le-end">
-      </div>
-    </div>
-    <div id="le-affected-slots" style="font-size:12px;color:#666;background:#faf8ed;padding:10px;border-left:2px solid #ddd;margin-top:14px"></div>
-    <div class="modal-actions">
-      <button onclick="closeLeafEditModal()">Отмена</button>
-      <button class="primary" onclick="saveLeafEdit()">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== PRINT VIEW (расписание для печати/Telegram) ===== -->
-<div class="modal-bg print-modal-bg" id="print-modal">
-  <div class="print-modal">
-    <div class="print-toolbar">
-      <div class="print-title-mini">Расписание для печати</div>
-      <div class="print-toolbar-hint">A4 portrait · день и ночь на отдельных страницах · экспонаты в подвале</div>
-      <button class="print-action" onclick="window.print()">🖨 Печать / Сохранить PDF</button>
-      <button class="structure-close" onclick="closePrintView()" title="Закрыть (Esc)">✕</button>
-    </div>
-    <div class="print-canvas" id="print-canvas"></div>
-  </div>
-</div>
-
-<!-- ===== STRUCTURE VIEW (Слоты и папоротник — единая большая панель) ====================================================
-     Три колонки: список слотов слева | карта папоротника в центре | детали справа.
-     Открывается из меню «Слоты и папоротник…». Esc закрывает. -->
-<div class="modal-bg structure-modal-bg" id="structure-modal">
-  <div class="structure-modal">
-    <div class="structure-topbar">
-      <div class="structure-title">Слоты и папоротник</div>
-      <div class="structure-hint">кликни лист — увидишь его параметры справа · перетащи слот между листьями чтобы зафиксировать привязку через slot.leaf · Esc закрывает</div>
-      <button class="structure-add-btn" onclick="addNewSlotFromStructure()" title="Создать новый слот">+ слот</button>
-      <button class="structure-close" onclick="closeStructureView()" title="Закрыть (Esc)">✕</button>
-    </div>
-    <div class="structure-body">
-      <aside class="structure-left" id="structure-left"></aside>
-      <main class="structure-center">
-        <svg id="structure-fern-svg" viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
-        <div class="structure-legend" id="structure-legend"></div>
-      </main>
-      <aside class="structure-right" id="structure-right"></aside>
-    </div>
-  </div>
-</div>
-
-<!-- ===== EXHIBIT MODAL (отдельная схема — экспонаты не привязаны к слотам) ===== -->
-<div class="modal-bg" id="exhibit-modal">
-  <div class="modal">
-    <h2 id="exhibit-modal-title">Экспонат</h2>
-    <input type="hidden" id="ex-id-old">
-    <label>id</label>
-    <input id="ex-id">
-    <label>Тип</label>
-    <select id="ex-kind">
-      <option value="art">картина / объект (art)</option>
-      <option value="installation">инсталляция (installation)</option>
-      <option value="media">медиа-арт (media)</option>
-    </select>
-    <label>Название</label>
-    <input id="ex-title">
-    <label>Автор / спикер</label>
-    <input id="ex-speaker">
-    <label>Описание</label>
-    <textarea id="ex-description"></textarea>
-    <label>Ссылки</label>
-    <div class="links-editor" id="ex-links-editor"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div>
-        <label>Статус</label>
-        <select id="ex-status">
-          <option value="confirmed">подтверждено</option>
-          <option value="tentative">пока не точно</option>
-          <option value="placeholder">плейсхолдер</option>
-        </select>
-      </div>
-      <div>
-        <label>Подкатегория</label>
-        <select id="ex-subcategory"><option value="">—</option></select>
-      </div>
-      <div>
-        <label>Apollo slot</label>
-        <select id="ex-apollo">
-          <option value="">—</option>
-          <option value="big-1">big-1</option><option value="big-2">big-2</option><option value="big-3">big-3</option>
-          <option value="mid-1">mid-1</option><option value="mid-2">mid-2</option><option value="mid-3">mid-3</option>
-          <option value="center">center</option>
-          <option value="ear-1">ear-1</option><option value="ear-2">ear-2</option><option value="ear-3">ear-3</option>
-        </select>
-      </div>
-    </div>
-    <div id="ex-source-app-block" style="font-size:11px;color:#888;margin-top:8px"></div>
-    <div class="modal-actions">
-      <button onclick="closeExhibitModal()">Отмена</button>
-      <button class="danger" onclick="deleteExhibit()">Удалить</button>
-      <button class="primary" onclick="saveExhibit()">Сохранить</button>
-    </div>
-  </div>
-</div>
-
 <!-- ===== SLOT EDITOR MODAL — table-список для быстрого обзора ===== -->
 <div class="modal-bg" id="slot-modal">
   <div class="modal" style="max-width:780px">
@@ -2185,7 +1913,7 @@ function onSlotBgClick(e, sid) {
   // Если клик пришёл по дочернему event-pill — это его клик, не slot-bg
   if (e.target.closest('.event-pill')) return;
   e.stopPropagation();
-  if (typeof openSlotEditModal === 'function') openSlotEditModal(sid);
+  showDetail('slot', sid);
 }
 
 let _idleTimer;
@@ -4341,7 +4069,7 @@ function renderTimeline() {
     label.addEventListener('click', e => {
       e.stopPropagation();
       const sid = label.dataset.slot;
-      if (sid) openSlotEditModal(sid);
+      if (sid) showDetail('slot', sid);
     });
   });
 }
@@ -4422,7 +4150,7 @@ function placeBandLabels(ppm) {
       : `Открыть редактор слота ${sid}`;
     banner.addEventListener('click', e => {
       e.stopPropagation();
-      openSlotEditModal(sid);
+      showDetail('slot', sid);
     });
     tl.appendChild(banner);
   });
@@ -4858,6 +4586,7 @@ function renderDetailContent(type, id) {
   if (type === 'app' || type === 'idea') return renderAppDetail(id);
   if (type === 'event') return renderEventDetail(id);
   if (type === 'exhibit') return renderExhibitDetail(id);
+  if (type === 'slot') return renderSlotDetail(id);
   return '<div class="detail-body">не найдено</div>';
 }
 
@@ -5372,6 +5101,194 @@ function renderExhibitDetail(id) {
       <button onclick="detailSaveExhibit()" class="primary">Сохранить</button>
     </div>
   `;
+}
+
+// ============================================================
+// SLOT DETAIL — редактор слота в боковой панели (бывшая модалка)
+// ============================================================
+function renderSlotDetail(id) {
+  const s = state.data.time_slots[id];
+  if (!s) return '<div class="detail-body">слот не найден</div>';
+
+  // Список категорий для select — берём из data.categories + синтетические
+  const allCats = new Set([
+    ...Object.keys(state.data.categories || {}),
+    ...Object.keys(SYNTHETIC_CATEGORY_OVERLAYS),
+  ]);
+  // Убираем 'station' — это просто обёртка над workshop/experiment в legacy-формате;
+  // в данных слотов используются конкретные подкатегории
+  allCats.delete('station');
+  const catOptions = ['<option value="">— нет —</option>',
+    ...[...allCats].sort().map(c => {
+      const meta = _getCategoryMeta(c);
+      const label = meta?.display || c;
+      return `<option value="${esc(c)}" ${c === s.category ? 'selected' : ''}>${esc(label)} (${esc(c)})</option>`;
+    })
+  ].join('');
+
+  // Список venue из data.venues
+  const venues = state.data.venues || {};
+  const venueOptions = ['<option value="">— нет —</option>',
+    ...Object.entries(venues).map(([vid, v]) =>
+      `<option value="${esc(vid)}" ${vid === s.venue ? 'selected' : ''}>${esc(v.label || vid)}</option>`)
+  ].join('');
+
+  // Subcategory зависит от category — рендерим из data.subcategories[category]
+  const subcatList = (state.data.subcategories || {})[s.category] || [];
+  const subcatOptions = ['<option value="">— нет —</option>',
+    ...subcatList.map(sc =>
+      `<option value="${esc(sc.id || sc)}" ${(sc.id || sc) === s.subcategory ? 'selected' : ''}>${esc(sc.label || sc.id || sc)}</option>`)
+  ].join('');
+
+  return `
+    <div class="detail-header">
+      <button class="detail-back" onclick="hideDetail()">‹ Назад</button>
+      <span class="detail-meta-pill">Слот · ${esc(s.tool_label || s.label_for_zoom || id)}</span>
+    </div>
+    <div class="detail-body">
+      <input type="hidden" id="detail-slot-id-old" value="${esc(id)}">
+      <div class="detail-form-grid">
+        <div>
+          <label for="detail-slot-id">id слота</label>
+          <input type="text" id="detail-slot-id" value="${esc(id)}">
+        </div>
+        <div>
+          <label for="detail-slot-tool-label">метка (в программере)</label>
+          <input type="text" id="detail-slot-tool-label" value="${esc(s.tool_label || '')}">
+        </div>
+        <div>
+          <label for="detail-slot-zoom-label">метка (на сайте)</label>
+          <input type="text" id="detail-slot-zoom-label" value="${esc(s.label_for_zoom || '')}">
+        </div>
+        <div>
+          <label for="detail-slot-start">начало</label>
+          <input type="time" id="detail-slot-start" value="${esc(s.start || '')}">
+        </div>
+        <div>
+          <label for="detail-slot-end">конец</label>
+          <input type="time" id="detail-slot-end" value="${esc(s.end || '')}">
+        </div>
+        <div>
+          <label for="detail-slot-venue">место</label>
+          <select id="detail-slot-venue">${venueOptions}</select>
+        </div>
+        <div>
+          <label for="detail-slot-category">категория</label>
+          <select id="detail-slot-category" onchange="detailSlotUpdateSubcat()">${catOptions}</select>
+        </div>
+        <div>
+          <label for="detail-slot-subcategory">подкатегория</label>
+          <select id="detail-slot-subcategory">${subcatOptions}</select>
+        </div>
+        <div class="full">
+          <label><input type="checkbox" id="detail-slot-exclusive" ${s.exclusive ? 'checked' : ''}> исключительный слот (не может разделяться)</label>
+        </div>
+      </div>
+      <div class="detail-section" id="detail-slot-fern-coverage"></div>
+    </div>
+    <div class="detail-actions">
+      <button onclick="detailDeleteSlot()" class="danger">Удалить</button>
+      <button onclick="detailSaveSlot()" class="primary">Сохранить</button>
+    </div>
+  `;
+}
+
+// Обновить подкатегории при смене категории
+function detailSlotUpdateSubcat() {
+  const cat = document.getElementById('detail-slot-category').value;
+  const sel = document.getElementById('detail-slot-subcategory');
+  if (!sel) return;
+  const subcatList = (state.data.subcategories || {})[cat] || [];
+  sel.innerHTML = ['<option value="">— нет —</option>',
+    ...subcatList.map(sc => {
+      const id = sc.id || sc;
+      const label = sc.label || sc.id || sc;
+      return `<option value="${esc(id)}">${esc(label)}</option>`;
+    })
+  ].join('');
+}
+
+function detailSaveSlot() {
+  if (isReadOnly()) return;
+  pushHistory();
+  const oldId = document.getElementById('detail-slot-id-old').value;
+  const newId = document.getElementById('detail-slot-id').value.trim();
+  const oldSlot = state.data.time_slots[oldId];
+  if (!oldSlot) return;
+  if (!newId) { alert('id обязателен'); return; }
+
+  const newStart = document.getElementById('detail-slot-start').value;
+  const newEnd = document.getElementById('detail-slot-end').value;
+  const newVenue = document.getElementById('detail-slot-venue').value || null;
+  const newCategory = document.getElementById('detail-slot-category').value || null;
+  const newSubcategory = document.getElementById('detail-slot-subcategory').value || null;
+  const newToolLabel = document.getElementById('detail-slot-tool-label').value || null;
+  const newZoomLabel = document.getElementById('detail-slot-zoom-label').value || null;
+  const newExclusive = document.getElementById('detail-slot-exclusive').checked;
+
+  // Валидация покрытия фракталом (как в старой saveSlotEdit)
+  if (newStart) {
+    const fakeSlot = { start: newStart, end: newEnd, type: oldSlot.type || null, venue: newVenue, leaf: oldSlot.leaf || null };
+    const leaf = findLeafForSlotInProgrammer(fakeSlot);
+    if (!leaf && !oldSlot.leaf) {
+      if (!confirm(`Слот не попадает ни в один лист фрактала по start=${newStart}. На сайте отобразится только в текстовом расписании. Сохранить всё равно?`)) return;
+    }
+  }
+
+  // Переименование id — нужно обновить все ссылки в cards.slot/cards.slots
+  if (newId !== oldId) {
+    if (state.data.time_slots[newId]) { alert('id уже занят'); return; }
+    state.data.time_slots[newId] = state.data.time_slots[oldId];
+    delete state.data.time_slots[oldId];
+    // Обновляем ссылки в cards
+    for (const card of state.data.cards || []) {
+      if (card.slot === oldId) card.slot = newId;
+      if (Array.isArray(card.slots)) {
+        card.slots = card.slots.map(sid => sid === oldId ? newId : sid);
+      }
+    }
+  }
+
+  const slot = state.data.time_slots[newId];
+  slot.start = newStart || null;
+  slot.end = newEnd || null;
+  slot.venue = newVenue;
+  slot.category = newCategory;
+  slot.subcategory = newSubcategory;
+  slot.tool_label = newToolLabel;
+  slot.label_for_zoom = newZoomLabel;
+  slot.exclusive = newExclusive;
+
+  markDirty(); rerenderAll(); persistState();
+  hideDetail();
+}
+
+function detailDeleteSlot() {
+  if (isReadOnly()) return;
+  const id = document.getElementById('detail-slot-id-old').value;
+  const slot = state.data.time_slots[id];
+  if (!slot) return;
+  // Проверяем привязанные cards
+  const attached = (state.data.cards || []).filter(c =>
+    c.slot === id || (Array.isArray(c.slots) && c.slots.includes(id))
+  );
+  if (attached.length > 0) {
+    if (!confirm(`К слоту привязано ${attached.length} карт. Удалить слот и снять привязки? Карты останутся, но без слота.`)) return;
+    pushHistory();
+    for (const c of attached) {
+      if (c.slot === id) c.slot = null;
+      if (Array.isArray(c.slots)) {
+        c.slots = c.slots.filter(s => s !== id);
+        if (c.slots.length === 0) delete c.slots;
+      }
+    }
+  } else {
+    if (!confirm(`Удалить слот «${slot.tool_label || id}»?`)) return;
+    pushHistory();
+  }
+  delete state.data.time_slots[id];
+  markDirty(); rerenderAll(); persistState();
+  hideDetail();
 }
 
 function bindDetailHandlers() {
@@ -5898,133 +5815,6 @@ document.addEventListener('click', e => {
   if (!e.target.closest('.menu-wrap')) closeMenu();
 });
 
-function openCandModal(kind, id) {
-  if (kind === 'event') { openEventModal(id); return; }
-  if (kind === 'exhibit') { openExhibitModal(id); return; }
-  const c = buildCandidates().find(c => c.id === id);
-  if (!c) return;
-  _modalCandId = id;
-  document.getElementById('cand-modal-title').textContent = `${c.name || ''} — ${c.title || ''}`;
-  const fields = [
-    ['Формат', c.format], ['Название', c.title], ['О себе', c.about], ['Описание', c.description],
-    ['Визуальная ось', c.visual], ['Тема', c.topic],
-    ['Место', c.place], ['Помещение/улица', c.indoor_outdoor],
-    ['Время', c.time], ['Слот 1ч подходит', c.slot_ok],
-    ['Длительность', c.duration], ['Длительность инсталляции', c.inst_duration],
-    ['Размер', c.inst_size], ['Вместимость', c.capacity],
-    ['Материалы', c.materials], ['Привезёт сам', c.bring], ['Волонтёры', c.volunteers],
-    ['Особые требования', c.special], ['Связь с фракталами', c.fractal_link],
-    ['Детали выступления', c.speech_details], ['Ограничения', c.time_constraints],
-    ['Присутствие автора', c.author_presence],
-    ['Контакт', c.contact], ['Ссылки', c.links],
-    ['⚠ Замечание', c._warning], ['Заметка', c._note]
-  ];
-  document.getElementById('cand-modal-detail').innerHTML = fields
-    .filter(([_, v]) => v)
-    .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v).replace(/\n/g, '<br>')}</dd>`).join('');
-
-  // Suggest-блок
-  const suggest = c._suggested_category;
-  const suggestEl = document.getElementById('cand-suggest');
-  const suggestText = document.getElementById('cand-suggest-text');
-  const targetSel = document.getElementById('cand-target-category');
-  const labelMap = {
-    popsci: 'Лекция / выступление',
-    experiment: 'Опыт / эксперимент',
-    workshop: 'Мастерская',
-    social: 'Перформанс / коллективное',
-    art: 'Галерея',
-    installation: 'Инсталляция',
-    media: 'Медиа-арт'
-  };
-  if (suggest) {
-    suggestEl.style.display = 'block';
-    suggestText.textContent = `На основе анкеты: ${labelMap[suggest] || suggest}.`;
-    targetSel.value = suggest;
-  } else {
-    suggestEl.style.display = 'block';
-    suggestText.textContent = 'Тип не определён автоматически — выбери вручную.';
-    // Дефолт по моду
-    targetSel.value = state.view === 'art' ? 'installation' : 'experiment';
-  }
-  // Если пользователь раньше уже менял категорию для этой заявки — восстанавливаем
-  // (priority выше дефолта/suggest). Сохраняется в state.candCategoryOverrides.
-  if (!state.candCategoryOverrides) state.candCategoryOverrides = {};
-  if (state.candCategoryOverrides[c.id]) {
-    targetSel.value = state.candCategoryOverrides[c.id];
-  }
-  // При смене значения в селекте — запоминаем (чтобы не сбрасывалось на следующее открытие)
-  targetSel.onchange = () => {
-    state.candCategoryOverrides[c.id] = targetSel.value;
-    persistState();
-  };
-
-  // Если для этой заявки уже есть связанное событие/экспонат — дизаблим
-  // «Создать», чтобы не плодить дубли. Покажем подсказку «уже в программе».
-  const alreadyPlaced = c.kind === 'app' && isPlaced(c);
-  const convertBtn = document.getElementById('btn-convert');
-  if (convertBtn) {
-    if (alreadyPlaced) {
-      convertBtn.disabled = true;
-      convertBtn.title = 'Для этой заявки уже создано событие/экспонат — повторно создавать нельзя';
-      convertBtn.textContent = '✓ Уже в программе';
-    } else {
-      convertBtn.disabled = false;
-      convertBtn.title = '';
-      convertBtn.textContent = 'Создать →';
-    }
-  }
-
-  document.getElementById('cand-modal').classList.add('active');
-}
-function closeCandModal() { document.getElementById('cand-modal').classList.remove('active'); _modalCandId = null; }
-function markCand(status) {
-  _setAppStatus(_modalCandId, status);
-  markDirty(); rerenderAll(); persistState(); closeCandModal();
-}
-function convertCandToTarget() {
-  const c = buildCandidates().find(c => c.id === _modalCandId);
-  if (!c) return;
-  // Защита: если для этой заявки уже создано событие/экспонат — не создаём дубль
-  if (c.kind === 'app' && isPlaced(c)) {
-    alert('Для заявки ' + c.id + ' уже есть связанное событие или экспонат. Повторное создание заблокировано — иначе появятся дубли.');
-    return;
-  }
-  const targetCat = document.getElementById('cand-target-category').value;
-  // installation/art/media → exhibit; всё остальное → event
-  const isExhibit = ['installation', 'art', 'media'].includes(targetCat);
-
-  if (isExhibit) {
-    const id = 'exh-' + Date.now();
-    _pushExhibit({
-      id,
-      kind: targetCat,
-      status: 'accepted',
-      title: c.title || '(без названия)',
-      speaker: c.name || null,
-      description: c.description || null,
-      subcategory: targetCat,
-      apollo_slot: null,
-      _source_app: c.id
-    });
-    if (c.kind === 'app') _setAppStatus(c.id, 'considering');
-    closeCandModal();
-    markDirty(); rerenderAll(); persistState();
-    openExhibitModal(id);
-  } else {
-    const newEv = createEventFromCand(c, null, null);
-    newEv.category = targetCat;
-    _pushEvent(newEv);
-    if (c.kind === 'app') _setAppStatus(c.id, 'considering');
-    closeCandModal();
-    markDirty(); rerenderAll(); persistState();
-    openEventModal(newEv.id);
-  }
-}
-
-// Сохраняем старое имя на случай существующих вызовов
-function convertCandToEvent() { convertCandToTarget(); }
-
 // ============================================================
 // HELPERS для select'ов (используются в нескольких модалках)
 // ============================================================
@@ -6085,212 +5875,6 @@ function removeLink(i, editorId) {
   const cur = getLinksFromEditor(editorId);
   cur.splice(i, 1);
   renderLinksEditor(cur, editorId);
-}
-
-// ============================================================
-// EVENT MODAL — только event-поля, слот меняется через селектор
-// или открывается отдельным редактором
-// ============================================================
-function openEventModal(evId) {
-  const ev = getEvents().find(e => e.id === evId);
-  if (!ev) return;
-  document.getElementById('ev-id-old').value = ev.id;
-  document.getElementById('ev-id').value = ev.id;
-  document.getElementById('ev-title').value = ev.title || '';
-  document.getElementById('ev-subtitle').value = ev.subtitle || '';
-  document.getElementById('ev-speaker').value = ev.speaker || '';
-  document.getElementById('ev-speaker-role').value = ev.speaker_role || '';
-  document.getElementById('ev-description').value = ev.description || '';
-  document.getElementById('ev-status').value = ev.status || 'accepted';
-  document.getElementById('ev-duration-override').value = ev.duration_override || '';
-
-  // Selector со списком всех слотов + «без слота»
-  const slotSelect = document.getElementById('ev-slot');
-  const slotOpts = Object.entries(state.data.time_slots)
-    .sort((a, b) => timeToMin(a[1].start) - timeToMin(b[1].start))
-    .map(([sid, s]) => `<option value="${esc(sid)}">${esc(s.tool_label || s.label_for_zoom || sid)} · ${esc(s.start)}–${esc(s.end)}</option>`)
-    .join('');
-  slotSelect.innerHTML = '<option value="">— без слота —</option>' + slotOpts;
-  slotSelect.value = ev.slot || '';
-  updateSlotInfoBlock();
-
-  // _source_app — read-only ссылка на строку Google Sheets с заявками
-  const srcBlock = document.getElementById('ev-source-app-block');
-  if (ev._source_app) {
-    const url = getApplicationUrl(ev._source_app);
-    if (url) {
-      srcBlock.innerHTML = `Из заявки <a href="${url}" target="_blank" rel="noopener" style="color:#5d8b6e;text-decoration:underline">${esc(ev._source_app)} ↗</a>`;
-    } else {
-      srcBlock.textContent = `Из заявки ${ev._source_app}`;
-    }
-  } else {
-    srcBlock.textContent = '';
-  }
-
-  renderLinksEditor(ev.links || [], 'ev-links-editor');
-  document.getElementById('event-modal').classList.add('active');
-}
-function closeEventModal() {
-  document.getElementById('event-modal').classList.remove('active');
-}
-function updateSlotInfoBlock() {
-  const sid = document.getElementById('ev-slot').value;
-  const info = document.getElementById('ev-slot-info');
-  const btn = document.getElementById('ev-edit-slot-btn');
-  if (!sid) {
-    info.style.display = 'none';
-    btn.style.display = 'none';
-    return;
-  }
-  const s = state.data.time_slots[sid];
-  if (!s) {
-    info.style.display = 'block';
-    info.innerHTML = `Слот <code>${esc(sid)}</code> не найден.`;
-    btn.style.display = 'none';
-    return;
-  }
-  const cat = s.category && _getCategoryMeta(s.category);
-  const venue = s.venue && state.data.venues[s.venue];
-  info.style.display = 'block';
-  info.innerHTML = `
-    <strong>${esc(s.tool_label || s.label_for_zoom || sid)}</strong>
-    · ${esc(s.start)}–${esc(s.end)}
-    · ${esc(venue ? (venue.display || s.venue) : (s.venue || '—'))}
-    <br>Категория: ${esc(cat ? cat.display : (s.category || '—'))}${s.subcategory ? ' · ' + esc(s.subcategory) : ''}${s.apollo_slot ? ' · apollo: ' + esc(s.apollo_slot) : ''}
-  `;
-  btn.style.display = 'inline-block';
-}
-function editCurrentSlot() {
-  const sid = document.getElementById('ev-slot').value;
-  if (!sid) return;
-  closeEventModal();
-  openSlotEditModal(sid);
-}
-function saveEvent() {
-  const oldId = document.getElementById('ev-id-old').value;
-  const newId = document.getElementById('ev-id').value.trim();
-  const ev = getEvents().find(e => e.id === oldId);
-  if (!ev) return;
-  if (newId !== oldId) {
-    if (getEvents().some(e => e.id === newId)) { alert('id уже занят'); return; }
-    ev.id = newId;
-  }
-  ev.title = document.getElementById('ev-title').value || null;
-  ev.subtitle = document.getElementById('ev-subtitle').value || null;
-  ev.speaker = document.getElementById('ev-speaker').value || null;
-  ev.speaker_role = document.getElementById('ev-speaker-role').value || null;
-  ev.description = document.getElementById('ev-description').value || null;
-  ev.status = document.getElementById('ev-status').value;
-  const dur = document.getElementById('ev-duration-override').value;
-  ev.duration_override = dur ? parseInt(dur) : null;
-
-  // Перепривязка слота. Если изменилась — снимаем enriched поля чтобы они переинжектировались.
-  const newSlot = document.getElementById('ev-slot').value || null;
-  if (newSlot !== ev.slot) {
-    if (ev._enriched_fields) {
-      ev._enriched_fields.forEach(f => delete ev[f]);
-      delete ev._enriched_fields;
-    }
-    ev.slot = newSlot;
-    _ensureLegacyCategories(state.data);
-  }
-
-  const links = getLinksFromEditor('ev-links-editor');
-  if (links.length) ev.links = links; else delete ev.links;
-  closeEventModal();
-  markDirty(); rerenderAll(); persistState();
-}
-function deleteEvent() {
-  const evId = document.getElementById('ev-id-old').value;
-  const ev = getEvents().find(e => e.id === evId);
-  if (!ev) return;
-  if (!confirm(`Удалить событие «${ev.title || ev.id}»?`)) return;
-  _removeEvent(evId);
-  closeEventModal();
-  markDirty(); rerenderAll(); persistState();
-}
-
-// Конверсия event → exhibit (галерея/инсталляция/медиа-арт). Используется когда
-// при создании из заявки была выбрана не та категория (event vs exhibit).
-// Создаёт новый exhibit с теми же данными и удаляет event. Связь _source_app
-// сохраняется. Заявка остаётся accepted (она уже принята в программу).
-function convertEventToExhibit() {
-  const evId = document.getElementById('ev-id-old').value;
-  const ev = getEvents().find(e => e.id === evId);
-  if (!ev) return;
-  const kind = prompt(
-    `Преобразовать «${ev.title || ev.id}» в экспонат.\n\n` +
-    `Выбери тип:\n` +
-    `  1 — Галерея (картина, объект, висит весь вечер)\n` +
-    `  2 — Инсталляция (физический объект, занимает место)\n` +
-    `  3 — Медиа-арт (видео/проекция в перебивах)\n\n` +
-    `Введи 1, 2 или 3:`,
-    '2'
-  );
-  if (!kind) return;
-  const kindMap = {'1': 'art', '2': 'installation', '3': 'media'};
-  const kindStr = kindMap[kind.trim()];
-  if (!kindStr) { alert('Неизвестный тип. Операция отменена.'); return; }
-
-  const id = 'exh-' + Date.now();
-  const newEx = {
-    id,
-    kind: kindStr,
-    status: ev.status || 'accepted',
-    title: ev.title || '(без названия)',
-    speaker: ev.speaker || null,
-    description: ev.description || null,
-    subcategory: kindStr,
-    apollo_slot: ev.apollo_slot || null
-  };
-  if (ev._source_app) newEx._source_app = ev._source_app;
-
-  _pushExhibit(newEx);
-  _removeEvent(evId);
-  closeEventModal();
-  markDirty(); rerenderAll(); persistState();
-  // Открываем созданный экспонат для проверки
-  showDetail('exhibit', id);
-}
-
-// Обратная конверсия: exhibit → event.
-function convertExhibitToEvent() {
-  if (!_detailContext || _detailContext.type !== 'exhibit') return;
-  const ex = getExhibits().find(x => x.id === _detailContext.id);
-  if (!ex) return;
-  const cat = prompt(
-    `Преобразовать «${ex.title || ex.id}» в событие.\n\n` +
-    `Выбери категорию:\n` +
-    `  1 — Лекция / выступление\n` +
-    `  2 — Опыт / эксперимент (станция)\n` +
-    `  3 — Мастерская\n` +
-    `  4 — Перформанс / коллективное\n\n` +
-    `Введи 1-4:`,
-    '1'
-  );
-  if (!cat) return;
-  const catMap = {'1': 'lectures', '2': 'experiments', '3': 'workshops', '4': 'social'};
-  const catStr = catMap[cat.trim()];
-  if (!catStr) { alert('Неизвестная категория. Операция отменена.'); return; }
-
-  const id = 'ev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-  const newEv = {
-    id,
-    title: ex.title || '(без названия)',
-    speaker: ex.speaker || null,
-    description: ex.description || null,
-    category: catStr,
-    status: ex.status || 'accepted',
-    slot: null,
-    venue: null
-  };
-  if (ex._source_app) newEv._source_app = ex._source_app;
-
-  _pushEvent(newEv);
-  _removeExhibit(_detailContext.id);
-  hideDetail();
-  markDirty(); rerenderAll(); persistState();
-  openEventModal(id);
 }
 
 // ============================================================
@@ -7246,7 +6830,7 @@ function openLeafEditModalFromStructure(leafId) {
 }
 function openSlotEditModalFromStructure(sid) {
   closeStructureView();
-  openSlotEditModal(sid);
+  showDetail('slot', sid);
 }
 
 // Создание нового слота прямо из structure view — без выхода из него.
@@ -7331,225 +6915,6 @@ closeStructureView = function() {
   rerenderAll();
 };
 
-function openSlotEditModal(sid) {
-  if (isReadOnly()) return;
-  const s = state.data.time_slots[sid];
-  if (!s) return;
-  document.getElementById('slot-edit-modal-title').textContent = `Слот · ${s.tool_label || s.label_for_zoom || sid}`;
-  document.getElementById('se-id-old').value = sid;
-  document.getElementById('se-id').value = sid;
-  document.getElementById('se-tool-label').value = s.tool_label || '';
-  document.getElementById('se-zoom-label').value = s.label_for_zoom || '';
-  document.getElementById('se-start').value = s.start || '';
-  document.getElementById('se-end').value = s.end || '';
-  document.getElementById('se-category').value = s.category || '';
-  document.getElementById('se-exclusive').checked = !!s.exclusive;
-
-  populateVenueOptions(document.getElementById('se-venue'), s.venue || '', true);
-  populateSubcategoryOptions(s.category, document.getElementById('se-subcategory'), s.subcategory);
-
-  // Список привязанных событий не показываем в форме слота — он и так виден
-  // в timeline. Меньше шума в карточке редактирования.
-
-  // Покрытие фракталом — рисуем сразу и обновляем при изменении start/venue.
-  const renderCov = () => renderFernCoverageBlock(
-    document.getElementById('se-start').value,
-    document.getElementById('se-end').value,
-    s.leaf || null,
-    null,  // type больше не задаётся вручную, fern coverage опирается на venue+category
-    document.getElementById('se-venue').value
-  );
-  renderCov();
-  document.getElementById('se-start').oninput = renderCov;
-  document.getElementById('se-end').oninput = renderCov;
-  document.getElementById('se-venue').onchange = renderCov;
-
-  document.getElementById('slot-edit-modal').classList.add('active');
-}
-function closeSlotEditModal() {
-  document.getElementById('slot-edit-modal').classList.remove('active');
-}
-function updateSlotSubcategoryOptions() {
-  const cat = document.getElementById('se-category').value;
-  populateSubcategoryOptions(cat, document.getElementById('se-subcategory'), '');
-}
-function saveSlotEdit() {
-  const oldId = document.getElementById('se-id-old').value;
-  const newId = document.getElementById('se-id').value.trim();
-  if (!state.data.time_slots[oldId]) return;
-  if (!newId) { alert('id обязателен'); return; }
-  const oldSlot = state.data.time_slots[oldId];
-
-  // Валидация: проверяем что слот попадёт в лист фрактала по реальному алгоритму.
-  // Сохраняем существующие s.leaf/s.type из объекта (поля убраны из UI, но в данных
-  // могут быть legacy-значения — используем их для проверки покрытия).
-  const newStart = document.getElementById('se-start').value;
-  const newEnd = document.getElementById('se-end').value;
-  const newLeaf = oldSlot.leaf || null;
-  const newType = oldSlot.type || null;
-  const newVenue = document.getElementById('se-venue').value || null;
-  if (newStart) {
-    const fakeSlot = { start: newStart, end: newEnd, type: newType, venue: newVenue, leaf: newLeaf };
-    const leaf = findLeafForSlotInProgrammer(fakeSlot);
-    if (!leaf && !newLeaf) {
-      if (!confirm(`Слот не попадает ни в один лист фрактала по start=${newStart}. На сайте отобразится только в текстовом расписании. Сохранить всё равно?`)) return;
-    }
-  }
-
-  if (newId !== oldId) {
-    if (state.data.time_slots[newId]) { alert('id уже занят'); return; }
-    // Переименование: переносим объект и обновляем все ссылки в events
-    state.data.time_slots[newId] = state.data.time_slots[oldId];
-    delete state.data.time_slots[oldId];
-    getEvents().forEach(ev => { if (ev.slot === oldId) ev.slot = newId; });
-  }
-
-  const s = state.data.time_slots[newId];
-  s.tool_label = document.getElementById('se-tool-label').value || null;
-  s.label_for_zoom = document.getElementById('se-zoom-label').value || null;
-  s.start = newStart;
-  s.end = newEnd;
-  s.venue = document.getElementById('se-venue').value || null;
-  s.category = document.getElementById('se-category').value || null;
-  s.subcategory = document.getElementById('se-subcategory').value || null;
-  s.exclusive = document.getElementById('se-exclusive').checked || false;
-  if (!s.exclusive) delete s.exclusive;  // не загромождаем JSON если false
-  // s.type, s.leaf, s.apollo_slot — больше не редактируются в UI:
-  //   - type избыточен (вычисляется из category+subcategory+venue)
-  //   - leaf вычисляется автоматически (findLeafForSlot)
-  //   - apollo_slot автораспределяется в recomputeApolloSlots при сохранении
-
-  // После правки слота — переинжектируем enriched поля во все его events.
-  // ВАЖНО: _ensureLegacyCategories копирует только если ev[f] == null (не перезаписывает
-  // прямо заданные поля). Поэтому сначала ЯВНО снимаем venue/category/apollo_slot/
-  // subcategory с events этого слота — независимо от того были ли они enriched —
-  // чтобы новые значения слота гарантированно подхватились.
-  const RESET_FIELDS = ['venue', 'category', 'apollo_slot', 'subcategory'];
-  const oldVenue = s.venue;  // для лога — ой, уже изменили выше. Берём из html input.
-  const affected = getEvents().filter(ev => ev.slot === newId && ev.status === 'accepted');
-  getEvents().forEach(ev => {
-    if (ev.slot !== newId) return;
-    RESET_FIELDS.forEach(f => { if (ev[f] !== undefined) ev[f] = null; });
-    if (ev._enriched_fields) {
-      ev._enriched_fields.forEach(f => { ev[f] = null; });
-      delete ev._enriched_fields;
-    }
-  });
-  _ensureLegacyCategories(state.data);
-  if (affected.length) {
-    console.log('[programmer] saveSlotEdit:', newId, '→ venue=' + s.venue + ', обновлено events:', affected.length, affected.map(e => e.id + '→venue=' + e.venue));
-  }
-
-  closeSlotEditModal();
-  markDirty(); rerenderAll(); persistState();
-}
-function deleteSlotFromEdit() {
-  const sid = document.getElementById('se-id-old').value;
-  const attached = getEvents().filter(e => e.slot === sid && e.status === 'accepted');
-  let msg = `Удалить слот ${sid}?`;
-  if (attached.length) {
-    msg += `\n\nК нему привязано ${attached.length} событий. Они останутся, но окажутся «без слота».`;
-  }
-  if (!confirm(msg)) return;
-  delete state.data.time_slots[sid];
-  getEvents().forEach(ev => {
-    if (ev.slot === sid) {
-      ev.slot = null;
-      if (ev._enriched_fields) {
-        ev._enriched_fields.forEach(f => delete ev[f]);
-        delete ev._enriched_fields;
-      }
-    }
-  });
-  closeSlotEditModal();
-  markDirty(); rerenderAll(); persistState();
-}
-
-// ============================================================
-// EXHIBIT MODAL — отдельная схема (не привязан к слоту)
-// ============================================================
-function openExhibitModal(id) {
-  const item = getExhibits().find(x => x.id === id);
-  if (!item) return;
-  document.getElementById('exhibit-modal-title').textContent = `Экспонат · ${item.kind}`;
-  document.getElementById('ex-id-old').value = item.id;
-  document.getElementById('ex-id').value = item.id;
-  document.getElementById('ex-kind').value = item.kind || 'art';
-  document.getElementById('ex-title').value = item.title || '';
-  document.getElementById('ex-speaker').value = item.speaker || '';
-  document.getElementById('ex-description').value = item.description || '';
-  document.getElementById('ex-status').value = item.status || 'accepted';
-  document.getElementById('ex-apollo').value = item.apollo_slot || '';
-  // Подкатегория экспоната — в данных это «art», т.к. exhibit-категория всегда искусство
-  populateSubcategoryOptions('art', document.getElementById('ex-subcategory'), item.subcategory);
-
-  const srcBlock = document.getElementById('ex-source-app-block');
-  if (item._source_app) {
-    const url = getApplicationUrl(item._source_app);
-    if (url) {
-      srcBlock.innerHTML = `Из заявки <a href="${url}" target="_blank" rel="noopener" style="color:#5d8b6e;text-decoration:underline">${esc(item._source_app)} ↗</a>`;
-    } else {
-      srcBlock.textContent = `Из заявки ${item._source_app}`;
-    }
-  } else {
-    srcBlock.textContent = '';
-  }
-
-  renderLinksEditor(item.links || [], 'ex-links-editor');
-  document.getElementById('exhibit-modal').classList.add('active');
-}
-function closeExhibitModal() {
-  document.getElementById('exhibit-modal').classList.remove('active');
-}
-function saveExhibit() {
-  const oldId = document.getElementById('ex-id-old').value;
-  const newId = document.getElementById('ex-id').value.trim();
-  const item = getExhibits().find(x => x.id === oldId);
-  if (!item) return;
-  if (newId !== oldId) {
-    if (getExhibits().some(x => x.id === newId)) { alert('id уже занят'); return; }
-    item.id = newId;
-  }
-  item.kind = document.getElementById('ex-kind').value || 'art';
-  item.title = document.getElementById('ex-title').value || null;
-  item.speaker = document.getElementById('ex-speaker').value || null;
-  item.description = document.getElementById('ex-description').value || null;
-  item.status = document.getElementById('ex-status').value;
-  item.apollo_slot = document.getElementById('ex-apollo').value || null;
-  const sc = document.getElementById('ex-subcategory').value;
-  if (sc) item.subcategory = sc; else delete item.subcategory;
-  const links = getLinksFromEditor('ex-links-editor');
-  if (links.length) item.links = links; else delete item.links;
-  closeExhibitModal();
-  markDirty(); rerenderAll(); persistState();
-}
-function deleteExhibit() {
-  const id = document.getElementById('ex-id-old').value;
-  const item = getExhibits().find(x => x.id === id);
-  if (!item) return;
-  if (!confirm(`Удалить экспонат «${item.title || item.id}»?`)) return;
-  _removeExhibit(id);
-  closeExhibitModal();
-  markDirty(); rerenderAll(); persistState();
-}
-
-// ============================================================
-// СОЗДАНИЕ НОВЫХ
-// ============================================================
-function addNewEvent() {
-  if (isReadOnly()) return;
-  const title = prompt('Название нового события:');
-  if (!title) return;
-  const id = 'ev-' + Date.now();
-  _pushEvent({
-    id, status: 'accepted', title, slot: null,
-    subtitle: null, speaker: null, speaker_role: null, description: null,
-    duration_override: null
-  });
-  markDirty(); rerenderAll(); persistState();
-  // Сразу открываем редактор для дозаполнения
-  openEventModal(id);
-}
 function addNewSlot() {
   const id = prompt('id нового слота (напр. slot-custom-music-1):');
   if (!id) return;
@@ -7562,7 +6927,7 @@ function addNewSlot() {
     leaf: null
   };
   markDirty(); rerenderAll(); persistState();
-  openSlotEditModal(id);
+  showDetail('slot', id);
 }
 
 function cyclePane(direction) {
@@ -7591,7 +6956,7 @@ function openSlotEditor() {
       <input type="time" value="${esc(s.start)}" data-slot="${id}" data-field="start">
       <input type="time" value="${esc(s.end)}" data-slot="${id}" data-field="end">
       <input value="${esc(s.tool_label||s.label_for_zoom||'')}" data-slot="${id}" data-field="tool_label" placeholder="название (Лекция 1, Станции 2…)">
-      <button onclick="closeSlotEditor(); openSlotEditModal('${id}')" title="Детально" style="background:#fff;border:1px solid #ccc;border-radius:2px;cursor:pointer">✎</button>
+      <button onclick="closeSlotEditor(); showDetail('slot', '${id}')" title="Детально" style="background:#fff;border:1px solid #ccc;border-radius:2px;cursor:pointer">✎</button>
       <button onclick="deleteSlot('${id}')" style="color:#c00;background:#fff;border:1px solid #ccc;border-radius:2px;cursor:pointer">×</button>
     </div>`).join('');
   document.getElementById('slot-editor-rows').innerHTML = rows;
@@ -7612,7 +6977,14 @@ function saveSlots() {
 function deleteSlot(id) {
   if (!confirm(`Удалить слот ${id}?`)) return;
   delete state.data.time_slots[id];
-  getEvents().forEach(e => { if (e.slot === id) e.slot = null; });
+  // Снимаем привязки в cards (а не в copy из getEvents — то писалось в копию)
+  for (const c of (state.data.cards || [])) {
+    if (c.slot === id) c.slot = null;
+    if (Array.isArray(c.slots)) {
+      c.slots = c.slots.filter(s => s !== id);
+      if (c.slots.length === 0) delete c.slots;
+    }
+  }
   openSlotEditor(); rerenderAll(); markDirty(); persistState();
 }
 
