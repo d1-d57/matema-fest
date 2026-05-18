@@ -1,3 +1,5 @@
+// === База событий фестиваля «Фрактальная Одиссея» v31 ===
+// Автоматически сгенерировано programmer-tool 2026-05-18T22:14:23.388Z
 window.FESTIVAL_DATA = {
   "_meta": {
     "version": "2026-05-09-v30-handfix-yakovlev",
@@ -13,7 +15,7 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-18T20:57:55.989Z",
+    "last_modified": "2026-05-18T22:14:23.387Z",
     "modified_by": "programmer-tool",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\".",
@@ -653,8 +655,7 @@ window.FESTIVAL_DATA = {
       "end": "14:45",
       "label_for_zoom": "Мастерская ловцов снов",
       "tool_label": "Ловцы снов · ч.1",
-      "category": "workshop",
-      "subcategory": null,
+      "category": "station",
       "allowed_venues": [
         "courtyard",
         "small_bar"
@@ -666,8 +667,7 @@ window.FESTIVAL_DATA = {
       "end": "15:30",
       "label_for_zoom": "Мастерская ловцов снов",
       "tool_label": "Ловцы снов · ч.2",
-      "category": "workshop",
-      "subcategory": null,
+      "category": "station",
       "allowed_venues": [
         "courtyard",
         "small_bar"
@@ -3032,14 +3032,13 @@ window.FESTIVAL_DATA = {
       "slots": [
         "slot-dreamcatcher-1",
         "slot-dreamcatcher-2"
-      ],
-      "apollo_slot": null
+      ]
     },
     {
       "id": "inst-mimesis",
       "status": "accepted",
       "type": "art",
-      "subtype": "installation",
+      "subtype": "art",
       "title": "Мимесис",
       "speaker": "арт-дуэт EVPRAXIS",
       "description": "Серия работ, в которой Евдокия и Ирина пытаются представить, как мог бы выглядеть портрет искусственного интеллекта. В античной философии мимесисом называли подражание — способность человека воспроизводить свой мир в искусстве. Художник наблюдает реальность и превращает её в образ. По тому же принципу люди создали искусственный интеллект: подражая устройству собственного мышления.",
@@ -3049,7 +3048,7 @@ window.FESTIVAL_DATA = {
           "url": "https://t.me/evpraxis"
         }
       ],
-      "apollo_slot": null
+      "apollo_slot": "mid-1"
     }
   ],
   "fern_leaves": [
