@@ -1,5 +1,5 @@
 // === База событий фестиваля «Фрактальная Одиссея» v31 ===
-// Автоматически сгенерировано programmer-tool 2026-05-18T22:14:23.388Z
+// Автоматически сгенерировано programmer-tool 2026-05-18T22:15:40.003Z
 window.FESTIVAL_DATA = {
   "_meta": {
     "version": "2026-05-09-v30-handfix-yakovlev",
@@ -15,7 +15,7 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-18T22:14:23.387Z",
+    "last_modified": "2026-05-18T22:15:40.003Z",
     "modified_by": "programmer-tool",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\".",
@@ -640,39 +640,6 @@ window.FESTIVAL_DATA = {
       "type": "cinema",
       "category": "cinema",
       "venue": "library"
-    },
-    "slot-custom-1779127145431": {
-      "start": "14:00",
-      "end": "16:00",
-      "label_for_zoom": "Перебив",
-      "tool_label": "Перебив",
-      "allowed_venues": [
-        "big_bar"
-      ]
-    },
-    "slot-dreamcatcher-1": {
-      "start": "14:00",
-      "end": "14:45",
-      "label_for_zoom": "Мастерская ловцов снов",
-      "tool_label": "Ловцы снов · ч.1",
-      "category": "station",
-      "allowed_venues": [
-        "courtyard",
-        "small_bar"
-      ],
-      "type": "station"
-    },
-    "slot-dreamcatcher-2": {
-      "start": "14:45",
-      "end": "15:30",
-      "label_for_zoom": "Мастерская ловцов снов",
-      "tool_label": "Ловцы снов · ч.2",
-      "category": "station",
-      "allowed_venues": [
-        "courtyard",
-        "small_bar"
-      ],
-      "type": "station"
     }
   },
   "cards": [
@@ -1383,14 +1350,15 @@ window.FESTIVAL_DATA = {
       ],
       "slots": [
         "slot-gusev-talk",
-        "slot-custom-1779127145431"
+        "slot-st-sb2-C"
       ],
       "_admin": {
         "knows": true,
         "has_announce": true,
         "has_channel_post": true
       },
-      "venue": "big_bar"
+      "venue": "small_bar",
+      "lane": "left"
     },
     {
       "id": "cinema-short-fractal-universe",
@@ -1489,7 +1457,7 @@ window.FESTIVAL_DATA = {
       },
       "slots": [
         "slot-st-cy-A",
-        "slot-st-cy-E"
+        "slot-st-cy-B"
       ],
       "_source_app": "app-17",
       "application": {
@@ -1673,8 +1641,8 @@ window.FESTIVAL_DATA = {
         "knows": true
       },
       "slots": [
-        "slot-st-cy-B",
-        "slot-st-cy-F"
+        "slot-st-cy-C",
+        "slot-st-cy-D"
       ],
       "_source_app": "app-37",
       "application": {
@@ -3029,9 +2997,10 @@ window.FESTIVAL_DATA = {
       "title": "Мастерская про ловцов снов",
       "speaker": "Лина Кундалина",
       "description": "Вы сотворите свой личный фрактальный оберег, который будет дарить тепло и уют в вашем доме и защищать как во сне, так и на яву. Это знаменитый индейский предмет силы, в процессе плетения которого мы вкладываем желаемое намерение и создаем для себя амулет со смыслом. Занятие развивает мелкую моторику и настраивает внутреннее состояние на гармоничный лад. Все материалы предоставляются, а свой ловец снов вы заберете с собой.",
+      "venue": "courtyard",
       "slots": [
-        "slot-dreamcatcher-1",
-        "slot-dreamcatcher-2"
+        "slot-st-cy-E",
+        "slot-st-cy-F"
       ]
     },
     {
