@@ -4683,15 +4683,16 @@ function renderConflicts() {
 function renderUnassigned() {
   // Фильтруем по активной вкладке (eventIsRelevant) — иначе на КИНО видны все
   // короткометражки + музыка + всё подряд, что нерелевантно.
-  // Также исключаем события категорий cinema и art: для них «без слота» — нормальное
-  // состояние (короткометражки идут фоном в промежутках, инсталляции — весь вечер,
-  // им не нужно конкретное время в расписании). Для остальных категорий
-  // (popsci, music, social, workshop, experiment) отсутствие слота — это сигнал
-  // «утвердили, но не разместили», и такие события должны быть видны как orphan.
+  // Также исключаем категории для которых «без слота» — нормальное состояние:
+  //   cinema — короткометражки идут фоном в промежутках
+  //   art — инсталляции стоят весь вечер
+  //   interactive — VR/программы работают весь вечер без расписания
+  // Для остальных (popsci, music, social, workshop, experiment) отсутствие слота —
+  // это «утвердили, но не разместили», такие события должны быть видны как orphan.
   const u = getEvents().filter(e => {
     if (e.status !== 'accepted') return false;
     if (e.slot && e.venue) return false;
-    if (e.category === 'cinema' || e.category === 'art') return false;
+    if (e.category === 'cinema' || e.category === 'art' || e.category === 'interactive') return false;
     return eventIsRelevant(e);
   });
   const box = document.getElementById('unassigned');
