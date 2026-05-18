@@ -1,5 +1,3 @@
-// === База событий фестиваля «Фрактальная Одиссея» v31 ===
-// Автоматически сгенерировано programmer-tool 2026-05-18T11:19:55.810Z
 window.FESTIVAL_DATA = {
   "_meta": {
     "version": "2026-05-09-v30-handfix-yakovlev",
@@ -15,7 +13,7 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-18T11:19:55.809Z",
+    "last_modified": "2026-05-18T20:57:55.989Z",
     "modified_by": "programmer-tool",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\".",
@@ -640,6 +638,41 @@ window.FESTIVAL_DATA = {
       "type": "cinema",
       "category": "cinema",
       "venue": "library"
+    },
+    "slot-custom-1779127145431": {
+      "start": "14:00",
+      "end": "16:00",
+      "label_for_zoom": "Перебив",
+      "tool_label": "Перебив",
+      "allowed_venues": [
+        "big_bar"
+      ]
+    },
+    "slot-dreamcatcher-1": {
+      "start": "14:00",
+      "end": "14:45",
+      "label_for_zoom": "Мастерская ловцов снов",
+      "tool_label": "Ловцы снов · ч.1",
+      "category": "workshop",
+      "subcategory": null,
+      "allowed_venues": [
+        "courtyard",
+        "small_bar"
+      ],
+      "type": "station"
+    },
+    "slot-dreamcatcher-2": {
+      "start": "14:45",
+      "end": "15:30",
+      "label_for_zoom": "Мастерская ловцов снов",
+      "tool_label": "Ловцы снов · ч.2",
+      "category": "workshop",
+      "subcategory": null,
+      "allowed_venues": [
+        "courtyard",
+        "small_bar"
+      ],
+      "type": "station"
     }
   },
   "cards": [
@@ -820,7 +853,7 @@ window.FESTIVAL_DATA = {
       "title": "Сделай 3D-фрактал из бумаги",
       "speaker": "Полина Романова",
       "description": "Многие видели книги с выдвижными иллюстрациями. Оказывается, можно создать раскладывающуюся открытку с фракталом в технике pop up. На мастер-классе участники смогут прочувствовать, что такое самоподобие и сделать свои собственные трехмерные модели фракталов.",
-      "venue": "small_bar",
+      "venue": "big_bar",
       "links": [
         {
           "label": "Telegram",
@@ -832,7 +865,7 @@ window.FESTIVAL_DATA = {
         "has_announce": true,
         "has_channel_post": true
       },
-      "slot": "slot-st-sb1-A",
+      "slot": "slot-st-bb-F",
       "_source_app": "app-15",
       "application": {
         "_suggested_category": "workshop",
@@ -869,7 +902,7 @@ window.FESTIVAL_DATA = {
       "title": "Инженерное оригами",
       "speaker": "Полина Романова",
       "description": "Соберём подвижные модели солнечных панелей в технике оригами: по чертежу, со сборкой и инструкцией. Складные конструкции из бумаги работают по строгим математическим правилам, поэтому их применяют в инженерии — от солнечных батарей до медицинских стентов.",
-      "venue": "small_bar",
+      "venue": "big_bar",
       "links": [
         {
           "label": "Telegram",
@@ -879,7 +912,7 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true
       },
-      "slot": "slot-st-sb2-D",
+      "slot": "slot-st-bb-B",
       "_source_app": "app-16",
       "application": {
         "_suggested_category": "workshop",
@@ -1348,9 +1381,14 @@ window.FESTIVAL_DATA = {
       ],
       "slots": [
         "slot-gusev-talk",
-        "slot-st-bb-B",
-        "slot-st-bb-E"
-      ]
+        "slot-custom-1779127145431"
+      ],
+      "_admin": {
+        "knows": true,
+        "has_announce": true,
+        "has_channel_post": true
+      },
+      "venue": "big_bar"
     },
     {
       "id": "cinema-short-fractal-universe",
@@ -1381,7 +1419,7 @@ window.FESTIVAL_DATA = {
       "title": "Каллиграфия как фрактал",
       "speaker": "Наташа Евдокимова",
       "description": "Японская каллиграфия — фрактальная: каждая черта повторяет форму целого иероглифа, и каждый штрих неповторим. Возьмём кисть и тушь, попробуем сами — без задачи «сделать красиво», с задачей прочувствовать, как одно движение разворачивается в форму.",
-      "venue": "small_bar",
+      "venue": "big_bar",
       "links": [
         {
           "label": "Telegram",
@@ -1395,8 +1433,8 @@ window.FESTIVAL_DATA = {
         "time_final": true
       },
       "slots": [
-        "slot-st-sb2-A",
-        "slot-st-sb1-D"
+        "slot-st-bb-C",
+        "slot-st-bb-E"
       ],
       "_source_app": "app-9",
       "application": {
@@ -1448,7 +1486,7 @@ window.FESTIVAL_DATA = {
         "has_channel_post": true
       },
       "slots": [
-        "slot-st-cy-B",
+        "slot-st-cy-A",
         "slot-st-cy-E"
       ],
       "_source_app": "app-17",
@@ -1481,18 +1519,13 @@ window.FESTIVAL_DATA = {
     },
     {
       "id": "mc-theremin",
-      "status": "accepted",
+      "status": "rejected",
       "type": "station",
       "subtype": "experiment",
       "apollo_slot": "big-3",
       "title": "Терменвокс: попробовать самому",
       "speaker": "Лора Заиконникова",
       "description": "Терменвокс — электромузыкальный инструмент, который сто лет назад изобрёл в Петербурге Лев Термен. Музыкант играет руками в воздухе, не касаясь инструмента. Лора расскажет, как это устроено физически, и даст попробовать всем, кто захочет. Подготовки никакой не нужно — приходите и пробуйте.",
-      "venue": "big_bar",
-      "slots": [
-        "slot-st-bb-A",
-        "slot-st-bb-D"
-      ],
       "_source_app": "app-19",
       "application": {
         "_suggested_category": "experiment",
@@ -1534,8 +1567,8 @@ window.FESTIVAL_DATA = {
         "knows": true
       },
       "slots": [
-        "slot-st-sb1-B",
-        "slot-st-sb1-E"
+        "slot-st-sb2-E",
+        "slot-st-sb2-B"
       ],
       "_source_app": "app-27",
       "application": {
@@ -1563,7 +1596,8 @@ window.FESTIVAL_DATA = {
         "special": "Доступ к воде (набрать воду, поменять воду и т д.), небольшое пространство для просушки работ, прежде чем их заберут. Да, стульев лучше 6-8, по числу одномоментных участников",
         "time_constraints": "Пока не уверена про время. Возможно, смогу все время, возможно, только часть((",
         "source_detail": "ЛШ Лес"
-      }
+      },
+      "lane": "right"
     },
     {
       "id": "mc-fractal-tiles",
@@ -1574,13 +1608,15 @@ window.FESTIVAL_DATA = {
       "title": "Фрактал-Ателье",
       "speaker": "Татьяна Зайцева",
       "description": "Татьяна занимается фрактальными замощениями — это её основная научная работа на мехмате. На станции можно выбрать форму фрактала и цветовую гамму, программа сгенерирует замощение, а маленький термопринтер тут же напечатает результат. Получается персональный паттерн — можно унести с собой, можно отправить файлом и потом напечатать на чём угодно.",
-      "venue": "big_bar",
+      "venue": "small_bar",
       "_admin": {
-        "knows": true
+        "knows": true,
+        "has_announce": true,
+        "has_channel_post": true
       },
       "slots": [
-        "slot-st-bb-C",
-        "slot-st-bb-F"
+        "slot-st-sb2-A",
+        "slot-st-sb2-E"
       ],
       "_source_app": "app-24",
       "application": {
@@ -1608,7 +1644,8 @@ window.FESTIVAL_DATA = {
         "fractal_link": "Полностью подходит под тему",
         "special": "Рабочий интернет",
         "extra": "1) Термопринтер в силу технологии и размеров очень искажает цвета. Если пришедший хочет напечатанный вариант, а не электронный, у меня распечатаны тестовые таблицы цветов на это принтере, можно ориентироваться на них. Но отдельные оттенки на нем получить очень сложно, в целом более тусклая картинка получается, чем на экране.  \n\n2) Поскольку процесс создания медленный, возможна очередь. Но пока ждёт, человек может выбрать фрактал или поизучать мерч. Могу сделать какие-то распечатки с информацией, чтобы можно было занять себя ими. \nИз-за медленности процесса, если станция будет час, то смогу принять совсем малое число людей (ориентировочно около 8). Мне кажется разумным такого рода станцию держать большее число часов."
-      }
+      },
+      "lane": "left"
     },
     {
       "id": "ev-1778338476401-960j",
@@ -1634,7 +1671,7 @@ window.FESTIVAL_DATA = {
         "knows": true
       },
       "slots": [
-        "slot-st-cy-C",
+        "slot-st-cy-B",
         "slot-st-cy-F"
       ],
       "_source_app": "app-37",
@@ -1687,8 +1724,8 @@ window.FESTIVAL_DATA = {
         "knows": true
       },
       "slots": [
-        "slot-st-sb2-C",
-        "slot-st-sb2-F"
+        "slot-st-sb2-A",
+        "slot-st-sb2-D"
       ],
       "_source_app": "app-29",
       "application": {
@@ -1724,19 +1761,20 @@ window.FESTIVAL_DATA = {
         "inst_size": "Помещается на столе",
         "inst_duration": "Несколько часов",
         "author_presence": "Волонтёр-смотрящий периодически"
-      }
+      },
+      "lane": "right"
     },
     {
       "id": "ev-letnyaya-shkola-linguistics",
       "status": "accepted",
       "type": "station",
       "subtype": "experiment",
-      "apollo_slot": "mid-2",
+      "apollo_slot": "mid-1",
       "title": "Задачи, которые придумали лингвисты, которые...",
       "speaker": "Тёма Бойко",
       "speaker_role": "команда летней школы",
       "description": "Человеческие языки могут порой казаться довольно хаотичными, но всё же в них есть место системе, и иногда эта система очень элегантная. Мы предлагаем решить несколько лингвистических задач, показывающих структуры с самоподобием и гармонией в различных языках.",
-      "venue": "small_bar",
+      "venue": "big_bar",
       "links": [
         {
           "label": "Telegram",
@@ -1750,8 +1788,8 @@ window.FESTIVAL_DATA = {
         "has_channel_post": true
       },
       "slots": [
-        "slot-st-sb2-B",
-        "slot-st-sb2-E"
+        "slot-st-bb-D",
+        "slot-st-bb-A"
       ]
     },
     {
@@ -1759,7 +1797,7 @@ window.FESTIVAL_DATA = {
       "status": "accepted",
       "type": "station",
       "subtype": "experiment",
-      "apollo_slot": "mid-3",
+      "apollo_slot": "mid-2",
       "title": "Ковер Аполлония, дерево Пифагора",
       "speaker": "Math cool",
       "speaker_role": "онлайн-школа олимпиадной математики",
@@ -1782,20 +1820,21 @@ window.FESTIVAL_DATA = {
         "has_channel_post": true
       },
       "slots": [
-        "slot-st-sb1-C",
-        "slot-st-sb1-F"
-      ]
+        "slot-st-sb2-B",
+        "slot-st-sb2-D"
+      ],
+      "lane": "left"
     },
     {
       "id": "ev-1778769282894-6x65",
       "status": "accepted",
       "type": "station",
       "subtype": "experiment",
-      "apollo_slot": "mid-1",
+      "apollo_slot": "big-3",
       "title": "Фрактальная природа моря",
       "speaker": "Серомаха Екатерина",
       "description": "Екатерина — science-art-художник, который вокруг морской биологии выстраивает интересные визуальные сюжеты. Раковины, аммониты, кораллы — почти все формы морской жизни фрактальны, и фестиваль — повод их рассмотреть подробнее. Формат станции уточняется.",
-      "venue": "courtyard",
+      "venue": "small_bar",
       "links": [
         {
           "label": "Сайт",
@@ -1814,8 +1853,8 @@ window.FESTIVAL_DATA = {
         "knows": true
       },
       "slots": [
-        "slot-st-cy-A",
-        "slot-st-cy-D"
+        "slot-st-sb2-C",
+        "slot-st-sb2-F"
       ],
       "_source_app": "app-40",
       "application": {
@@ -1851,7 +1890,8 @@ window.FESTIVAL_DATA = {
         "inst_size": "",
         "inst_duration": "",
         "author_presence": ""
-      }
+      },
+      "lane": "right"
     },
     {
       "id": "ev-1778338408747-r7tp",
@@ -2978,6 +3018,20 @@ window.FESTIVAL_DATA = {
         "inst_duration": "",
         "author_presence": ""
       }
+    },
+    {
+      "id": "mc-dreamcatcher",
+      "status": "accepted",
+      "type": "station",
+      "subtype": "workshop",
+      "title": "Мастерская про ловцов снов",
+      "speaker": "Лина Кундалина",
+      "description": "Вы сотворите свой личный фрактальный оберег, который будет дарить тепло и уют в вашем доме и защищать как во сне, так и на яву. Это знаменитый индейский предмет силы, в процессе плетения которого мы вкладываем желаемое намерение и создаем для себя амулет со смыслом. Занятие развивает мелкую моторику и настраивает внутреннее состояние на гармоничный лад. Все материалы предоставляются, а свой ловец снов вы заберете с собой.",
+      "slots": [
+        "slot-dreamcatcher-1",
+        "slot-dreamcatcher-2"
+      ],
+      "apollo_slot": null
     }
   ],
   "fern_leaves": [

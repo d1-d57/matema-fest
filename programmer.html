@@ -995,9 +995,9 @@ body.viewer-mode .comm-badges { display: none !important; }
 .expand-toggle { left: 0; top: calc(50% + 60px); border-radius: 0 4px 4px 0; }
 .collapse-toggle:hover, .expand-toggle:hover { background: #2a2e30; }
 
-.main.collapsed { grid-template-columns: 0 minmax(0, 1fr); }
-.main.collapsed .candidates { visibility: hidden; width: 0; min-width: 0; padding: 0; border: none; overflow: hidden; }
-.main.wide { grid-template-columns: 600px minmax(0, 1fr); }
+/* Когда открыта боковая панель detail — расширяем колонку чтобы было удобно
+   читать длинные поля и редактировать. По умолчанию обычная ширина (340px). */
+.main.detail-open { grid-template-columns: 720px minmax(0, 1fr); }
 
 /* ====== DETAIL VIEW (master-detail в левой панели) ====== */
 .detail-view {
@@ -1167,9 +1167,54 @@ body.viewer-mode .comm-badges { display: none !important; }
 .detail-edit-grid select:focus,
 .detail-edit-grid textarea:focus { outline: none; border-color: var(--ink); background: var(--paper); }
 
+/* Заголовок секции внутри detail-формы (например «Время», «Место и категория»). */
+.detail-section-label {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink); font-weight: 600;
+  margin: 26px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.detail-section-label:first-of-type { margin-top: 6px; }
+
+/* Серая подсказка справа от label */
+.detail-label-hint {
+  font-size: 10.5px; color: var(--ink-quiet);
+  text-transform: none; letter-spacing: 0;
+  font-weight: 400; margin-left: 6px;
+}
+
+/* Чекбокс с надписью в одну строку (отличается от обычных input-полей в grid) */
+.detail-edit-grid .detail-checkbox-row {
+  display: flex; align-items: center; gap: 8px;
+  text-transform: none; letter-spacing: 0; font-size: 13px;
+  color: var(--ink); font-family: var(--font-body);
+}
+.detail-edit-grid .detail-checkbox-row input[type="checkbox"] {
+  width: auto; margin: 0;
+}
+
 .detail-links { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
 .detail-link-row { display: grid; grid-template-columns: 1fr 2fr 32px; gap: 6px; }
 .detail-link-row input { padding: 6px 9px; font-size: 12px; }
+
+/* Список слотов карты (multi-slot UI) — внутри detail-секции */
+.detail-slot-list { display: flex; flex-direction: column; gap: 5px; margin: 8px 0; }
+.detail-slot-row {
+  display: grid; grid-template-columns: 1fr auto auto;
+  gap: 10px; align-items: center;
+  padding: 6px 10px; background: var(--paper); border: 1px solid var(--rule-soft);
+  font-size: 13px;
+}
+.detail-slot-label { color: var(--ink); }
+.detail-slot-time { color: var(--ink-quiet); font-family: var(--font-mono); font-size: 11px; }
+.detail-slot-remove {
+  background: transparent; border: 1px solid var(--hairline);
+  cursor: pointer; color: var(--ink-quiet); border-radius: 2px;
+  padding: 2px 7px; font-size: 13px;
+}
+.detail-slot-remove:hover { color: var(--accent); border-color: var(--accent); }
 .detail-link-row button {
   background: transparent; border: 1px solid var(--hairline);
   cursor: pointer; color: var(--ink-quiet); border-radius: 2px;
@@ -1695,8 +1740,6 @@ body.viewer-mode .comm-badges { display: none !important; }
   </aside>
 
   <main class="right-pane" style="position:relative">
-    <button class="collapse-toggle" onclick="cyclePane('narrower')" title="Свернуть пул кандидатов" id="collapse-toggle">‹</button>
-    <button class="expand-toggle" onclick="cyclePane('wider')" title="Расширить пул кандидатов" id="expand-toggle">›</button>
     <div class="right-tabs">
       <button class="right-tab active" data-view="all">Всё <span class="tab-count" id="stat-all">—</span></button>
       <button class="right-tab" data-view="popsci"><span class="tab-dot" style="background:#b3956a"></span>Научпоп <span class="tab-count" id="stat-popsci">—</span></button>
@@ -2137,7 +2180,6 @@ let state = {
   detailTab: 'event',        // активная табка в detail события: event | app
   view: 'all',               // главная вкладка: all | open-apps | cinema | music | art
   remoteSha: null, isDirty: false,
-  paneWidth: 'normal',       // 'narrow' | 'normal' | 'wide'
   dataSource: 'pending',     // 'pending' | 'live' | 'fallback' — откуда взяты текущие state.data
   dataLoadError: null        // строка ошибки если загрузка с URL не удалась
 };
@@ -4451,9 +4493,9 @@ function handleDrop(slotId, venueId, laneIdx, e) {
     if (!confirm(`Площадка ${venueId} нетипична для слота. Всё равно поставить?`)) return;
   }
 
-  // ТИПОВАЯ ВАЛИДАЦИЯ. Слот зарезервирован под определённый тип (slot.category).
-  // Событие должно совпадать. Иначе отказ — пользователь либо меняет тип события,
-  // либо выбирает другой слот. Это контроль структуры программы.
+  // ТИПОВАЯ ПОДСКАЗКА. Если слот зарезервирован под определённый тип, а событие
+  // имеет другой — предупреждаем, но НЕ блокируем. Пользователь сам решает: либо
+  // соглашается на несоответствие, либо потом меняет тип слота через его панель.
   if (slot && slot.category) {
     let candCat = null;
     if (kind === 'event') {
@@ -4471,8 +4513,7 @@ function handleDrop(slotId, venueId, laneIdx, e) {
     if (candCat && majorCat(candCat) !== majorCat(slot.category)) {
       const slotCat = _getCategoryMeta(slot.category)?.display || slot.category;
       const evCat = _getCategoryMeta(candCat)?.display || candCat;
-      alert(`Не могу поставить.\n\nСлот зарезервирован под «${slotCat}».\nА это событие имеет тип «${evCat}».\n\nПоменяй тип события в его карточке, или выбери другой слот.`);
-      return;
+      if (!confirm(`Внимание: типы не совпадают.\n\nСлот «${slotCat}», карточка «${evCat}».\n\nВсё равно поставить? (потом можно поменять тип слота в его панели)`)) return;
     }
   }
 
@@ -4565,20 +4606,32 @@ let _detailContext = null;  // { type: 'app'|'event'|'exhibit', id }
 
 function showDetail(type, id) {
   if (isDemoMode()) return;
+  // Toggle: повторный клик на тот же элемент — закрываем панель
+  if (_detailContext && _detailContext.type === type && _detailContext.id === id) {
+    hideDetail();
+    return;
+  }
   _detailContext = { type, id };
   const pane = document.getElementById('candidates-pane');
   const view = document.getElementById('detail-view');
+  const main = document.getElementById('main');
   pane.classList.add('show-detail');
+  if (main) main.classList.add('detail-open');
   view.innerHTML = renderDetailContent(type, id);
   view.scrollTop = 0;
   bindDetailHandlers();
+  // Рендер таймлайна нужен после смены ширины grid — иначе кесаринг лейн не пересчитается
+  setTimeout(renderTimeline, 50);
 }
 
 function hideDetail() {
   _detailContext = null;
   const pane = document.getElementById('candidates-pane');
+  const main = document.getElementById('main');
   pane.classList.remove('show-detail');
+  if (main) main.classList.remove('detail-open');
   document.getElementById('detail-view').innerHTML = '';
+  setTimeout(renderTimeline, 50);
   // Если были несохранённые правки в detail — они уже сохранены в state.data при изменении inputs
 }
 
@@ -4825,6 +4878,34 @@ function renderEventDetail(id) {
     </div>
 
     ${_renderTeamNotesSection(ev.team_notes)}
+
+    ${(() => {
+      // Секция «Слоты» — для multi-slot карточек (card.slots длиной 2+) или для
+      // одиночных, которые можно «размножить» по слотам в дополнительные часы.
+      const card = _findEventCard(ev.id);
+      if (!card) return '';
+      const slotsList = Array.isArray(card.slots) && card.slots.length
+        ? card.slots
+        : (card.slot ? [card.slot] : []);
+      if (slotsList.length < 1) return '';
+      const itemsHtml = slotsList.map((sid, i) => {
+        const sl = state.data.time_slots[sid];
+        const lbl = sl ? (sl.tool_label || sl.label_for_zoom || sid) : sid;
+        const time = sl ? `${sl.start || '?'}–${sl.end || '?'}` : '?';
+        return `<div class="detail-slot-row">
+          <span class="detail-slot-label">${esc(lbl)}</span>
+          <span class="detail-slot-time">${esc(time)}</span>
+          ${slotsList.length > 1 ? `<button onclick="detailRemoveCardSlot('${esc(card.id)}', ${i})" class="detail-slot-remove" title="Открепить эту половину">×</button>` : ''}
+        </div>`;
+      }).join('');
+      return `
+        <div class="detail-section">
+          <label class="detail-label">Слоты в расписании <span class="detail-label-hint">— карточка живёт во всех перечисленных слотах одновременно</span></label>
+          <div class="detail-slot-list">${itemsHtml}</div>
+          <button class="detail-add-link" onclick="detailAddCardSlot('${esc(card.id)}')">+ ещё слот (для размножения)</button>
+        </div>
+      `;
+    })()}
 
     ${COMM_BADGES_CATS.has(ev.category) ? `
     <div class="detail-section comm-section">
@@ -5110,6 +5191,12 @@ function renderSlotDetail(id) {
   const s = state.data.time_slots[id];
   if (!s) return '<div class="detail-body">слот не найден</div>';
 
+  // Текущий «выбранный venue» — это s.venue для single-venue слотов, либо
+  // первый из allowed_venues для multi-venue блоков (станции, music-parallel).
+  // В UI показываем один dropdown — при сохранении переводим слот в одиночный
+  // venue режим (allowed_venues удаляем).
+  const currentVenue = s.venue || (Array.isArray(s.allowed_venues) && s.allowed_venues[0]) || '';
+
   // Список категорий для select — берём из data.categories + синтетические
   const allCats = new Set([
     ...Object.keys(state.data.categories || {}),
@@ -5126,12 +5213,17 @@ function renderSlotDetail(id) {
     })
   ].join('');
 
-  // Список venue из data.venues
+  // Список venue из data.venues — выделяем currentVenue (либо s.venue, либо первый из allowed_venues)
   const venues = state.data.venues || {};
   const venueOptions = ['<option value="">— нет —</option>',
     ...Object.entries(venues).map(([vid, v]) =>
-      `<option value="${esc(vid)}" ${vid === s.venue ? 'selected' : ''}>${esc(v.label || vid)}</option>`)
+      `<option value="${esc(vid)}" ${vid === currentVenue ? 'selected' : ''}>${esc(v.label || vid)}</option>`)
   ].join('');
+
+  // Подсказка про allowed_venues если они есть (multi-venue блочный слот)
+  const allowedVenuesHint = (Array.isArray(s.allowed_venues) && s.allowed_venues.length > 1)
+    ? `<div class="detail-label-hint" style="margin-top:4px">сейчас этот слот относится к нескольким площадкам: ${s.allowed_venues.map(v => esc(state.data.venues?.[v]?.label || v)).join(', ')}. При сохранении он перейдёт в одну выбранную площадку.</div>`
+    : '';
 
   // Subcategory зависит от category — рендерим из data.subcategories[category]
   const subcatList = (state.data.subcategories || {})[s.category] || [];
@@ -5147,43 +5239,62 @@ function renderSlotDetail(id) {
     </div>
     <div class="detail-body">
       <input type="hidden" id="detail-slot-id-old" value="${esc(id)}">
-      <div class="detail-form-grid">
+
+      <div class="detail-section-label">Время</div>
+      <div class="detail-edit-grid">
         <div>
-          <label for="detail-slot-id">id слота</label>
-          <input type="text" id="detail-slot-id" value="${esc(id)}">
-        </div>
-        <div>
-          <label for="detail-slot-tool-label">метка (в программере)</label>
-          <input type="text" id="detail-slot-tool-label" value="${esc(s.tool_label || '')}">
-        </div>
-        <div>
-          <label for="detail-slot-zoom-label">метка (на сайте)</label>
-          <input type="text" id="detail-slot-zoom-label" value="${esc(s.label_for_zoom || '')}">
-        </div>
-        <div>
-          <label for="detail-slot-start">начало</label>
+          <label for="detail-slot-start">Начало</label>
           <input type="time" id="detail-slot-start" value="${esc(s.start || '')}">
         </div>
         <div>
-          <label for="detail-slot-end">конец</label>
+          <label for="detail-slot-end">Конец</label>
           <input type="time" id="detail-slot-end" value="${esc(s.end || '')}">
         </div>
-        <div>
-          <label for="detail-slot-venue">место</label>
+      </div>
+
+      <div class="detail-section-label">Место и категория</div>
+      <div class="detail-edit-grid">
+        <div class="full">
+          <label for="detail-slot-venue">Площадка</label>
           <select id="detail-slot-venue">${venueOptions}</select>
+          ${allowedVenuesHint}
         </div>
         <div>
-          <label for="detail-slot-category">категория</label>
+          <label for="detail-slot-category">Категория</label>
           <select id="detail-slot-category" onchange="detailSlotUpdateSubcat()">${catOptions}</select>
         </div>
         <div>
-          <label for="detail-slot-subcategory">подкатегория</label>
+          <label for="detail-slot-subcategory">Подкатегория</label>
           <select id="detail-slot-subcategory">${subcatOptions}</select>
         </div>
         <div class="full">
-          <label><input type="checkbox" id="detail-slot-exclusive" ${s.exclusive ? 'checked' : ''}> исключительный слот (не может разделяться)</label>
+          <label class="detail-checkbox-row">
+            <input type="checkbox" id="detail-slot-exclusive" ${s.exclusive ? 'checked' : ''}>
+            <span>Исключительный слот — нельзя разделить на две полосы (lanes)</span>
+          </label>
         </div>
       </div>
+
+      <div class="detail-section-label">Подписи</div>
+      <div class="detail-edit-grid">
+        <div class="full">
+          <label for="detail-slot-tool-label">Метка в программере <span class="detail-label-hint">— как этот слот выглядит у нас в редакторе</span></label>
+          <input type="text" id="detail-slot-tool-label" value="${esc(s.tool_label || '')}" placeholder="Лекция · Мандельброт · 17:00">
+        </div>
+        <div class="full">
+          <label for="detail-slot-zoom-label">Метка на сайте <span class="detail-label-hint">— как слот подписан в Аполлонии при наведении (часто можно оставить пустым)</span></label>
+          <input type="text" id="detail-slot-zoom-label" value="${esc(s.label_for_zoom || '')}" placeholder="">
+        </div>
+      </div>
+
+      <div class="detail-section-label">Идентификатор</div>
+      <div class="detail-edit-grid">
+        <div class="full">
+          <label for="detail-slot-id">id слота <span class="detail-label-hint">— техническое имя, лучше не менять без надобности</span></label>
+          <input type="text" id="detail-slot-id" value="${esc(id)}">
+        </div>
+      </div>
+
       <div class="detail-section" id="detail-slot-fern-coverage"></div>
     </div>
     <div class="detail-actions">
@@ -5252,7 +5363,16 @@ function detailSaveSlot() {
   const slot = state.data.time_slots[newId];
   slot.start = newStart || null;
   slot.end = newEnd || null;
-  slot.venue = newVenue;
+  // Если пользователь выбрал конкретный venue в форме — переводим слот в single-venue
+  // режим (удаляем allowed_venues если был). Это корректно для slot-custom-* и для
+  // блочных слотов которые админ решил «прибить» к одной площадке.
+  if (newVenue) {
+    slot.venue = newVenue;
+    delete slot.allowed_venues;
+  } else {
+    slot.venue = null;
+    // allowed_venues оставляем как есть — это могла быть multi-venue запись
+  }
   slot.category = newCategory;
   slot.subcategory = newSubcategory;
   slot.tool_label = newToolLabel;
@@ -5395,6 +5515,59 @@ function detailGetLinks() {
     rows[i][inp.dataset.field] = inp.value;
   });
   return Object.values(rows).filter(l => l.url);
+}
+
+// ============================================================
+// Multi-slot card: добавить / убрать слот у карты
+// ============================================================
+function detailAddCardSlot(cardId) {
+  if (isReadOnly()) return;
+  pushHistory();
+  const card = (state.data.cards || []).find(c => c.id === cardId);
+  if (!card) return;
+  // Нормализуем: если single-slot — превращаем в multi-slot массив; всегда дублируем
+  // последний слот. Дубль означает «карточка появится в этом слоте ещё раз», и
+  // пользователь drag-and-drop'ом перетащит копию на нужный свободный слот.
+  let slots;
+  if (Array.isArray(card.slots) && card.slots.length) {
+    slots = [...card.slots];
+  } else if (card.slot) {
+    slots = [card.slot];
+    delete card.slot;
+  } else {
+    slots = [];
+  }
+  const lastSlot = slots[slots.length - 1] || null;
+  slots.push(lastSlot);
+  card.slots = slots;
+  markDirty(); rerenderAll(); persistState();
+  if (_detailContext) showDetail(_detailContext.type, _detailContext.id);
+}
+
+function detailRemoveCardSlot(cardId, idx) {
+  if (isReadOnly()) return;
+  const card = (state.data.cards || []).find(c => c.id === cardId);
+  if (!card) return;
+  const slots = Array.isArray(card.slots) ? [...card.slots] : (card.slot ? [card.slot] : []);
+  if (idx < 0 || idx >= slots.length) return;
+  if (slots.length === 1) {
+    if (!confirm('Это последний слот карточки — она пропадёт из расписания. Продолжить?')) return;
+  }
+  pushHistory();
+  slots.splice(idx, 1);
+  if (slots.length === 0) {
+    delete card.slots;
+    delete card.slot;
+  } else if (slots.length === 1) {
+    // Одиночный слот — переводим обратно в single-slot формат для аккуратности
+    card.slot = slots[0];
+    delete card.slots;
+  } else {
+    card.slots = slots;
+    delete card.slot;
+  }
+  markDirty(); rerenderAll(); persistState();
+  if (_detailContext) showDetail(_detailContext.type, _detailContext.id);
 }
 
 function setCardStatus(status) {
@@ -6928,24 +7101,6 @@ function addNewSlot() {
   };
   markDirty(); rerenderAll(); persistState();
   showDetail('slot', id);
-}
-
-function cyclePane(direction) {
-  const main = document.getElementById('main');
-  const cur = state.paneWidth;
-  let next = cur;
-  if (direction === 'narrower') {
-    if (cur === 'wide') next = 'normal';
-    else if (cur === 'normal') next = 'narrow';
-  } else {
-    if (cur === 'narrow') next = 'normal';
-    else if (cur === 'normal') next = 'wide';
-  }
-  state.paneWidth = next;
-  main.classList.remove('collapsed', 'wide');
-  if (next === 'narrow') main.classList.add('collapsed');
-  else if (next === 'wide') main.classList.add('wide');
-  setTimeout(renderTimeline, 50);
 }
 
 function openSlotEditor() {
