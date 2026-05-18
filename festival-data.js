@@ -1283,7 +1283,9 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "center",
       "title": "S66",
       "venue": "big_bar",
-      "slot": "slot-music-parallel-3"
+      "slot": "slot-music-parallel-3",
+      "speaker": "S66",
+      "description": "S66 — Борис Шилин, создатель и CEO проекта «ЩЁЛОЧЬ», идеолог и креативный директор лейбла экспериментальной электроники САУНД. Его музыка — симбиоз noise, ambient, IDM, techno, jungle и breakcore, вдохновлённый английской и германской электроникой 90-х и 00-х."
     },
     {
       "id": "music-pink-0030",
@@ -3030,6 +3032,22 @@ window.FESTIVAL_DATA = {
       "slots": [
         "slot-dreamcatcher-1",
         "slot-dreamcatcher-2"
+      ],
+      "apollo_slot": null
+    },
+    {
+      "id": "inst-mimesis",
+      "status": "accepted",
+      "type": "art",
+      "subtype": "installation",
+      "title": "Мимесис",
+      "speaker": "арт-дуэт EVPRAXIS",
+      "description": "Серия работ, в которой Евдокия и Ирина пытаются представить, как мог бы выглядеть портрет искусственного интеллекта. В античной философии мимесисом называли подражание — способность человека воспроизводить свой мир в искусстве. Художник наблюдает реальность и превращает её в образ. По тому же принципу люди создали искусственный интеллект: подражая устройству собственного мышления.",
+      "links": [
+        {
+          "label": "Telegram",
+          "url": "https://t.me/evpraxis"
+        }
       ],
       "apollo_slot": null
     }
