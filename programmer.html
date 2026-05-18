@@ -385,17 +385,13 @@ body.viewer-mode .event-pill { cursor: pointer; }
   border-color: var(--ink);
 }
 .cand-card.dragging { opacity: 0.4; }
-.cand-card.k-app.s-converted { background: var(--confirmed-soft); border-color: #b8d4a8; }
+.cand-card.k-app.s-accepted { background: var(--confirmed-soft); border-color: #b8d4a8; }
 .cand-card.k-app.s-rejected { opacity: 0.4; background: var(--bg-card-soft); }
 .cand-card.k-app.s-considering { background: var(--tentative-soft); border-color: #e8d8a0; }
 .cand-card.k-app.s-duplicate { opacity: 0.35; background: var(--bg-card-soft); }
 .cand-card.k-event { background: var(--bg-card-soft); border-color: var(--hairline-strong); }
-.cand-card.k-event.s-confirmed { background: var(--confirmed-soft); border-color: #b8d4a8; }
-.cand-card.k-event.s-tentative { background: var(--confirmed-soft); border-color: #b8d4a8; }
-.cand-card.k-exhibit.s-confirmed { background: var(--confirmed-soft); border-color: #b8d4a8; }
-.cand-card.k-exhibit.s-tentative { background: var(--confirmed-soft); border-color: #b8d4a8; }
-.cand-card.k-event.s-placeholder { background: var(--placeholder-soft); border-color: var(--hairline-strong); }
-.cand-card.k-exhibit.s-placeholder { background: var(--placeholder-soft); border-color: var(--hairline-strong); }
+.cand-card.k-event.s-accepted, .cand-card.k-exhibit.s-accepted { background: var(--confirmed-soft); border-color: #b8d4a8; }
+.cand-card.k-event.s-considering, .cand-card.k-exhibit.s-considering { background: var(--placeholder-soft); border-color: var(--hairline-strong); }
 .cand-card.k-idea { background: #f5efe8; border-color: #d8c8b8; }
 .cand-name {
   font-family: var(--font-body);
@@ -763,8 +759,7 @@ body:not(.demo-mode):not(.viewer-mode) .slot-placeholder:hover {
 .event-pill:hover { border-color: var(--ink); }
 /* Цвет карточки события по категории Аполлония — 7 цветов, один в один к slot-bg.
    Чуть более насыщенные чем фон слота, чтобы карточка читалась поверх него.
-   Cтатус (placeholder vs confirmed/tentative) только меняет насыщенность через
-   .s-placeholder ниже — не цвет. */
+   Цвет события на timeline зависит только от категории — статус всегда accepted. */
 .event-pill.cat-popsci     { background: rgba(179, 149, 106, 0.32); border-color: #b3956a; }
 .event-pill.cat-station    { background: rgba(122, 155, 110, 0.32); border-color: #7a9b6e; }
 .event-pill.cat-social     { background: rgba(111, 138, 163, 0.30); border-color: #6f8aa3; }
@@ -772,8 +767,6 @@ body:not(.demo-mode):not(.viewer-mode) .slot-placeholder:hover {
 .event-pill.cat-music      { background: rgba(196, 120, 98, 0.30); border-color: #c47862; }
 .event-pill.cat-art        { background: rgba(149, 116, 144, 0.30); border-color: #957490; }
 /* Статус — меняет толщину рамки и opacity, цвет остаётся «по категории» */
-.event-pill.s-placeholder  { opacity: 0.65; border-style: dashed; }
-.event-pill.s-placeholder .ev-title { font-style: italic; }
 .event-pill .ev-title {
   font-family: var(--font-body);
   font-weight: 600; line-height: 1.25; font-size: 13px;
@@ -952,8 +945,7 @@ body.viewer-mode .comm-badges { display: none !important; }
   transition: border-color 0.12s;
 }
 .exhibit-card:hover { border-color: var(--ink); }
-.exhibit-card.s-confirmed { background: rgba(74, 107, 58, 0.08); border-color: rgba(74, 107, 58, 0.4); }
-.exhibit-card.s-tentative { background: rgba(74, 107, 58, 0.08); border-color: rgba(74, 107, 58, 0.4); }
+.exhibit-card.s-accepted { background: rgba(74, 107, 58, 0.08); border-color: rgba(74, 107, 58, 0.4); }
 .exhibit-card .ex-title { font-weight: 600; font-size: 13.5px; line-height: 1.25; color: var(--ink); }
 .exhibit-card .ex-speaker { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
 .exhibit-card .ex-desc { font-size: 12px; color: var(--ink-quiet); margin-top: 5px; line-height: 1.4; }
@@ -1219,8 +1211,8 @@ body.viewer-mode .comm-badges { display: none !important; }
   font-weight: 600;
 }
 
-/* ====== Read-only вид заявки внутри detail события ====== */
-.app-readonly-header {
+/* ====== Форма анкеты внутри detail карты (вкладка «Анкета») ====== */
+.app-form-header, .app-readonly-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--rule-soft);
@@ -1231,21 +1223,28 @@ body.viewer-mode .comm-badges { display: none !important; }
   letter-spacing: 0.06em;
   color: var(--ink-quiet);
 }
-.app-readonly-fields {
-  margin: 0; padding: 0;
+.app-form-fields {
+  display: grid; gap: 14px;
 }
-.app-readonly-fields dt {
+.app-field {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.app-field label {
   font-family: var(--font-mono);
   font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--ink-quiet); font-weight: 500;
-  margin: 18px 0 6px;
 }
-.app-readonly-fields dt:first-child { margin-top: 0; }
-.app-readonly-fields dd {
-  margin: 0; padding: 0;
-  font-size: 14px; line-height: 1.55;
+.app-field input[type="text"],
+.app-field textarea {
+  font-family: inherit; font-size: 14px; line-height: 1.55;
   color: var(--ink);
-  white-space: pre-wrap; word-wrap: break-word;
+  border: 1px solid var(--hairline); border-radius: 3px;
+  padding: 6px 8px; background: var(--bg);
+  resize: vertical;
+}
+.app-field input[type="text"]:focus,
+.app-field textarea:focus {
+  outline: none; border-color: var(--ink-quiet);
 }
 
 /* ====== Команды заметки (team_notes) ====== */
@@ -1680,7 +1679,6 @@ body.viewer-mode .comm-badges { display: none !important; }
       <div class="candidates-header">
         <div class="cand-title">
           Пул кандидатов
-          <button class="add-btn" onclick="addNewIdea()">+ идея</button>
         </div>
         <div class="cat-filters" id="cat-filters-pool"></div>
         <div class="filters">
@@ -1789,9 +1787,8 @@ body.viewer-mode .comm-badges { display: none !important; }
       <div>
         <label>Статус</label>
         <select id="ev-status">
-          <option value="confirmed">в программе · подтверждено</option>
-          <option value="tentative">в программе · уточняется</option>
-          <option value="placeholder">думаем (вернуть в раздумья)</option>
+          <option value="accepted">принято — в программе</option>
+          <option value="considering">думаем</option>
           <option value="rejected">отказ</option>
         </select>
       </div>
@@ -2239,12 +2236,12 @@ document.addEventListener('DOMContentLoaded', () => {
 //                фрактала по slot.start через алгоритм findLeafForSlot.
 //   events     — что (название, спикер, описание, ссылки). Привязываются к
 //                слоту через ev.slot. Наследуют поля слота через
-//                enrichEventsFromSlots при загрузке (см. ниже).
+//                _ensureLegacyCategories при загрузке (см. ниже).
 //   exhibits   — постоянные арт-объекты, вне таймлайна.
 //   fern_leaves — 21 лист папоротника с временами и сторонами (headline /
 //                side / tail). Источник правды о геометрии фрактала.
 //
-// Ключевая мысль: enrichEventsFromSlots читает данные ИЗ слота и временно
+// Ключевая мысль: _ensureLegacyCategories читает данные ИЗ слота и временно
 // проставляет поля прямо на event'е, чтобы старый UI (master-detail в
 // правой панели) видел category/venue. cleanEvents при экспорте снимает
 // их обратно (через _enriched_fields). Это адаптер между схемой v9 и v17+.
@@ -2274,9 +2271,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================================
 // EMBEDDED FALLBACK
 // ============================================================
-// APPLICATIONS_FALLBACK удалён в v26 — заявки 1-28 теперь живут в festival-data.js (data.applications).
-// Заявки 29+ подтягиваются через 📥 Новые заявки и хранятся в localStorage.
-// FESTIVAL_DATA_FALLBACK удалён в итерации 10. При первом открытии без сети программер показывает empty state с warning, а не устаревшие данные v9.
+// FESTIVAL_DATA_FALLBACK удалён в итерации 10. При первом открытии без сети
+// программер показывает empty state с warning, а не устаревшие данные v9.
+// Заявки живут в state.data.cards (поле _source_app); UI читает их через
+// getApplications(). Synced apps из Google Sheets пишутся прямо в cards.
 
 const CFG_KEY = 'festtool-v12-config';
 const STATE_KEY = 'festtool-v12-state';
@@ -2402,7 +2400,7 @@ function getVenueLanes(vid) {
 // STATE
 // ============================================================
 let state = {
-  data: null, applications: [], appStatuses: {}, ideas: [],
+  data: null,
   filter: 'new', search: '',
   // Дефолт зума 1.1 — текст в карточках событий хорошо читается даже в
   // получасовых слотах. Если пользователь менял — берём сохранённое значение.
@@ -2486,7 +2484,7 @@ function persistState() {
     // в пределах группы (тип, подкатегория). Лимит — 10 слотов на группу.
     try { recomputeApolloSlots(state.data); } catch(e) { console.warn('apollo recompute failed', e); }
     localStorage.setItem(STATE_KEY, JSON.stringify({
-      data: state.data, appStatuses: state.appStatuses, ideas: state.ideas,
+      data: state.data,
       candCategoryOverrides: state.candCategoryOverrides || {},
       remoteSha: state.remoteSha, isDirty: state.isDirty
     }));
@@ -2505,68 +2503,71 @@ function persistState() {
 // Лимит 10 позиций на группу. Если в группе больше — alert и пропуск.
 // ============================================================
 function _apolloSortKey(item, slots) {
-  if (item.slot && slots[item.slot]) {
-    return (slots[item.slot].start || '') + '_' + item.id;
+  // Для multi-slot card берём первый slot (earliest); для single-slot — card.slot.
+  const slotId = item.slot || (Array.isArray(item.slots) && item.slots[0]);
+  if (slotId && slots[slotId]) {
+    return (slots[slotId].start || '') + '_' + item.id;
   }
   return 'zzz_' + item.id;
 }
 
-const APOLLO_ORDER = ['big-1', 'big-2', 'big-3', 'mid-1', 'mid-2', 'mid-3', 'center', 'ear-1', 'ear-2', 'ear-3'];
+// Доступные apollo-позиции зависят от группы (синхронизировано с index.html):
+//   interactive       → центр круга экспериментов: 3 квадратных позиции
+//   popsci + music/big_bar → центральная позиция доступна (7 позиций)
+//   все остальные     → 6 позиций без center
+// Порядок: сначала big, потом mid, center последний (по геометрии меньше mid).
+const APOLLO_POSITIONS_DEFAULT = ['big-1', 'big-2', 'big-3', 'mid-1', 'mid-2', 'mid-3'];
+const APOLLO_POSITIONS_WITH_CENTER = ['big-1', 'big-2', 'big-3', 'mid-1', 'mid-2', 'mid-3', 'center'];
+const APOLLO_POSITIONS_INTERACTIVE = ['big-1', 'big-2', 'big-3'];
+function _apolloPositionsForGroup(cat, sub) {
+  if (cat === 'interactive') return APOLLO_POSITIONS_INTERACTIVE;
+  if (cat === 'popsci') return APOLLO_POSITIONS_WITH_CENTER;
+  if (cat === 'music' && sub === 'big_bar') return APOLLO_POSITIONS_WITH_CENTER;
+  return APOLLO_POSITIONS_DEFAULT;
+}
 
 function recomputeApolloSlots(data) {
-  if (!data) return;
+  if (!data || !Array.isArray(data.cards)) return;
   const slots = data.time_slots || {};
-  const groups = {};  // ключ "category::subcategory|*" → [event_or_exhibit]
+  const groups = {};  // ключ "category::subcategory|*" → [card]
 
-  // События: category/subcategory — с event, fallback на slot.
-  // Multi-slot карточки (events с одинаковым _groupKey) для Apollo считаются
-  // одной карточкой — на сайте они схлопываются в один круг. Учитываем это
-  // и при подсчёте лимита, и при распределении apollo_slot: на каждый groupKey
-  // берём первое (самое раннее) событие, остальные пропускаем.
-  if (Array.isArray(data.events)) {
-    const seenGroupsPerKey = {};
-    for (const ev of data.events) {
-      const slot = ev.slot ? slots[ev.slot] : null;
-      const cat = ev.category || (slot && slot.category);
-      const sub = ev.subcategory || (slot && slot.subcategory);
-      if (!cat) continue;
-      const key = cat + '::' + (sub || '*');
-      if (ev._groupKey) {
-        if (!seenGroupsPerKey[key]) seenGroupsPerKey[key] = new Set();
-        if (seenGroupsPerKey[key].has(ev._groupKey)) continue;
-        seenGroupsPerKey[key].add(ev._groupKey);
-      }
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(ev);
-    }
-  }
-  // Exhibits: всегда art, subcategory из exhibit.subcategory/kind
-  if (Array.isArray(data.exhibits)) {
-    for (const ex of data.exhibits) {
-      const cat = ex.category || 'art';
-      const sub = ex.subcategory || ex.kind || 'art';
-      const key = cat + '::' + sub;
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(ex);
-    }
+  // Группируем accepted-карты по (category, subcategory). Multi-slot card —
+  // это ОДНА запись (на сайте Аполлоний схлопывает её в один круг), поэтому
+  // никакого dedup по _groupKey не нужно — он был артефактом expansion.
+  for (const card of data.cards) {
+    if (card.status !== 'accepted') continue;
+    const isStation = card.type === 'station';
+    // category для apollo-группировки:
+    //   art         → 'art', subcategory = card.subtype || 'art'
+    //   station     → card.subtype (workshop/experiment/interactive)
+    //   остальное   → card.type, subcategory = card.subtype
+    const cat = isStation ? (card.subtype || 'workshop') : card.type;
+    const sub = card.type === 'art' ? (card.subtype || 'art')
+              : (isStation ? null : (card.subtype || null));
+    if (!cat) continue;
+    const key = cat + '::' + (sub || '*');
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(card);
   }
 
   const overflows = [];
   Object.entries(groups).forEach(([key, items]) => {
-    if (items.length > APOLLO_ORDER.length) {
-      const [cat, sub] = key.split('::');
-      overflows.push({key: cat + (sub !== '*' ? '/' + sub : ''), n: items.length});
+    const [cat, subRaw] = key.split('::');
+    const sub = subRaw === '*' ? null : subRaw;
+    const allowedPositions = _apolloPositionsForGroup(cat, sub);
+
+    if (items.length > allowedPositions.length) {
+      overflows.push({key: cat + (sub ? '/' + sub : ''), n: items.length, max: allowedPositions.length});
       return;
     }
-    // Стабильная сортировка по приоритету: сначала по существующему apollo_slot
-    // (более крупный → выше), для tie-break — по времени слота. Это сохраняет
-    // ручную расстановку «кто крупнее», но автоматически закрывает дыры:
-    // если у кого-то был ear-1, а big-2 свободен — карточка повышается.
+    // Стабильная сортировка: сначала по уже назначенному apollo_slot (более крупный
+    // → выше), tie-break по времени слота. Сохраняет ручную расстановку «кто
+    // крупнее», но автоматически закрывает дыры: если у кого-то был ear-1, а
+    // big-2 свободен — карточка повышается.
     const APOLLO_PRIORITY = {
       'big-1': 0, 'big-2': 1, 'big-3': 2,
       'mid-1': 3, 'mid-2': 4, 'mid-3': 5,
       'center': 6,
-      'ear-1': 7, 'ear-2': 8, 'ear-3': 9,
     };
     items.sort((a, b) => {
       const pa = a.apollo_slot in APOLLO_PRIORITY ? APOLLO_PRIORITY[a.apollo_slot] : 10;
@@ -2576,37 +2577,23 @@ function recomputeApolloSlots(data) {
       const kb = _apolloSortKey(b, slots);
       return ka < kb ? -1 : (ka > kb ? 1 : 0);
     });
-    // Раздаём первые N позиций APOLLO_ORDER подряд. Это убирает дыры в больших
-    // слотах когда они освободились (например, после перевода карточки в другую
-    // категорию или удаления из программы).
+    // Раздаём первые N позиций из allowedPositions подряд. Это убирает дыры
+    // (если кому-то был ear-1, а big-2 свободен — повысится) и не использует
+    // позиции которые недоступны на сайте для этой группы (например, center
+    // для experiment/art/cinema).
     for (let i = 0; i < items.length; i++) {
-      items[i].apollo_slot = APOLLO_ORDER[i];
-    }
-    // apollo_slot теперь живёт на самом event/exhibit (мы только что назначили).
-    // Если оно было ранее помечено как «обогащённое со слота» — снимаем эту
-    // пометку, иначе buildExportText удалит apollo_slot вместе со снятием
-    // enriched-полей.
-    for (const item of items) {
-      if (Array.isArray(item._enriched_fields)) {
-        item._enriched_fields = item._enriched_fields.filter(f => f !== 'apollo_slot');
-        if (item._enriched_fields.length === 0) delete item._enriched_fields;
-      }
+      items[i].apollo_slot = allowedPositions[i];
     }
   });
 
-  // Apollo_slot теперь живёт на карточках. Со слотов убираем — это
-  // устаревший дубль, который мешает (на сайте Apollo использует
-  // ev.apollo_slot || slot.apollo_slot, и без удаления слотового значения
-  // дубли могут вернуться).
-  // slot.subcategory НЕ трогаем — UI редактирования слота пишет в него.
-  if (data.time_slots) {
-    for (const sid in data.time_slots) {
-      delete data.time_slots[sid].apollo_slot;
-    }
+  // Apollo_slot живёт на картах. Со слотов убираем (legacy-дубль, путал
+  // сайт когда два значения расходились).
+  for (const sid in slots) {
+    delete slots[sid].apollo_slot;
   }
 
   if (overflows.length > 0) {
-    const msg = overflows.map(o => `«${o.key}»: ${o.n} карточек (макс ${APOLLO_ORDER.length})`).join('\n');
+    const msg = overflows.map(o => `«${o.key}»: ${o.n} карточек (макс ${o.max})`).join('\n');
     if (!window._apolloOverflowWarned) {
       console.warn('[programmer] Apollo overflow:\n' + msg);
       window._apolloOverflowWarned = true;
@@ -2626,9 +2613,7 @@ function _saveAutoBackup(label) {
     const payload = {
       ts: new Date().toISOString(),
       label: label || 'manual',
-      data: state.data,
-      appStatuses: state.appStatuses,
-      ideas: state.ideas
+      data: state.data
     };
     localStorage.setItem(key, JSON.stringify(payload));
     // Удалить старые (оставить 10 последних — больше истории на случай раскопок)
@@ -2649,8 +2634,8 @@ function listAutoBackups() {
     .map(k => {
       try {
         const p = JSON.parse(localStorage.getItem(k));
-        return { key: k, ts: p.ts, label: p.label, eventsCount: (p.data && p.data.events || []).length };
-      } catch { return { key: k, ts: '?', label: '?', eventsCount: 0 }; }
+        return { key: k, ts: p.ts, label: p.label, cardsCount: (p.data && p.data.cards || []).length };
+      } catch { return { key: k, ts: '?', label: '?', cardsCount: 0 }; }
     });
 }
 
@@ -2662,10 +2647,14 @@ function restoreFromAutoBackup(key) {
     const p = JSON.parse(localStorage.getItem(key));
     if (!p || !p.data) { alert('Бэкап повреждён'); return; }
     state.data = p.data;
-    state.appStatuses = p.appStatuses || {};
-    state.ideas = p.ideas || [];
+    // Миграция: старые автобэкапы хранили appStatuses отдельно. Применяем на cards/ideas.
+    if (p.appStatuses && typeof p.appStatuses === 'object') {
+      for (const [id, status] of Object.entries(p.appStatuses)) {
+        _setAppStatus(id, status);
+      }
+    }
     state.isDirty = true;  // помечаем что есть несохранённые правки относительно сервера
-    enrichEventsFromSlots(state.data);
+    _ensureLegacyCategories(state.data);
     persistState();
     rerenderAll();
     updateSrcBadge();
@@ -2685,7 +2674,7 @@ function showBackupHistory() {
   const lines = backups.map((b, i) => {
     const dt = new Date(b.ts);
     const time = dt.toLocaleString('ru-RU', { hour:'2-digit', minute:'2-digit', second:'2-digit', day:'2-digit', month:'2-digit' });
-    return `${i+1}. ${time} · ${b.label} · ${b.eventsCount} events`;
+    return `${i+1}. ${time} · ${b.label} · ${b.cardsCount} карт`;
   }).join('\n');
   const ans = prompt(
     'История автобэкапов (новейшие сверху):\n\n' + lines +
@@ -2741,8 +2730,12 @@ function restoreState() {
     if (raw) {
       const s = JSON.parse(raw);
       if (s.data) state.data = s.data;
-      if (s.appStatuses) state.appStatuses = s.appStatuses;
-      if (s.ideas) state.ideas = s.ideas;
+      // Миграция: старые сессии хранили статусы в s.appStatuses. Применяем на cards/ideas.
+      if (s.appStatuses && typeof s.appStatuses === 'object') {
+        for (const [id, status] of Object.entries(s.appStatuses)) {
+          _setAppStatus(id, status);
+        }
+      }
       if (s.candCategoryOverrides) state.candCategoryOverrides = s.candCategoryOverrides;
       if (s.remoteSha) state.remoteSha = s.remoteSha;
       if (s.isDirty) state.isDirty = s.isDirty;
@@ -2781,7 +2774,7 @@ function undoLastChange() {
   const snapshot = state.undoStack.pop();
   try {
     state.data = JSON.parse(snapshot);
-    enrichEventsFromSlots(state.data);
+    _ensureLegacyCategories(state.data);
     _prevDataSnapshot = snapshot;  // следующая мутация будет пушить отсюда
     state.isDirty = state.undoStack.length > 0;
     persistState();
@@ -2864,344 +2857,319 @@ function updateSrcBadge() {
 }
 
 // ============================================================
-// COMPAT LAYER v30 ↔ v31  (вставлено для миграции на cards-модель)
+// COMPAT v30 ↔ v31: legacy-view над массивом cards
 // ============================================================
-// v31 хранит данные как массив `cards` с единым полем status.
-// Существующий код программера работает с legacy-структурой
-// (events + exhibits + applications + _app_statuses) и
-// слотами, у которых есть category/subcategory/apollo_slot.
-// Этот слой раскрывает cards в legacy при загрузке и
-// собирает обратно при сохранении.
-// Никакой другой код программера не меняется — он работает
-// с legacy-представлением в памяти и не знает про cards.
+// Файл хранится как `cards` (v31). UI программера написан под legacy-структуру:
+// раздельные events, exhibits, applications, плюс slot.category для расписания.
+// Здесь два преобразования: разворот (cards → legacy) при загрузке и свёртка
+// (legacy → cards) при сохранении. Остальной код программера про cards не знает.
+//
+// Маппинг типов:
+//   card.type='art'      → exhibit (subtype → kind)
+//   card.type='station'  → event с category=subtype (workshop|experiment|interactive)
+//   card.type=others     → event с category=type
+//
+// Маппинг статусов: card.status accepted/considering/rejected/new.
+//   accepted → попадает в events/exhibits
+//   считается заявкой при card._source_app → попадает в applications
+//   considering/rejected статусы записываются в _app_statuses
+//   'duplicate' живёт только в _app_statuses (на card.status — 'rejected')
+//
+// Multi-slot: card.slots=[s1,s2,…] разворачивается в N event-клонов с
+// id=`${card.id}#${i}` и общим _groupKey=card.id.
 
-// Подтипы станций: на сайте каждый — отдельный круг Аполлония, в legacy-формате
-// — отдельная категория event.category. В v31-формате они живут как
-// card.subtype при card.type='station'. Используется и при разворачивании,
-// и при сворачивании.
-const STATION_SUBTYPES = new Set(['workshop', 'experiment', 'interactive']);
+const LEGACY_STATION_CATEGORIES = new Set(['workshop', 'experiment', 'interactive']);
 
-function v31_decompressCardsToLegacy(data) {
-  if (!Array.isArray(data.cards)) return false;  // уже legacy
-
-  const events = [];
-  const exhibits = [];
-  const applications = [];
-  const appStatuses = {};
-
-  // По всем карточкам
-  for (const card of data.cards) {
-    // 1) Восстанавливаем заявку (если карточка пришла из формы)
-    if (card._source_app) {
-      const app = card.application ? {...card.application} : {};
-      app.id = card._source_app;
-      app.status = 'new';  // legacy applications.status унифицируем в 'new'
-
-      // Если у карточки есть team_notes и она не accepted —
-      // сохраняем заметку в самой заявке (legacy не имеет другого места).
-      if (card.team_notes && card.status !== 'accepted') {
-        app._v31_team_notes = card.team_notes;
-      }
-
-      // Ручные пометки в _app_statuses (если статус карточки — не accepted/new)
-      if (card.status === 'considering') appStatuses[card._source_app] = 'considering';
-      else if (card.status === 'rejected') appStatuses[card._source_app] = 'rejected';
-
-      applications.push(app);
-    }
-
-    // 2) Только accepted-карточки превращаются в events/exhibits для расписания
-    if (card.status !== 'accepted') continue;
-
-    // Восстанавливаем legacy-категории
-    let cat = card.type;
-    let sub = card.subtype || null;
-    if (card.type === 'station') {
-      // station → подтип карточки становится legacy category
-      cat = card.subtype || 'workshop';  // дефолт если не задано
-      sub = null;
-    }
-
-    // Базовая карточка legacy
-    const item = {
-      id: card.id,
-      status: 'confirmed',  // legacy status дефолт (мы потеряли tentative/confirmed различие)
-      title: card.title,
-      subtitle: card.subtitle,
-      speaker: card.speaker,
-      speaker_role: card.speaker_role,
-      description: card.description,
-      category: cat,
-      subcategory: sub,
-      apollo_slot: card.apollo_slot,
-      links: card.links,
-      team_notes: card.team_notes,
-      _admin: card._admin,  // admin-чек-лист (значки коммуникации на ленте)
-    };
-    if (card._source_app) item._source_app = card._source_app;
-
-    if (card.type === 'art') {
-      // exhibits
-      item.kind = card.subtype || 'art';
-      // exhibits не имеют category/subcategory в старой схеме — там было subcategory как kind
-      item.subcategory = card.subtype;
-      exhibits.push(_v31_stripUndef(item));
-    } else {
-      // events (включая cinema без слота)
-      if (card.venue) item.venue = card.venue;
-      if (card.duration_override) item.duration_override = card.duration_override;
-      if (card.lane != null) item.lane = card.lane;
-
-      // Карточка может занимать один или несколько временных слотов.
-      // card.slots = [s1, s2, ...] — multi-slot (например, мастерская идёт
-      // в нескольких 45-минутных слотах подряд).
-      // card.slot = "s1" — single-slot (legacy).
-      // Для programmer (как и для сайта) каждый slot — отдельный event;
-      // склейка обратно в одну карточку при экспорте — через _groupKey.
-      let cardSlots = [];
-      if (Array.isArray(card.slots) && card.slots.length) cardSlots = card.slots.slice();
-      else if (card.slot) cardSlots = [card.slot];
-      if (cardSlots.length <= 1) {
-        if (cardSlots.length) item.slot = cardSlots[0];
-        events.push(_v31_stripUndef(item));
-      } else {
-        for (let ci = 0; ci < cardSlots.length; ci++) {
-          const clone = Object.assign({}, item);
-          clone.id = card.id + '#' + ci;
-          clone.slot = cardSlots[ci];
-          clone._groupKey = card.id;
-          events.push(_v31_stripUndef(clone));
-        }
-      }
-    }
-  }
-
-  // 3) Восстанавливаем slot.category из station → workshop|experiment|interactive
-  //    по карточкам, которые на этом слоте лежат. Если разнотипицы — приоритет
-  //    experiment (более «общий» подтип в нашей таксономии).
-  //    Для пустых station-слотов — оставляем workshop как дефолт.
-  //    Multi-slot карточки могут оставлять «гостевую» половину на станционном слоте
-  //    (например Гусев: лекция popsci лежит на slot-gusev-talk и попутно на двух
-  //    станционных слотах). Для таких слотов оставляем дефолт workshop —
-  //    слот визуально остаётся станционным в расписании.
-  for (const sid of Object.keys(data.time_slots || {})) {
-    const slot = data.time_slots[sid];
-    if (slot.category === 'station') {
-      const cardsOnSlot = events.filter(e => e.slot === sid);
-      const nativeCards = cardsOnSlot.filter(e => STATION_SUBTYPES.has(e.category));
-      if (nativeCards.length === 0) {
-        slot.category = 'workshop';  // дефолт для пустого или «гостевого» station-слота
-      } else if (nativeCards.length === 1) {
-        slot.category = nativeCards[0].category;
-      } else {
-        // На слоте несколько родных карточек — приоритет experiment
-        const hasExp = nativeCards.some(e => e.category === 'experiment');
-        slot.category = hasExp ? 'experiment' : nativeCards[0].category;
-      }
-    }
-  }
-
-  data.events = events;
-  data.exhibits = exhibits;
-  data.applications = applications;
-  data._app_statuses = appStatuses;
-  // data.cards оставляем для отладки (не используется legacy кодом)
-  return true;
-}
-
-function _v31_stripUndef(o) {
+// Возвращает копию объекта без undefined/null/'' свойств — для чистого экспорта.
+function _stripEmpty(o) {
   const r = {};
   for (const k in o) if (o[k] !== undefined && o[k] !== null && o[k] !== '') r[k] = o[k];
   return r;
 }
 
-// Собрать обратно в cards для сохранения файла. Принимает obj в legacy-формате,
-// возвращает obj в v31-формате (cards вместо events/exhibits/applications).
-function v31_compressLegacyToCards(obj) {
-  const cards = [];
-
-  // Индекс применений
-  const apps = obj.applications || [];
-  const appsById = {};
-  for (const a of apps) appsById[a.id] = a;
-
-  const appStatuses = obj._app_statuses || {};
-  const usedAppIds = new Set();  // какие заявки уже привязаны к event/exhibit
-
-  // 1) Из events. category/subcategory/apollo_slot могут жить либо
-  //    прямо на event (v17+ legacy с обогащением), либо на слоте (v17+
-  //    без обогащения). Поэтому делаем fallback через slot.
-  //
-  //    Multi-slot карточки: events с одинаковым _groupKey склеиваются в одну
-  //    карточку с card.slots = [slot1, slot2, ...]. Если _groupKey нет —
-  //    событие → одна карточка с card.slot = ev.slot (legacy single-slot).
-  const srcSlots = obj.time_slots || {};
-  const groupedEvents = {};  // groupKey → [event1, event2, ...]
-  const singleEvents = [];
-  for (const ev of (obj.events || [])) {
-    if (ev._groupKey) {
-      if (!groupedEvents[ev._groupKey]) groupedEvents[ev._groupKey] = [];
-      groupedEvents[ev._groupKey].push(ev);
-    } else {
-      singleEvents.push(ev);
-    }
+// Список заявок — живая view из cards.
+// Каждая card с _source_app — это заявка (включая accepted-карточки, которые
+// пришли через форму, и orphan со status considering/rejected/new). Полные
+// данные формы хранятся в card.application; здесь восстанавливаем legacy-формат
+// с id из _source_app и status='new' (статус в legacy всегда 'new'; реальный
+// статус живёт в card.status напрямую).
+function getApplications() {
+  if (!state.data || !Array.isArray(state.data.cards)) return [];
+  const apps = [];
+  for (const card of state.data.cards) {
+    if (!card._source_app) continue;
+    const app = {...(card.application || {}), id: card._source_app, status: 'new'};
+    // team_notes хранится на card; UI лазает за ним через application — копируем.
+    if (card.team_notes && card.status !== 'accepted') app._v31_team_notes = card.team_notes;
+    apps.push(app);
   }
+  return apps;
+}
 
-  function buildCardFromEvent(ev, extra) {
-    const slot = ev.slot ? srcSlots[ev.slot] : null;
-    const evCategory = ev.category || (slot && slot.category);
-    const evSubcategory = ev.subcategory || (slot && slot.subcategory);
-    const evApolloSlot = ev.apollo_slot || (slot && slot.apollo_slot);
-    let type, subtype;
-    if (STATION_SUBTYPES.has(evCategory)) {
-      type = 'station';
-      subtype = evCategory;  // workshop|experiment как subtype
-    } else {
-      type = evCategory;
-      subtype = evSubcategory;
-    }
-    const card = _v31_stripUndef(Object.assign({
-      id: ev.id,
-      status: 'accepted',
-      type, subtype,
-      apollo_slot: evApolloSlot,
-      title: ev.title,
-      subtitle: ev.subtitle,
-      speaker: ev.speaker,
-      speaker_role: ev.speaker_role,
-      description: ev.description,
-      venue: ev.venue || (slot && slot.venue),
-      duration_override: ev.duration_override,
-      lane: ev.lane,
-      links: ev.links,
-      team_notes: ev.team_notes,
-      _admin: ev._admin,
-    }, extra || {}));
-    return card;
+// Установить статус заявки по id. Ищет card в state.data.cards по точному id
+// (orphan-заявка) или по _source_app (accepted-карта, привязанная к заявке) и
+// пишет card.status. UI 'duplicate' маппится в card.status='rejected' с пометкой
+// team_notes — compress собирает это обратно в файл.
+function _setAppStatus(id, status) {
+  if (!state.data || !Array.isArray(state.data.cards)) return;
+  const card = state.data.cards.find(c => c.id === id || c._source_app === id);
+  if (!card) return;
+  if (status === 'duplicate') {
+    card.status = 'rejected';
+    if (!card.team_notes) card.team_notes = '⚠ Дубликат — проверить';
+  } else {
+    card.status = status;
   }
+}
 
-  for (const ev of singleEvents) {
-    const card = buildCardFromEvent(ev, { slot: ev.slot });
-    // Если есть связанная заявка
-    if (ev._source_app) {
-      card._source_app = ev._source_app;
-      const a = appsById[ev._source_app];
-      if (a) {
-        const appCopy = {...a};
-        delete appCopy.id; delete appCopy.status;
-        if (Object.keys(appCopy).length > 0) card.application = appCopy;
-        usedAppIds.add(ev._source_app);
-      }
-    }
-    cards.push(card);
-  }
+// Прочитать статус заявки. Возвращает 'new' если ничего не найдено.
+function _getAppStatus(id) {
+  if (!state.data || !Array.isArray(state.data.cards)) return 'new';
+  const card = state.data.cards.find(c => c.id === id || c._source_app === id);
+  return card ? card.status : 'new';
+}
 
-  for (const gk of Object.keys(groupedEvents)) {
-    const group = groupedEvents[gk];
-    // Сортируем по времени слота, чтобы slots[0] был самым ранним
-    group.sort(function(a, b){
-      const sa = a.slot ? (srcSlots[a.slot]||{}).start || '' : '';
-      const sb = b.slot ? (srcSlots[b.slot]||{}).start || '' : '';
-      function key(s){ if(!s) return '99'; const h = parseInt(s.split(':')[0],10); return (h<12?(24+h):h) + ':' + s.split(':')[1]; }
-      return key(sa).localeCompare(key(sb));
-    });
-    const slots = group.map(e => e.slot).filter(Boolean);
-    const card = buildCardFromEvent(group[0], { id: gk, slots: slots });
-    // Связанная заявка — берём с первого event (если у всех одинаковая, что и должно быть)
-    if (group[0]._source_app) {
-      card._source_app = group[0]._source_app;
-      const a = appsById[group[0]._source_app];
-      if (a) {
-        const appCopy = {...a};
-        delete appCopy.id; delete appCopy.status;
-        if (Object.keys(appCopy).length > 0) card.application = appCopy;
-        usedAppIds.add(group[0]._source_app);
-      }
-    }
-    cards.push(card);
-  }
 
-  // 2) Из exhibits
-  for (const ex of (obj.exhibits || [])) {
-    const card = _v31_stripUndef({
-      id: ex.id,
-      status: 'accepted',
-      type: 'art',
-      subtype: ex.subcategory || ex.kind,
-      apollo_slot: ex.apollo_slot,
-      title: ex.title,
-      subtitle: ex.subtitle,
-      speaker: ex.speaker,
-      speaker_role: ex.speaker_role,
-      description: ex.description,
-      links: ex.links,
-      team_notes: ex.team_notes,
-      _admin: ex._admin,  // сохраняем admin-чек-лист (значки коммуникации) при round-trip
-    });
-    if (ex._source_app) {
-      card._source_app = ex._source_app;
-      const a = appsById[ex._source_app];
-      if (a) {
-        const appCopy = {...a};
-        delete appCopy.id; delete appCopy.status;
-        if (Object.keys(appCopy).length > 0) card.application = appCopy;
-        usedAppIds.add(ex._source_app);
-      }
-    }
-    cards.push(card);
-  }
+// Список событий — живая view из cards. Multi-slot card раскрывается в N events
+// с id `card.id#i` и общим `_groupKey=card.id`. venue обогащается из slot.
+// Возвращает ВСЕ cards со заданным type (кроме art) и любым статусом —
+// фильтрация по status (accepted для timeline, прочее для pool) на стороне UI.
+function getEvents() {
+  if (!state.data || !Array.isArray(state.data.cards)) return [];
+  const slots = state.data.time_slots || {};
+  const out = [];
+  for (const card of state.data.cards) {
+    if (!card.type || card.type === 'art') continue;  // orphan-заявки и экспонаты — не events
 
-  // 3) Одинокие applications (без связи)
-  for (const a of apps) {
-    if (usedAppIds.has(a.id)) continue;
-    let status;
-    const manual = appStatuses[a.id];
-    if (a.status === 'rejected' || manual === 'rejected') status = 'rejected';
-    else if (manual === 'considering') status = 'considering';
-    else if (manual === 'duplicate') status = 'rejected';
-    else status = 'new';
-
-    const appCopy = {...a};
-    delete appCopy.id; delete appCopy.status;
-    // Извлекаем сохранённую team_notes
-    const restoredNotes = appCopy._v31_team_notes;
-    delete appCopy._v31_team_notes;
-    const card = {
-      id: a.id,
-      status,
-      _source_app: a.id,
-      application: appCopy,
+    const isStation = card.type === 'station';
+    const base = {
+      id: card.id,
+      status: card.status || 'new',
+      category: isStation ? (card.subtype || 'workshop') : card.type,
+      subcategory: isStation ? null : (card.subtype || null),
+      title: card.title, subtitle: card.subtitle,
+      speaker: card.speaker, speaker_role: card.speaker_role,
+      description: card.description,
+      apollo_slot: card.apollo_slot,
+      venue: card.venue,
+      duration_override: card.duration_override,
+      lane: card.lane,
+      links: card.links,
+      team_notes: card.team_notes,
+      _admin: card._admin,
+      _source_app: card._source_app,
     };
-    if (restoredNotes) card.team_notes = restoredNotes;
-    else if (manual === 'duplicate') card.team_notes = '⚠ Дубликат — проверить';
-    cards.push(card);
+
+    // Multi-slot expansion: одна card.slots → N events.
+    const cardSlots = Array.isArray(card.slots) && card.slots.length ? card.slots
+                    : (card.slot ? [card.slot] : []);
+    if (cardSlots.length <= 1) {
+      const ev = {...base, slot: cardSlots[0] || null};
+      _enrichEventFromSlot(ev, slots[ev.slot]);
+      out.push(ev);
+    } else {
+      cardSlots.forEach((s, i) => {
+        const ev = {...base, id: card.id + '#' + i, slot: s, _groupKey: card.id};
+        _enrichEventFromSlot(ev, slots[s]);
+        out.push(ev);
+      });
+    }
+  }
+  return out;
+}
+
+// Обогащение event из slot: если у card venue/category/subcategory/apollo_slot пустые,
+// берём из slot и помечаем как обогащённые (UI рисует иконку «✦»).
+function _enrichEventFromSlot(ev, sl) {
+  if (!sl) return;
+  const enriched = [];
+  for (const f of ['category', 'apollo_slot', 'subcategory', 'venue']) {
+    if (ev[f] == null && sl[f] != null) {
+      ev[f] = sl[f];
+      enriched.push(f);
+    } else if (f === 'venue' && sl.venue && ev.venue && ev.venue !== sl.venue) {
+      ev.venue = sl.venue;
+      enriched.push(f);
+    }
+  }
+  if (enriched.length) ev._enriched_fields = enriched;
+}
+
+// Конвертирует legacy-event в card. Для station-категорий (workshop/experiment)
+// card.type='station' и card.subtype=workshop/experiment.
+function _eventToCard(ev) {
+  const isStation = LEGACY_STATION_CATEGORIES.has(ev.category);
+  return _stripEmpty({
+    id: ev.id,
+    status: ev.status || 'accepted',
+    type: isStation ? 'station' : ev.category,
+    subtype: isStation ? ev.category : (ev.subcategory || null),
+    apollo_slot: ev.apollo_slot,
+    title: ev.title, subtitle: ev.subtitle,
+    speaker: ev.speaker, speaker_role: ev.speaker_role,
+    description: ev.description,
+    slot: ev.slot,
+    venue: ev.venue,
+    duration_override: ev.duration_override,
+    lane: ev.lane,
+    links: ev.links,
+    team_notes: ev.team_notes,
+    _admin: ev._admin,
+    _source_app: ev._source_app,
+  });
+}
+
+// Добавляет событие как card в state.data.cards.
+function _pushEvent(ev) {
+  state.data.cards = state.data.cards || [];
+  state.data.cards.push(_eventToCard(ev));
+  return ev;
+}
+
+// Возвращает card для event-id (обрабатывая multi-slot half-slot вида ev-XX#N).
+function _findEventCard(id) {
+  if (!state.data || !Array.isArray(state.data.cards)) return null;
+  const cardId = id.replace(/#\d+$/, '');
+  return state.data.cards.find(c => c.id === cardId) || null;
+}
+
+// Удаляет event-card из state.data.cards.
+// Для multi-slot half-slot id (ev-XX#N): удаляем slot из card.slots; если slot
+// последний — удаляем card целиком; если осталась одна — становится single-slot.
+function _removeEvent(id) {
+  const halfMatch = id.match(/^(.+)#(\d+)$/);
+  if (halfMatch) {
+    const cardId = halfMatch[1];
+    const slotIdx = parseInt(halfMatch[2], 10);
+    const card = (state.data.cards || []).find(c => c.id === cardId);
+    if (card && Array.isArray(card.slots)) {
+      card.slots.splice(slotIdx, 1);
+      if (card.slots.length === 0) {
+        state.data.cards = state.data.cards.filter(c => c.id !== cardId);
+      } else if (card.slots.length === 1) {
+        card.slot = card.slots[0];
+        delete card.slots;
+      }
+    }
+    return;
+  }
+  state.data.cards = (state.data.cards || []).filter(c => c.id !== id);
+}
+
+
+// Каждая card с type='art' — это экспонат (любой статус — фильтрация на стороне UI).
+function getExhibits() {
+  if (!state.data || !Array.isArray(state.data.cards)) return [];
+  const out = [];
+  for (const card of state.data.cards) {
+    if (card.type !== 'art') continue;
+    out.push({
+      id: card.id,
+      status: card.status || 'new',
+      kind: card.subtype || 'art',
+      subcategory: card.subtype,
+      apollo_slot: card.apollo_slot,
+      title: card.title, subtitle: card.subtitle,
+      speaker: card.speaker, speaker_role: card.speaker_role,
+      description: card.description,
+      venue: card.venue,
+      links: card.links, team_notes: card.team_notes, _admin: card._admin,
+      _source_app: card._source_app,
+    });
+  }
+  return out;
+}
+
+// Конвертирует legacy-объект exhibit в card-объект — для функций UI которые
+// создают новые экспонаты через legacy-форму.
+function _exhibitToCard(ex) {
+  return _stripEmpty({
+    id: ex.id,
+    status: ex.status || 'accepted',
+    type: 'art',
+    subtype: ex.subcategory || ex.kind,
+    apollo_slot: ex.apollo_slot,
+    title: ex.title, subtitle: ex.subtitle,
+    speaker: ex.speaker, speaker_role: ex.speaker_role,
+    description: ex.description,
+    venue: ex.venue,
+    links: ex.links, team_notes: ex.team_notes, _admin: ex._admin,
+    _source_app: ex._source_app,
+  });
+}
+
+// Добавляет новый экспонат в state.data.cards.
+function _pushExhibit(ex) {
+  state.data.cards = state.data.cards || [];
+  state.data.cards.push(_exhibitToCard(ex));
+  return ex;
+}
+
+// Удаляет экспонат-карту из state.data.cards.
+// Card-заявка с _source_app, имеющая тот же id, считается отдельной сущностью
+// (id экспоната — exh-…, id заявки — app-…, они не пересекаются), поэтому
+// фильтр по type='art' достаточен.
+function _removeExhibit(id) {
+  state.data.cards = (state.data.cards || []).filter(c =>
+    !(c.id === id && c.type === 'art')
+  );
+}
+
+function decompressCardsToLegacy(data) {
+  if (!Array.isArray(data.cards)) return false;  // уже legacy
+
+  // Слоты со station-категорией → конкретный подтип (workshop/experiment) по
+  // картам на слоте. Приоритет experiment при разнотипье. Без родных карточек
+  // оставляем workshop. Собираем (slot, category) из cards с учётом multi-slot.
+  const eventSlots = [];
+  for (const card of data.cards) {
+    if (card.status !== 'accepted' || card.type === 'art') continue;
+    const isStation = card.type === 'station';
+    const category = isStation ? (card.subtype || 'workshop') : card.type;
+    const slots = Array.isArray(card.slots) && card.slots.length ? card.slots
+                : (card.slot ? [card.slot] : []);
+    for (const s of slots) {
+      if (s) eventSlots.push({slot: s, category});
+    }
+  }
+  for (const sid in (data.time_slots || {})) {
+    const slot = data.time_slots[sid];
+    if (slot.category !== 'station') continue;
+    const native = eventSlots.filter(e => e.slot === sid && LEGACY_STATION_CATEGORIES.has(e.category));
+    if (!native.length) slot.category = 'workshop';
+    else if (native.length === 1) slot.category = native[0].category;
+    else slot.category = native.some(e => e.category === 'experiment') ? 'experiment' : native[0].category;
   }
 
-  // 4) Слоты: возвращаем station для workshop/experiment/interactive в slot.category.
-  // После decompress slot.category мог стать одним из трёх — нужно свернуть обратно.
+  // events/exhibits/applications/статусы больше не материализуем —
+  // getEvents()/getExhibits()/getApplications()/_getAppStatus() считают всё
+  // из cards на лету.
+  return true;
+}
+
+function compressLegacyToCards(obj) {
+  // Cards — финальная форма данных. UI правит state.data.cards напрямую через
+  // detail-функции и timeline. Здесь делаем только защитную копию + _stripEmpty.
+  const srcCards = Array.isArray(obj.cards) ? obj.cards : [];
+  const cards = srcCards.map(c => _stripEmpty({...c}));
+
+  // Слоты: возвращаем station в slot.category (decompress развернул в workshop/experiment).
   const slots = {};
-  for (const sid of Object.keys(obj.time_slots || {})) {
+  for (const sid in (obj.time_slots || {})) {
     const s = {...obj.time_slots[sid]};
-    if (STATION_SUBTYPES.has(s.category)) {
-      s.category = 'station';
-    }
+    if (LEGACY_STATION_CATEGORIES.has(s.category)) s.category = 'station';
     delete s.subcategory;
     delete s.apollo_slot;
     slots[sid] = s;
   }
 
-  // 5) Финальный объект
+  // Финальный объект — собираем только определённые поля
   const result = {
-    _meta: obj._meta,
-    venues: obj.venues,
-    categories: obj.categories,
-    subcategories: obj.subcategories,
-    time_slots: slots,
-    cards,
-    fern_leaves: obj.fern_leaves,
-    _howto: obj._howto,
+    _meta: obj._meta, venues: obj.venues,
+    categories: obj.categories, subcategories: obj.subcategories,
+    time_slots: slots, cards,
+    fern_leaves: obj.fern_leaves, _howto: obj._howto,
   };
-  // Удаляем undefined ключи верхнего уровня
   for (const k of Object.keys(result)) if (result[k] === undefined) delete result[k];
   return result;
 }
@@ -3212,7 +3180,7 @@ async function loadFestivalData() {
     if (!hadCachedData) {
       // Нет ни сети, ни кэша. Не подставляем устаревший fallback —
       // лучше пустой UI с понятной ошибкой, чем данные v9 которые путают.
-      state.data = { _meta: { version: '?' }, venues: {}, categories: {}, time_slots: {}, events: [], exhibits: [], fern_leaves: [] };
+      state.data = { _meta: { version: '?' }, venues: {}, categories: {}, time_slots: {}, cards: [], fern_leaves: [] };
     }
     state.dataSource = hadCachedData ? 'cached' : 'fallback';
     state.dataLoadError = 'CONFIG.baseUrl не задан';
@@ -3234,13 +3202,13 @@ async function loadFestivalData() {
     // структуру (events + exhibits + applications + _app_statuses) для
     // остального кода программера. Сохранение собирает обратно.
     if (Array.isArray(state.data.cards)) {
-      v31_decompressCardsToLegacy(state.data);
+      decompressCardsToLegacy(state.data);
       console.log('[programmer] v31 cards decompressed:',
-        state.data.events.length, 'events,',
-        state.data.exhibits.length, 'exhibits,',
-        state.data.applications.length, 'applications');
+        getEvents().length, 'events,',
+        getExhibits().length, 'exhibits,',
+        getApplications().length, 'applications');
     }
-    enrichEventsFromSlots(state.data);
+    _ensureLegacyCategories(state.data);
 
     // Архитектурное правило: apollo_slot — производное служебное поле, его
     // должен раздавать сам программер, а не человек. Запускаем пересчёт
@@ -3251,16 +3219,14 @@ async function loadFestivalData() {
     try { recomputeApolloSlots(state.data); }
     catch(e) { console.warn('[programmer] apollo recompute on load failed:', e); }
 
-    // Восстановление статусов заявок из data._app_statuses (если в локальном
-    // state.appStatuses ничего нет — например при первой загрузке, открытии с
-    // другого устройства или после очистки кеша). Локальный state имеет приоритет:
-    // если ты что-то ставил здесь — оно не перезатирается из файла.
+    // Миграция: старые версии файла хранили статусы заявок в data._app_statuses
+    // (отдельный словарь). Сейчас статус живёт в card.status и idea.status.
+    // Применяем legacy-словарь на cards/ideas один раз при загрузке такого файла.
     if (state.data._app_statuses && typeof state.data._app_statuses === 'object') {
-      const localCount = Object.keys(state.appStatuses || {}).length;
-      if (localCount === 0) {
-        state.appStatuses = {...state.data._app_statuses};
-        console.log('[programmer] восстановлены appStatuses из файла:', Object.keys(state.appStatuses).length);
+      for (const [id, status] of Object.entries(state.data._app_statuses)) {
+        _setAppStatus(id, status);
       }
+      delete state.data._app_statuses;
     }
 
     state.isDirty = false;
@@ -3276,7 +3242,7 @@ async function loadFestivalData() {
       state.dataSource = 'cached';
     } else {
       // И сети нет, и кэша нет — пустой UI вместо устаревшего fallback.
-      state.data = { _meta: { version: '?' }, venues: {}, categories: {}, time_slots: {}, events: [], exhibits: [], fern_leaves: [] };
+      state.data = { _meta: { version: '?' }, venues: {}, categories: {}, time_slots: {}, cards: [], fern_leaves: [] };
       state.dataSource = 'fallback';
     }
   }
@@ -3296,15 +3262,28 @@ async function loadFestivalData() {
 // Архитектурная миграция legacy v30 → v31 раньше жила здесь. Сейчас неактуальна:
 // все v31-данные приходят с slot.category = 'station', а декомпрессия v31 уже
 // расставляет workshop/experiment/interactive по слотам с учётом карточек.
-// Функция удалена. Гарантия data.categories.station переехала в enrichEventsFromSlots.
+// Функция удалена. Гарантия data.categories.station переехала в _ensureLegacyCategories.
 
-function enrichEventsFromSlots(data) {
-  if (!data || !data.events || !data.time_slots) return;
-  // Гарантируем что синтетические категории есть в справочнике —
-  // нужны для UI (цвет ячеек, отображение в eyebrow detail-панели).
-  // 'station' — обёртка над workshop/experiment в legacy-формате слотов.
-  // 'interactive' — подкатегория станций без таймслота (живёт в центре круга
-  // эксперименты на Аполлонии).
+// Runtime-overlay для категорий: ключи которые UI программера может встретить
+// в card.subtype, но которые отсутствуют как отдельная запись в data.categories
+// проды. Не пишутся в экспорт — нужны только чтобы UI красиво показывал.
+const SYNTHETIC_CATEGORY_OVERLAYS = {
+  interactive: { display: 'интерактивы', size: 'big', comment: 'постоянные интерактивные станции — VR/компьютерные программы без таймслота' },
+};
+
+// Помощник: читает категорию из data.categories, fallback на синтетические overlay.
+function _getCategoryMeta(key) {
+  if (!key) return null;
+  if (state.data && state.data.categories && state.data.categories[key]) return state.data.categories[key];
+  return SYNTHETIC_CATEGORY_OVERLAYS[key] || null;
+}
+
+function _ensureLegacyCategories(data) {
+  if (!data) return;
+  // 'station' — обёртка над workshop/experiment в legacy-формате слотов; добавляем
+  // в data.categories только если её там ещё нет (на проде она уже определена).
+  // 'interactive' и другие синтетические категории живут в SYNTHETIC_CATEGORY_OVERLAYS
+  // и в экспорт не попадают.
   if (!data.categories) data.categories = {};
   if (!data.categories.station) {
     data.categories.station = {
@@ -3313,73 +3292,6 @@ function enrichEventsFromSlots(data) {
       comment: 'мастерские и эксперименты — два круга на Аполлонии в типе station',
     };
   }
-  if (!data.categories.interactive) {
-    data.categories.interactive = {
-      display: 'интерактивы',
-      size: 'big',
-      comment: 'постоянные интерактивные станции — VR/компьютерные программы без таймслота',
-    };
-  }
-  const FIELDS = ['category', 'apollo_slot', 'subcategory', 'venue'];
-  for (const ev of data.events) {
-    if (!ev.slot) continue;
-    const sl = data.time_slots[ev.slot];
-    if (!sl) continue;
-    const enriched = [];
-    for (const f of FIELDS) {
-      // Заполняем поля события из слота, если у события поле пустое.
-      if (ev[f] == null && sl[f] != null) {
-        ev[f] = sl[f];
-        enriched.push(f);
-      }
-      // Дополнительно для venue: если у слота venue ЯВНО задан и расходится с event.venue
-      // — переписываем событием. Это лечит ситуацию когда slot.venue поменяли в редакторе,
-      // но у event venue остался старый (был прописан напрямую, не через enrich).
-      else if (f === 'venue' && sl.venue && ev.venue && ev.venue !== sl.venue) {
-        ev.venue = sl.venue;
-        enriched.push(f);
-      }
-    }
-    if (enriched.length) ev._enriched_fields = enriched;
-  }
-}
-
-// localStorage ключ для подтянутых из Sheets заявок (мерджится с FALLBACK при загрузке)
-const APPS_SYNCED_KEY = 'programmer.applications.synced';
-
-function _loadSyncedApps() {
-  try { return JSON.parse(localStorage.getItem(APPS_SYNCED_KEY) || '[]'); }
-  catch { return []; }
-}
-function _saveSyncedApps(arr) {
-  try { localStorage.setItem(APPS_SYNCED_KEY, JSON.stringify(arr)); } catch {}
-}
-
-async function loadApplications() {
-  // База — заявки из festival-data.js (раздел data.applications, заявки 1-28
-  // разобранные вручную, перенесены сюда из захардкоженного FALLBACK в v26).
-  // Поверх — заявки 29+ из localStorage, подтянутые через 📥 Новые заявки.
-  let base = [];
-  if (state.data && Array.isArray(state.data.applications)) {
-    base = JSON.parse(JSON.stringify(state.data.applications));
-  }
-  // Поддержка старого CONFIG.appsUrl (если кто-то его настроил) — пока оставляем
-  if (CONFIG.appsUrl) {
-    try {
-      const resp = await fetch(CONFIG.appsUrl + '?action=list&_t=' + Date.now());
-      const data = await resp.json();
-      base = Array.isArray(data) ? data : (data.rows || []);
-    } catch(e) {
-      console.warn('apps load failed', e);
-    }
-  }
-  // Мерджим с синканутыми из Sheets — но НЕ перезатираем то что уже в base
-  const synced = _loadSyncedApps();
-  const baseIds = new Set(base.map(a => a.id));
-  for (const s of synced) {
-    if (!baseIds.has(s.id)) base.push(s);
-  }
-  state.applications = base;
 }
 
 // ============================================================
@@ -3387,12 +3299,14 @@ async function loadApplications() {
 // ============================================================
 //
 // Аддитивная синхронизация: подтягивает только заявки, которые пришли в Sheets
-// после последней синхронизации. Никакие существующие заявки в state.applications
-// не трогает (статусы rejected/duplicate, ручные правки сохраняются).
+// после последней синхронизации. Новые заявки кладутся как карточки со
+// status='new' в state.data.cards (UI потом видит их через getApplications()).
+// Существующие карточки не трогаются — статусы rejected/duplicate, ручные
+// правки и заполненные form-data сохраняются.
 //
-// Порог хранится в localStorage. По умолчанию 28 — это последний app-N в
-// захардкоженном APPLICATIONS_FALLBACK (заявки 1-28 разобраны вручную и не
-// должны подтягиваться повторно).
+// Порог хранится в localStorage. По умолчанию 28 — последний app-N в исходном
+// festival-data.js (заявки 1-28 разобраны вручную и не должны подтягиваться
+// повторно).
 //
 // Источник: публичный CSV-экспорт Google Sheets (Anyone with the link · Viewer).
 // Без API-ключей, без auth.
@@ -3423,7 +3337,7 @@ async function syncNewApplicationsFromSheets() {
 
   const headers = rows[0].map(h => h.trim());
   const newApps = [];
-  const skippedExists = []; // id уже в state.applications
+  const skippedExists = []; // id уже в cards (заявка существует)
   let totalDataRows = 0;
   let maxRowIndex = 0;
 
@@ -3435,7 +3349,7 @@ async function syncNewApplicationsFromSheets() {
     const N = i; // app-N: первая заявка в row 2 (i=1) → N=1
     if (N <= threshold) continue;
     const id = 'app-' + N;
-    if (state.applications.some(a => a.id === id)) {
+    if (getApplications().some(a => a.id === id)) {
       skippedExists.push(id);
       continue;
     }
@@ -3497,22 +3411,28 @@ async function syncNewApplicationsFromSheets() {
     return;
   }
 
-  // Добавляем — НЕ перезаписываем существующие
-  state.applications.push(...newApps);
-
-  // Сохраняем подтянутые в отдельный localStorage чтобы они не пропадали при reload
-  const synced = _loadSyncedApps();
-  const syncedIds = new Set(synced.map(a => a.id));
+  // Добавляем новые заявки как карточки со status='new' прямо в state.data.cards.
+  // Никакого отдельного хранилища: persistState() ниже сохранит весь state в
+  // localStorage, включая обновлённые cards. Так synced apps переживут reload.
+  state.data.cards = state.data.cards || [];
   for (const a of newApps) {
-    if (!syncedIds.has(a.id)) synced.push(a);
+    const application = {...a};
+    delete application.id;
+    delete application.status;
+    state.data.cards.push({
+      id: a.id,
+      status: 'new',
+      _source_app: a.id,
+      application,
+    });
   }
-  _saveSyncedApps(synced);
 
   // Обновляем порог
   const maxN = Math.max(...newApps.map(a => parseInt(a.id.replace('app-', ''), 10)));
   try { localStorage.setItem(APPS_LAST_SYNCED_KEY, String(maxN)); } catch {}
 
   // Перерисовка
+  markDirty();
   persistState();
   rerenderAll();
 
@@ -3573,9 +3493,9 @@ async function reloadAll() {
   // Хранится 5 последних, можно восстановить вручную через DevTools если что.
   _saveAutoBackup('before-reload');
   state.isDirty = false; state.remoteSha = null;
-  // Последовательно: сначала festival-data, потом applications (зависит от data.applications).
+  // Заявки приходят вместе с festival-data — через cards (поле _source_app);
+  // getApplications() даёт live-view.
   await loadFestivalData();
-  await loadApplications();
   rerenderAll(); persistState(); updateSrcBadge();
 }
 
@@ -3584,18 +3504,14 @@ async function reloadAll() {
 // ============================================================
 function buildCandidates() {
   const pool = [];
-  state.applications.forEach(a => pool.push({...a, kind: 'app', status: state.appStatuses[a.id] || a.status || 'new'}));
-  // Идеи: status тоже из state.appStatuses (раньше брался из самого объекта,
-  // и кнопки «Отказ/Думаем/Дубль» в detail-view идеи не работали — статус
-  // сохранялся, но buildCandidates его не читал).
-  state.ideas.forEach(i => pool.push({...i, kind: 'idea', status: state.appStatuses[i.id] || i.status || 'new'}));
+  getApplications().forEach(a => pool.push({...a, kind: 'app', status: _getAppStatus(a.id)}));
   return pool;
 }
 function isPlaced(c) {
   // Заявка/идея считается "размещённой" если она привязана к ЛЮБОЙ сущности:
-  // событию (через _source) или экспонату (через _source_app)
-  const inEvents = state.data.events.some(e => e._source === c.id || (e._source_app === c.id));
-  const inExhibits = (state.data.exhibits || []).some(x => x._source_app === c.id || x._source === c.id);
+  // событию или экспонату (через _source_app)
+  const inEvents = getEvents().some(e => e._source_app === c.id);
+  const inExhibits = getExhibits().some(x => x._source_app === c.id);
   return inEvents || inExhibits;
 }
 
@@ -3609,13 +3525,13 @@ function renderCandidates() {
 
   // Добавляем уже-созданные сущности этого мира — для просмотра уже-в-программе
   if (isArtView) {
-    (state.data.exhibits || []).forEach(ex => {
+    getExhibits().forEach(ex => {
       items.push({ kind: 'exhibit', id: ex.id, title: ex.title, name: ex.speaker,
         description: ex.description, status: ex.status, placed: true,
         exhibitKind: ex.kind });
     });
   } else {
-    state.data.events.forEach(ev => {
+    getEvents().forEach(ev => {
       const w = eventWorld(ev);
       if (cfg.poolWorlds && !cfg.poolWorlds.includes(w)) return;
       items.push({ kind: 'event', id: ev.id, title: ev.title, name: ev.speaker,
@@ -3626,21 +3542,17 @@ function renderCandidates() {
   // Фильтр заявок по миру вкладки (взаимоисключающие)
   items = items.filter(c => {
     if (c.kind !== 'app') return true;
-    const app = state.applications.find(a => a.id === c.id);
+    const app = getApplications().find(a => a.id === c.id);
     if (!app) return true;
     const w = appWorld(app);
     return cfg.poolWorlds && cfg.poolWorlds.includes(w);
   });
 
-  // 4 коробки. Семантика:
-  //   Новые      — apps status=new без связанного event/exhibit
-  //   Думаем     — apps status=considering + events/exhibits status=placeholder.
-  //                Это то что НЕ в расписании, но мы рассматриваем.
-  //   В программе — всё что мы уже взяли: events/exhibits status=tentative или confirmed.
-  //                Для расписания (timeline) tentative = «в программе, но детали уточняются»
-  //                — оно не отличается семантически от confirmed для целей пула. Цвета карточек
-  //                в этой коробке должны выглядеть одинаково (зелёный) — см. CSS правило ниже.
-  //   Отказы     — apps rejected/duplicate + events/exhibits rejected
+  // 4 коробки. Семантика (единый status enum для всех cards):
+  //   Новые      — status=new (или undefined), не привязано к timeline
+  //   Думаем     — status=considering. Карта в pool, не в расписании
+  //   В программе — status=accepted (events/exhibits живут в timeline или в спец-поле без слота)
+  //   Отказы     — status=rejected, плюс apps duplicate (rejected + метка в team_notes)
   items = items.filter(c => {
     if (filter === 'new') {
       if (c.kind !== 'app' && c.kind !== 'idea') return false;
@@ -3649,18 +3561,18 @@ function renderCandidates() {
       return st === 'new';
     }
     if (filter === 'considering') {
-      if (c.kind === 'app' || c.kind === 'idea') {
+      if (c.kind === 'app') {
         if (c.kind === 'app' && isPlaced(c)) return false;
         return c.status === 'considering';
       }
       if (c.kind === 'event' || c.kind === 'exhibit') {
-        return c.status === 'placeholder';
+        return c.status === 'considering';
       }
       return false;
     }
     if (filter === 'placed') {
       if (c.kind === 'event' || c.kind === 'exhibit') {
-        return c.status === 'tentative' || c.status === 'confirmed';
+        return c.status === 'accepted';
       }
       if (c.kind === 'app') {
         return c.status === 'accepted' && !isPlaced(c);
@@ -3668,7 +3580,7 @@ function renderCandidates() {
       return false;
     }
     if (filter === 'rejected') {
-      if (c.kind === 'app' || c.kind === 'idea') return c.status === 'rejected' || c.status === 'duplicate';
+      if (c.kind === 'app') return c.status === 'rejected' || c.status === 'duplicate';
       if (c.kind === 'event' || c.kind === 'exhibit') return c.status === 'rejected';
       return false;
     }
@@ -3706,18 +3618,16 @@ function updateViewTabCounters() {
   const ds = state.data;
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-  // Унифицированные счётчики на вкладках. Считаем всё что лежит в коробках
-  // «Новые» + «Думаем» — это и заявки (apps/ideas со статусами new/considering),
-  // и события/экспонаты со статусом placeholder. Точно как пользователь видит
-  // в левом пуле когда переключает между коробками.
+  // Унифицированные счётчики на вкладках. Считаем всё в коробках «Новые» + «Думаем»:
+  // карты со статусом new или considering, без привязки к timeline.
   const pendingCands = buildCandidates().filter(c => {
-    if (c.kind === 'app' || c.kind === 'idea') {
+    if (c.kind === 'app') {
       if (c.kind === 'app' && isPlaced(c)) return false;
       const st = c.status || 'new';
       return st === 'new' || st === 'considering';
     }
     if (c.kind === 'event' || c.kind === 'exhibit') {
-      return c.status === 'placeholder';
+      return c.status === 'considering';
     }
     return false;
   });
@@ -3771,7 +3681,7 @@ function renderCandCard(c) {
       ${c.indoor_outdoor ? `<span class="tag ${/улиц/i.test(c.indoor_outdoor)?'outdoor':'indoor'}">${esc(c.indoor_outdoor.slice(0,20).replace(/[,;\s]+$/, ''))}</span>` : ''}
       ${placed ? `<span class="tag placed">в программе</span>` : ''}
       ${(c.kind === 'app' && c.status === 'rejected') || ((c.kind === 'event' || c.kind === 'exhibit') && c.status === 'rejected') ? `<span class="tag">отказ</span>` : ''}
-      ${(c.kind === 'app' && c.status === 'considering') || ((c.kind === 'event' || c.kind === 'exhibit') && c.status === 'placeholder') ? `<span class="tag">думаем</span>` : ''}
+      ${c.status === 'considering' ? `<span class="tag">думаем</span>` : ''}
       ${c.kind === 'app' && !placed ? `<button class="cand-link-btn" onclick="event.stopPropagation(); linkApplicationToExisting('${c.id}')" title="Связать с уже существующим событием или экспонатом в программе">🔗 связать</button>` : ''}
     </div>
   </div>`;
@@ -3783,7 +3693,7 @@ function kindLabel(k) { return {app:'заявка', idea:'идея', event:'со
 // Случай когда команда заранее создала карточку, потом пришла заявка.
 // ============================================================
 function linkApplicationToExisting(appId) {
-  const app = state.applications.find(a => a.id === appId);
+  const app = getApplications().find(a => a.id === appId);
   if (!app) { alert('Заявка ' + appId + ' не найдена'); return; }
 
   const search = prompt(
@@ -3795,8 +3705,8 @@ function linkApplicationToExisting(appId) {
 
   // Кандидаты — НЕ уже связанные events/exhibits
   const allItems = [
-    ...state.data.events.filter(e => !e._source_app).map(e => ({...e, _kind: 'event'})),
-    ...(state.data.exhibits || []).filter(e => !e._source_app).map(e => ({...e, _kind: 'exhibit'}))
+    ...getEvents().filter(e => !e._source_app).map(e => ({...e, _kind: 'event'})),
+    ...getExhibits().filter(e => !e._source_app).map(e => ({...e, _kind: 'exhibit'}))
   ];
   const q = search.toLowerCase();
   const matches = allItems.filter(e =>
@@ -3830,17 +3740,9 @@ function linkApplicationToExisting(appId) {
     `На карточке проставится _source_app: "${appId}", статус заявки → accepted.`
   )) return;
 
-  // Проставляем _source_app на event/exhibit (не на копии — на реальном объекте)
-  if (chosen._kind === 'event') {
-    const ev = state.data.events.find(e => e.id === chosen.id);
-    if (ev) ev._source_app = appId;
-  } else {
-    const ex = state.data.exhibits.find(e => e.id === chosen.id);
-    if (ex) ex._source_app = appId;
-  }
-  // Статус заявки
-  state.appStatuses = state.appStatuses || {};
-  state.appStatuses[appId] = 'accepted';
+  // Проставляем _source_app прямо в card (источник истины).
+  const card = state.data.cards.find(c => c.id === chosen.id);
+  if (card) card._source_app = appId;
 
   markDirty(); persistState(); rerenderAll();
   alert(`Связали:\n${appId} ↔ ${chosen._kind}/${chosen.id}\n\nНе забудь опубликовать (🚀).`);
@@ -3850,17 +3752,13 @@ function esc(s) { if (s == null) return ''; return String(s).replace(/[<>&"']/g,
 // Категория кандидата: для заявки берём _suggested_category, для события — category, для экспоната — 'art'
 function candidateCategory(c) {
   if (c.kind === 'event') {
-    const ev = state.data.events.find(e => e.id === c.id);
+    const ev = getEvents().find(e => e.id === c.id);
     return ev?.category || null;
   }
   if (c.kind === 'exhibit') return 'art';  // экспонаты — все art
   if (c.kind === 'app') {
-    const app = state.applications.find(a => a.id === c.id);
+    const app = getApplications().find(a => a.id === c.id);
     return app?._suggested_category || null;
-  }
-  if (c.kind === 'idea') {
-    const idea = state.ideas.find(i => i.id === c.id);
-    return idea?._suggested_category || null;
   }
   return null;
 }
@@ -3941,7 +3839,7 @@ function countCandsByCategory() {
 
   let items = [...buildCandidates()];
   if (!isArtView) {
-    state.data.events.forEach(ev => {
+    getEvents().forEach(ev => {
       const w = eventWorld(ev);
       if (cfg.poolWorlds && !cfg.poolWorlds.includes(w)) return;
       items.push({ kind:'event', id:ev.id, title:ev.title, status:ev.status, placed:!!(ev.slot&&ev.venue) });
@@ -3950,7 +3848,7 @@ function countCandsByCategory() {
 
   items = items.filter(c => {
     if (c.kind !== 'app') return true;
-    const app = state.applications.find(a => a.id === c.id);
+    const app = getApplications().find(a => a.id === c.id);
     if (!app) return true;
     const w = appWorld(app);
     return cfg.poolWorlds && cfg.poolWorlds.includes(w);
@@ -3959,7 +3857,7 @@ function countCandsByCategory() {
     if (filter === 'todo') {
       if (c.kind === 'event' && c.placed) return false;
       if (c.kind === 'app' && (c.status === 'rejected' || c.status === 'duplicate')) return false;
-      if ((c.kind === 'app' || c.kind === 'idea') && isPlaced(c)) return false;
+      if ((c.kind === 'app') && isPlaced(c)) return false;
       return true;
     }
     if (filter === 'placed') return c.kind === 'event' && c.placed;
@@ -4100,7 +3998,7 @@ const COMM_BADGES_CATS = new Set(['popsci', 'workshop', 'experiment', 'social'])
 
 function commBadgesHtml(ev) {
   if (!ev || !COMM_BADGES_CATS.has(ev.category)) return '';
-  if (ev.status === 'placeholder' || ev.status === 'rejected') return '';
+  if (ev.status !== 'accepted') return '';
   const a = ev._admin || {};
   const pending = COMM_BADGES.filter(b => !a[b.key]);
   if (!pending.length) return '';
@@ -4111,11 +4009,13 @@ function commBadgesHtml(ev) {
 
 function recordCommDone(evId, key) {
   if (isReadOnly()) return;
-  const ev = state.data.events.find(x => x.id === evId);
+  const ev = getEvents().find(x => x.id === evId);
   if (!ev) return;
   pushHistory();
-  if (!ev._admin) ev._admin = {};
-  ev._admin[key] = true;
+  const card = _findEventCard(evId);
+  if (!card) return;
+  if (!card._admin) card._admin = {};
+  card._admin[key] = true;
   markDirty(); rerenderAll(); persistState();
 }
 
@@ -4189,7 +4089,7 @@ function renderTimeline() {
       const firstAllowed = VENUE_ORDER.find(v => allowed.includes(v));
       const inBand = bandedSids.has(sid);
 
-      const cellEvents = state.data.events.filter(e => e.slot === sid && e.venue === vid);
+      const cellEvents = getEvents().filter(e => e.slot === sid && e.venue === vid && e.status === 'accepted');
       // labelOffset резервирует место сверху slot-bg, которое остаётся видимым
       // (карточка не накрывает его целиком). Видимая полоска — кликабельная,
       // ведёт в редактор слота. На мобиле полоска не нужна — карточка занимает
@@ -4231,7 +4131,7 @@ function renderTimeline() {
       // События
       cellEvents.forEach(ev => {
         const pos = getEventLanePosition(ev, cellEvents, lanes, slotLane);
-        const cat = state.data.categories[ev.category];
+        const cat = _getCategoryMeta(ev.category);
         const subcatDef = ev.subcategory && state.data.subcategories?.[ev.category]?.[ev.subcategory];
         const subcatLabel = subcatDef?.display || null;
         const leftPct = isExclusive ? 0 : (pos.start / lanes) * 100;
@@ -4407,10 +4307,31 @@ function renderTimeline() {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       const evId = btn.closest('.event-pill').dataset.event;
-      const ev = state.data.events.find(x => x.id === evId);
+      const ev = getEvents().find(x => x.id === evId);
       if (ev && confirm(`Открепить «${ev.title}»?`)) {
         pushHistory();
-        ev.slot = null; ev.venue = null; delete ev.lane;
+        const card = _findEventCard(evId);
+        if (card) {
+          const halfMatch = evId.match(/#(\d+)$/);
+          if (halfMatch && Array.isArray(card.slots)) {
+            // Multi-slot half: удаляем slot из массива (становится короче)
+            const idx = parseInt(halfMatch[1], 10);
+            card.slots.splice(idx, 1);
+            if (card.slots.length === 1) {
+              card.slot = card.slots[0];
+              delete card.slots;
+            } else if (card.slots.length === 0) {
+              // Всё ушло — карта без слотов вообще
+              delete card.slots;
+              card.slot = null;
+            }
+          } else {
+            // Single-slot: открепляем
+            card.slot = null;
+            card.venue = null;
+            delete card.lane;
+          }
+        }
         markDirty(); rerenderAll(); persistState();
       }
     });
@@ -4508,11 +4429,9 @@ function placeBandLabels(ppm) {
 }
 
 function renderExhibits() {
-  // В правой панели «Галерея» показываем то что в программе — status=confirmed
-  // или tentative. placeholder = «Думаем» (живёт в левом пуле), rejected = «Отказы».
-  const exh = (state.data.exhibits || []).filter(e =>
-    e.status === 'confirmed' || e.status === 'tentative'
-  );
+  // В правой панели «Галерея» показываем accepted-экспонаты. considering — в левом
+  // пуле «Думаем», rejected — в «Отказы».
+  const exh = getExhibits().filter(e => e.status === 'accepted');
   const byKind = {art: [], installation: [], media: []};
   exh.forEach(e => { (byKind[e.kind] || (byKind[e.kind] = [])).push(e); });
 
@@ -4546,7 +4465,7 @@ function renderExhibits() {
       e.stopPropagation();
       const id = btn.closest('.exhibit-card').dataset.id;
       if (confirm('Удалить экспонат?')) {
-        state.data.exhibits = state.data.exhibits.filter(x => x.id !== id);
+        _removeExhibit(id);
         markDirty(); rerenderAll(); persistState();
       }
     });
@@ -4561,7 +4480,7 @@ function renderExhibitCard(item) {
   if (item.subcategory && item.kind !== item.subcategory) tags.push(item.subcategory);
   if (item.apollo_slot) tags.push(item.apollo_slot);
   if (item._source_app) tags.push('из ' + item._source_app);
-  return `<div class="exhibit-card s-${item.status||'tentative'}" data-id="${esc(item.id)}">
+  return `<div class="exhibit-card s-${item.status||'accepted'}" data-id="${esc(item.id)}">
     <button class="ex-remove">×</button>
     <div class="ex-title">${esc(item.title || '(без названия)')}</div>
     ${item.speaker ? `<div class="ex-speaker">${esc(item.speaker)}</div>` : ''}
@@ -4575,9 +4494,8 @@ function addExhibit(kind) {
   if (!title) return;
   const id = 'exh-' + Date.now();
   const subcatDefault = kind === 'art' ? 'art' : (kind === 'installation' ? 'installation' : (kind === 'digital' ? 'digital' : 'media'));
-  state.data.exhibits = state.data.exhibits || [];
-  state.data.exhibits.push({
-    id, kind, status: 'tentative',
+  _pushExhibit({
+    id, kind, status: 'accepted',
     title, speaker: null, description: null,
     subcategory: subcatDefault, apollo_slot: null
   });
@@ -4589,8 +4507,8 @@ function addExhibit(kind) {
 // «эксперименты». Хранятся как events с category='interactive' (после
 // декомпрессии card.type='station', subtype='interactive').
 function renderInteractives() {
-  const items = (state.data.events || []).filter(e =>
-    e.category === 'interactive'
+  const items = getEvents().filter(e =>
+    e.category === 'interactive' && e.status === 'accepted'
   );
   const grid = document.getElementById('interactives-grid');
   if (!grid) return;
@@ -4615,7 +4533,7 @@ function renderInteractives() {
       e.stopPropagation();
       const id = btn.closest('.exhibit-card').dataset.id;
       if (confirm('Удалить интерактив?')) {
-        state.data.events = state.data.events.filter(x => x.id !== id);
+        _removeEvent(id);
         markDirty(); rerenderAll(); persistState();
       }
     });
@@ -4626,7 +4544,7 @@ function renderInteractiveCard(item) {
   const tags = [];
   if (item.apollo_slot) tags.push(item.apollo_slot);
   if (item._source_app) tags.push('из ' + item._source_app);
-  return `<div class="exhibit-card s-${item.status||'confirmed'}" data-id="${esc(item.id)}">
+  return `<div class="exhibit-card s-${item.status||'accepted'}" data-id="${esc(item.id)}">
     <button class="ex-remove">×</button>
     <div class="ex-title">${esc(item.title || '(без названия)')}</div>
     ${item.speaker ? `<div class="ex-speaker">${esc(item.speaker)}</div>` : ''}
@@ -4639,9 +4557,8 @@ function addInteractive() {
   const title = prompt('Название нового интерактива:');
   if (!title) return;
   const id = 'ev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-  state.data.events = state.data.events || [];
-  state.data.events.push({
-    id, category: 'interactive', status: 'confirmed',
+  _pushEvent({
+    id, category: 'interactive', status: 'accepted',
     title, speaker: null, description: null,
     apollo_slot: null, slot: null
   });
@@ -4650,17 +4567,14 @@ function addInteractive() {
 
 function renderConflicts() {
   const issues = [];
-  state.data.events.forEach(ev => {
+  getEvents().forEach(ev => {
+    if (ev.status !== 'accepted') return;
     if (ev.slot) {
       const slot = state.data.time_slots[ev.slot];
       if (!slot) issues.push(`«${ev.title || ev.id}» — слот ${ev.slot} не существует`);
     }
     if (['music', 'cinema', 'art'].includes(ev.category) && !ev.subcategory) {
       issues.push(`«${ev.title || ev.id}» — категория ${ev.category} требует subcategory`);
-    }
-    // Событие без status — должно быть placeholder/tentative/confirmed
-    if (!ev.status) {
-      issues.push(`«${ev.title || ev.id}» — нет поля status`);
     }
   });
   // Слоты без обязательных полей (схема v17+, но без type — он вычисляется автоматически)
@@ -4697,20 +4611,22 @@ function renderConflicts() {
   // один круг). Чтобы не ругаться на «дубль», берём только первый event на
   // groupKey, остальные пропускаем.
   const _apolloSeenGroups = new Set();
-  (state.data.events || []).forEach(e => {
+  getEvents().forEach(e => {
+    if (e.status !== 'accepted') return;
     if (e._groupKey) {
       if (_apolloSeenGroups.has(e._groupKey)) return;
       _apolloSeenGroups.add(e._groupKey);
     }
     collectApollo(e, 'event');
   });
-  (state.data.exhibits || []).forEach(x => collectApollo(x, 'exhibit'));
+  getExhibits().forEach(x => { if (x.status === 'accepted') collectApollo(x, 'exhibit'); });
   Object.entries(apolloByKey).forEach(([k, list]) => {
     if (list.length > 1) issues.push(`Apollo дубль ${k}: ${list.join(', ')}`);
   });
   // Перегруз lanes
   const byCell = {};
-  state.data.events.forEach(ev => {
+  getEvents().forEach(ev => {
+    if (ev.status !== 'accepted') return;
     if (!ev.slot || !ev.venue) return;
     const k = ev.slot + '::' + ev.venue;
     (byCell[k] = byCell[k] || []).push(ev);
@@ -4739,7 +4655,8 @@ function renderConflicts() {
   // только первый event на groupKey.
   const titleMap = {};
   const _titleSeenGroups = new Set();
-  state.data.events.forEach(e => {
+  getEvents().forEach(e => {
+    if (e.status !== 'accepted') return;
     if (e._groupKey) {
       if (_titleSeenGroups.has(e._groupKey)) return;
       _titleSeenGroups.add(e._groupKey);
@@ -4747,7 +4664,7 @@ function renderConflicts() {
     const k = (e.title || '').trim().toLowerCase();
     if (k && k !== '(без названия)' && k !== 'tba') (titleMap[k] = titleMap[k] || []).push(e.id);
   });
-  (state.data.exhibits || []).forEach(x => {
+  getExhibits().forEach(x => {
     const k = (x.title || '').trim().toLowerCase();
     if (k) (titleMap[k] = titleMap[k] || []).push(x.id);
   });
@@ -4771,7 +4688,8 @@ function renderUnassigned() {
   // им не нужно конкретное время в расписании). Для остальных категорий
   // (popsci, music, social, workshop, experiment) отсутствие слота — это сигнал
   // «утвердили, но не разместили», и такие события должны быть видны как orphan.
-  const u = state.data.events.filter(e => {
+  const u = getEvents().filter(e => {
+    if (e.status !== 'accepted') return false;
     if (e.slot && e.venue) return false;
     if (e.category === 'cinema' || e.category === 'art') return false;
     return eventIsRelevant(e);
@@ -4810,9 +4728,9 @@ function handleDrop(slotId, venueId, laneIdx, e) {
   if (slot && slot.category) {
     let candCat = null;
     if (kind === 'event') {
-      const ev = state.data.events.find(x => x.id === id);
+      const ev = getEvents().find(x => x.id === id);
       candCat = ev?.category;
-    } else if (kind === 'app' || kind === 'idea') {
+    } else if (kind === 'app') {
       const cand = buildCandidates().find(c => c.id === id);
       // У заявки тип определяется так же как при создании: override > suggested
       const ovr = state.candCategoryOverrides?.[id];
@@ -4822,8 +4740,8 @@ function handleDrop(slotId, venueId, laneIdx, e) {
       if (candCat === 'installation' || candCat === 'media' || candCat === 'digital') candCat = 'art';
     }
     if (candCat && majorCat(candCat) !== majorCat(slot.category)) {
-      const slotCat = state.data.categories?.[slot.category]?.display || slot.category;
-      const evCat = state.data.categories?.[candCat]?.display || candCat;
+      const slotCat = _getCategoryMeta(slot.category)?.display || slot.category;
+      const evCat = _getCategoryMeta(candCat)?.display || candCat;
       alert(`Не могу поставить.\n\nСлот зарезервирован под «${slotCat}».\nА это событие имеет тип «${evCat}».\n\nПоменяй тип события в его карточке, или выбери другой слот.`);
       return;
     }
@@ -4831,7 +4749,7 @@ function handleDrop(slotId, venueId, laneIdx, e) {
 
   // indoor/outdoor проверка
   const isOutdoor = venueId === 'courtyard';
-  if (kind === 'app' || kind === 'idea') {
+  if (kind === 'app') {
     const cand = buildCandidates().find(c => c.id === id);
     if (cand && cand.indoor_outdoor) {
       const pref = cand.indoor_outdoor.toLowerCase();
@@ -4849,7 +4767,7 @@ function handleDrop(slotId, venueId, laneIdx, e) {
   const slotLane = slot ? getSlotLaneInVenue(slotId, slot, venueId) : 0;
 
   // Какая lane свободна
-  const cellEvents = state.data.events.filter(e2 => e2.slot === slotId && e2.venue === venueId);
+  const cellEvents = getEvents().filter(e2 => e2.slot === slotId && e2.venue === venueId && e2.status === 'accepted');
   const occupiedLanes = new Set();
   cellEvents.forEach(e2 => {
     const pos = getEventLanePosition(e2, cellEvents, lanes, slotLane);
@@ -4860,18 +4778,27 @@ function handleDrop(slotId, venueId, laneIdx, e) {
   }
 
   if (kind === 'event') {
-    const ev = state.data.events.find(x => x.id === id);
-    if (ev) {
-      ev.slot = slotId; ev.venue = venueId;
-      if (lanes > 1) ev.lane = laneIdx === 0 ? 'left' : 'right';
-      else delete ev.lane;
+    const card = _findEventCard(id);
+    if (card) {
+      const halfMatch = id.match(/#(\d+)$/);
+      if (halfMatch && Array.isArray(card.slots)) {
+        // Multi-slot half: меняем конкретный slot
+        const idx = parseInt(halfMatch[1], 10);
+        card.slots[idx] = slotId;
+      } else {
+        // Single-slot
+        card.slot = slotId;
+      }
+      card.venue = venueId;
+      if (lanes > 1) card.lane = laneIdx === 0 ? 'left' : 'right';
+      else delete card.lane;
     }
-  } else if (kind === 'app' || kind === 'idea') {
+  } else if (kind === 'app') {
     const cand = buildCandidates().find(c => c.id === id);
     if (!cand) return;
     const newEv = createEventFromCand(cand, slotId, venueId);
     if (lanes > 1) newEv.lane = laneIdx === 0 ? 'left' : 'right';
-    state.data.events.push(newEv);
+    _pushEvent(newEv);
   }
   markDirty(); rerenderAll(); persistState();
 }
@@ -4879,7 +4806,7 @@ function handleDrop(slotId, venueId, laneIdx, e) {
 function createEventFromCand(cand, slotId, venueId) {
   return {
     id: 'ev-' + Date.now() + '-' + Math.random().toString(36).slice(2,6),
-    status: 'tentative',
+    status: 'accepted',
     title: cand.title || '(без названия)',
     subtitle: null, speaker: cand.name || null, speaker_role: null,
     category: cand._suggested_category || guessCategory(cand),
@@ -4888,7 +4815,7 @@ function createEventFromCand(cand, slotId, venueId) {
     duration_override: null,
     description: cand.description || null,
     links: cand.links ? [{label: 'из заявки', url: cand.links}] : [],
-    _source: cand.id
+    _source_app: cand.id
   };
 }
 function guessCategory(c) {
@@ -5047,19 +4974,59 @@ function renderAppDetail(id) {
       </div>
     </div>
     <div class="detail-actions">
-      ${c.kind === 'idea' ? `<button onclick="detailDeleteIdea()" class="danger" title="Удалить идею (заявки удалить нельзя — только пометить)">Удалить</button>` : ''}
-      <button onclick="detailMarkApp('rejected')" class="danger">Отказ</button>
-      <button onclick="detailMarkApp('considering')">Думаем</button>
-      <button onclick="detailMarkApp('duplicate')">Дубль</button>
+      ${_renderCardStatusActions(c.status, {skipAccepted: true})}
+      <button onclick="setCardStatus('duplicate')">Дубль</button>
       <button onclick="detailConvertApp()" class="primary">${isPlaced(c) ? 'Переместить →' : 'Создать →'}</button>
     </div>
   `;
 }
 
+
+// Рендерит редактируемую секцию ссылок (label + URL + remove) — общий helper
+// для detail-панели карты (events, exhibits, в будущем — apps).
+function _renderLinksSection(links) {
+  return (links || []).map((l, i) => `
+    <div class="detail-link-row">
+      <input data-link-idx="${i}" data-field="label" value="${esc(l.label||'')}" placeholder="название">
+      <input data-link-idx="${i}" data-field="url" value="${esc(l.url||'')}" placeholder="https://…">
+      <button onclick="detailRemoveLink(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+// Секция «Наши заметки» (team_notes) — редактируемая, общая для всех карт.
+function _renderTeamNotesSection(value) {
+  return `
+    <div class="detail-section team-notes-section">
+      <label class="detail-label">Наши заметки <span class="detail-label-hint">— только для нас, на сайт не идут</span></label>
+      <textarea id="detail-card-team-notes" class="team-notes-textarea" placeholder="Договорённости с автором, пометки команды, что нужно подготовить, контекст…">${esc(value || '')}</textarea>
+    </div>
+  `;
+}
+
+// Единый helper для status-кнопок detail-панели card. Показывает только те
+// статусы, которые отличаются от текущего, чтобы не было «Принять» на уже
+// принятой карте. Для заявок (apps) принятие идёт через выбор типа (кнопка
+// «Создать →»), поэтому там используем skipAccepted: true.
+function _renderCardStatusActions(currentStatus, opts) {
+  opts = opts || {};
+  const parts = [];
+  if (!opts.skipAccepted && currentStatus !== 'accepted') {
+    parts.push(`<button onclick="setCardStatus('accepted')">Принять</button>`);
+  }
+  if (currentStatus !== 'considering') {
+    parts.push(`<button onclick="setCardStatus('considering')">Думаем</button>`);
+  }
+  if (currentStatus !== 'rejected') {
+    parts.push(`<button onclick="setCardStatus('rejected')" class="danger">Отказ</button>`);
+  }
+  return parts.join('\n      ');
+}
+
 function renderEventDetail(id) {
-  const ev = state.data.events.find(e => e.id === id);
+  const ev = getEvents().find(e => e.id === id);
   if (!ev) return '<div class="detail-body">не найдено</div>';
-  const cat = state.data.categories[ev.category];
+  const cat = _getCategoryMeta(ev.category);
   const slot = ev.slot ? state.data.time_slots[ev.slot] : null;
   const venue = ev.venue ? state.data.venues[ev.venue] : null;
   const subcats = state.data.subcategories?.[ev.category] || {};
@@ -5068,26 +5035,19 @@ function renderEventDetail(id) {
     return `<option value="${esc(k)}" ${ev.subcategory === k ? 'selected' : ''}>${esc(label)} (${esc(k)})</option>`;
   }).join('');
 
-  const linksHtml = (ev.links || []).map((l, i) => `
-    <div class="detail-link-row">
-      <input data-link-idx="${i}" data-field="label" value="${esc(l.label||'')}" placeholder="название (Telegram, сайт…)">
-      <input data-link-idx="${i}" data-field="url" value="${esc(l.url||'')}" placeholder="https://…">
-      <button onclick="detailRemoveLink(${i})">×</button>
-    </div>
-  `).join('');
+  const linksHtml = _renderLinksSection(ev.links);
 
-  // Поиск исходной заявки (если есть _source_app или _source)
-  const srcAppId = ev._source_app || ev._source;
-  const srcApp = srcAppId ? state.applications.find(a => a.id === srcAppId) : null;
-  const showAppTab = !!srcApp;
-  const activeTab = state.detailTab === 'app' && showAppTab ? 'app' : 'event';
+  // Поиск исходной заявки (если есть _source_app)
+  const srcAppId = ev._source_app;
+  const srcApp = srcAppId ? getApplications().find(a => a.id === srcAppId) : null;
+  const activeTab = state.detailTab === 'app' ? 'app' : 'event';
 
-  const tabsHtml = showAppTab ? `
+  const tabsHtml = `
     <div class="detail-tabs">
       <button class="detail-tab ${activeTab==='event'?'active':''}" onclick="switchDetailTab('event')">Событие</button>
-      <button class="detail-tab ${activeTab==='app'?'active':''}" onclick="switchDetailTab('app')">Заявка · ${esc(srcAppId)}</button>
+      <button class="detail-tab ${activeTab==='app'?'active':''}" onclick="switchDetailTab('app')">Анкета${srcAppId ? ' · ' + esc(srcAppId) : ''}</button>
     </div>
-  ` : '';
+  `;
 
   const eventBody = `
     <div class="detail-eyebrow">${esc(cat?.display || ev.category || '')}${ev.subcategory ? ' · ' + esc(subcats[ev.subcategory]?.display || ev.subcategory) : ''}</div>
@@ -5127,25 +5087,14 @@ function renderEventDetail(id) {
           ${_entitySubtypeOptionsHtml(majorCat(ev.category), majorCat(ev.category) === 'station' ? ev.category : ev.subcategory)}
         </select>
       </div>
-      <div>
-        <label>Статус</label>
-        <select id="detail-ev-status">
-          <option value="tentative" ${(ev.status==='tentative'||ev.status==='confirmed')?'selected':''}>в программе</option>
-          <option value="placeholder" ${ev.status==='placeholder'?'selected':''}>думаем</option>
-          <option value="rejected" ${ev.status==='rejected'?'selected':''}>отказ</option>
-        </select>
-      </div>
       <div class="full">
         <label>Ссылки (соцсети, сайт)</label>
-        <div class="detail-links" id="detail-ev-links">${linksHtml}</div>
+        <div class="detail-links" id="detail-card-links">${linksHtml}</div>
         <button class="detail-add-link" onclick="detailAddLink()">+ ссылка</button>
       </div>
     </div>
 
-    <div class="detail-section team-notes-section">
-      <label class="detail-label">Наши заметки <span class="detail-label-hint">— только для нас, на сайт не идут</span></label>
-      <textarea id="detail-ev-team-notes" class="team-notes-textarea" placeholder="Договорённости с автором, пометки команды, что нужно подготовить, контекст…">${esc(ev.team_notes || '')}</textarea>
-    </div>
+    ${_renderTeamNotesSection(ev.team_notes)}
 
     ${COMM_BADGES_CATS.has(ev.category) ? `
     <div class="detail-section comm-section">
@@ -5163,7 +5112,7 @@ function renderEventDetail(id) {
     ` : ''}
   `;
 
-  const appBody = srcApp ? renderAppFieldsReadOnly(srcApp) : '';
+  const appBody = renderApplicationFormEditable(srcApp);
 
   return `
     <div class="detail-header">
@@ -5177,63 +5126,100 @@ function renderEventDetail(id) {
     </div>
     <div class="detail-actions">
       <button onclick="detailDeleteEvent()" class="danger">Удалить</button>
-      ${ev.slot && ev.venue ? '<button onclick="detailUnplaceEvent()">Открепить от слота</button>' : ''}
+      ${_renderCardStatusActions(ev.status)}
       <button onclick="detailSaveEvent()" class="primary">Сохранить</button>
     </div>
   `;
 }
 
-// Read-only вид заявки для табы «заявка» в detail события
-function renderAppFieldsReadOnly(app) {
-  const fields = [
-    ['Имя автора', app.name],
-    ['Контакт', app.contact],
-    ['О себе', app.about],
-    ['Название (как написал автор)', app.title],
-    ['Описание идеи', app.description],
-    ['Визуальная ось', app.visual],
-    ['Формат заявки', app.format],
-    ['Тема', app.topic],
-    ['Помещение/улица', app.indoor_outdoor],
-    ['Место (требование)', app.place],
-    ['Время', app.time],
-    ['Слот 1 час подходит?', app.slot_ok],
-    ['Длительность', app.duration],
-    ['Длительность инсталляции', app.inst_duration],
-    ['Размер инсталляции', app.inst_size],
-    ['Вместимость станции', app.capacity],
-    ['Материалы', app.materials],
-    ['Что привезёт сам', app.bring],
-    ['Волонтёры', app.volunteers],
-    ['Особые требования', app.special],
-    ['Связь с фракталами', app.fractal_link],
-    ['Ограничения по времени', app.time_constraints],
-    ['Присутствие автора', app.author_presence],
-    ['Детали выступления', app.speech_details],
-    ['Проект/организация', app.org],
-    ['Ссылки', app.links],
-  ];
-  const filledFields = fields.filter(([_, v]) => v !== null && v !== undefined && v !== '');
-  
+// Структура полей анкеты — единый источник истины для рендера/сбора формы.
+// Поля идентичны структуре OpenCall (Google Sheets) и редактируются в detail-панели
+// карты. Тип 'text' = одна строка, 'area' = многострочный textarea.
+const APPLICATION_FIELDS = [
+  ['name',             'Имя автора',                        'text'],
+  ['contact',          'Контакт',                           'text'],
+  ['about',            'О себе',                            'area'],
+  ['title',            'Название (как написал автор)',      'text'],
+  ['description',      'Описание идеи',                     'area'],
+  ['visual',           'Визуальная ось',                    'area'],
+  ['format',           'Формат заявки',                     'text'],
+  ['topic',            'Тема',                              'text'],
+  ['indoor_outdoor',   'Помещение / улица',                 'text'],
+  ['place',            'Место (требование)',                'text'],
+  ['time',             'Время',                             'text'],
+  ['slot_ok',          'Слот 1 час подходит?',              'text'],
+  ['duration',         'Длительность',                      'text'],
+  ['inst_duration',    'Длительность инсталляции',          'text'],
+  ['inst_size',        'Размер инсталляции',                'text'],
+  ['capacity',         'Вместимость станции',               'text'],
+  ['materials',        'Материалы',                         'area'],
+  ['bring',            'Что привезёт сам',                  'area'],
+  ['volunteers',       'Волонтёры',                         'text'],
+  ['special',          'Особые требования',                 'area'],
+  ['fractal_link',     'Связь с фракталами',                'area'],
+  ['time_constraints', 'Ограничения по времени',            'text'],
+  ['author_presence',  'Присутствие автора',                'text'],
+  ['speech_details',   'Детали выступления',                'area'],
+  ['org',              'Проект / организация',              'text'],
+  ['links',            'Ссылки',                            'area'],
+];
+
+// Editable форма анкеты для вкладки «Анкета» detail-панели.
+// app может быть пустым/null — тогда форма рендерится с пустыми полями (для cards
+// без _source_app: создана через Claude / addNewEvent — анкета не была заполнена).
+function renderApplicationFormEditable(app) {
+  app = app || {};
   const meta = [];
   if (app.submitted_at) meta.push(`подана ${esc(String(app.submitted_at).slice(0, 10))}`);
   if (app._suggested_category) meta.push(`категория (по сути): ${esc(app._suggested_category)}`);
-  
+
+  const fieldHtml = APPLICATION_FIELDS.map(([key, label, type]) => {
+    const v = app[key] || '';
+    const id = 'detail-app-' + key;
+    if (type === 'area') {
+      return `<div class="app-field">
+        <label for="${id}">${esc(label)}</label>
+        <textarea id="${id}" rows="2">${esc(v)}</textarea>
+      </div>`;
+    }
+    return `<div class="app-field">
+      <label for="${id}">${esc(label)}</label>
+      <input type="text" id="${id}" value="${esc(v)}">
+    </div>`;
+  }).join('');
+
   return `
-    <div class="app-readonly-header">
-      <div class="detail-eyebrow">Заявка из OpenCall · ${esc(app.id)}</div>
-      <h1 class="detail-name">${esc(app.name || '—')}</h1>
-      <h2 class="detail-title">${esc(app.title || '(без названия)')}</h2>
+    <div class="app-form-header">
+      <div class="detail-eyebrow">${app.id ? 'Анкета · ' + esc(app.id) : 'Анкета (не заполнена)'}</div>
       ${meta.length ? `<div class="app-readonly-meta">${meta.join(' · ')}</div>` : ''}
       ${app._warning ? `<div class="detail-warning"><strong>Замечание:</strong> ${esc(app._warning)}</div>` : ''}
     </div>
-    <dl class="app-readonly-fields">
-      ${filledFields.map(([k, v]) => `
-        <dt>${esc(k)}</dt>
-        <dd>${escMultiline(v)}</dd>
-      `).join('')}
-    </dl>
+    <div class="app-form-fields">
+      ${fieldHtml}
+    </div>
   `;
+}
+
+// Собирает значения полей формы анкеты обратно в card.application.
+// Вызывается из detailSave* и при переключении вкладки.
+function detailCollectApplicationFields() {
+  if (!_detailContext) return;
+  const card = (state.data.cards || []).find(c => c.id === _detailContext.id.replace(/#\d+$/, ''));
+  if (!card) return;
+  // Проверяем что форма анкеты действительно отрендерена (вкладка активна)
+  const firstField = document.getElementById('detail-app-' + APPLICATION_FIELDS[0][0]);
+  if (!firstField) return;
+  const newApp = {...(card.application || {})};
+  for (const [key] of APPLICATION_FIELDS) {
+    const el = document.getElementById('detail-app-' + key);
+    if (!el) continue;
+    const v = el.value.trim();
+    if (v) newApp[key] = v; else delete newApp[key];
+  }
+  // Если анкета полностью пуста — сносим её совсем (чтобы не плодить пустые application: {})
+  const hasAny = Object.keys(newApp).some(k => !k.startsWith('_') && k !== 'id' && k !== 'submitted_at' && newApp[k]);
+  if (hasAny) card.application = newApp;
+  else delete card.application;
 }
 
 function escMultiline(v) {
@@ -5244,10 +5230,14 @@ function escMultiline(v) {
 function switchDetailTab(tab) {
   if (!_detailContext) return;
   if (_detailContext.type !== 'event' && _detailContext.type !== 'exhibit') return;
-  // Сохраняем текущие правки в форме (только если уходим с вкладки события)
+  // Сохраняем правки текущей формы перед переключением, чтобы они не потерялись
   if (state.detailTab !== 'app' && tab === 'app') {
+    // Уходим с вкладки публичных полей события/экспоната — собираем их
     if (_detailContext.type === 'event') detailCollectEventFields();
     else if (_detailContext.type === 'exhibit') detailCollectExhibitFields();
+  } else if (state.detailTab === 'app' && tab !== 'app') {
+    // Уходим с вкладки анкеты — собираем анкету
+    detailCollectApplicationFields();
   }
   state.detailTab = tab;
   showDetail(_detailContext.type, _detailContext.id);
@@ -5256,73 +5246,74 @@ function switchDetailTab(tab) {
 function detailCollectEventFields() {
   // Записать значения формы во временный буфер state — не на персист, только во вью
   if (!_detailContext || _detailContext.type !== 'event') return;
-  const ev = state.data.events.find(e => e.id === _detailContext.id);
-  if (!ev) return;
+  const card = _findEventCard(_detailContext.id);
+  if (!card) return;
   const get = (id) => {
     const el = document.getElementById(id);
     return el ? el.value : null;
   };
-  if (get('detail-ev-title') !== null) ev.title = get('detail-ev-title');
-  if (get('detail-ev-subtitle') !== null) ev.subtitle = get('detail-ev-subtitle') || null;
-  if (get('detail-ev-speaker') !== null) ev.speaker = get('detail-ev-speaker') || null;
-  if (get('detail-ev-speaker-role') !== null) ev.speaker_role = get('detail-ev-speaker-role') || null;
-  if (get('detail-ev-description') !== null) ev.description = get('detail-ev-description') || null;
-  if (get('detail-ev-category') !== null) ev.category = get('detail-ev-category');
-  if (get('detail-ev-status') !== null) ev.status = get('detail-ev-status');
-  if (get('detail-ev-apollo') !== null) ev.apollo_slot = get('detail-ev-apollo') || null;
+  if (get('detail-ev-title') !== null) card.title = get('detail-ev-title');
+  if (get('detail-ev-subtitle') !== null) card.subtitle = get('detail-ev-subtitle') || null;
+  if (get('detail-ev-speaker') !== null) card.speaker = get('detail-ev-speaker') || null;
+  if (get('detail-ev-speaker-role') !== null) card.speaker_role = get('detail-ev-speaker-role') || null;
+  if (get('detail-ev-description') !== null) card.description = get('detail-ev-description') || null;
+  // detail-ev-category → card.type/card.subtype (с station-маппингом)
+  const newType = get('detail-ev-category');
+  if (newType !== null) {
+    if (_isStationType(newType)) {
+      card.type = 'station';
+      // subtype подхватим ниже
+    } else if (!_isArtType(newType)) {
+      card.type = newType;
+    }
+  }
+  if (get('detail-ev-apollo') !== null) card.apollo_slot = get('detail-ev-apollo') || null;
   const sc = get('detail-ev-subcategory');
   if (sc !== null) {
-    if (sc) ev.subcategory = sc; else delete ev.subcategory;
+    card.subtype = sc || null;
   }
-  if (get('detail-ev-team-notes') !== null) ev.team_notes = get('detail-ev-team-notes') || null;
+  if (get('detail-card-team-notes') !== null) card.team_notes = get('detail-card-team-notes') || null;
 }
 
 function detailCollectExhibitFields() {
   // Симметрично detailCollectEventFields: пишет правки формы экспоната во вью-стейт,
   // чтобы при переключении на вкладку «Заявка» они не терялись.
   if (!_detailContext || _detailContext.type !== 'exhibit') return;
-  const ex = (state.data.exhibits || []).find(x => x.id === _detailContext.id);
-  if (!ex) return;
+  const card = (state.data.cards || []).find(c => c.id === _detailContext.id && c.type === 'art');
+  if (!card) return;
   const get = (id) => {
     const el = document.getElementById(id);
     return el ? el.value : null;
   };
-  if (get('detail-ex-title') !== null) ex.title = get('detail-ex-title');
-  if (get('detail-ex-speaker') !== null) ex.speaker = get('detail-ex-speaker') || null;
-  if (get('detail-ex-description') !== null) ex.description = get('detail-ex-description') || null;
-  if (get('detail-ex-status') !== null) ex.status = get('detail-ex-status');
-  if (get('detail-ex-kind') !== null) ex.kind = get('detail-ex-kind');
+  if (get('detail-ex-title') !== null) card.title = get('detail-ex-title');
+  if (get('detail-ex-speaker') !== null) card.speaker = get('detail-ex-speaker') || null;
+  if (get('detail-ex-description') !== null) card.description = get('detail-ex-description') || null;
+  if (get('detail-ex-kind') !== null) card.subtype = get('detail-ex-kind');
   const sc = get('detail-ex-subcategory');
   if (sc !== null) {
-    if (sc) ex.subcategory = sc; else delete ex.subcategory;
+    if (sc) card.subtype = sc; else delete card.subtype;
   }
+  if (get('detail-card-team-notes') !== null) card.team_notes = get('detail-card-team-notes') || null;
 }
 
 function renderExhibitDetail(id) {
-  const ex = (state.data.exhibits || []).find(x => x.id === id);
+  const ex = getExhibits().find(x => x.id === id);
   if (!ex) return '<div class="detail-body">не найдено</div>';
   const kindLabels = {art: 'Галерея', installation: 'Инсталляция', media: 'Медиа-арт'};
-  const linksHtml = (ex.links || []).map((l, i) => `
-    <div class="detail-link-row">
-      <input data-link-idx="${i}" data-field="label" value="${esc(l.label||'')}" placeholder="название">
-      <input data-link-idx="${i}" data-field="url" value="${esc(l.url||'')}" placeholder="https://…">
-      <button onclick="detailRemoveLink(${i})">×</button>
-    </div>
-  `).join('');
+  const linksHtml = _renderLinksSection(ex.links);
 
   // Универсальная логика: если у экспоната есть _source_app — показываем таб «Заявка».
   // Параллельно работает с такой же логикой для events. См. switchDetailTab.
-  const srcAppId = ex._source_app || ex._source;
-  const srcApp = srcAppId ? state.applications.find(a => a.id === srcAppId) : null;
-  const showAppTab = !!srcApp;
-  const activeTab = state.detailTab === 'app' && showAppTab ? 'app' : 'event';
+  const srcAppId = ex._source_app;
+  const srcApp = srcAppId ? getApplications().find(a => a.id === srcAppId) : null;
+  const activeTab = state.detailTab === 'app' ? 'app' : 'event';
 
-  const tabsHtml = showAppTab ? `
+  const tabsHtml = `
     <div class="detail-tabs">
-      <button class="detail-tab ${activeTab==='event'?'active':''}" onclick="switchDetailTab('event')">Событие</button>
-      <button class="detail-tab ${activeTab==='app'?'active':''}" onclick="switchDetailTab('app')">Заявка · ${esc(srcAppId)}</button>
+      <button class="detail-tab ${activeTab==='event'?'active':''}" onclick="switchDetailTab('event')">Экспонат</button>
+      <button class="detail-tab ${activeTab==='app'?'active':''}" onclick="switchDetailTab('app')">Анкета${srcAppId ? ' · ' + esc(srcAppId) : ''}</button>
     </div>
-  ` : '';
+  `;
 
   const exhibitBody = `
       <div class="detail-eyebrow">${esc(kindLabels[ex.kind] || ex.kind)}</div>
@@ -5354,23 +5345,16 @@ function renderExhibitDetail(id) {
           <label>Описание</label>
           <textarea id="detail-ex-description">${esc(ex.description || '')}</textarea>
         </div>
-        <div>
-          <label>Статус</label>
-          <select id="detail-ex-status">
-            <option value="tentative" ${(ex.status==='tentative'||ex.status==='confirmed')?'selected':''}>в программе</option>
-            <option value="placeholder" ${ex.status==='placeholder'?'selected':''}>думаем</option>
-            <option value="rejected" ${ex.status==='rejected'?'selected':''}>отказ</option>
-          </select>
-        </div>
         <div class="full">
           <label>Ссылки</label>
-          <div class="detail-links" id="detail-ex-links">${linksHtml}</div>
+          <div class="detail-links" id="detail-card-links">${linksHtml}</div>
           <button class="detail-add-link" onclick="detailAddLink()">+ ссылка</button>
         </div>
       </div>
+    ${_renderTeamNotesSection(ex.team_notes)}
   `;
 
-  const appBody = srcApp ? renderAppFieldsReadOnly(srcApp) : '';
+  const appBody = renderApplicationFormEditable(srcApp);
 
   return `
     <div class="detail-header">
@@ -5383,6 +5367,7 @@ function renderExhibitDetail(id) {
     </div>
     <div class="detail-actions">
       <button onclick="detailDeleteExhibit()" class="danger">Удалить</button>
+      ${_renderCardStatusActions(ex.status)}
       <button onclick="detailSaveExhibit()" class="primary">Сохранить</button>
     </div>
   `;
@@ -5461,7 +5446,7 @@ function detailUpdateSubcat() {
 
 function detailAddLink() {
   if (isReadOnly()) return;
-  const wrap = document.getElementById('detail-ev-links') || document.getElementById('detail-ex-links');
+  const wrap = document.getElementById('detail-card-links');
   if (!wrap) return;
   const idx = wrap.querySelectorAll('.detail-link-row').length;
   const row = document.createElement('div');
@@ -5476,14 +5461,14 @@ function detailAddLink() {
 
 function detailRemoveLink(idx) {
   if (isReadOnly()) return;
-  const wrap = document.getElementById('detail-ev-links') || document.getElementById('detail-ex-links');
+  const wrap = document.getElementById('detail-card-links');
   if (!wrap) return;
   const row = wrap.querySelector(`.detail-link-row:has([data-link-idx="${idx}"])`);
   if (row) row.remove();
 }
 
 function detailGetLinks() {
-  const wrap = document.getElementById('detail-ev-links') || document.getElementById('detail-ex-links');
+  const wrap = document.getElementById('detail-card-links');
   if (!wrap) return [];
   const rows = {};
   wrap.querySelectorAll('input[data-link-idx]').forEach(inp => {
@@ -5494,20 +5479,10 @@ function detailGetLinks() {
   return Object.values(rows).filter(l => l.url);
 }
 
-function detailMarkApp(status) {
+function setCardStatus(status) {
   if (isReadOnly()) return;
   pushHistory();
-  state.appStatuses[_detailContext.id] = status;
-  markDirty(); rerenderAll(); persistState(); hideDetail();
-}
-
-function detailDeleteIdea() {
-  if (isReadOnly()) return;
-  if (!_detailContext || _detailContext.type !== 'idea') return;
-  if (!confirm('Удалить идею?\n\n(Заявки из Sheets удалить нельзя — только пометить «отказ» или «дубль». Идеи живут только локально, их можно удалить.)')) return;
-  pushHistory();
-  state.ideas = state.ideas.filter(i => i.id !== _detailContext.id);
-  delete state.appStatuses[_detailContext.id];
+  _setAppStatus(_detailContext.id, status);
   markDirty(); rerenderAll(); persistState(); hideDetail();
 }
 
@@ -5524,26 +5499,32 @@ function detailConvertApp() {
 
   // ЕСЛИ для заявки уже создано событие/экспонат — НЕ создаём дубль, а
   // «перемещаем» — т.е. меняем тип. Это и есть «смена категории заявки в карточке».
-  const existingEvent = state.data.events.find(e => e._source_app === c.id || e._source === c.id);
-  const existingExhibit = (state.data.exhibits || []).find(x => x._source_app === c.id || x._source === c.id);
+  const existingEvent = getEvents().find(e => e._source_app === c.id);
+  const existingExhibit = getExhibits().find(x => x._source_app === c.id);
   const existing = existingEvent || existingExhibit;
 
   if (existing) {
     const wasExhibit = !!existingExhibit;
     if (isExhibit && wasExhibit) {
-      // Меняем подтип exhibit'a (art / installation / media)
-      existing.kind = exhibitKind;
-      existing.subcategory = exhibitKind;
+      // Меняем подтип exhibit'a (art / installation / media) — пишем в card напрямую
+      const card = state.data.cards.find(c => c.id === existing.id && c.type === 'art');
+      if (card) card.subtype = exhibitKind;
       markDirty(); rerenderAll(); persistState();
       showDetail('exhibit', existing.id);
       return;
     }
     if (!isExhibit && !wasExhibit) {
-      // Меняем категорию event'a (popsci/experiment/workshop/social/cinema/music)
-      existing.category = targetType;
-      if (targetSub) existing.subcategory = targetSub; else delete existing.subcategory;
-      delete existing._enriched_fields;
-      enrichEventsFromSlots(state.data);
+      // Меняем категорию event'a через card напрямую.
+      const card = state.data.cards.find(c => c.id === existing.id);
+      if (card) {
+        if (_isStationType(targetType)) {
+          card.type = 'station';
+          card.subtype = targetSub || 'experiment';
+        } else {
+          card.type = targetType;
+          card.subtype = targetSub || null;
+        }
+      }
       markDirty(); rerenderAll(); persistState();
       showDetail('event', existing.id);
       return;
@@ -5553,22 +5534,21 @@ function detailConvertApp() {
       if (!confirm('У этого события есть слот в timeline. Перевод в галерею откреплит его. Продолжить?')) return;
     }
     if (wasExhibit) {
-      state.data.exhibits = state.data.exhibits.filter(x => x.id !== existing.id);
+      _removeExhibit(existing.id);
     } else {
-      state.data.events = state.data.events.filter(e => e.id !== existing.id);
+      _removeEvent(existing.id);
     }
     if (isExhibit) {
       const id = 'exh-' + Date.now();
       const newEx = {
-        id, kind: exhibitKind, status: existing.status || 'tentative',
+        id, kind: exhibitKind, status: existing.status || 'accepted',
         title: existing.title || c.title || '(без названия)',
         speaker: existing.speaker || c.name || null,
         description: existing.description || c.description || null,
         subcategory: exhibitKind, apollo_slot: existing.apollo_slot || null,
         _source_app: c.id
       };
-      state.data.exhibits = state.data.exhibits || [];
-      state.data.exhibits.push(newEx);
+      _pushExhibit(newEx);
       markDirty(); rerenderAll(); persistState();
       showDetail('exhibit', id);
     } else {
@@ -5579,12 +5559,12 @@ function detailConvertApp() {
         speaker: existing.speaker || c.name || null,
         description: existing.description || c.description || null,
         category: targetType,
-        status: existing.status || 'tentative',
+        status: existing.status || 'accepted',
         slot: null, venue: null,
         _source_app: c.id
       };
       if (targetSub) newEv.subcategory = targetSub;
-      state.data.events.push(newEv);
+      _pushEvent(newEv);
       markDirty(); rerenderAll(); persistState();
       showDetail('event', newId);
     }
@@ -5594,24 +5574,23 @@ function detailConvertApp() {
   // НЕТ существующей сущности — создаём с нуля
   if (isExhibit) {
     const id = 'exh-' + Date.now();
-    state.data.exhibits = state.data.exhibits || [];
-    state.data.exhibits.push({
-      id, kind: exhibitKind, status: 'tentative',
+    _pushExhibit({
+      id, kind: exhibitKind, status: 'accepted',
       title: c.title || '(без названия)',
       speaker: c.name || null,
       description: c.description || null,
       subcategory: exhibitKind, apollo_slot: null,
       _source_app: c.id
     });
-    if (c.kind === 'app') state.appStatuses[c.id] = 'considering';
+    if (c.kind === 'app') _setAppStatus(c.id, 'considering');
     markDirty(); rerenderAll(); persistState();
     showDetail('exhibit', id);
   } else {
     const newEv = createEventFromCand(c, null, null);
     newEv.category = targetType;
     if (targetSub) newEv.subcategory = targetSub;
-    state.data.events.push(newEv);
-    if (c.kind === 'app') state.appStatuses[c.id] = 'considering';
+    _pushEvent(newEv);
+    if (c.kind === 'app') _setAppStatus(c.id, 'considering');
     markDirty(); rerenderAll(); persistState();
     showDetail('event', newEv.id);
   }
@@ -5686,7 +5665,7 @@ function _convertEventToExhibit(ev, kindSubtype) {
   const newEx = {
     id: newId,
     kind: k,
-    status: ev.status || 'tentative',
+    status: ev.status || 'accepted',
     title: ev.title || null,
     speaker: ev.speaker || null,
     speaker_role: ev.speaker_role || null,
@@ -5695,11 +5674,10 @@ function _convertEventToExhibit(ev, kindSubtype) {
     apollo_slot: ev.apollo_slot || null,
     links: ev.links || undefined,
     team_notes: ev.team_notes || undefined,
-    _source_app: ev._source_app || ev._source || null
+    _source_app: ev._source_app || null
   };
-  state.data.exhibits = state.data.exhibits || [];
-  state.data.exhibits.push(newEx);
-  state.data.events = state.data.events.filter(e => e.id !== ev.id);
+  _pushExhibit(newEx);
+  _removeEvent(ev.id);
   return newId;
 }
 
@@ -5714,126 +5692,114 @@ function _convertExhibitToEvent(ex, newCategory, newSubcategory) {
     description: ex.description || null,
     category: newCategory,
     subcategory: newSubcategory || undefined,
-    status: ex.status || 'tentative',
+    status: ex.status || 'accepted',
     slot: null, venue: null,
     apollo_slot: ex.apollo_slot || null,
     links: ex.links || undefined,
     team_notes: ex.team_notes || undefined,
-    _source_app: ex._source_app || ex._source || null
+    _source_app: ex._source_app || null
   };
-  state.data.events.push(newEv);
-  state.data.exhibits = state.data.exhibits.filter(x => x.id !== ex.id);
+  _pushEvent(newEv);
+  _removeExhibit(ex.id);
   return newId;
 }
 
 function detailSaveEvent() {
   if (isReadOnly()) return;
   pushHistory();
-  const ev = state.data.events.find(e => e.id === _detailContext.id);
-  if (!ev) return;
-  // Если активна табка «Заявка», поля события не отрендерены — берём их из state (там уже свежее, было записано при switchDetailTab)
-  const teamNotesEl = document.getElementById('detail-ev-team-notes');
+  const card = _findEventCard(_detailContext.id);
+  if (!card) return;
+
+  // Если открыта вкладка «Анкета» — собираем поля анкеты
+  detailCollectApplicationFields();
+
+  const teamNotesEl = document.getElementById('detail-card-team-notes');
   const titleEl = document.getElementById('detail-ev-title');
   if (titleEl) {
-    // мы на вкладке «Событие» — собираем форму
-    ev.title = titleEl.value || null;
-    ev.subtitle = document.getElementById('detail-ev-subtitle').value || null;
-    ev.speaker = document.getElementById('detail-ev-speaker').value || null;
-    ev.speaker_role = document.getElementById('detail-ev-speaker-role').value || null;
-    ev.description = document.getElementById('detail-ev-description').value || null;
+    // Вкладка «Событие» — собираем форму прямо в card.
+    card.title = titleEl.value || null;
+    card.subtitle = document.getElementById('detail-ev-subtitle').value || null;
+    card.speaker = document.getElementById('detail-ev-speaker').value || null;
+    card.speaker_role = document.getElementById('detail-ev-speaker-role').value || null;
+    card.description = document.getElementById('detail-ev-description').value || null;
     const newType = document.getElementById('detail-ev-category').value;
     const newSubtype = document.getElementById('detail-ev-subcategory')?.value || null;
-    ev.status = document.getElementById('detail-ev-status').value;
     const links = detailGetLinks();
-    if (links.length) ev.links = links; else delete ev.links;
-    if (teamNotesEl) ev.team_notes = teamNotesEl.value || null;
-    // Коммуникационные галочки (admin-чек-лист). Снимаем все ключи, заново
-    // ставим только отмеченные. Если ни одна не отмечена — поле удаляем.
-    if (COMM_BADGES_CATS.has(ev.category)) {
+    if (links.length) card.links = links; else delete card.links;
+    if (teamNotesEl) card.team_notes = teamNotesEl.value || null;
+
+    // Коммуникационные галочки. Текущая категория для COMM_BADGES_CATS:
+    // для station — это card.subtype (workshop/experiment); иначе card.type.
+    const currentMajor = card.type === 'station' ? card.subtype : card.type;
+    if (COMM_BADGES_CATS.has(currentMajor)) {
       const adm = {};
       let anyChecked = false;
       for (const b of COMM_BADGES) {
         const cb = document.querySelector('.comm-check-row input[data-comm-key="' + b.key + '"]');
         if (cb && cb.checked) { adm[b.key] = true; anyChecked = true; }
       }
-      if (anyChecked) ev._admin = adm; else delete ev._admin;
+      if (anyChecked) card._admin = adm; else delete card._admin;
     }
-    // Унификация типа: если выбрали art — переводим в exhibit с kind=subtype.
+
+    // Унификация типа: art → exhibit. Используем legacy_convertEventToExhibit
+    // с computed ev (поля card в legacy форме).
     if (_isArtType(newType)) {
-      const newExId = _convertEventToExhibit(ev, newSubtype || 'art');
+      const tempEv = {
+        id: card.id,
+        title: card.title, speaker: card.speaker, speaker_role: card.speaker_role,
+        description: card.description,
+        status: card.status, slot: card.slot, apollo_slot: card.apollo_slot,
+        links: card.links, team_notes: card.team_notes,
+        _source_app: card._source_app,
+      };
+      const newExId = _convertEventToExhibit(tempEv, newSubtype || 'art');
       if (!newExId) return;
       markDirty(); rerenderAll(); persistState();
       state.detailTab = 'event';
       showDetail('exhibit', newExId);
       return;
     }
-    // Если тип = station — реальная category хранится в подтипе (workshop/experiment).
-    // event.subcategory не нужен — это «подтип внутри субкатегории», нам неактуален.
+    // Категория/подтип: station → type='station', subtype=workshop/experiment.
     if (_isStationType(newType)) {
-      ev.category = newSubtype || 'experiment';  // дефолт experiment если подтип не выбран
-      delete ev.subcategory;
+      card.type = 'station';
+      card.subtype = newSubtype || 'experiment';
     } else {
-      ev.category = newType;
-      if (newSubtype) ev.subcategory = newSubtype; else delete ev.subcategory;
+      card.type = newType;
+      card.subtype = newSubtype || null;
     }
   }
-  // Multi-slot синхронизация: если у события есть _groupKey (это одна из половин
-  // multi-slot карточки), пропатчиваем содержательные поля (title/subtitle/speaker/
-  // speaker_role/description/links/_admin) на ВСЕ events с тем же _groupKey.
-  // Время/слот/категория остаются у каждой половины свои.
-  if (ev._groupKey) {
-    const SYNC_FIELDS = ['title', 'subtitle', 'speaker', 'speaker_role', 'description', 'links', '_admin', 'team_notes'];
-    for (const other of state.data.events) {
-      if (other === ev) continue;
-      if (other._groupKey !== ev._groupKey) continue;
-      for (const f of SYNC_FIELDS) {
-        if (ev[f] === undefined || ev[f] === null) {
-          delete other[f];
-        } else {
-          other[f] = ev[f];
-        }
-      }
-    }
-  }
-  // На вкладке «Заявка» сохраняем что было собрано раньше — ev уже актуально
+  // Multi-slot sync блок больше не нужен — поля общие живут в card единственным экземпляром.
   markDirty(); rerenderAll(); persistState();
   state.detailTab = 'event';
-  showDetail('event', ev.id);
+  showDetail('event', _detailContext.id);
 }
 
 function detailDeleteEvent() {
   if (isReadOnly()) return;
   if (!confirm('Удалить событие?')) return;
   pushHistory();
-  state.data.events = state.data.events.filter(e => e.id !== _detailContext.id);
+  _removeEvent(_detailContext.id);
   hideDetail();
   markDirty(); rerenderAll(); persistState();
-}
-
-function detailUnplaceEvent() {
-  if (isReadOnly()) return;
-  pushHistory();
-  const ev = state.data.events.find(e => e.id === _detailContext.id);
-  if (ev) { ev.slot = null; ev.venue = null; delete ev.lane; }
-  markDirty(); rerenderAll(); persistState();
-  showDetail('event', _detailContext.id);
 }
 
 function detailSaveExhibit() {
   if (isReadOnly()) return;
   pushHistory();
-  const ex = state.data.exhibits.find(x => x.id === _detailContext.id);
-  if (!ex) return;
-  ex.title = document.getElementById('detail-ex-title').value || null;
-  ex.speaker = document.getElementById('detail-ex-speaker').value || null;
+  const card = (state.data.cards || []).find(c => c.id === _detailContext.id && c.type === 'art');
+  if (!card) return;
+
+  // Если открыта вкладка «Анкета» — собираем поля анкеты
+  detailCollectApplicationFields();
+
+  const newTitle = document.getElementById('detail-ex-title').value || null;
+  const newSpeaker = document.getElementById('detail-ex-speaker').value || null;
   const newType = document.getElementById('detail-ex-kind').value;
   const newSubtype = document.getElementById('detail-ex-subcategory')?.value || null;
-  ex.description = document.getElementById('detail-ex-description').value || null;
-  ex.status = document.getElementById('detail-ex-status').value;
+  const newDescription = document.getElementById('detail-ex-description').value || null;
   const links = detailGetLinks();
-  if (links.length) ex.links = links; else delete ex.links;
+
   // Унификация: если выбран не-art — конвертируем в event.
-  // Для station реальная category — это подтип (workshop/experiment).
   if (!_isArtType(newType)) {
     let realCat, realSub;
     if (_isStationType(newType)) {
@@ -5843,23 +5809,40 @@ function detailSaveExhibit() {
       realCat = newType;
       realSub = newSubtype;
     }
+    // _convertExhibitToEvent принимает legacy ex — собираем его из card + UI правок
+    const ex = {
+      id: card.id,
+      title: newTitle,
+      speaker: newSpeaker,
+      description: newDescription,
+      apollo_slot: card.apollo_slot,
+      links: links,
+      team_notes: card.team_notes,
+      _source_app: card._source_app,
+    };
     const newEvId = _convertExhibitToEvent(ex, realCat, realSub);
     markDirty(); rerenderAll(); persistState();
     showDetail('event', newEvId);
     return;
   }
-  // Внутри art: подтип определяет kind (gallery/installation/media)
-  ex.kind = newSubtype || 'art';
-  ex.subcategory = ex.kind;
+
+  // Внутри art: пишем поля прямо в card. subtype = подтип (gallery/installation/media).
+  card.title = newTitle;
+  card.speaker = newSpeaker;
+  card.description = newDescription;
+  card.subtype = newSubtype || 'art';
+  if (links.length) card.links = links; else delete card.links;
+  const teamNotesEl = document.getElementById('detail-card-team-notes');
+  if (teamNotesEl) card.team_notes = teamNotesEl.value || null;
   markDirty(); rerenderAll(); persistState();
-  showDetail('exhibit', ex.id);
+  showDetail('exhibit', card.id);
 }
 
 function detailDeleteExhibit() {
   if (isReadOnly()) return;
   if (!confirm('Удалить экспонат?')) return;
   pushHistory();
-  state.data.exhibits = state.data.exhibits.filter(x => x.id !== _detailContext.id);
+  _removeExhibit(_detailContext.id);
   hideDetail();
   markDirty(); rerenderAll(); persistState();
 }
@@ -5873,9 +5856,7 @@ const HISTORY_LIMIT = 30;
 function pushHistory() {
   // Снимаем глубокую копию текущего состояния
   _history.push(JSON.stringify({
-    data: state.data,
-    appStatuses: state.appStatuses,
-    ideas: state.ideas
+    data: state.data
   }));
   if (_history.length > HISTORY_LIMIT) _history.shift();
   updateUndoButton();
@@ -5885,8 +5866,6 @@ function undoLast() {
   if (_history.length === 0) return;
   const snap = JSON.parse(_history.pop());
   state.data = snap.data;
-  state.appStatuses = snap.appStatuses;
-  state.ideas = snap.ideas;
   markDirty(); rerenderAll(); persistState();
   updateUndoButton();
 }
@@ -5999,7 +5978,7 @@ function openCandModal(kind, id) {
 }
 function closeCandModal() { document.getElementById('cand-modal').classList.remove('active'); _modalCandId = null; }
 function markCand(status) {
-  state.appStatuses[_modalCandId] = status;
+  _setAppStatus(_modalCandId, status);
   markDirty(); rerenderAll(); persistState(); closeCandModal();
 }
 function convertCandToTarget() {
@@ -6016,11 +5995,10 @@ function convertCandToTarget() {
 
   if (isExhibit) {
     const id = 'exh-' + Date.now();
-    state.data.exhibits = state.data.exhibits || [];
-    state.data.exhibits.push({
+    _pushExhibit({
       id,
       kind: targetCat,
-      status: 'tentative',
+      status: 'accepted',
       title: c.title || '(без названия)',
       speaker: c.name || null,
       description: c.description || null,
@@ -6028,15 +6006,15 @@ function convertCandToTarget() {
       apollo_slot: null,
       _source_app: c.id
     });
-    if (c.kind === 'app') state.appStatuses[c.id] = 'considering';
+    if (c.kind === 'app') _setAppStatus(c.id, 'considering');
     closeCandModal();
     markDirty(); rerenderAll(); persistState();
     openExhibitModal(id);
   } else {
     const newEv = createEventFromCand(c, null, null);
     newEv.category = targetCat;
-    state.data.events.push(newEv);
-    if (c.kind === 'app') state.appStatuses[c.id] = 'considering';
+    _pushEvent(newEv);
+    if (c.kind === 'app') _setAppStatus(c.id, 'considering');
     closeCandModal();
     markDirty(); rerenderAll(); persistState();
     openEventModal(newEv.id);
@@ -6113,7 +6091,7 @@ function removeLink(i, editorId) {
 // или открывается отдельным редактором
 // ============================================================
 function openEventModal(evId) {
-  const ev = state.data.events.find(e => e.id === evId);
+  const ev = getEvents().find(e => e.id === evId);
   if (!ev) return;
   document.getElementById('ev-id-old').value = ev.id;
   document.getElementById('ev-id').value = ev.id;
@@ -6122,7 +6100,7 @@ function openEventModal(evId) {
   document.getElementById('ev-speaker').value = ev.speaker || '';
   document.getElementById('ev-speaker-role').value = ev.speaker_role || '';
   document.getElementById('ev-description').value = ev.description || '';
-  document.getElementById('ev-status').value = ev.status || 'tentative';
+  document.getElementById('ev-status').value = ev.status || 'accepted';
   document.getElementById('ev-duration-override').value = ev.duration_override || '';
 
   // Selector со списком всех слотов + «без слота»
@@ -6170,7 +6148,7 @@ function updateSlotInfoBlock() {
     btn.style.display = 'none';
     return;
   }
-  const cat = s.category && state.data.categories[s.category];
+  const cat = s.category && _getCategoryMeta(s.category);
   const venue = s.venue && state.data.venues[s.venue];
   info.style.display = 'block';
   info.innerHTML = `
@@ -6190,10 +6168,10 @@ function editCurrentSlot() {
 function saveEvent() {
   const oldId = document.getElementById('ev-id-old').value;
   const newId = document.getElementById('ev-id').value.trim();
-  const ev = state.data.events.find(e => e.id === oldId);
+  const ev = getEvents().find(e => e.id === oldId);
   if (!ev) return;
   if (newId !== oldId) {
-    if (state.data.events.some(e => e.id === newId)) { alert('id уже занят'); return; }
+    if (getEvents().some(e => e.id === newId)) { alert('id уже занят'); return; }
     ev.id = newId;
   }
   ev.title = document.getElementById('ev-title').value || null;
@@ -6213,7 +6191,7 @@ function saveEvent() {
       delete ev._enriched_fields;
     }
     ev.slot = newSlot;
-    enrichEventsFromSlots(state.data);
+    _ensureLegacyCategories(state.data);
   }
 
   const links = getLinksFromEditor('ev-links-editor');
@@ -6223,10 +6201,10 @@ function saveEvent() {
 }
 function deleteEvent() {
   const evId = document.getElementById('ev-id-old').value;
-  const ev = state.data.events.find(e => e.id === evId);
+  const ev = getEvents().find(e => e.id === evId);
   if (!ev) return;
   if (!confirm(`Удалить событие «${ev.title || ev.id}»?`)) return;
-  state.data.events = state.data.events.filter(e => e.id !== evId);
+  _removeEvent(evId);
   closeEventModal();
   markDirty(); rerenderAll(); persistState();
 }
@@ -6237,7 +6215,7 @@ function deleteEvent() {
 // сохраняется. Заявка остаётся accepted (она уже принята в программу).
 function convertEventToExhibit() {
   const evId = document.getElementById('ev-id-old').value;
-  const ev = state.data.events.find(e => e.id === evId);
+  const ev = getEvents().find(e => e.id === evId);
   if (!ev) return;
   const kind = prompt(
     `Преобразовать «${ev.title || ev.id}» в экспонат.\n\n` +
@@ -6257,7 +6235,7 @@ function convertEventToExhibit() {
   const newEx = {
     id,
     kind: kindStr,
-    status: ev.status || 'tentative',
+    status: ev.status || 'accepted',
     title: ev.title || '(без названия)',
     speaker: ev.speaker || null,
     description: ev.description || null,
@@ -6265,11 +6243,9 @@ function convertEventToExhibit() {
     apollo_slot: ev.apollo_slot || null
   };
   if (ev._source_app) newEx._source_app = ev._source_app;
-  if (ev._source) newEx._source = ev._source;
 
-  state.data.exhibits = state.data.exhibits || [];
-  state.data.exhibits.push(newEx);
-  state.data.events = state.data.events.filter(e => e.id !== evId);
+  _pushExhibit(newEx);
+  _removeEvent(evId);
   closeEventModal();
   markDirty(); rerenderAll(); persistState();
   // Открываем созданный экспонат для проверки
@@ -6279,7 +6255,7 @@ function convertEventToExhibit() {
 // Обратная конверсия: exhibit → event.
 function convertExhibitToEvent() {
   if (!_detailContext || _detailContext.type !== 'exhibit') return;
-  const ex = state.data.exhibits.find(x => x.id === _detailContext.id);
+  const ex = getExhibits().find(x => x.id === _detailContext.id);
   if (!ex) return;
   const cat = prompt(
     `Преобразовать «${ex.title || ex.id}» в событие.\n\n` +
@@ -6303,15 +6279,14 @@ function convertExhibitToEvent() {
     speaker: ex.speaker || null,
     description: ex.description || null,
     category: catStr,
-    status: ex.status || 'tentative',
+    status: ex.status || 'accepted',
     slot: null,
     venue: null
   };
   if (ex._source_app) newEv._source_app = ex._source_app;
-  if (ex._source) newEv._source = ex._source;
 
-  state.data.events.push(newEv);
-  state.data.exhibits = state.data.exhibits.filter(x => x.id !== _detailContext.id);
+  _pushEvent(newEv);
+  _removeExhibit(_detailContext.id);
   hideDetail();
   markDirty(); rerenderAll(); persistState();
   openEventModal(id);
@@ -6541,7 +6516,7 @@ function _renderPrintScheduleSection(title, fromMin, toMin) {
       const top = Math.round(sm * ppm);
       const heightPx = Math.max(20, Math.round((em - sm) * ppm) - 1);
 
-      const events = state.data.events.filter(e => e.slot === sid);
+      const events = getEvents().filter(e => e.slot === sid && e.status === 'accepted');
       const isExclusive = !!s.exclusive;
 
       if (events.length === 0) {
@@ -6600,7 +6575,7 @@ function _renderPrintScheduleSection(title, fromMin, toMin) {
       const em = _printFestMin(s.end) - fromMin;
       const top = Math.round(sm * ppm);
       const heightPx = Math.max(20, Math.round((em - sm) * ppm) - 1);
-      const events = state.data.events.filter(e => e.slot === sid && (e.venue === vid || !e.venue));
+      const events = getEvents().filter(e => e.slot === sid && (e.venue === vid || !e.venue) && e.status === 'accepted');
       if (events.length === 0) return;
       events.forEach(ev => {
         const isTBA = ev.title === 'TBA' || !ev.title;
@@ -6619,7 +6594,7 @@ function _renderPrintScheduleSection(title, fromMin, toMin) {
 }
 
 function _renderPrintExhibits() {
-  const ex = state.data.exhibits || [];
+  const ex = getExhibits();
   if (ex.length === 0) return '';
   let html = `<div class="print-page">
     <h2 class="print-section-title">Постоянные экспонаты (весь вечер)</h2>
@@ -6733,7 +6708,7 @@ function renderStructureLegend() {
   let html = '';
   order.forEach(c => {
     if (!presentCats.has(c)) return;
-    const display = (state.data.categories[c] && state.data.categories[c].display) || c;
+    const display = _getCategoryMeta(c)?.display || c;
     html += `<div class="structure-legend-item">
       <div class="structure-legend-dot" style="background:${SLOT_CATEGORY_COLORS[c]}"></div>
       <span>${esc(display)}</span>
@@ -7089,13 +7064,13 @@ function startSlotDrag(ev, sid) {
         slot.leaf = targetLeafId;
       }
       // Переинжектируем enriched поля
-      state.data.events.forEach(ev => {
+      getEvents().forEach(ev => {
         if (ev.slot === dragSid && ev._enriched_fields) {
           ev._enriched_fields.forEach(f => delete ev[f]);
           delete ev._enriched_fields;
         }
       });
-      enrichEventsFromSlots(state.data);
+      _ensureLegacyCategories(state.data);
       markDirty(); persistState();
       renderStructureAll();
       // Не вызываем rerenderAll() основного таймлайна — drag тяжёлый, это притормозит.
@@ -7185,7 +7160,7 @@ function renderStructureSlotDetails(container, sid) {
   const s = state.data.time_slots[sid];
   if (!s) { container.innerHTML = '<div class="empty-hint">Слот не найден</div>'; return; }
   const leaf = findLeafForSlotInProgrammer(s);
-  const attached = state.data.events.filter(e => e.slot === sid);
+  const attached = getEvents().filter(e => e.slot === sid && e.status === 'accepted');
   // Опции площадок
   const venueOpts = '<option value="">—</option>' +
     Object.entries(state.data.venues).map(([vid, v]) =>
@@ -7248,13 +7223,13 @@ function renderStructureSlotDetails(container, sid) {
       if ((s[field] || '') === (val || '')) return;
       s[field] = val || null;
       // Переинжектируем enriched поля если поменялся slot
-      state.data.events.forEach(ev => {
+      getEvents().forEach(ev => {
         if (ev.slot === sid && ev._enriched_fields) {
           ev._enriched_fields.forEach(f => delete ev[f]);
           delete ev._enriched_fields;
         }
       });
-      enrichEventsFromSlots(state.data);
+      _ensureLegacyCategories(state.data);
       markDirty(); persistState(); renderStructureAll();
     };
     el.addEventListener('change', handler);
@@ -7425,7 +7400,7 @@ function saveSlotEdit() {
     // Переименование: переносим объект и обновляем все ссылки в events
     state.data.time_slots[newId] = state.data.time_slots[oldId];
     delete state.data.time_slots[oldId];
-    state.data.events.forEach(ev => { if (ev.slot === oldId) ev.slot = newId; });
+    getEvents().forEach(ev => { if (ev.slot === oldId) ev.slot = newId; });
   }
 
   const s = state.data.time_slots[newId];
@@ -7444,14 +7419,14 @@ function saveSlotEdit() {
   //   - apollo_slot автораспределяется в recomputeApolloSlots при сохранении
 
   // После правки слота — переинжектируем enriched поля во все его events.
-  // ВАЖНО: enrichEventsFromSlots копирует только если ev[f] == null (не перезаписывает
+  // ВАЖНО: _ensureLegacyCategories копирует только если ev[f] == null (не перезаписывает
   // прямо заданные поля). Поэтому сначала ЯВНО снимаем venue/category/apollo_slot/
   // subcategory с events этого слота — независимо от того были ли они enriched —
   // чтобы новые значения слота гарантированно подхватились.
   const RESET_FIELDS = ['venue', 'category', 'apollo_slot', 'subcategory'];
   const oldVenue = s.venue;  // для лога — ой, уже изменили выше. Берём из html input.
-  const affected = state.data.events.filter(ev => ev.slot === newId);
-  state.data.events.forEach(ev => {
+  const affected = getEvents().filter(ev => ev.slot === newId && ev.status === 'accepted');
+  getEvents().forEach(ev => {
     if (ev.slot !== newId) return;
     RESET_FIELDS.forEach(f => { if (ev[f] !== undefined) ev[f] = null; });
     if (ev._enriched_fields) {
@@ -7459,7 +7434,7 @@ function saveSlotEdit() {
       delete ev._enriched_fields;
     }
   });
-  enrichEventsFromSlots(state.data);
+  _ensureLegacyCategories(state.data);
   if (affected.length) {
     console.log('[programmer] saveSlotEdit:', newId, '→ venue=' + s.venue + ', обновлено events:', affected.length, affected.map(e => e.id + '→venue=' + e.venue));
   }
@@ -7469,14 +7444,14 @@ function saveSlotEdit() {
 }
 function deleteSlotFromEdit() {
   const sid = document.getElementById('se-id-old').value;
-  const attached = state.data.events.filter(e => e.slot === sid);
+  const attached = getEvents().filter(e => e.slot === sid && e.status === 'accepted');
   let msg = `Удалить слот ${sid}?`;
   if (attached.length) {
     msg += `\n\nК нему привязано ${attached.length} событий. Они останутся, но окажутся «без слота».`;
   }
   if (!confirm(msg)) return;
   delete state.data.time_slots[sid];
-  state.data.events.forEach(ev => {
+  getEvents().forEach(ev => {
     if (ev.slot === sid) {
       ev.slot = null;
       if (ev._enriched_fields) {
@@ -7493,7 +7468,7 @@ function deleteSlotFromEdit() {
 // EXHIBIT MODAL — отдельная схема (не привязан к слоту)
 // ============================================================
 function openExhibitModal(id) {
-  const item = (state.data.exhibits || []).find(x => x.id === id);
+  const item = getExhibits().find(x => x.id === id);
   if (!item) return;
   document.getElementById('exhibit-modal-title').textContent = `Экспонат · ${item.kind}`;
   document.getElementById('ex-id-old').value = item.id;
@@ -7502,7 +7477,7 @@ function openExhibitModal(id) {
   document.getElementById('ex-title').value = item.title || '';
   document.getElementById('ex-speaker').value = item.speaker || '';
   document.getElementById('ex-description').value = item.description || '';
-  document.getElementById('ex-status').value = item.status || 'tentative';
+  document.getElementById('ex-status').value = item.status || 'accepted';
   document.getElementById('ex-apollo').value = item.apollo_slot || '';
   // Подкатегория экспоната — в данных это «art», т.к. exhibit-категория всегда искусство
   populateSubcategoryOptions('art', document.getElementById('ex-subcategory'), item.subcategory);
@@ -7528,10 +7503,10 @@ function closeExhibitModal() {
 function saveExhibit() {
   const oldId = document.getElementById('ex-id-old').value;
   const newId = document.getElementById('ex-id').value.trim();
-  const item = (state.data.exhibits || []).find(x => x.id === oldId);
+  const item = getExhibits().find(x => x.id === oldId);
   if (!item) return;
   if (newId !== oldId) {
-    if ((state.data.exhibits || []).some(x => x.id === newId)) { alert('id уже занят'); return; }
+    if (getExhibits().some(x => x.id === newId)) { alert('id уже занят'); return; }
     item.id = newId;
   }
   item.kind = document.getElementById('ex-kind').value || 'art';
@@ -7549,10 +7524,10 @@ function saveExhibit() {
 }
 function deleteExhibit() {
   const id = document.getElementById('ex-id-old').value;
-  const item = (state.data.exhibits || []).find(x => x.id === id);
+  const item = getExhibits().find(x => x.id === id);
   if (!item) return;
   if (!confirm(`Удалить экспонат «${item.title || item.id}»?`)) return;
-  state.data.exhibits = state.data.exhibits.filter(x => x.id !== id);
+  _removeExhibit(id);
   closeExhibitModal();
   markDirty(); rerenderAll(); persistState();
 }
@@ -7565,8 +7540,8 @@ function addNewEvent() {
   const title = prompt('Название нового события:');
   if (!title) return;
   const id = 'ev-' + Date.now();
-  state.data.events.push({
-    id, status: 'tentative', title, slot: null,
+  _pushEvent({
+    id, status: 'accepted', title, slot: null,
     subtitle: null, speaker: null, speaker_role: null, description: null,
     duration_override: null
   });
@@ -7587,13 +7562,6 @@ function addNewSlot() {
   };
   markDirty(); rerenderAll(); persistState();
   openSlotEditModal(id);
-}
-function addNewIdea() {
-  if (isReadOnly()) return;
-  const name = prompt('Кого/что зовём?');
-  if (!name) return;
-  state.ideas.push({ id: 'idea-' + Date.now(), name, title: name, status: 'new' });
-  markDirty(); rerenderAll(); persistState();
 }
 
 function cyclePane(direction) {
@@ -7643,7 +7611,7 @@ function saveSlots() {
 function deleteSlot(id) {
   if (!confirm(`Удалить слот ${id}?`)) return;
   delete state.data.time_slots[id];
-  state.data.events.forEach(e => { if (e.slot === id) e.slot = null; });
+  getEvents().forEach(e => { if (e.slot === id) e.slot = null; });
   openSlotEditor(); rerenderAll(); markDirty(); persistState();
 }
 
@@ -7662,8 +7630,6 @@ async function clearLocalCache() {
   if (!confirm('Очистить локальный кэш данных? Все непубликованные правки в программере потеряются. Настройки (URL, токен) останутся.')) return;
   try { localStorage.removeItem(STATE_KEY); } catch(e) { console.warn('clearCache failed', e); }
   state.data = null;
-  state.appStatuses = {};
-  state.ideas = [];
   state.remoteSha = null;
   state.isDirty = false;
   state.dataSource = 'pending';
@@ -7671,7 +7637,6 @@ async function clearLocalCache() {
   closeConfig();
   updateSrcBadge();
   await loadFestivalData();
-  if (state.applications.length === 0) await loadApplications();
   rerenderAll();
   updateSrcBadge();
 }
@@ -7690,55 +7655,14 @@ function saveConfig() {
 }
 
 function buildExportText() {
-  const cleanEvents = state.data.events.map(e => {
-    const c = {...e};
-    delete c._source;
-    // Снимаем обогащённые поля, чтобы экспорт оставался round-trip-чистым:
-    // что прочитали из v17+ (поля живут на слотах), то и записываем обратно.
-    if (Array.isArray(c._enriched_fields)) {
-      for (const f of c._enriched_fields) delete c[f];
-      delete c._enriched_fields;
-    }
-    return c;
-  });
-  const obj = {};
-  if (state.data._meta) {
-    obj._meta = {...state.data._meta};
-    obj._meta.last_modified = new Date().toISOString();
-    obj._meta.modified_by = 'programmer-tool';
+  // compress читает cards и time_slots напрямую — другие поля проксируются
+  // как есть. UI правит state.data.cards напрямую через detail-функции, поэтому
+  // никакого промежуточного rebuild legacy events/exhibits больше не нужно.
+  const obj = {...state.data};
+  if (obj._meta) {
+    obj._meta = {...obj._meta, last_modified: new Date().toISOString(), modified_by: 'programmer-tool'};
   }
-  obj.venues = state.data.venues;
-  obj.categories = state.data.categories;
-  obj.time_slots = state.data.time_slots;
-  obj.events = cleanEvents;
-  if (state.data.exhibits) obj.exhibits = state.data.exhibits;
-
-  // === Полный экспорт всех заявок и их статусов ===
-  // Раньше в файл попадали только данные.applications (28 базовых), а 29+ из Sheets
-  // и статусы (state.appStatuses) жили только в localStorage браузера. Теперь всё это
-  // выгружается в файл — публикация/скачивание сохраняет полное состояние работы.
-  // Применяется простой принцип: state.applications (мердж data.applications + synced)
-  // → obj.applications. И state.appStatuses → obj._app_statuses.
-  if (Array.isArray(state.applications) && state.applications.length > 0) {
-    obj.applications = state.applications;
-  } else if (Array.isArray(state.data.applications)) {
-    obj.applications = state.data.applications;
-  }
-  if (state.appStatuses && Object.keys(state.appStatuses).length > 0) {
-    obj._app_statuses = state.appStatuses;
-  }
-
-  if (state.data._howto) obj._howto = state.data._howto;
-  if (state.data.subcategories) obj.subcategories = state.data.subcategories;
-  if (state.data.fern_leaves) obj.fern_leaves = state.data.fern_leaves;
-
-  // v31: всегда компрессируем в cards перед записью. Это даёт два эффекта:
-  //   1) единый формат данных на сайте (одна архитектурная сущность — карточка),
-  //   2) apollo_slot живёт на карточке, что устраняет дубли в слотах с lane=2.
-  // При загрузке старого v30-файла compat-слой развернёт его в legacy view
-  // внутри программера; при сохранении мы вернём v31. То есть первая же
-  // публикация переводит систему на v31.
-  const v31obj = v31_compressLegacyToCards(obj);
+  const v31obj = compressLegacyToCards(obj);
   return `// === База событий фестиваля «Фрактальная Одиссея» v31 ===
 // Автоматически сгенерировано programmer-tool ${new Date().toISOString()}
 window.FESTIVAL_DATA = ${JSON.stringify(v31obj, null, 2)};
@@ -7893,17 +7817,15 @@ document.documentElement.style.setProperty('--content-scale', state.zoom);
   // Теперь: при isDirty показываем badge "ЕСТЬ ПРАВКИ", сервер не трогаем.
   // Чтобы получить свежие данные с сервера — кнопка «↻ Обновить» (она уже спрашивает
   // подтверждение и явно перезатирает).
-  if (state.isDirty && state.data && state.data.events) {
+  if (state.isDirty && state.data && Array.isArray(state.data.cards) && state.data.cards.length) {
     console.log('[programmer] есть несохранённые правки в localStorage — не перезаписываем сервером');
     state.dataSource = 'live';
-    if (state.applications.length === 0) await loadApplications();
     rerenderAll(); updateSrcBadge();
     _startAutoSaveLoop();
     return;
   }
   // Состояние чистое — можно безопасно подтянуть свежее с сервера
   await loadFestivalData();
-  if (state.applications.length === 0) await loadApplications();
   rerenderAll(); updateSrcBadge();
   _startAutoSaveLoop();  // запускаем фоновое авто-сохранение каждые 30 сек если isDirty
 })();
