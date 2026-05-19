@@ -314,8 +314,16 @@ body.viewer-mode .event-pill { cursor: pointer; }
 }
 .topbar .menu-dropdown button:hover { background: var(--bg); }
 
-/* ====== MAIN LAYOUT ====== */
-.main { flex: 1; display: grid; grid-template-columns: 340px minmax(0, 1fr); overflow: hidden; min-height: 0; }
+/* ====== MAIN LAYOUT ======
+   Левая колонка по умолчанию скрыта (0px) — таймлайн занимает всю ширину.
+   Полоса выезжает только когда что-то открыто: при клике на карту/слот выезжает
+   detail-view; при клике на кнопку «📋 Пул» в шапке выезжает список кандидатов.
+   Повторный клик закрывает полосу (toggle в showDetail / в togglePoolView). */
+.main { flex: 1; display: grid; grid-template-columns: 0 minmax(0, 1fr); overflow: hidden; min-height: 0; transition: grid-template-columns 180ms ease; }
+/* !important нужен чтобы перебить body.demo-mode .main выше (она тоже с !important).
+   В demo-mode левая колонка должна оставаться скрытой — для viewer этот класс не
+   ставится, а в admin режиме отсутствует demo-mode полностью. */
+body:not(.demo-mode) .main.left-open { grid-template-columns: 720px minmax(0, 1fr); }
 
 /* ====== LEFT: CANDIDATES ====== */
 .candidates {
@@ -734,7 +742,7 @@ body:not(.demo-mode):not(.viewer-mode) .slot-placeholder:hover {
 /* Дроп-зоны для каждой lane */
 .lane-dropzone {
   position: absolute;
-  z-index: 3; cursor: copy;
+  z-index: 3; cursor: pointer;
   border: 1.5px dashed #c8d8c8;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.4);
@@ -742,7 +750,10 @@ body:not(.demo-mode):not(.viewer-mode) .slot-placeholder:hover {
   font-size: 10px; color: #999;
 }
 .lane-dropzone::before { content: 'свободно'; opacity: 0.5; }
-.lane-dropzone.full { border: none; background: transparent; cursor: default; }
+/* Когда подколонка занята — dropzone становится «прозрачной» для кликов: они
+   попадают в pill (карту) или в slot-bg (полоску выступа сверху). Без этого
+   клик по карте/слоту перехватывала пустая dropzone и ничего не открывалось. */
+.lane-dropzone.full { border: none; background: transparent; cursor: default; pointer-events: none; }
 .lane-dropzone.full::before { content: ''; }
 .lane-dropzone.drag-over { border-color: #4b8; background: rgba(180, 240, 200, 0.4); }
 .lane-dropzone.drag-over-invalid { border-color: #c44; background: rgba(255, 200, 200, 0.4); }
@@ -995,9 +1006,8 @@ body.viewer-mode .comm-badges { display: none !important; }
 .expand-toggle { left: 0; top: calc(50% + 60px); border-radius: 0 4px 4px 0; }
 .collapse-toggle:hover, .expand-toggle:hover { background: #2a2e30; }
 
-/* Когда открыта боковая панель detail — расширяем колонку чтобы было удобно
-   читать длинные поля и редактировать. По умолчанию обычная ширина (340px). */
-.main.detail-open { grid-template-columns: 720px minmax(0, 1fr); }
+/* (старый класс .main.detail-open удалён — теперь используется единый .left-open для
+   detail и для пула; см. блок ====== MAIN LAYOUT ====== выше) */
 
 /* ====== DETAIL VIEW (master-detail в левой панели) ====== */
 .detail-view {
@@ -1695,6 +1705,7 @@ body.viewer-mode .comm-badges { display: none !important; }
   </span>
   <span class="spacer"></span>
   <button class="demo-login-btn" id="btn-demo-login" onclick="lockProgrammer()">Войти</button>
+  <button onclick="togglePoolView()" id="btn-toggle-pool" title="Показать/скрыть пул кандидатов">📋 Пул</button>
   <button onclick="undoLastChange()" id="btn-undo" title="Отменить последнее изменение (Ctrl+Z)" disabled>↶ Отменить</button>
   <button onclick="saveLocally()" id="btn-save-local" title="Сохранить текущее состояние локально (в браузере). Безопасно — не публикует, никуда не отправляет.">💾 Сохранить</button>
   <button onclick="reloadAll()" id="btn-reload" title="Перечитать программу с сайта и заявки">↻ Обновить</button>
@@ -4033,6 +4044,15 @@ function renderTimeline() {
       zone.classList.remove('drag-over', 'drag-over-invalid');
       handleDrop(zone.dataset.slot, zone.dataset.venue, parseInt(zone.dataset.lane), e);
     });
+    // Клик по пустой подколонке → открыть редактор слота. Это покрывает кейс
+    // multi-venue блоков (станции с тремя площадками одновременно) — у них нет
+    // slot-placeholder, и без этого хендлера клик никуда не вёл.
+    zone.addEventListener('click', e => {
+      if (isReadOnly()) return;
+      if (zone.classList.contains('full')) return;  // занято — пускаем клик ниже (но pointer-events:none в .full уже это делает)
+      const sid = zone.dataset.slot;
+      if (sid) showDetail('slot', sid);
+    });
   });
   tl.querySelectorAll('.discovery-zone').forEach(zone => {
     zone.addEventListener('click', () => {
@@ -4604,6 +4624,34 @@ function guessCategory(c) {
 // ============================================================
 let _detailContext = null;  // { type: 'app'|'event'|'exhibit', id }
 
+// Открыть/закрыть пул кандидатов в левой полосе. Это **переключатель** того что
+// показывается в выезжающей полосе:
+//   • detail (карта/слот) — открывается через showDetail
+//   • pool (список кандидатов с фильтром по статусу) — открывается через togglePoolView
+// Открыто может быть что-то одно. Повторный клик закрывает полосу полностью.
+function togglePoolView() {
+  if (isDemoMode()) return;
+  const main = document.getElementById('main');
+  const pane = document.getElementById('candidates-pane');
+  if (!main || !pane) return;
+  const wasOpen = main.classList.contains('left-open') && !pane.classList.contains('show-detail');
+  if (wasOpen) {
+    // Уже открыт пул — закрываем
+    main.classList.remove('left-open');
+    main.classList.remove('pool-view');
+    _detailContext = null;
+    setTimeout(renderTimeline, 200);
+    return;
+  }
+  // Открываем (или переключаемся с detail на пул)
+  pane.classList.remove('show-detail');
+  main.classList.add('left-open');
+  main.classList.add('pool-view');
+  _detailContext = null;
+  document.getElementById('detail-view').innerHTML = '';
+  setTimeout(renderTimeline, 200);
+}
+
 function showDetail(type, id) {
   if (isDemoMode()) return;
   // Toggle: повторный клик на тот же элемент — закрываем панель
@@ -4616,12 +4664,15 @@ function showDetail(type, id) {
   const view = document.getElementById('detail-view');
   const main = document.getElementById('main');
   pane.classList.add('show-detail');
-  if (main) main.classList.add('detail-open');
+  if (main) {
+    main.classList.add('left-open');
+    main.classList.remove('pool-view'); // покинули режим «виден пул», переключились в detail
+  }
   view.innerHTML = renderDetailContent(type, id);
   view.scrollTop = 0;
   bindDetailHandlers();
-  // Рендер таймлайна нужен после смены ширины grid — иначе кесаринг лейн не пересчитается
-  setTimeout(renderTimeline, 50);
+  // Рендер таймлайна нужен после смены ширины grid — иначе пилюли не пересчитают позицию
+  setTimeout(renderTimeline, 200);
 }
 
 function hideDetail() {
@@ -4629,9 +4680,12 @@ function hideDetail() {
   const pane = document.getElementById('candidates-pane');
   const main = document.getElementById('main');
   pane.classList.remove('show-detail');
-  if (main) main.classList.remove('detail-open');
+  if (main) {
+    main.classList.remove('left-open');
+    main.classList.remove('pool-view');
+  }
   document.getElementById('detail-view').innerHTML = '';
-  setTimeout(renderTimeline, 50);
+  setTimeout(renderTimeline, 200);
   // Если были несохранённые правки в detail — они уже сохранены в state.data при изменении inputs
 }
 
