@@ -601,10 +601,50 @@ body:not(.demo-mode) .main.left-open { grid-template-columns: 720px minmax(0, 1f
   background: rgba(232, 240, 232, 0.4);
   border: none; border-radius: 3px;
   z-index: 1;
-  /* В admin slot-bg кликабелен — клик по выступу сверху открывает редактор слота.
-     pointer-events контролируется через body — в demo/viewer клик гасится через
-     onSlotBgClick (isReadOnly). */
+  pointer-events: none;  /* фон не перехватывает клики — это делают handles ниже */
 }
+
+/* Две кликабельные ручки слота — верхняя (с подписью имени и времени) и нижняя.
+   z-index 10 — выше всего на таймлайне, включая event-pill (5) и lane-dropzone (3).
+   Клики **гарантированно** доходят до них. Раньше один slot-bg был ниже pill и
+   терял клики когда выступы соседних слотов накладывались. */
+.slot-bg-handle {
+  position: absolute; left: 2px; right: 2px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 3px 3px 0 0;
+}
+.slot-bg-handle-bottom { border-radius: 0 0 3px 3px; }
+.slot-bg-handle::before {
+  content: attr(data-label);
+  position: absolute;
+  top: 0; left: 8px; right: 8px; bottom: 0;
+  display: flex; align-items: center;
+  font-family: var(--font-mono, monospace);
+  font-size: 9px; letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.55);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  pointer-events: none;
+}
+/* Цветовые акценты в handles совпадают с slot-bg.kind-*, но чуть темнее чтобы
+   ручка визуально читалась как «активная зона». */
+.slot-bg-handle.kind-popsci     { background: rgba(179, 149, 106, 0.32); }
+.slot-bg-handle.kind-station    { background: rgba(122, 155, 110, 0.32); }
+.slot-bg-handle.kind-workshop   { background: rgba(122, 155, 110, 0.32); }
+.slot-bg-handle.kind-experiment { background: rgba(122, 155, 110, 0.32); }
+.slot-bg-handle.kind-music      { background: rgba(196, 120, 98, 0.30); }
+.slot-bg-handle.kind-cinema     { background: rgba(149, 116, 144, 0.30); }
+.slot-bg-handle.kind-social     { background: rgba(120, 150, 180, 0.30); }
+.slot-bg-handle.kind-interlude  { background: rgba(180, 170, 130, 0.30); }
+.slot-bg-handle.dim { opacity: 0.4; }
+body.demo-mode .slot-bg-handle,
+body.viewer-mode .slot-bg-handle { pointer-events: none; cursor: default; }
+body.demo-mode .slot-bg-handle::before,
+body.viewer-mode .slot-bg-handle::before { display: none; }
+body:not(.demo-mode):not(.viewer-mode) .slot-bg-handle { cursor: pointer; }
+body:not(.demo-mode):not(.viewer-mode) .slot-bg-handle:hover { filter: brightness(0.92); background-color: rgba(0, 0, 0, 0.08); }
+@media (max-width: 700px) { .slot-bg-handle, .slot-bg-handle::before { display: none; } }
+
 body.demo-mode .slot-bg,
 body.viewer-mode .slot-bg { pointer-events: none; cursor: default; }
 body:not(.demo-mode):not(.viewer-mode) .slot-bg { cursor: pointer; }
@@ -3866,21 +3906,32 @@ function renderTimeline() {
       // Slot-bg кликабельный для admin: клик открывает редактор слота. В JS
       // обработчике проверим isReadOnly() — в demo/viewer клик не сработает.
       // CSS добавляет cursor: pointer только в admin.
-      html += `<div class="slot-bg kind-${k}${dimClass}" data-slot="${esc(sid)}" onclick="onSlotBgClick(event, '${esc(sid)}')" style="top:${startPx}px;height:${heightPx}px"></div>`;
+      const slotLabel = (s.tool_label || s.label_for_zoom || sid);
+      const slotTime = s.start ? s.start.slice(0, 5) : '';
+      const slotBgLabel = slotTime ? `${slotLabel} · ${slotTime}` : slotLabel;
       const firstAllowed = VENUE_ORDER.find(v => allowed.includes(v));
       const inBand = bandedSids.has(sid);
-
-      const cellEvents = getEvents().filter(e => e.slot === sid && e.venue === vid && e.status === 'accepted');
-      // labelOffset резервирует место сверху slot-bg, которое остаётся видимым
-      // (карточка не накрывает его целиком). Видимая полоска — кликабельная,
-      // ведёт в редактор слота. На мобиле полоска не нужна — карточка занимает
-      // весь слот (там и так горизонтальный скролл, нет места под выступы).
-      // (Раньше для multi-venue станций здесь резервировалось 34px под баннер
-      // «СТАНЦИИ N · время», но баннеры отключены — теперь везде одинаково.)
       const isMultiVenue = allowed.length > 1 || inBand;
       const isMobile = window.innerWidth <= 700;
-      const labelOffset = isMobile ? 4 : 5;
-      const bottomPad = 4; // небольшой резерв снизу
+      // Фон слота (зелёный/жёлтый/etc по категории) — для визуальной идентификации.
+      // pointer-events: none — клики проходят сквозь к pill / dropzone / handles.
+      html += `<div class="slot-bg kind-${k}${dimClass}" data-slot="${esc(sid)}" style="top:${startPx}px;height:${heightPx}px"></div>`;
+      // Две **кликабельные ручки** — верхняя и нижняя полоски — открывают редактор
+      // слота при клике. Они z-index выше pill, гарантированно получают клики.
+      // Раньше было одно slot-bg с z-index 1 ниже pill (5) — клики терялись когда
+      // выступы соседних слотов накладывались или их перекрывал right-content.
+      const handleTopH = isMobile ? 4 : 14;
+      const handleBotH = isMobile ? 0 : 8;
+      html += `<div class="slot-bg-handle slot-bg-handle-top kind-${k}${dimClass}" data-slot="${esc(sid)}" data-label="${esc(slotBgLabel)}" onclick="onSlotBgClick(event, '${esc(sid)}')" style="top:${startPx}px;height:${handleTopH}px" title="Открыть редактор слота"></div>`;
+      if (handleBotH > 0) {
+        html += `<div class="slot-bg-handle slot-bg-handle-bottom kind-${k}${dimClass}" data-slot="${esc(sid)}" onclick="onSlotBgClick(event, '${esc(sid)}')" style="top:${startPx + heightPx - handleBotH}px;height:${handleBotH}px" title="Открыть редактор слота"></div>`;
+      }
+
+      const cellEvents = getEvents().filter(e => e.slot === sid && e.venue === vid && e.status === 'accepted');
+      // labelOffset / bottomPad совпадают с высотой кликабельных handles —
+      // pill размещается ровно между ними и не перекрывает их.
+      const labelOffset = handleTopH;
+      const bottomPad = handleBotH;
       const innerHeight = heightPx - labelOffset - bottomPad;
 
       // Lane слота: для блок-стиля группы (v17+) — индекс среди конкурирующих слотов
@@ -4668,7 +4719,27 @@ function showDetail(type, id) {
     main.classList.add('left-open');
     main.classList.remove('pool-view'); // покинули режим «виден пул», переключились в detail
   }
-  view.innerHTML = renderDetailContent(type, id);
+  // Защитный вызов renderDetailContent: любой throw или пустой результат не должны
+  // оставлять панель пустой — лучше показать явное сообщение об ошибке чем тишину.
+  let content = '';
+  try {
+    content = renderDetailContent(type, id);
+  } catch (err) {
+    console.error('[showDetail] renderDetailContent упал на', type, id, err);
+    content = `<div class="detail-body" style="padding:24px">
+      <strong>Не удалось открыть редактор.</strong>
+      <p style="font-size:12px;color:#888">${esc(type)} · ${esc(id)} · ${esc(err.message)}</p>
+      <p style="font-size:12px;color:#888">Открой консоль (F12 → Console) и сообщи стек ошибки.</p>
+    </div>`;
+  }
+  if (!content || content.trim() === '') {
+    console.warn('[showDetail] пустой контент для', type, id);
+    content = `<div class="detail-body" style="padding:24px">
+      <strong>Редактор для этого элемента пуст.</strong>
+      <p style="font-size:12px;color:#888">${esc(type)} · ${esc(id)}</p>
+    </div>`;
+  }
+  view.innerHTML = content;
   view.scrollTop = 0;
   bindDetailHandlers();
   // Рендер таймлайна нужен после смены ширины grid — иначе пилюли не пересчитают позицию
@@ -4862,7 +4933,18 @@ function _renderCardStatusActions(currentStatus, opts) {
 
 function renderEventDetail(id) {
   const ev = getEvents().find(e => e.id === id);
-  if (!ev) return '<div class="detail-body">не найдено</div>';
+  if (!ev) {
+    // Диагностический fallback: может помочь понять что у пользователя локально
+    // сломан state (например, в localStorage старая версия без этой карты).
+    const cardId = id.replace(/#\d+$/, '');
+    const card = (state.data.cards || []).find(c => c.id === cardId);
+    return `<div class="detail-body" style="padding:24px">
+      <strong>Карточка не найдена.</strong>
+      <p style="font-size:12px;color:#888">id: ${esc(id)} · card в state: ${card ? 'есть (status='+esc(card.status)+')' : 'нет'}</p>
+      <p style="font-size:12px;color:#888">Возможно у тебя устаревшее локальное состояние. Попробуй:</p>
+      <p><button onclick="if(confirm('Сбросить локальный кэш? Несохранённые правки потеряются.')) { clearLocalCache(); location.reload(); }">Сбросить кэш и перезагрузить</button></p>
+    </div>`;
+  }
   const cat = _getCategoryMeta(ev.category);
   const slot = ev.slot ? state.data.time_slots[ev.slot] : null;
   const venue = ev.venue ? state.data.venues[ev.venue] : null;
@@ -5279,11 +5361,17 @@ function renderSlotDetail(id) {
     ? `<div class="detail-label-hint" style="margin-top:4px">сейчас этот слот относится к нескольким площадкам: ${s.allowed_venues.map(v => esc(state.data.venues?.[v]?.label || v)).join(', ')}. При сохранении он перейдёт в одну выбранную площадку.</div>`
     : '';
 
-  // Subcategory зависит от category — рендерим из data.subcategories[category]
-  const subcatList = (state.data.subcategories || {})[s.category] || [];
+  // Subcategory зависит от category — data.subcategories[category] это объект
+  // вида { 'big_bar': {slot, label_from_venue, display?}, 'courtyard': {...} },
+  // а не массив. Раньше тут было .map по массиву — падало на любом slot detail
+  // (`TypeError: subcatList.map is not a function`).
+  const subcatMap = (state.data.subcategories || {})[s.category] || {};
+  const subcatEntries = Object.entries(subcatMap);
   const subcatOptions = ['<option value="">— нет —</option>',
-    ...subcatList.map(sc =>
-      `<option value="${esc(sc.id || sc)}" ${(sc.id || sc) === s.subcategory ? 'selected' : ''}>${esc(sc.label || sc.id || sc)}</option>`)
+    ...subcatEntries.map(([scid, sc]) => {
+      const label = sc.display || (sc.label_from_venue && state.data.venues[sc.label_from_venue]?.display) || scid;
+      return `<option value="${esc(scid)}" ${scid === s.subcategory ? 'selected' : ''}>${esc(label)} (${esc(scid)})</option>`;
+    })
   ].join('');
 
   return `
@@ -5363,12 +5451,11 @@ function detailSlotUpdateSubcat() {
   const cat = document.getElementById('detail-slot-category').value;
   const sel = document.getElementById('detail-slot-subcategory');
   if (!sel) return;
-  const subcatList = (state.data.subcategories || {})[cat] || [];
+  const subcatMap = (state.data.subcategories || {})[cat] || {};
   sel.innerHTML = ['<option value="">— нет —</option>',
-    ...subcatList.map(sc => {
-      const id = sc.id || sc;
-      const label = sc.label || sc.id || sc;
-      return `<option value="${esc(id)}">${esc(label)}</option>`;
+    ...Object.entries(subcatMap).map(([scid, sc]) => {
+      const label = sc.display || (sc.label_from_venue && state.data.venues[sc.label_from_venue]?.display) || scid;
+      return `<option value="${esc(scid)}">${esc(label)} (${esc(scid)})</option>`;
     })
   ].join('');
 }
