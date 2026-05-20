@@ -1,5 +1,5 @@
 // === База событий фестиваля «Фрактальная Одиссея» v31 ===
-// Автоматически сгенерировано programmer-tool 2026-05-19T22:48:07.166Z
+// Автоматически сгенерировано programmer-tool 2026-05-20T19:05:08.474Z
 window.FESTIVAL_DATA = {
   "_meta": {
     "version": "2026-05-09-v30-handfix-yakovlev",
@@ -15,7 +15,7 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-19T22:48:07.165Z",
+    "last_modified": "2026-05-20T19:05:08.473Z",
     "modified_by": "programmer-tool",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\".",
@@ -465,12 +465,13 @@ window.FESTIVAL_DATA = {
     },
     "slot-discussion": {
       "start": "20:30",
-      "end": "22:00",
+      "end": "21:30",
       "label_for_zoom": "Дискуссия · 20:30",
       "tool_label": "Дискуссия",
       "type": "discussion",
       "category": "social",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "exclusive": false
     },
     "slot-cinema-2": {
       "start": "20:30",
@@ -485,10 +486,11 @@ window.FESTIVAL_DATA = {
       "start": "18:30",
       "end": "19:00",
       "label_for_zoom": "Перебив · 18:30",
-      "tool_label": "Короткометражки 2",
+      "tool_label": "Короткометражки 1",
       "type": "interlude",
       "category": "cinema",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "exclusive": false
     },
     "slot-interlude-3": {
       "start": "20:30",
@@ -623,12 +625,13 @@ window.FESTIVAL_DATA = {
     },
     "slot-gusev-talk": {
       "start": "17:00",
-      "end": "17:30",
+      "end": "17:20",
       "label_for_zoom": "Вячеслав Гусев · 17:15",
       "tool_label": "Партнёрское выступление",
       "type": "talk",
       "category": "popsci",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "exclusive": false
     },
     "slot-cinema-1": {
       "start": "19:30",
@@ -638,6 +641,24 @@ window.FESTIVAL_DATA = {
       "type": "cinema",
       "category": "cinema",
       "venue": "library"
+    },
+    "slot-custom-1779301750995": {
+      "start": "20:00",
+      "end": "20:30",
+      "label_for_zoom": "короткометражки ",
+      "tool_label": "короткометражки 2",
+      "venue": "main_stage",
+      "category": "cinema",
+      "exclusive": false
+    },
+    "slot-custom-1779301988086": {
+      "start": "21:30",
+      "end": "22:00",
+      "label_for_zoom": "Перебив",
+      "tool_label": "короткометражки 3",
+      "venue": "main_stage",
+      "category": "cinema",
+      "exclusive": false
     }
   },
   "cards": [
@@ -704,7 +725,6 @@ window.FESTIVAL_DATA = {
       "apollo_slot": "center",
       "title": "Научпоп-квиз",
       "subtitle": "командный квиз",
-      "speaker": "Григорий Тарасевич",
       "speaker_role": "научный журналист",
       "description": "Командный квиз в формате ЧГК с вопросами на стыке науки и искусства. Играть можно семьями, с детьми, школьниками — или без них.",
       "venue": "small_bar",
@@ -1074,10 +1094,14 @@ window.FESTIVAL_DATA = {
       "type": "cinema",
       "subtype": "short",
       "apollo_slot": "big-2",
-      "title": "Menger meets Eiffel",
+      "title": "Короткий метр и анимация ",
       "description": "Карл Менгер встречает Гюстава Эйфеля в машине времени. Бесконечное путешествие на разных скоростях и в разных направлениях — фильм показывает его на разных уровнях одновременно.",
       "venue": "main_stage",
-      "slot": "slot-interlude-2"
+      "slots": [
+        "slot-interlude-2",
+        "slot-custom-1779301750995",
+        "slot-custom-1779301988086"
+      ]
     },
     {
       "id": "music-main-22",
@@ -1455,7 +1479,7 @@ window.FESTIVAL_DATA = {
       },
       "slots": [
         "slot-st-cy-A",
-        "slot-st-cy-B"
+        "slot-st-cy-C"
       ],
       "_source_app": "app-17",
       "application": {
@@ -1639,8 +1663,8 @@ window.FESTIVAL_DATA = {
         "knows": true
       },
       "slots": [
-        "slot-st-cy-C",
-        "slot-st-cy-D"
+        "slot-st-cy-B",
+        "slot-st-cy-F"
       ],
       "_source_app": "app-37",
       "application": {
@@ -1902,16 +1926,10 @@ window.FESTIVAL_DATA = {
         "indoor_outdoor": "Только в помещении",
         "topic": "Искусство",
         "time": "Могу весь интервал 15:00–20:00",
-        "slot_ok": "",
         "bring": "ноут, камеру, динамики",
         "org": "-",
         "links": "https://www.instagram.com/jell_ixx/\nвидео некоторых проектов: https://disk.yandex.ru/d/sj_-YzlY4_-xdQ",
-        "capacity": "",
-        "speech_details": "",
-        "fractal_link": "",
         "special": "Для инсталляции нужны экран или проектор, камера, динамики для вывода звука и немного пространства для взаимодействия. Поэтому можно разместить на столе или выделить небольшой угол под это, зависит от оборудования. Для проектора более предпочтительно тёмное помещение.  и лучше чтоб было не громко рядом, но не обязательно",
-        "time_constraints": "",
-        "duration": "",
         "source_detail": "",
         "extra": "Если понравилась идея, пишите в тг или на почту, вместе обсудим как её лучше реализовать",
         "inst_size": "Отдельный угол ~2×2 м",
@@ -2999,7 +3017,7 @@ window.FESTIVAL_DATA = {
       "venue": "courtyard",
       "slots": [
         "slot-st-cy-E",
-        "slot-st-cy-F"
+        "slot-st-cy-D"
       ]
     },
     {
