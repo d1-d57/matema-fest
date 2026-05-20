@@ -1425,6 +1425,11 @@ body.viewer-mode .comm-badges { display: none !important; }
 /* ============================================================
    PRINT VIEW (расписание для печати)
    ============================================================ */
+.print-modal-bg {
+  display: none;
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.5);
+}
 .print-modal-bg.active { display: flex !important; padding: 0; }
 .print-modal {
   background: #f5f1e6; width: 100vw; height: 100vh;
@@ -1878,6 +1883,19 @@ body.viewer-mode .comm-badges { display: none !important; }
   </div>
 </div>
 
+<!-- ===== PRINT / PDF MODAL — расписание для печати и выгрузки в PDF ===== -->
+<div class="print-modal-bg" id="print-modal">
+  <div class="print-modal">
+    <div class="print-toolbar">
+      <span class="print-title-mini">Расписание · печать / PDF</span>
+      <span class="print-toolbar-hint">Кнопка «Скачать PDF» открывает диалог печати — выбери «Сохранить как PDF». Текст в PDF останется копируемым (векторным), дизайнеры смогут взять его за основу.</span>
+      <button class="print-action" onclick="window.print()">⬇ Скачать PDF / Печать</button>
+      <button class="print-action" style="background:#888" onclick="closePrintView()">Закрыть</button>
+    </div>
+    <div class="print-canvas" id="print-canvas"></div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // LOCK / AUTH — защита от случайных посетителей
@@ -2313,115 +2331,21 @@ function persistState() {
 }
 
 // ============================================================
-// АВТОРАСПРЕДЕЛЕНИЕ APOLLO ПО КАРТОЧКАМ
-// Группировка: по (category, subcategory) — берём с event/exhibit,
-// fallback на slot.category/subcategory.
-// Apollo_slot живёт на event/exhibit (не на слоте). Это устраняет
-// дубли в слотах с lane=2 (где на одном time_slot сидят 2 события).
-// Алгоритм минимально инвазивный: сохраняет уже заданные уникальные
-// apollo_slot, перераспределяет только дубли и пустые.
-// Сортировка стабильная — по времени слота (карточки без слота — в конец).
-// Лимит 10 позиций на группу. Если в группе больше — alert и пропуск.
+// APOLLO: сайт распределяет круги САМ по подкатегории.
+// Программер ничего не назначает — он лишь чистит legacy-поле apollo_slot
+// с карт и слотов, чтобы старые значения не мешали автораспределению сайта.
+// (Раньше здесь была ручная раскладка по фиксированным позициям big/mid/center
+// с лимитами и overflow-алертами — это было ошибкой: объект несёт только
+// category/subcategory, остальное сайт делает сам.)
 // ============================================================
-function _apolloSortKey(item, slots) {
-  // Для multi-slot card берём первый slot (earliest); для single-slot — card.slot.
-  const slotId = item.slot || (Array.isArray(item.slots) && item.slots[0]);
-  if (slotId && slots[slotId]) {
-    return (slots[slotId].start || '') + '_' + item.id;
-  }
-  return 'zzz_' + item.id;
-}
-
-// Доступные apollo-позиции зависят от группы (синхронизировано с index.html):
-//   interactive       → центр круга экспериментов: 3 квадратных позиции
-//   popsci + music/big_bar → центральная позиция доступна (7 позиций)
-//   все остальные     → 6 позиций без center
-// Порядок: сначала big, потом mid, center последний (по геометрии меньше mid).
-const APOLLO_POSITIONS_DEFAULT = ['big-1', 'big-2', 'big-3', 'mid-1', 'mid-2', 'mid-3'];
-const APOLLO_POSITIONS_WITH_CENTER = ['big-1', 'big-2', 'big-3', 'mid-1', 'mid-2', 'mid-3', 'center'];
-const APOLLO_POSITIONS_INTERACTIVE = ['big-1', 'big-2', 'big-3'];
-function _apolloPositionsForGroup(cat, sub) {
-  if (cat === 'interactive') return APOLLO_POSITIONS_INTERACTIVE;
-  if (cat === 'popsci') return APOLLO_POSITIONS_WITH_CENTER;
-  if (cat === 'music' && sub === 'big_bar') return APOLLO_POSITIONS_WITH_CENTER;
-  return APOLLO_POSITIONS_DEFAULT;
-}
-
 function recomputeApolloSlots(data) {
   if (!data || !Array.isArray(data.cards)) return;
-  const slots = data.time_slots || {};
-  const groups = {};  // ключ "category::subcategory|*" → [card]
-
-  // Группируем accepted-карты по (category, subcategory). Multi-slot card —
-  // это ОДНА запись (на сайте Аполлоний схлопывает её в один круг), поэтому
-  // никакого dedup по _groupKey не нужно — он был артефактом expansion.
   for (const card of data.cards) {
-    if (card.status !== 'accepted') continue;
-    const isStation = card.type === 'station';
-    // category для apollo-группировки:
-    //   art         → 'art', subcategory = card.subtype || 'art'
-    //   station     → card.subtype (workshop/experiment/interactive)
-    //   остальное   → card.type, subcategory = card.subtype
-    const cat = isStation ? (card.subtype || 'workshop') : card.type;
-    const sub = card.type === 'art' ? (card.subtype || 'art')
-              : (isStation ? null : (card.subtype || null));
-    if (!cat) continue;
-    const key = cat + '::' + (sub || '*');
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(card);
+    if ('apollo_slot' in card) delete card.apollo_slot;
   }
-
-  const overflows = [];
-  Object.entries(groups).forEach(([key, items]) => {
-    const [cat, subRaw] = key.split('::');
-    const sub = subRaw === '*' ? null : subRaw;
-    const allowedPositions = _apolloPositionsForGroup(cat, sub);
-
-    if (items.length > allowedPositions.length) {
-      overflows.push({key: cat + (sub ? '/' + sub : ''), n: items.length, max: allowedPositions.length});
-      return;
-    }
-    // Стабильная сортировка: сначала по уже назначенному apollo_slot (более крупный
-    // → выше), tie-break по времени слота. Сохраняет ручную расстановку «кто
-    // крупнее», но автоматически закрывает дыры: если у кого-то был ear-1, а
-    // big-2 свободен — карточка повышается.
-    const APOLLO_PRIORITY = {
-      'big-1': 0, 'big-2': 1, 'big-3': 2,
-      'mid-1': 3, 'mid-2': 4, 'mid-3': 5,
-      'center': 6,
-    };
-    items.sort((a, b) => {
-      const pa = a.apollo_slot in APOLLO_PRIORITY ? APOLLO_PRIORITY[a.apollo_slot] : 10;
-      const pb = b.apollo_slot in APOLLO_PRIORITY ? APOLLO_PRIORITY[b.apollo_slot] : 10;
-      if (pa !== pb) return pa - pb;
-      const ka = _apolloSortKey(a, slots);
-      const kb = _apolloSortKey(b, slots);
-      return ka < kb ? -1 : (ka > kb ? 1 : 0);
-    });
-    // Раздаём первые N позиций из allowedPositions подряд. Это убирает дыры
-    // (если кому-то был ear-1, а big-2 свободен — повысится) и не использует
-    // позиции которые недоступны на сайте для этой группы (например, center
-    // для experiment/art/cinema).
-    for (let i = 0; i < items.length; i++) {
-      items[i].apollo_slot = allowedPositions[i];
-    }
-  });
-
-  // Apollo_slot живёт на картах. Со слотов убираем (legacy-дубль, путал
-  // сайт когда два значения расходились).
+  const slots = data.time_slots || {};
   for (const sid in slots) {
-    delete slots[sid].apollo_slot;
-  }
-
-  if (overflows.length > 0) {
-    const msg = overflows.map(o => `«${o.key}»: ${o.n} карточек (макс ${o.max})`).join('\n');
-    if (!window._apolloOverflowWarned) {
-      console.warn('[programmer] Apollo overflow:\n' + msg);
-      window._apolloOverflowWarned = true;
-      setTimeout(() => alert('Превышен лимит кругов Аполлония в группе:\n\n' + msg + '\n\nApollo для этих групп не пересчитан. Раздели на подкатегории или удали лишние карточки.'), 100);
-    }
-  } else {
-    window._apolloOverflowWarned = false;
+    if ('apollo_slot' in slots[sid]) delete slots[sid].apollo_slot;
   }
 }
 
@@ -4319,7 +4243,6 @@ function renderExhibits() {
 function renderExhibitCard(item) {
   const tags = [];
   if (item.subcategory && item.kind !== item.subcategory) tags.push(item.subcategory);
-  if (item.apollo_slot) tags.push(item.apollo_slot);
   if (item._source_app) tags.push('из ' + item._source_app);
   return `<div class="exhibit-card s-${item.status||'accepted'}" data-id="${esc(item.id)}">
     <button class="ex-remove">×</button>
@@ -4383,7 +4306,6 @@ function renderInteractives() {
 
 function renderInteractiveCard(item) {
   const tags = [];
-  if (item.apollo_slot) tags.push(item.apollo_slot);
   if (item._source_app) tags.push('из ' + item._source_app);
   return `<div class="exhibit-card s-${item.status||'accepted'}" data-id="${esc(item.id)}">
     <button class="ex-remove">×</button>
