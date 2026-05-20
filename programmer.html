@@ -1878,6 +1878,19 @@ body.viewer-mode .comm-badges { display: none !important; }
   </div>
 </div>
 
+<!-- ===== PRINT / PDF MODAL — расписание для печати и выгрузки в PDF ===== -->
+<div class="print-modal-bg" id="print-modal">
+  <div class="print-modal">
+    <div class="print-toolbar">
+      <span class="print-title-mini">Расписание · печать / PDF</span>
+      <span class="print-toolbar-hint">Кнопка «Скачать PDF» открывает диалог печати — выбери «Сохранить как PDF». Текст в PDF останется копируемым (векторным), дизайнеры смогут взять его за основу.</span>
+      <button class="print-action" onclick="window.print()">⬇ Скачать PDF / Печать</button>
+      <button class="print-action" style="background:#888" onclick="closePrintView()">Закрыть</button>
+    </div>
+    <div class="print-canvas" id="print-canvas"></div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // LOCK / AUTH — защита от случайных посетителей
