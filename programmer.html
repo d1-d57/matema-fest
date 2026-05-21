@@ -2331,22 +2331,15 @@ function persistState() {
 }
 
 // ============================================================
-// APOLLO: сайт распределяет круги САМ по подкатегории.
-// Программер ничего не назначает — он лишь чистит legacy-поле apollo_slot
-// с карт и слотов, чтобы старые значения не мешали автораспределению сайта.
-// (Раньше здесь была ручная раскладка по фиксированным позициям big/mid/center
-// с лимитами и overflow-алертами — это было ошибкой: объект несёт только
-// category/subcategory, остальное сайт делает сам.)
+// APOLLO: программер НЕ трогает apollo_slot. Сайт (index.html) сам
+// распределяет круги по подкатегории для sub-level групп (art, interactive,
+// music, cinema). Для category-level групп (popsci, workshop, experiment,
+// social — без подкатегории) сайт использует apollo_slot, заданный в данных,
+// поэтому это поле НЕЛЬЗЯ ни чистить, ни переназначать в программере — иначе
+// эти круги опустеют. Функция оставлена пустой (вызовы при загрузке безопасны).
 // ============================================================
 function recomputeApolloSlots(data) {
-  if (!data || !Array.isArray(data.cards)) return;
-  for (const card of data.cards) {
-    if ('apollo_slot' in card) delete card.apollo_slot;
-  }
-  const slots = data.time_slots || {};
-  for (const sid in slots) {
-    if ('apollo_slot' in slots[sid]) delete slots[sid].apollo_slot;
-  }
+  // no-op: apollo_slot — это данные, не производное. Программер их не вычисляет.
 }
 
 // Авто-бэкап в отдельный ключ. Используется перед опасными операциями (reload,

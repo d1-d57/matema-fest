@@ -684,7 +684,8 @@ window.FESTIVAL_DATA = {
         "has_channel_post": true,
         "time_final": true
       },
-      "slot": "slot-yakovlev"
+      "slot": "slot-yakovlev",
+      "apollo_slot": "mid-1"
     },
     {
       "id": "talk-evdokimov",
@@ -712,7 +713,8 @@ window.FESTIVAL_DATA = {
         "has_channel_post": true,
         "time_final": true
       },
-      "slot": "slot-evdokimov"
+      "slot": "slot-evdokimov",
+      "apollo_slot": "mid-2"
     },
     {
       "id": "talk-tarasevich",
@@ -729,7 +731,8 @@ window.FESTIVAL_DATA = {
           "url": "https://t.me/kot_sh"
         }
       ],
-      "slot": "slot-tarasevich"
+      "slot": "slot-tarasevich",
+      "apollo_slot": "center"
     },
     {
       "id": "social-rosetka",
@@ -754,7 +757,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true
       },
-      "slot": "slot-networking"
+      "slot": "slot-networking",
+      "apollo_slot": "big-2"
     },
     {
       "id": "talk-gelfand",
@@ -774,7 +778,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true
       },
-      "slot": "slot-gelfand"
+      "slot": "slot-gelfand",
+      "apollo_slot": "big-1"
     },
     {
       "id": "talk-rajgorodski",
@@ -798,7 +803,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true
       },
-      "slot": "slot-rajgorodski"
+      "slot": "slot-rajgorodski",
+      "apollo_slot": "big-3"
     },
     {
       "id": "talk-skripchenko",
@@ -818,7 +824,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true
       },
-      "slot": "slot-skripchenko"
+      "slot": "slot-skripchenko",
+      "apollo_slot": "big-2"
     },
     {
       "id": "puzzle-fractal-3d",
@@ -866,7 +873,8 @@ window.FESTIVAL_DATA = {
         "capacity": "15 и больше",
         "fractal_link": "да, мы собственно вырезаем два фрактала",
         "special": "нет, но наверное нужно побольше стульев и столов так как станция может вместить много людей"
-      }
+      },
+      "apollo_slot": "big-1"
     },
     {
       "id": "puzzle-engineering-origami",
@@ -911,7 +919,8 @@ window.FESTIVAL_DATA = {
         "capacity": "15 и больше",
         "fractal_link": "не(",
         "special": "опять таки побольше стульев"
-      }
+      },
+      "apollo_slot": "big-2"
     },
     {
       "id": "music-rap",
@@ -929,7 +938,8 @@ window.FESTIVAL_DATA = {
           "url": "https://t.me/ntr1_0"
         }
       ],
-      "slot": "slot-rap-evening"
+      "slot": "slot-rap-evening",
+      "apollo_slot": "big-1"
     },
     {
       "id": "social-tochka-nol",
@@ -977,7 +987,8 @@ window.FESTIVAL_DATA = {
         "source_detail": "увидела пост в каком-то канале с подборками опен-коллов",
         "extra": "Я могу варьировать форматом в зависимости от ваших возможностей, возьму на себя полное подключение звука (с любыми настройками отстройками), помимо своего выступления. Но что касается строительства привлекающего к себе интерактивного объекта - здесь мне нужна помощь, нет возможности в одиночку сделать его заранее или привезти заблаговременно. При этом объект может быть любым - влияние на звук происходит путем передачи вибраций от удара/прикосновения на пьезодатчик, который передаёт сигнал в мою систему. Также, когда появится понимание в какой именно точке происходит спектакль, какие размеры помещения, сцены, сколько зрителей и т.д. - смогу набросать эскизы объектов. Ну и к тому же ко всем вариантам объектов можно предусмотреть и подсветку - но тут снова будет нужна помочь с пайкой, физически, к сожалению, не смогу осилить и звук настроить и свет спаять. Нужно будет рационально оценить силы, команду и время настройки. \n\nПри невозможности помощи с созданием интерактивных объектов - \"Точка-Ноль\", само собой, может остаться просто музыкальным спектаклем.",
         "_warning": "Музыкальный спектакль по Хармсу — берём, формат уточняется"
-      }
+      },
+      "apollo_slot": "big-3"
     },
     {
       "id": "discussion-tba",
@@ -991,7 +1002,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true
       },
-      "slot": "slot-discussion"
+      "slot": "slot-discussion",
+      "apollo_slot": "big-1"
     },
     {
       "id": "cinema-feature-pi",
@@ -1002,7 +1014,8 @@ window.FESTIVAL_DATA = {
       "speaker": "Даррен Аронофски",
       "description": "Сначала построим дерево Пифагора и попробуем понять, конечна ли его площадь. Затем с помощью циркуля и формулы Декарта достроим ковёр Аполлония, обсудим его раскраски и связь с цепными дробями. Будем работать руками — и разбираться, как фракталы устроены.",
       "venue": "library",
-      "slot": "slot-cinema-2"
+      "slot": "slot-cinema-2",
+      "apollo_slot": "big-1"
     },
     {
       "id": "cinema-anim-horsthuis",
@@ -1011,7 +1024,8 @@ window.FESTIVAL_DATA = {
       "subtype": "animation",
       "title": "Julius Horsthuis",
       "description": "Цифровой художник из Нидерландов. Делает завораживающие фрактальные анимации, в которых математическая сложность встречается с кинематографической красотой.",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "apollo_slot": "big-1"
     },
     {
       "id": "cinema-anim-machina",
@@ -1020,7 +1034,8 @@ window.FESTIVAL_DATA = {
       "subtype": "animation",
       "title": "Machina Infinitum",
       "description": "«Эти миры существовали всегда, Machina Infinitum интерпретирует их, позволяя вам их познать».",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "apollo_slot": "big-2"
     },
     {
       "id": "cinema-anim-missing-fractals",
@@ -1029,7 +1044,8 @@ window.FESTIVAL_DATA = {
       "subtype": "animation",
       "title": "Missing fractals",
       "description": "Как оплакивать потерю того, чего у тебя никогда не было? Грейс живёт воспоминаниями и мечтами о том, что могло бы случиться — после потери того, чего у неё никогда и не было.",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "apollo_slot": "big-3"
     },
     {
       "id": "cinema-anim-fractal-baby",
@@ -1038,7 +1054,8 @@ window.FESTIVAL_DATA = {
       "subtype": "animation",
       "title": "Fractal baby",
       "description": "Маленькая девочка разговаривает с младенцем, который ещё в животе у матери. Она перечисляет ему все причины, по которым ему стоит выйти наружу.",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "apollo_slot": "mid-1"
     },
     {
       "id": "cinema-anim-like-in-a-dream",
@@ -1047,7 +1064,8 @@ window.FESTIVAL_DATA = {
       "subtype": "animation",
       "title": "Like in a dream",
       "description": "Анимация по проекту «Атлас человека» Брайана Альвареса из Калифорнийского университета в Беркли. Иллюстрация его идеи о красоте живых организмов.",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "apollo_slot": "mid-2"
     },
     {
       "id": "cinema-anim-worlds-within-worlds",
@@ -1056,7 +1074,8 @@ window.FESTIVAL_DATA = {
       "subtype": "animation",
       "title": "Worlds Within Worlds",
       "description": "Аудиовизуальное исследование пространства, времени, размерности, геометрии, сознания и биоразнообразия.",
-      "venue": "main_stage"
+      "venue": "main_stage",
+      "apollo_slot": "mid-3"
     },
     {
       "id": "cinema-short-big-brains",
@@ -1064,7 +1083,8 @@ window.FESTIVAL_DATA = {
       "type": "cinema",
       "subtype": "short",
       "title": "Big Brains, Small Films",
-      "description": "Фильм основан на последнем интервью Бенуа Мандельброта, записанном в 2010 году за 19 дней до его смерти. Отец фракталов вспоминает свой путь в математике и рассказывает, как его взгляд на мир привёл к открытию фрактальной геометрии."
+      "description": "Фильм основан на последнем интервью Бенуа Мандельброта, записанном в 2010 году за 19 дней до его смерти. Отец фракталов вспоминает свой путь в математике и рассказывает, как его взгляд на мир привёл к открытию фрактальной геометрии.",
+      "apollo_slot": "big-1"
     },
     {
       "id": "cinema-short-menger-eiffel",
@@ -1078,7 +1098,8 @@ window.FESTIVAL_DATA = {
         "slot-interlude-2",
         "slot-custom-1779301750995",
         "slot-custom-1779301988086"
-      ]
+      ],
+      "apollo_slot": "big-2"
     },
     {
       "id": "music-main-22",
@@ -1095,7 +1116,8 @@ window.FESTIVAL_DATA = {
           "url": "https://peter.theremintimes.ru/"
         }
       ],
-      "slot": "slot-music-1"
+      "slot": "slot-music-1",
+      "apollo_slot": "mid-2"
     },
     {
       "id": "music-main-23",
@@ -1115,7 +1137,8 @@ window.FESTIVAL_DATA = {
           "url": "https://stropharia.bandcamp.com/"
         }
       ],
-      "slot": "slot-music-2"
+      "slot": "slot-music-2",
+      "apollo_slot": "mid-3"
     },
     {
       "id": "music-main-00",
@@ -1135,7 +1158,8 @@ window.FESTIVAL_DATA = {
           "url": "https://www.discogs.com/artist/115618-Rombix"
         }
       ],
-      "slot": "slot-music-3"
+      "slot": "slot-music-3",
+      "apollo_slot": "big-1"
     },
     {
       "id": "music-main-01",
@@ -1159,7 +1183,8 @@ window.FESTIVAL_DATA = {
           "url": "https://www.instagram.com/modulor_archives/"
         }
       ],
-      "slot": "slot-music-5"
+      "slot": "slot-music-5",
+      "apollo_slot": "big-2"
     },
     {
       "id": "music-main-02",
@@ -1179,7 +1204,8 @@ window.FESTIVAL_DATA = {
           "url": "https://youtube.com/@hobbothmusic"
         }
       ],
-      "slot": "slot-music-6"
+      "slot": "slot-music-6",
+      "apollo_slot": "big-3"
     },
     {
       "id": "music-main-03",
@@ -1195,7 +1221,8 @@ window.FESTIVAL_DATA = {
           "url": "https://soundcloud.com/mishanikitin"
         }
       ],
-      "slot": "slot-dance"
+      "slot": "slot-dance",
+      "apollo_slot": "mid-1"
     },
     {
       "id": "music-pink-2130",
@@ -1215,7 +1242,8 @@ window.FESTIVAL_DATA = {
           "url": "https://kotaerecords.com/artists/brinstaar"
         }
       ],
-      "slot": "slot-music-parallel-1"
+      "slot": "slot-music-parallel-1",
+      "apollo_slot": "mid-2"
     },
     {
       "id": "music-pink-2230",
@@ -1231,7 +1259,8 @@ window.FESTIVAL_DATA = {
           "url": "https://m.vk.com/public205955884"
         }
       ],
-      "slot": "slot-music-parallel-2"
+      "slot": "slot-music-parallel-2",
+      "apollo_slot": "mid-3"
     },
     {
       "id": "music-pink-2330",
@@ -1242,7 +1271,8 @@ window.FESTIVAL_DATA = {
       "venue": "big_bar",
       "slot": "slot-music-parallel-3",
       "speaker": "S66",
-      "description": "S66 — Борис Шилин, создатель и CEO проекта «ЩЁЛОЧЬ», идеолог и креативный директор лейбла экспериментальной электроники САУНД. Его музыка — симбиоз noise, ambient, IDM, techno, jungle и breakcore, вдохновлённый английской и германской электроникой 90-х и 00-х."
+      "description": "S66 — Борис Шилин, создатель и CEO проекта «ЩЁЛОЧЬ», идеолог и креативный директор лейбла экспериментальной электроники САУНД. Его музыка — симбиоз noise, ambient, IDM, techno, jungle и breakcore, вдохновлённый английской и германской электроникой 90-х и 00-х.",
+      "apollo_slot": "center"
     },
     {
       "id": "music-pink-0030",
@@ -1266,7 +1296,8 @@ window.FESTIVAL_DATA = {
           "url": "https://instagram.com/morakhmusic"
         }
       ],
-      "slot": "slot-music-parallel-4"
+      "slot": "slot-music-parallel-4",
+      "apollo_slot": "big-1"
     },
     {
       "id": "music-pink-0130",
@@ -1286,7 +1317,8 @@ window.FESTIVAL_DATA = {
           "url": "http://instagram.com/aensofsound"
         }
       ],
-      "slot": "slot-music-parallel-5"
+      "slot": "slot-music-parallel-5",
+      "apollo_slot": "big-2"
     },
     {
       "id": "music-pink-0230",
@@ -1302,7 +1334,8 @@ window.FESTIVAL_DATA = {
           "url": "https://taplink.cc/garish_cyborg"
         }
       ],
-      "slot": "slot-music-parallel-6"
+      "slot": "slot-music-parallel-6",
+      "apollo_slot": "big-3"
     },
     {
       "id": "music-pink-final",
@@ -1318,7 +1351,8 @@ window.FESTIVAL_DATA = {
           "url": "https://vk.com/id885725241"
         }
       ],
-      "slot": "slot-music-parallel-7"
+      "slot": "slot-music-parallel-7",
+      "apollo_slot": "mid-1"
     },
     {
       "id": "talk-gusev-nn",
@@ -1343,7 +1377,8 @@ window.FESTIVAL_DATA = {
         "has_channel_post": true
       },
       "venue": "small_bar",
-      "lane": "left"
+      "lane": "left",
+      "apollo_slot": "mid-3"
     },
     {
       "id": "cinema-short-fractal-universe",
@@ -1351,7 +1386,8 @@ window.FESTIVAL_DATA = {
       "type": "cinema",
       "subtype": "short",
       "title": "Fractal universe?",
-      "description": "Может ли наша вселенная быть фрактальной? Может ли простая математика создать целую вселенную? Что общего у брокколи с Большим взрывом? И при чём здесь видеоигры No Man's Sky и Minecraft?"
+      "description": "Может ли наша вселенная быть фрактальной? Может ли простая математика создать целую вселенную? Что общего у брокколи с Большим взрывом? И при чём здесь видеоигры No Man's Sky и Minecraft?",
+      "apollo_slot": "big-3"
     },
     {
       "id": "cinema-feature-doc-order",
@@ -1361,7 +1397,8 @@ window.FESTIVAL_DATA = {
       "title": "Документальный фильм про фракталы",
       "description": "Полнометражное документальное кино про фракталы. Название и подробности уточним ближе к дате фестиваля.",
       "venue": "library",
-      "slot": "slot-cinema-1"
+      "slot": "slot-cinema-1",
+      "apollo_slot": "big-2"
     },
     {
       "id": "mc-calligraphy",
@@ -1414,7 +1451,8 @@ window.FESTIVAL_DATA = {
         "special": "В идеале только чтобы не было ветра и осадков",
         "time_constraints": "Хотелось бы иметь 1-2 окна или перерыва по 30 минут, чтобы самой также принять участие в Одиссее",
         "extra": "Все прекрасно, буду рада поделиться знаниями о японской каллиграфии. Открыта к сотрудничеству и вопросам"
-      }
+      },
+      "apollo_slot": "big-3"
     },
     {
       "id": "mc-tie-dye",
@@ -1466,7 +1504,8 @@ window.FESTIVAL_DATA = {
         "capacity": "5–15",
         "fractal_link": "Повторение рисунка при раскручивании будет подобно повторяющейся детализации, что гениально и невероятно просто.",
         "special": "Возможно понадобится микрофон-петелька, зависит от того, насколько шумное будет в целом помещение"
-      }
+      },
+      "apollo_slot": "mid-2"
     },
     {
       "id": "mc-theremin",
@@ -1501,7 +1540,8 @@ window.FESTIVAL_DATA = {
         "capacity": "До 5",
         "fractal_link": "Прямой связи, конечно, нет, но я подумаю как это можно представить.",
         "special": "Заземленные розетки, звук: гитарный комбоусилитель или пульт с мониторами. Есть подробный райдер, в зависимости от ваших возможностей. С собой привезу инструмент, педали, провода, стойку."
-      }
+      },
+      "apollo_slot": "big-3"
     },
     {
       "id": "mc-fractal-stained-glass",
@@ -1546,7 +1586,8 @@ window.FESTIVAL_DATA = {
         "time_constraints": "Пока не уверена про время. Возможно, смогу все время, возможно, только часть((",
         "source_detail": "ЛШ Лес"
       },
-      "lane": "right"
+      "lane": "right",
+      "apollo_slot": "mid-1"
     },
     {
       "id": "mc-fractal-tiles",
@@ -1593,7 +1634,8 @@ window.FESTIVAL_DATA = {
         "special": "Рабочий интернет",
         "extra": "1) Термопринтер в силу технологии и размеров очень искажает цвета. Если пришедший хочет напечатанный вариант, а не электронный, у меня распечатаны тестовые таблицы цветов на это принтере, можно ориентироваться на них. Но отдельные оттенки на нем получить очень сложно, в целом более тусклая картинка получается, чем на экране.  \n\n2) Поскольку процесс создания медленный, возможна очередь. Но пока ждёт, человек может выбрать фрактал или поизучать мерч. Могу сделать какие-то распечатки с информацией, чтобы можно было занять себя ими. \nИз-за медленности процесса, если станция будет час, то смогу принять совсем малое число людей (ориентировочно около 8). Мне кажется разумным такого рода станцию держать большее число часов."
       },
-      "lane": "left"
+      "lane": "left",
+      "apollo_slot": "big-3"
     },
     {
       "id": "ev-1778338476401-960j",
@@ -1655,7 +1697,8 @@ window.FESTIVAL_DATA = {
         "inst_size": "",
         "inst_duration": "",
         "author_presence": ""
-      }
+      },
+      "apollo_slot": "big-1"
     },
     {
       "id": "ev-1778341972924-tz5v",
@@ -1708,7 +1751,8 @@ window.FESTIVAL_DATA = {
         "inst_duration": "Несколько часов",
         "author_presence": "Волонтёр-смотрящий периодически"
       },
-      "lane": "right"
+      "lane": "right",
+      "apollo_slot": "big-2"
     },
     {
       "id": "ev-letnyaya-shkola-linguistics",
@@ -1735,7 +1779,8 @@ window.FESTIVAL_DATA = {
       "slots": [
         "slot-st-bb-D",
         "slot-st-bb-A"
-      ]
+      ],
+      "apollo_slot": "mid-2"
     },
     {
       "id": "ev-maskul-prefractals",
@@ -1767,7 +1812,8 @@ window.FESTIVAL_DATA = {
         "slot-st-sb2-B",
         "slot-st-sb2-D"
       ],
-      "lane": "left"
+      "lane": "left",
+      "apollo_slot": "mid-3"
     },
     {
       "id": "ev-1778769282894-6x65",
@@ -1834,7 +1880,8 @@ window.FESTIVAL_DATA = {
         "inst_duration": "",
         "author_presence": ""
       },
-      "lane": "right"
+      "lane": "right",
+      "apollo_slot": "mid-1"
     },
     {
       "id": "ev-1778338408747-r7tp",
@@ -1885,7 +1932,8 @@ window.FESTIVAL_DATA = {
         "inst_size": "Отдельный угол ~2×2 м",
         "inst_duration": "Весь вечер",
         "author_presence": "Я буду рядом весь вечер"
-      }
+      },
+      "apollo_slot": "big-1"
     },
     {
       "id": "ev-1778360794899-4bwi",
@@ -1958,7 +2006,8 @@ window.FESTIVAL_DATA = {
         "special": "экран + компьютер (ноутбук)",
         "time_constraints": "не могу приехать, время указал, чтобы пройти валидацию",
         "_warning": "Сайт с фракталами для игры на ноутбуке. Не может приехать сам — нужен волонтёр. Возможна станция-experiment если кто-то сядет за ноутбук."
-      }
+      },
+      "apollo_slot": "big-2"
     },
     {
       "id": "media-yav",
@@ -2001,7 +2050,8 @@ window.FESTIVAL_DATA = {
         "inst_size": "Большое пространство 4×4 м+",
         "inst_duration": "Несколько часов",
         "author_presence": "Нет, объект справится сам"
-      }
+      },
+      "apollo_slot": "big-1"
     },
     {
       "id": "inst-tetraquark",
@@ -2047,7 +2097,8 @@ window.FESTIVAL_DATA = {
         "inst_size": "Отдельный угол ~2×2 м",
         "inst_duration": "Весь вечер",
         "author_presence": "Нет, объект справится сам"
-      }
+      },
+      "apollo_slot": "big-1"
     },
     {
       "id": "inst-polyhedral-exhibit",
@@ -2083,7 +2134,8 @@ window.FESTIVAL_DATA = {
         "inst_size": "Отдельный угол ~2×2 м",
         "inst_duration": "Весь вечер",
         "author_presence": "Нет, объект справится сам"
-      }
+      },
+      "apollo_slot": "big-2"
     },
     {
       "id": "art-monads-mirrors",
@@ -2098,7 +2150,8 @@ window.FESTIVAL_DATA = {
           "label": "Сайт",
           "url": "https://alefwiseman.ru"
         }
-      ]
+      ],
+      "apollo_slot": "big-2"
     },
     {
       "id": "inst-anthill-sierpinski",
@@ -2113,7 +2166,8 @@ window.FESTIVAL_DATA = {
           "label": "Telegram",
           "url": "https://t.me/evpraxis"
         }
-      ]
+      ],
+      "apollo_slot": "big-3"
     },
     {
       "id": "media-cactus-juice",
@@ -2122,7 +2176,8 @@ window.FESTIVAL_DATA = {
       "subtype": "media",
       "title": "Cactus Juice",
       "speaker": "Cactus Juice",
-      "description": "Команда визуальных экспериментаторов. Сэт и Лёша совмещают импровизированный генеративный лайвкодинг с мощнейшим шейдером — законами физики. Выпив это зелье, можно увидеть декартово произведение модулирующего и модулированного, фрактальные зафидбэченные узоры и ритуальное поедание сгущёнки."
+      "description": "Команда визуальных экспериментаторов. Сэт и Лёша совмещают импровизированный генеративный лайвкодинг с мощнейшим шейдером — законами физики. Выпив это зелье, можно увидеть декартово произведение модулирующего и модулированного, фрактальные зафидбэченные узоры и ритуальное поедание сгущёнки.",
+      "apollo_slot": "big-3"
     },
     {
       "id": "media-fractal-reflection",
@@ -2131,7 +2186,8 @@ window.FESTIVAL_DATA = {
       "subtype": "media",
       "title": "Фрактальное Отражение",
       "speaker": "Артём Ткач",
-      "description": "«Рождаясь из бесконечности. Мы путешествуем по бесконечности. Где структура реальности трансформируется в зависимости от пути.» Работа состоит из трёх визуальных композиций: рождение, путешествие и движение, трансформация структуры с финальной остановкой пути. Произведение выставлялось в подземном музее Зарядья, в Дубае, в Пекине на восьмиметровом экране, а также на крупнейшем в Европе медиафасаде."
+      "description": "«Рождаясь из бесконечности. Мы путешествуем по бесконечности. Где структура реальности трансформируется в зависимости от пути.» Работа состоит из трёх визуальных композиций: рождение, путешествие и движение, трансформация структуры с финальной остановкой пути. Произведение выставлялось в подземном музее Зарядья, в Дубае, в Пекине на восьмиметровом экране, а также на крупнейшем в Европе медиафасаде.",
+      "apollo_slot": "mid-1"
     },
     {
       "id": "inst-element1",
@@ -2170,7 +2226,8 @@ window.FESTIVAL_DATA = {
         "inst_size": "Отдельный угол ~2×2 м",
         "inst_duration": "Весь вечер",
         "author_presence": "Волонтёр-смотрящий периодически"
-      }
+      },
+      "apollo_slot": "big-2"
     },
     {
       "id": "art-plato",
@@ -2205,7 +2262,8 @@ window.FESTIVAL_DATA = {
         "inst_size": "Отдельный угол ~2×2 м",
         "inst_duration": "Весь вечер",
         "author_presence": "Я буду рядом весь вечер"
-      }
+      },
+      "apollo_slot": "big-1"
     },
     {
       "id": "art-other-spaces",
@@ -2220,7 +2278,8 @@ window.FESTIVAL_DATA = {
           "label": "Статья в АиФ",
           "url": "https://aif.ru/culture/art/portal-v-inye-miry-uchyonyy-sozdayot-kartiny-v-zhanre-fraktalnoy-zhivopisi"
         }
-      ]
+      ],
+      "apollo_slot": "big-3"
     },
     {
       "id": "exh-1779028883221",
@@ -2255,7 +2314,8 @@ window.FESTIVAL_DATA = {
         "special": "Нужен обязательно проектор для показа запущенных визуализаций.",
         "duration": "30–45 минут",
         "extra": "Выше только идея, а формат выступления я выбрал, так как привык выступать с докладами. И к нему я знаю как подготовиться. Но если можно придумать интерактив, готов обсудить."
-      }
+      },
+      "apollo_slot": "big-3"
     },
     {
       "id": "app-1",
@@ -2955,7 +3015,8 @@ window.FESTIVAL_DATA = {
       "slots": [
         "slot-st-cy-E",
         "slot-st-cy-D"
-      ]
+      ],
+      "apollo_slot": "mid-3"
     },
     {
       "id": "inst-mimesis",
@@ -2970,7 +3031,8 @@ window.FESTIVAL_DATA = {
           "label": "Telegram",
           "url": "https://t.me/evpraxis"
         }
-      ]
+      ],
+      "apollo_slot": "mid-1"
     },
     {
       "id": "media-forrest",
