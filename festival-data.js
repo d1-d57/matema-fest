@@ -1394,11 +1394,17 @@ window.FESTIVAL_DATA = {
       "status": "accepted",
       "type": "cinema",
       "subtype": "feature",
-      "title": "Документальный фильм про фракталы",
-      "description": "Полнометражное документальное кино про фракталы. Название и подробности уточним ближе к дате фестиваля.",
+      "title": "Фракталы: Порядок в хаосе",
+      "description": "«Фракталы: Порядок в хаосе» (Fractals: Hunting the Hidden Dimension) — научно-популярный фильм PBS из серии NOVA, 2008 год. Лента исследует математическую революцию, доказавшую, что кажущиеся хаотичными формы природы — облака, деревья, горные пики, даже сердечный ритм — подчиняются строгим геометрическим законам фракталов.",
       "venue": "library",
       "slot": "slot-cinema-1",
-      "apollo_slot": "big-2"
+      "apollo_slot": "big-2",
+      "links": [
+        {
+          "label": "IMDb",
+          "url": "https://www.imdb.com/title/tt1287217/"
+        }
+      ]
     },
     {
       "id": "mc-calligraphy",
