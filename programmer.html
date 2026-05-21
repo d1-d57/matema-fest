@@ -177,6 +177,17 @@ body.demo-mode #candidates-pane {
   padding: 0; border: none;
   overflow: hidden;
 }
+/* Когда в demo/viewer открыто публичное описание — левая панель выезжает.
+   show-detail вешается на #candidates-pane в showPublicDetail. */
+body.demo-mode .main.left-open,
+body.viewer-mode .main.left-open { grid-template-columns: minmax(340px, 460px) minmax(0, 1fr) !important; }
+body.demo-mode #candidates-pane.show-detail,
+body.viewer-mode #candidates-pane.show-detail {
+  visibility: visible;
+  width: auto; min-width: 0;
+  border-right: 1px solid var(--hairline);
+  overflow-y: auto;
+}
 body.demo-mode .topbar .stat,
 body.demo-mode .topbar .src-info,
 body.demo-mode #btn-undo,
@@ -644,6 +655,15 @@ body.demo-mode .slot-bg-handle:hover,
 body.viewer-mode .slot-bg-handle:hover { filter: brightness(0.92); background-color: rgba(0, 0, 0, 0.08); }
 body:not(.demo-mode):not(.viewer-mode) .slot-bg-handle { cursor: pointer; }
 body:not(.demo-mode):not(.viewer-mode) .slot-bg-handle:hover { filter: brightness(0.92); background-color: rgba(0, 0, 0, 0.08); }
+/* Публичные ссылки-кнопки в read-only описании (demo/viewer) */
+.public-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.public-link-btn {
+  display: inline-block; padding: 8px 16px;
+  border: 1px solid var(--accent); border-radius: 4px;
+  color: var(--accent); text-decoration: none;
+  font-size: 13px; letter-spacing: 0.04em;
+}
+.public-link-btn:hover { background: var(--accent); color: #fff; }
 @media (max-width: 700px) { .slot-bg-handle, .slot-bg-handle::before { display: none; } }
 
 body.demo-mode .slot-bg,
@@ -4727,7 +4747,9 @@ function renderPublicDetail(ev) {
   const when = slot && slot.start ? slot.start.slice(0,5) + (slot.end ? '–' + slot.end.slice(0,5) : '') : '';
   const where = venue ? (venue.display || ev.venue) : '';
   const meta = [when, where].filter(Boolean).join(' · ');
-  const linksHtml = _renderLinksSection(ev.links);
+  const linksHtml = (ev.links || []).filter(l => l && l.url).map(l =>
+    `<a href="${esc(l.url)}" target="_blank" rel="noopener" class="public-link-btn">${esc(l.label || l.url)} ↗</a>`
+  ).join('');
   return `
     <div class="detail-body" style="padding:24px">
       <button class="detail-back" onclick="hideDetail()">‹ Закрыть</button>
@@ -4736,7 +4758,7 @@ function renderPublicDetail(ev) {
       ${ev.speaker && ev.title ? `<h2 class="detail-title">${esc(ev.title)}</h2>` : ''}
       ${meta ? `<div style="font-size:12px;color:#888;margin:4px 0 16px">${esc(meta)}</div>` : ''}
       ${ev.description ? `<p style="line-height:1.6;margin:0 0 16px">${esc(ev.description)}</p>` : '<p style="color:#888">Описание скоро появится.</p>'}
-      ${linksHtml}
+      ${linksHtml ? `<div class="public-links">${linksHtml}</div>` : ''}
     </div>
   `;
 }
