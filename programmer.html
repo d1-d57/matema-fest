@@ -194,13 +194,14 @@ body.demo-mode .filter-btn,
 body.demo-mode .add-btn,
 body.demo-mode .timeline-cat-filters,
 body.demo-mode #unassigned { display: none !important; }
-/* Никаких подсказок «можно перетаскивать»: события и слоты в демо некликабельны. */
+/* В демо события и слоты кликабельны — открывают публичное описание (read-only).
+   Редактирование/drag по-прежнему недоступны (это в JS через isReadOnly). */
 body.demo-mode .event-pill,
 body.demo-mode .slot-bg,
 body.demo-mode .slot-label,
 body.demo-mode .stations-band-label,
 body.demo-mode .tl-header { cursor: default !important; }
-body.demo-mode .event-pill { pointer-events: none; }
+body.demo-mode .event-pill { pointer-events: auto; cursor: pointer; }
 body.demo-mode .slot-label,
 body.demo-mode .stations-band-label { pointer-events: none; }
 /* «х» спрятана через display:none выше — но на всякий и через opacity */
@@ -638,9 +639,9 @@ body:not(.demo-mode) .main.left-open { grid-template-columns: 720px minmax(0, 1f
 .slot-bg-handle.kind-interlude  { background: rgba(180, 170, 130, 0.30); }
 .slot-bg-handle.dim { opacity: 0.4; }
 body.demo-mode .slot-bg-handle,
-body.viewer-mode .slot-bg-handle { pointer-events: none; cursor: default; }
-body.demo-mode .slot-bg-handle::before,
-body.viewer-mode .slot-bg-handle::before { display: none; }
+body.viewer-mode .slot-bg-handle { pointer-events: auto; cursor: pointer; }
+body.demo-mode .slot-bg-handle:hover,
+body.viewer-mode .slot-bg-handle:hover { filter: brightness(0.92); background-color: rgba(0, 0, 0, 0.08); }
 body:not(.demo-mode):not(.viewer-mode) .slot-bg-handle { cursor: pointer; }
 body:not(.demo-mode):not(.viewer-mode) .slot-bg-handle:hover { filter: brightness(0.92); background-color: rgba(0, 0, 0, 0.08); }
 @media (max-width: 700px) { .slot-bg-handle, .slot-bg-handle::before { display: none; } }
@@ -2021,9 +2022,8 @@ function isReadOnly() {
 // Клик по slot-bg или по slot-placeholder. Открывает редактор слота в admin.
 // В demo и viewer ничего не делает (и cursor не показывается через CSS).
 function onSlotBgClick(e, sid) {
-  if (isReadOnly()) return;
-  // Если клик пришёл по дочернему event-pill — это его клик, не slot-bg
-  if (e.target.closest('.event-pill')) return;
+  if (e.target.closest('.event-pill')) return;  // клик по карточке — её обработчик
+  if (isReadOnly()) { showPublicDetail('slot', sid); return; }  // demo/viewer — публичное описание
   e.stopPropagation();
   showDetail('slot', sid);
 }
@@ -4052,6 +4052,7 @@ function renderTimeline() {
         recordCommDone(pill.dataset.event, badge.dataset.commKey);
         return;
       }
+      if (isReadOnly()) { showPublicDetail('event', pill.dataset.event); return; }
       showDetail('event', pill.dataset.event);
     });
     pill.addEventListener('dragstart', e => {
@@ -4681,6 +4682,63 @@ function renderDetailContent(type, id) {
   if (type === 'exhibit') return renderExhibitDetail(id);
   if (type === 'slot') return renderSlotDetail(id);
   return '<div class="detail-body">не найдено</div>';
+}
+
+// ============================================================
+// ПУБЛИЧНЫЙ ПРОСМОТР (demo/viewer): клик по слоту/событию открывает боковую
+// панель ТОЛЬКО с согласованным публичным описанием — без полей редактирования,
+// без вкладки «Анкета» (личные данные) и без кнопок действий.
+// Полностью изолировано от admin-пути (showDetail/renderEventDetail не трогаются).
+// ============================================================
+function showPublicDetail(type, id) {
+  if (!isReadOnly()) return;            // только в demo/viewer; в admin работает обычный showDetail
+  // Находим публичное событие. Для слота — первое принятое событие в нём.
+  let ev = null;
+  if (type === 'event') {
+    ev = getEvents().find(e => e.id === id);
+  } else if (type === 'slot') {
+    ev = getEvents().find(e => e.slot === id && e.status === 'accepted')
+      || getEvents().find(e => e.slot === id);
+  }
+  if (!ev) return;                      // в слоте нет события — ничего не показываем
+  // Toggle: повторный клик по тому же — закрыть
+  if (_detailContext && _detailContext.type === 'public' && _detailContext.id === ev.id) {
+    hideDetail();
+    return;
+  }
+  _detailContext = { type: 'public', id: ev.id };
+  const pane = document.getElementById('candidates-pane');
+  const view = document.getElementById('detail-view');
+  const main = document.getElementById('main');
+  if (pane) pane.classList.add('show-detail');
+  if (main) { main.classList.add('left-open'); main.classList.remove('pool-view'); }
+  view.innerHTML = renderPublicDetail(ev);
+  view.scrollTop = 0;
+  setTimeout(renderTimeline, 200);
+}
+
+function renderPublicDetail(ev) {
+  const cat = _getCategoryMeta(ev.category);
+  const subcats = state.data.subcategories?.[ev.category] || {};
+  const subLabel = ev.subcategory ? (subcats[ev.subcategory]?.display || ev.subcategory) : '';
+  const eyebrow = (cat?.display || ev.category || '') + (subLabel ? ' · ' + subLabel : '');
+  const slot = ev.slot ? state.data.time_slots[ev.slot] : null;
+  const venue = ev.venue ? state.data.venues[ev.venue] : null;
+  const when = slot && slot.start ? slot.start.slice(0,5) + (slot.end ? '–' + slot.end.slice(0,5) : '') : '';
+  const where = venue ? (venue.display || ev.venue) : '';
+  const meta = [when, where].filter(Boolean).join(' · ');
+  const linksHtml = _renderLinksSection(ev.links);
+  return `
+    <div class="detail-body" style="padding:24px">
+      <button class="detail-back" onclick="hideDetail()">‹ Закрыть</button>
+      ${eyebrow ? `<div class="detail-eyebrow">${esc(eyebrow)}</div>` : ''}
+      <h1 class="detail-name">${esc(ev.speaker || ev.title || '—')}</h1>
+      ${ev.speaker && ev.title ? `<h2 class="detail-title">${esc(ev.title)}</h2>` : ''}
+      ${meta ? `<div style="font-size:12px;color:#888;margin:4px 0 16px">${esc(meta)}</div>` : ''}
+      ${ev.description ? `<p style="line-height:1.6;margin:0 0 16px">${esc(ev.description)}</p>` : '<p style="color:#888">Описание скоро появится.</p>'}
+      ${linksHtml}
+    </div>
+  `;
 }
 
 function renderAppDetail(id) {
