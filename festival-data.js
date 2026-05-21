@@ -1,3 +1,5 @@
+// === База событий фестиваля «Фрактальная Одиссея» v31 ===
+// Автоматически сгенерировано programmer-tool 2026-05-21T12:56:00.923Z
 window.FESTIVAL_DATA = {
   "_meta": {
     "version": "2026-05-09-v30-handfix-yakovlev",
@@ -13,7 +15,7 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-20T19:11:49.986Z",
+    "last_modified": "2026-05-21T12:56:00.922Z",
     "modified_by": "programmer-tool",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\".",
@@ -732,7 +734,8 @@ window.FESTIVAL_DATA = {
         }
       ],
       "slot": "slot-tarasevich",
-      "apollo_slot": "center"
+      "apollo_slot": "center",
+      "speaker": "Григорий Тарасевич"
     },
     {
       "id": "social-rosetka",
@@ -1369,7 +1372,8 @@ window.FESTIVAL_DATA = {
       ],
       "slots": [
         "slot-gusev-talk",
-        "slot-st-sb2-C"
+        "slot-st-sb2-C",
+        "slot-st-sb2-F"
       ],
       "_admin": {
         "knows": true,
@@ -3064,7 +3068,6 @@ window.FESTIVAL_DATA = {
       "type": "station",
       "subtype": "interactive",
       "title": "Marble Marcher",
-      "speaker": null,
       "description": "Гоночная игра, где вы катаете шарик по поверхности эволюционирующего трёхмерного фрактала. 24 уровня, цель: добраться до финиша как можно быстрее."
     },
     {
@@ -3073,7 +3076,6 @@ window.FESTIVAL_DATA = {
       "type": "station",
       "subtype": "interactive",
       "title": "Mandelbrot Fractal Explorer",
-      "speaker": null,
       "description": "Браузерный исследователь множества Мандельброта с прогрессивным уточнением. Чем дольше держишь камеру в одной точке, тем глубже видны детали, вплоть до триллионных увеличений. Удерживая курсор над фракталом, можно увидеть орбиты значений z, открывающие сложную динамику границы."
     },
     {
@@ -3082,7 +3084,6 @@ window.FESTIVAL_DATA = {
       "type": "station",
       "subtype": "interactive",
       "title": "Fractal Odyssey",
-      "speaker": null,
       "description": "VR-приложение для медитативного полёта внутри бесконечного туннеля из снежинки Коха."
     }
   ],
