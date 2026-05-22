@@ -1,5 +1,5 @@
 // === База событий фестиваля «Фрактальная Одиссея» v31 ===
-// Автоматически сгенерировано programmer-tool 2026-05-21T13:20:51.536Z
+// Автоматически сгенерировано programmer-tool 2026-05-22T11:23:46.106Z
 window.FESTIVAL_DATA = {
   "_meta": {
     "version": "2026-05-09-v30-handfix-yakovlev",
@@ -15,7 +15,7 @@ window.FESTIVAL_DATA = {
     "changes_v26": "Перенос APPLICATIONS_FALLBACK из programmer.html в festival-data.js как раздел applications. Теперь все заявки 1-28 в одном файле, программер не содержит захардкоженных данных. Заявки 29+ продолжают подтягиваться из Sheets через localStorage sync. Поле exclusive=true проставлено у slot-networking и всех вечерних music/dance слотов в big_bar — они визуально занимают весь venue в программере (без разделения на подколонки).",
     "changes_v27": "Переименование залов: main_stage→\"Зал Мандельброт\", big_bar→\"Бар Серпинский\", small_bar→\"Бар Жюлиа\", courtyard→\"Кантор\". Полное обновление музыкальной программы: Main (Зал Мандельброт) 22:00-03:00 = Пётр Термен, Stropharia, Rombix, Womba, Hobboth. Pink (Бар Серпинский, со смещением -30 мин) 21:30-03:30 = Brinstaar, Spiralfractal, Morakh, ænsof, garish_cyborg, The Darkest Supernova. Добавлен новый слот slot-music-parallel-4 (00:30-01:30).",
     "changes_v28": "Кино: TBA (1 час) переехал в первый слот 19:30-20:30, «Пи» (1.5 часа) — во второй слот 20:30-22:00. Длительности слотов изменены под фильмы.",
-    "last_modified": "2026-05-21T13:20:51.534Z",
+    "last_modified": "2026-05-22T11:23:46.106Z",
     "modified_by": "programmer-tool",
     "changes_v30": "Удалён кривой slot-custom-1778344218071 (был без venue/type — артефакт неудачной попытки UI); Создан slot-networking: 20:30-21:30, Бар Жюлиа, social/mid-1, exclusive; social-rosetka привязан к slot-networking; slot-interlude-3 (перформанс «Точка-ноль»): category cinema→social, apollo big-3→mid-2 (резолвит дубль с slot-discussion); app-34 (Богатикова) → accepted, создан exh-bogatikova-mini в галерее (tentative); app-1 (Руслан), app-2 (Надежда) → rejected (были «в Отказах» по словам Ивана); Новые: ev-letnyaya-shkola-linguistics, ev-maskul-prefractals (events confirmed без слота), exh-lenticular-fractals (exhibit art confirmed)",
     "changes_yakovlev": "Добавлен слот slot-yakovlev (Иван Яковлев · Фракталы вокруг нас, library 14:00-15:00, popsci, talk). slot-evdokimov переименован в \"Библиотека 2\".",
@@ -758,7 +758,10 @@ window.FESTIVAL_DATA = {
         }
       ],
       "_admin": {
-        "knows": true
+        "knows": true,
+        "has_announce": true,
+        "has_channel_post": true,
+        "time_final": true
       },
       "slot": "slot-networking",
       "apollo_slot": "big-2"
@@ -779,7 +782,10 @@ window.FESTIVAL_DATA = {
         }
       ],
       "_admin": {
-        "knows": true
+        "knows": true,
+        "has_channel_post": true,
+        "has_announce": true,
+        "time_final": true
       },
       "slot": "slot-gelfand",
       "apollo_slot": "big-1"
@@ -804,7 +810,10 @@ window.FESTIVAL_DATA = {
         }
       ],
       "_admin": {
-        "knows": true
+        "knows": true,
+        "has_announce": true,
+        "has_channel_post": true,
+        "time_final": true
       },
       "slot": "slot-rajgorodski",
       "apollo_slot": "big-3"
@@ -825,7 +834,10 @@ window.FESTIVAL_DATA = {
         }
       ],
       "_admin": {
-        "knows": true
+        "knows": true,
+        "has_announce": true,
+        "has_channel_post": true,
+        "time_final": true
       },
       "slot": "slot-skripchenko",
       "apollo_slot": "big-2"
@@ -848,7 +860,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true,
         "has_announce": true,
-        "has_channel_post": true
+        "has_channel_post": true,
+        "time_final": true
       },
       "slot": "slot-st-bb-F",
       "_source_app": "app-15",
@@ -895,7 +908,10 @@ window.FESTIVAL_DATA = {
         }
       ],
       "_admin": {
-        "knows": true
+        "knows": true,
+        "time_final": true,
+        "has_announce": true,
+        "has_channel_post": true
       },
       "slot": "slot-st-bb-B",
       "_source_app": "app-16",
@@ -961,7 +977,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true,
         "has_announce": true,
-        "has_channel_post": true
+        "has_channel_post": true,
+        "time_final": true
       },
       "slot": "slot-interlude-3",
       "_source_app": "app-26",
@@ -1003,7 +1020,10 @@ window.FESTIVAL_DATA = {
       "description": "Лайв-подкаст о фракталах на границе математики и философии. Простое итеративное правило, заданное на конечной плоскости, порождает структуру с бесконечной длиной, бесконечной глубиной, самоподобием на всех масштабах. Это математический факт. Но бесконечное в конечном — это содержательное утверждение об устройстве мира или удобная метафора нашего масштабирования? Состав участников будет объявлен.",
       "venue": "main_stage",
       "_admin": {
-        "knows": true
+        "knows": true,
+        "has_announce": true,
+        "has_channel_post": true,
+        "time_final": true
       },
       "slot": "slot-discussion",
       "apollo_slot": "big-1"
@@ -1378,7 +1398,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true,
         "has_announce": true,
-        "has_channel_post": true
+        "has_channel_post": true,
+        "time_final": true
       },
       "venue": "small_bar",
       "lane": "left",
@@ -1482,7 +1503,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true,
         "has_announce": true,
-        "has_channel_post": true
+        "has_channel_post": true,
+        "time_final": true
       },
       "slots": [
         "slot-st-cy-A",
@@ -1559,11 +1581,14 @@ window.FESTIVAL_DATA = {
       "type": "station",
       "subtype": "workshop",
       "title": "Фрактальные витражи",
-      "speaker": "Анастасия Гурарева",
+      "speaker": "Анастасия Гутарева",
       "description": "Рисуем витражные краски по гибкому пластику. По линиям и формам получается фрактальный узор — каждый забирает свою работу с собой.",
       "venue": "small_bar",
       "_admin": {
-        "knows": true
+        "knows": true,
+        "has_announce": true,
+        "has_channel_post": true,
+        "time_final": true
       },
       "slots": [
         "slot-st-sb2-E",
@@ -1611,7 +1636,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true,
         "has_announce": true,
-        "has_channel_post": true
+        "has_channel_post": true,
+        "time_final": true
       },
       "slots": [
         "slot-st-sb2-A",
@@ -1667,7 +1693,10 @@ window.FESTIVAL_DATA = {
         }
       ],
       "_admin": {
-        "knows": true
+        "knows": true,
+        "has_announce": true,
+        "has_channel_post": true,
+        "time_final": true
       },
       "slots": [
         "slot-st-cy-B",
@@ -1720,7 +1749,10 @@ window.FESTIVAL_DATA = {
       "description": "Наноматериалы состоят из элементарных ячеек — самой маленькой повторяющейся части. На станции можно изучить срезы разных наноматериалов и попробовать найти элементарную ячейку самому, по разным уровням сложности. Рядом — напечатанная на 3D-принтере структура двухслойного графена, которую можно поворачивать руками.",
       "venue": "small_bar",
       "_admin": {
-        "knows": true
+        "knows": true,
+        "time_final": true,
+        "has_announce": true,
+        "has_channel_post": true
       },
       "slots": [
         "slot-st-sb2-A",
@@ -1784,7 +1816,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true,
         "has_announce": true,
-        "has_channel_post": true
+        "has_channel_post": true,
+        "time_final": true
       },
       "slots": [
         "slot-st-bb-D",
@@ -1816,7 +1849,8 @@ window.FESTIVAL_DATA = {
       "_admin": {
         "knows": true,
         "has_announce": true,
-        "has_channel_post": true
+        "has_channel_post": true,
+        "time_final": true
       },
       "slots": [
         "slot-st-sb2-B",
@@ -1849,7 +1883,10 @@ window.FESTIVAL_DATA = {
         }
       ],
       "_admin": {
-        "knows": true
+        "knows": true,
+        "time_final": true,
+        "has_channel_post": true,
+        "has_announce": true
       },
       "slots": [
         "slot-st-sb2-C",
@@ -3026,7 +3063,13 @@ window.FESTIVAL_DATA = {
         "slot-st-cy-E",
         "slot-st-cy-D"
       ],
-      "apollo_slot": "mid-3"
+      "apollo_slot": "mid-3",
+      "_admin": {
+        "knows": true,
+        "has_announce": true,
+        "has_channel_post": true,
+        "time_final": true
+      }
     },
     {
       "id": "inst-mimesis",
