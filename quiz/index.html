@@ -91,13 +91,13 @@
   .reveal .in{max-width:1600px;margin:0 auto}
   .rtop{display:flex;align-items:center;gap:14px;margin-bottom:16px}
   .rlbl{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
-  .rback{margin-left:auto;background:none;border:1px solid var(--line);border-radius:var(--pill);color:var(--muted);font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;padding:9px 18px;cursor:pointer;transition:.2s}
+  .rback{margin-left:auto;background:var(--surface2);border:1px solid var(--line);border-radius:var(--pill);color:var(--ink);font-family:var(--mono);font-size:14px;letter-spacing:.06em;padding:13px 26px;cursor:pointer;transition:.2s}
   .rback:hover{border-color:var(--amber);color:var(--amber)}
   .ans{font-family:var(--display);font-weight:700;font-size:clamp(2.2rem,4.4vw,3.8rem);line-height:1.04;color:var(--amber);margin:0 0 clamp(16px,2.2vh,26px)}
   .rimgs{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin:0 0 clamp(16px,2.2vh,26px)}
   .rimgs figure{margin:0}
-  .rimgs .im{border-radius:var(--rm);overflow:hidden;border:1px solid var(--line-soft);background:var(--deep);display:flex;align-items:center;justify-content:center;height:clamp(220px,34vh,360px);cursor:zoom-in}
-  .rimgs img{max-width:100%;max-height:100%;width:auto;object-fit:contain}
+  .rimgs .im{border-radius:var(--rm);overflow:hidden;border:1px solid var(--line-soft);background:var(--deep);cursor:zoom-in}
+  .rimgs img{display:block;width:100%;height:auto}
   .rimgs figcaption{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--muted);margin-top:9px}
   .expl{font-family:var(--sans);font-size:clamp(16px,1.4vw,20px);line-height:1.6;color:var(--ink);opacity:.94;max-width:none;column-gap:48px}
   .expl p{margin:0 0 12px}
@@ -234,7 +234,7 @@ const QUESTIONS=[
   ans:'Всё вышеперечисленное',
   expl:[`В статье 1952 года «Химические основы морфогенеза» Тьюринг описал активатор и ингибитор. Если ингибитор диффундирует быстрее, малейшая флуктуация рождает устойчивый узор: узкая ткань даёт полосы, плоская — пятна.`,
         `Мюррей показал, как одни уравнения дают пятна леопарда и полосы зебры. Кондо расшифровал механизм для данио-рерио, а в 2023-м группа Glover — что и валики отпечатков пальцев формируются системой Тьюринга.`],
-  revImgs:[{img:'turing_spots',lab:'пятна (заглушка)',need:'Заменить на фото пятен леопарда'},{img:'turing_stripes',lab:'полосы (заглушка)',need:'Заменить на фото полос зебры'}],
+  revImgs:[{img:'turing_spots',lab:'пятна леопарда',need:'Заменить на фото пятен леопарда'},{img:'turing_stripes',lab:'полосы зебры',need:'Заменить на фото полос зебры'}],
   src:[['Wikipedia: Turing pattern','https://en.wikipedia.org/wiki/Turing_pattern'],['Википедия: Химическая основа морфогенеза','https://ru.wikipedia.org/wiki/Химическая_основа_морфогенеза']]}
 ];
 
