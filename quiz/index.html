@@ -81,7 +81,7 @@
   .opt.wrong{border-color:var(--no);background:var(--no-bg)} .opt.wrong .lt{background:var(--no);color:#25100a;border-color:var(--no)}
 
   .s-bot{flex:0 0 auto;display:flex;align-items:center;gap:18px}
-  .byline{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.02em;opacity:.85}
+  .byline{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.04em;opacity:.5}
   .s-bot .grp{margin-left:auto;display:flex;gap:14px}
 
   /* REVEAL */
@@ -91,7 +91,7 @@
   .reveal .in{max-width:1600px;margin:0 auto}
   .rtop{display:flex;align-items:center;gap:14px;margin-bottom:16px}
   .rlbl{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
-  .rback{margin-left:auto;background:var(--surface2);border:1px solid var(--line);border-radius:var(--pill);color:var(--ink);font-family:var(--mono);font-size:14px;letter-spacing:.06em;padding:13px 26px;cursor:pointer;transition:.2s}
+  .rback{margin-left:auto;background:var(--surface2);border:1px solid var(--line);border-radius:var(--pill);color:var(--ink);font-family:var(--mono);font-size:14px;letter-spacing:.06em;padding:13px 26px;cursor:pointer;transition:.2s;white-space:nowrap}
   .rback:hover{border-color:var(--amber);color:var(--amber)}
   .ans{font-family:var(--display);font-weight:700;font-size:clamp(2.2rem,4.4vw,3.8rem);line-height:1.04;color:var(--amber);margin:0 0 clamp(16px,2.2vh,26px)}
   .rimgs{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin:0 0 clamp(16px,2.2vh,26px)}
@@ -118,8 +118,9 @@
   .final .lnk{display:flex;flex-wrap:wrap;gap:14px 30px;margin:clamp(16px,2.2vh,26px) 0 0;font-family:var(--mono);font-size:15px}
   .final .lnk a{color:var(--amber);text-decoration:none;border-bottom:1px solid transparent;transition:.2s}
   .final .lnk a:hover{border-color:var(--amber)}
-  .final-links{display:flex;flex-wrap:wrap;gap:14px;margin:clamp(22px,3vh,36px) 0 0}
-  .final-links .btn{text-transform:none;letter-spacing:.02em}
+  .final-links{display:flex;flex-wrap:wrap;gap:14px 44px;margin:clamp(24px,3.4vh,40px) 0 0}
+  .final-links a{font-family:var(--display);font-weight:600;font-style:italic;font-size:clamp(1.5rem,2.6vw,2.2rem);line-height:1.1;color:var(--amber);text-decoration:none;transition:opacity .25s var(--expo)}
+  .final-links a:hover{opacity:.65}
   .final .actions{margin:clamp(24px,3.2vh,40px) 0 0}
 
   /* DOTS */
@@ -147,6 +148,11 @@
     .expl{column-gap:0}
     .dots{display:none}
     .hero .desc{font-size:clamp(1.5rem,7vw,2.4rem);max-width:none}
+  }
+  /* short landscape screens: let scenes grow and scroll instead of overlapping */
+  @media (max-height:740px) and (min-width:861px){
+    .scene{height:auto;min-height:100svh}
+    #deck{scroll-snap-type:y proximity}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
@@ -298,7 +304,7 @@ function buildScene(item,idx){
   if(item.revImgs){const g=document.createElement('div');g.className='rimgs';
     item.revImgs.forEach(ri=>{const f=document.createElement('figure');const d=document.createElement('div');d.className='im';d.dataset.needsImage=ri.need||'';
       const im=document.createElement('img');im.src=IMG[ri.img]||'';im.alt='';im.loading='lazy';im.addEventListener('click',()=>openLb(IMG[ri.img]));d.appendChild(im);f.appendChild(d);
-      if(ri.lab){const c=document.createElement('figcaption');c.textContent=ri.lab;f.appendChild(c);}g.appendChild(f);});rin.appendChild(g);}
+      g.appendChild(f);});rin.appendChild(g);}
   const ex=document.createElement('div');ex.className='expl';item.expl.forEach(t=>{const p=document.createElement('p');p.textContent=t;ex.appendChild(p);});rin.appendChild(ex);
   if(item.src){const s=document.createElement('div');s.className='src';s.innerHTML='<span class="sl">Источники</span>';
     item.src.forEach(pair=>{const a=document.createElement('a');a.href=pair[1];a.target='_blank';a.rel='noopener';a.textContent=pair[0];s.appendChild(a);});rin.appendChild(s);}
@@ -352,8 +358,8 @@ fin.innerHTML=`<div class="inner">
   <h2>Спасибо за игру</h2>
   <p class="res">Верных ответов: <b id="resN">0</b> из 9</p>
   <div class="final-links">
-    <a class="btn ghost" href="https://matema-fest.ru" target="_blank" rel="noopener">matema-fest.ru <span class="arr">→</span></a>
-    <a class="btn ghost" href="https://t.me/turings_crossword" target="_blank" rel="noopener">Кроссворд Тьюринга <span class="arr">→</span></a>
+    <a href="https://matema-fest.ru" target="_blank" rel="noopener">Matema Fest</a>
+    <a href="https://t.me/turings_crossword" target="_blank" rel="noopener">Кроссворд Тьюринга</a>
   </div>
   <div class="actions"><button class="btn xl" id="againBtn">Пройти заново <span class="arr">↺</span></button></div>
 </div>`;
