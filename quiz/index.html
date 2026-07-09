@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Фракталы в природе — квиз · Фрактальная Одиссея</title>
+<meta name="description" content="Квиз о фракталах в природе: филлотаксис, фигуры Хладни, узоры Тьюринга и другие. Фестиваль «Фрактальная Одиссея».">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#16140F; --surface:#1F1B14; --surface2:#27221a; --deep:#0E0E10;
+    --ink:#ECE3D0; --muted:#9A9080; --rule:#B8A98A;
+    --amber:#C89A3D; --terra:#B8623C;
+    --ok:#8FB36B; --ok-bg:rgba(143,179,107,.15);
+    --no:#C96A4B; --no-bg:rgba(201,106,75,.15);
+    --line:rgba(236,227,208,.15); --line-soft:rgba(236,227,208,.08);
+    --display:'Cormorant Garamond',Georgia,serif;
+    --mono:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;
+    --sans:'Golos Text',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    --expo:cubic-bezier(.16,1,.3,1);
+    --rl:18px; --rm:12px; --pill:100px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow:hidden}
+  button{font-family:inherit}
+
+  #deck{height:100svh;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;scrollbar-width:none}
+  #deck::-webkit-scrollbar{display:none}
+  .scene{position:relative;height:100svh;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden}
+  .inner{height:100%;max-width:1600px;margin:0 auto;padding:clamp(16px,2.6vh,30px) clamp(28px,5vw,90px);display:flex;flex-direction:column}
+
+  .btn{display:inline-flex;align-items:center;gap:11px;padding:20px 46px;background:var(--amber);color:#1a1509;font-family:var(--mono);font-weight:500;font-size:clamp(14px,1.15vw,17px);letter-spacing:.1em;text-transform:uppercase;border:0;border-radius:var(--pill);cursor:pointer;transition:transform .3s var(--expo),box-shadow .3s var(--expo),background .3s var(--expo)}
+  .btn:hover{transform:translateY(-3px);box-shadow:0 14px 38px rgba(184,98,60,.42)}
+  .btn .arr{transition:transform .3s var(--expo)}
+  .btn:hover .arr{transform:translateX(5px)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--amber);color:var(--amber);box-shadow:none}
+  .btn.xl{padding:24px 60px;font-size:clamp(16px,1.4vw,20px)}
+
+  /* HERO */
+  .hero .inner{justify-content:center}
+  .kick{font-family:var(--mono);font-size:clamp(12px,1.1vw,15px);letter-spacing:.26em;text-transform:uppercase;color:var(--amber);margin:0 0 clamp(18px,2.6vh,30px)}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(4rem,15vw,13rem);line-height:.88;letter-spacing:-.02em;margin:0;color:var(--ink)}
+  h1 em{font-style:italic;color:var(--amber);font-weight:600}
+  .hero .desc{font-family:var(--display);font-size:clamp(1.6rem,3.2vw,3rem);line-height:1.16;color:var(--ink);width:100%;max-width:none;margin:clamp(22px,3.4vh,44px) 0 0}
+  .hero .sub{font-family:var(--mono);font-size:clamp(12px,1.2vw,15px);letter-spacing:.06em;color:var(--muted);margin:clamp(18px,2.4vh,28px) 0 0}
+  .hero .actions{margin:clamp(26px,4vh,50px) 0 0}
+
+  /* QUESTION */
+  .q .inner{justify-content:space-between;gap:clamp(12px,1.8vh,22px)}
+  .s-top{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .qnum{font-family:var(--mono);font-weight:500;font-size:clamp(15px,1.7vw,22px);letter-spacing:.16em;color:var(--amber)}
+  .qnum b{color:var(--muted);font-weight:400}
+  .timer{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:var(--pill);padding:7px 10px 7px 8px}
+  .t-toggle{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--amber);color:#1a1509;border:0;cursor:pointer;transition:.2s var(--expo)}
+  .t-toggle:hover{transform:scale(1.07)}
+  .t-toggle svg{width:18px;height:18px;fill:currentColor}
+  .t-field{width:80px;background:none;border:0;color:var(--ink);font-family:var(--mono);font-size:clamp(18px,1.5vw,22px);text-align:center;letter-spacing:.04em;padding:0 6px;cursor:text}
+  .t-field:focus{outline:none;color:var(--amber)}
+  .timer.run{border-color:var(--amber)} .timer.warn{border-color:var(--no)} .timer.warn .t-field{color:var(--no)} .timer.off{opacity:.45}
+
+  .s-mid{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,3vh,40px);width:100%}
+  .s-art{flex:1 1 auto;min-height:220px;max-height:60vh;width:100%;display:flex;align-items:center;justify-content:center}
+  .s-art img{width:100%;height:100%;object-fit:cover;display:block;border-radius:var(--rl);border:1px solid var(--line-soft);background:var(--deep);cursor:zoom-in}
+  .ph{flex:1 1 auto;min-height:220px;max-height:60vh;width:100%;position:relative;display:grid;place-items:center;border:1px dashed rgba(184,169,138,.28);border-radius:var(--rl);background:radial-gradient(130% 100% at 50% 0%,#221c14,#16140F 72%)}
+  .ph::after{content:"";position:absolute;inset:0;opacity:.5;border-radius:var(--rl);background:radial-gradient(circle at center,rgba(200,154,61,.10) 0 1.4px,transparent 1.7px) 0 0/30px 30px}
+  .ph .pn{font-family:var(--display);font-weight:700;font-size:clamp(9rem,30vh,22rem);line-height:1;color:rgba(236,227,208,.09)}
+  .ph .pl{position:absolute;bottom:20px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);opacity:.7}
+
+  .s-q{flex:0 0 auto;font-family:var(--display);font-weight:600;font-size:clamp(1.75rem,3.6vw,3.2rem);line-height:1.12;letter-spacing:-.01em;text-align:center;width:100%;margin:0}
+  .s-opts{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;margin:0}
+  .opt{display:flex;align-items:center;gap:16px;text-align:left;background:var(--surface);border:1px solid var(--line);color:var(--ink);font-family:var(--sans);font-size:clamp(16px,1.4vw,20px);line-height:1.25;padding:22px 26px;border-radius:var(--rm);cursor:pointer;transition:border-color .2s var(--expo),background .2s var(--expo),transform .08s}
+  .opt:hover:not(:disabled){border-color:var(--amber);background:var(--surface2)}
+  .opt:active:not(:disabled){transform:translateY(1px)}
+  .opt:disabled{cursor:default}
+  .opt .lt{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:15px;color:var(--muted);border:1px solid var(--line);transition:.2s}
+  .opt.correct{border-color:var(--ok);background:var(--ok-bg)} .opt.correct .lt{background:var(--ok);color:#14210c;border-color:var(--ok)}
+  .opt.wrong{border-color:var(--no);background:var(--no-bg)} .opt.wrong .lt{background:var(--no);color:#25100a;border-color:var(--no)}
+
+  .s-bot{flex:0 0 auto;display:flex;align-items:center;gap:18px}
+  .byline{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.02em;opacity:.85}
+  .s-bot .grp{margin-left:auto;display:flex;gap:14px}
+
+  /* REVEAL */
+  .reveal{position:absolute;inset:0;background:linear-gradient(180deg,var(--surface),#181410);padding:clamp(24px,3.4vh,54px) clamp(28px,5vw,90px);overflow-y:auto;transform:translateY(100%);opacity:0;transition:transform .55s var(--expo),opacity .4s;pointer-events:none;z-index:5}
+  .reveal.open{transform:translateY(0);opacity:1;pointer-events:auto}
+  .reveal::-webkit-scrollbar{width:8px}.reveal::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+  .reveal .in{max-width:1600px;margin:0 auto}
+  .rtop{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .rlbl{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+  .rback{margin-left:auto;background:none;border:1px solid var(--line);border-radius:var(--pill);color:var(--muted);font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;padding:9px 18px;cursor:pointer;transition:.2s}
+  .rback:hover{border-color:var(--amber);color:var(--amber)}
+  .ans{font-family:var(--display);font-weight:700;font-size:clamp(2.2rem,4.4vw,3.8rem);line-height:1.04;color:var(--amber);margin:0 0 clamp(16px,2.2vh,26px)}
+  .rimgs{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin:0 0 clamp(16px,2.2vh,26px)}
+  .rimgs figure{margin:0}
+  .rimgs .im{border-radius:var(--rm);overflow:hidden;border:1px solid var(--line-soft);background:var(--deep);display:flex;align-items:center;justify-content:center;height:clamp(220px,34vh,360px);cursor:zoom-in}
+  .rimgs img{max-width:100%;max-height:100%;width:auto;object-fit:contain}
+  .rimgs figcaption{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--muted);margin-top:9px}
+  .expl{font-family:var(--sans);font-size:clamp(16px,1.4vw,20px);line-height:1.6;color:var(--ink);opacity:.94;max-width:none;column-gap:48px}
+  .expl p{margin:0 0 12px}
+  .src{margin:clamp(16px,2.2vh,26px) 0 0;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center}
+  .src .sl{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .src a{font-family:var(--mono);color:var(--terra);font-size:13px;text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:1px;transition:.2s;word-break:break-word}
+  .src a:hover{color:var(--amber);border-color:var(--amber)}
+  .reveal .btn{margin-top:clamp(18px,2.6vh,32px)}
+
+  /* FINAL */
+  .final .inner{justify-content:center}
+  .final .kick{margin-bottom:clamp(16px,2.4vh,26px)}
+  .final h2{font-family:var(--display);font-weight:700;font-size:clamp(3.4rem,11vw,9rem);line-height:.9;letter-spacing:-.02em;margin:0}
+  .final .res{font-family:var(--display);font-size:clamp(1.7rem,3.4vw,2.8rem);color:var(--ink);margin:clamp(14px,2vh,24px) 0 0}
+  .final .res b{color:var(--amber);font-weight:600}
+  .final .cr{font-family:var(--sans);font-size:clamp(15px,1.5vw,19px);color:var(--muted);line-height:1.62;max-width:78ch;margin:clamp(22px,3vh,36px) 0 0}
+  .final .cr b{color:var(--ink);font-weight:600}
+  .final .lnk{display:flex;flex-wrap:wrap;gap:14px 30px;margin:clamp(16px,2.2vh,26px) 0 0;font-family:var(--mono);font-size:15px}
+  .final .lnk a{color:var(--amber);text-decoration:none;border-bottom:1px solid transparent;transition:.2s}
+  .final .lnk a:hover{border-color:var(--amber)}
+  .final-links{display:flex;flex-wrap:wrap;gap:14px;margin:clamp(22px,3vh,36px) 0 0}
+  .final-links .btn{text-transform:none;letter-spacing:.02em}
+  .final .actions{margin:clamp(24px,3.2vh,40px) 0 0}
+
+  /* DOTS */
+  .dots{position:fixed;right:clamp(14px,1.8vw,30px);top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:14px}
+  .dots button{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--line);background:transparent;cursor:pointer;padding:0;transition:.25s var(--expo)}
+  .dots button:hover{border-color:var(--amber);transform:scale(1.15)}
+  .dots button.active{background:var(--amber);border-color:var(--amber);transform:scale(1.4)}
+  .dots button.done{background:var(--terra);border-color:var(--terra)}
+
+  .lb{position:fixed;inset:0;z-index:100;background:rgba(10,9,7,.95);display:none;align-items:center;justify-content:center;padding:28px;cursor:zoom-out;opacity:0;transition:opacity .22s}
+  .lb.on{display:flex;opacity:1}
+  .lb img{max-width:100%;max-height:92vh;border-radius:8px}
+  .lb-x{position:fixed;top:20px;right:24px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--ink);font-size:21px;cursor:pointer}
+
+  @media (max-width:860px){
+    .scene{height:auto;min-height:100svh} #deck{scroll-snap-type:y proximity}
+    .inner{padding:20px 20px 26px}
+    .s-q{font-size:clamp(1.5rem,6vw,2.2rem)}
+    .s-opts{grid-template-columns:1fr}
+    .s-bot{flex-wrap:wrap;gap:14px}
+    .s-bot .grp{width:100%;margin-left:0}
+    .s-bot .grp .btn{flex:1}
+    .btn{padding:18px 30px}
+    .reveal{padding:22px 20px}
+    .expl{column-gap:0}
+    .dots{display:none}
+    .hero .desc{font-size:clamp(1.5rem,7vw,2.4rem);max-width:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div id="deck"></div>
+<nav class="dots" id="dots" aria-label="Навигация по вопросам"></nav>
+<div class="lb" id="lb" aria-hidden="true"><button class="lb-x" id="lbx" aria-label="Закрыть">✕</button><img id="lbimg" alt=""></div>
+
+<script>
+const IMG={"q1_sunflower":"img/q1_sunflower.webp","q2_chladni":"img/q2_chladni.webp","q3_bismuth":"img/q3_bismuth.webp","q3_escher":"img/q3_escher.webp","q4_seastar_comet":"img/q4_seastar_comet.webp","q4_starfish":"img/q4_starfish.webp","q4_underwater":"img/q4_underwater.webp","q5_snowflakes":"img/q5_snowflakes.webp","q5_ice":"img/q5_ice.webp","q6_slime":"img/q6_slime.webp","q7_circle":"img/q7_circle.webp","q7_fish":"img/q7_fish.webp","q8_lichtenberg":"img/q8_lichtenberg.webp","q9_turing":"img/q9_turing.webp","turing_spots":"img/turing_spots.webp","turing_stripes":"img/turing_stripes.webp"};
+const LET=['А','Б','В','Г','Д'];
+
+const QUESTIONS=[
+ {n:1,author:'Тимур Барский',img:'q1_sunflower',need:'HQ ШИРОКОЕ фото центра подсолнуха со спиралями семян (филлотаксис), 16:9',
+  q:`Филлотаксис — закономерность расположения элементов растения. Перед вами подсолнух как пример. В статье о нём упоминается прозвище человека, чья статуя стоит на кладбище Camposanto. Кто он?`,
+  opts:[{t:'Леонардо да Винчи'},{t:'Галилео Галилей'},{t:'Рене Декарт'},{t:'Леонардо Пизанский',c:1}],
+  ans:'Леонардо Пизанский — он же Фибоначчи',
+  expl:[`Цветными линиями выделены парастихи — спирали от центра: 8 зелёных, 13 красных, 21 синяя. Это соседние числа Фибоначчи.`,
+        `Кладбище Camposanto — в Италии, на родине Фибоначчи, Леонардо Пизанского.`],
+  src:[['Материал (PDF)','https://www.trinitas.ru/rus/doc/0232/013a/2101-rzn.pdf']]},
+
+ {n:2,author:'Олександр Мерзликин',img:'q2_chladni',need:'HQ ШИРОКОЕ фото фигур Хладни (песок на пластине)',
+  q:`В конце XVIII века Эрнст Хладни демонстрировал подобные фигуры при помощи стеклянной пластины, песка и ЕГО. Назовите ЕГО.`,
+  opts:[{t:'Магнит'},{t:'Шёлк'},{t:'Веер'},{t:'Смычок',c:1}],
+  ans:'Смычок',
+  expl:[`Хладни водил смычком по краю пластины: от вибрации песок сбегался к узловым линиям, где пластина почти не колеблется.`,
+        `С XIX века скрипичные мастера проверяли, чтобы фигуры Хладни на обеих деках совпадали.`],
+  src:[['Википедия: Фигуры Хладни','https://ru.wikipedia.org/wiki/Фигуры_Хладни']]},
+
+ {n:3,author:'Максим Мерзляков',img:'q3_bismuth',need:'HQ ШИРОКОЕ фото кристалла висмута',
+  q:`Рассказывая о кристаллах висмута, Сэм Кин упомянул человека, получившего орден Оранье-Нассау. Кого именно?`,
+  opts:[{t:'Бенуа Мандельброт'},{t:'Кристофер Нолан'},{t:'Хорхе Луис Борхес'},{t:'Мауриц Корнелис Эшер',c:1}],
+  ans:'Мауриц Корнелис Эшер',
+  expl:[`Ступенчатые кристаллы висмута напоминают эшеровские гравюры — с их невозможной архитектурой и самоподобием.`],
+  revImgs:[{img:'q3_escher',need:'Замена: общественное достояние — эшероподобная лестница/тесселяция'}],
+  src:[['Элементы: Висмут','https://elementy.ru/kartinka_dnya/351/Vismut'],['science-start.ru','https://science-start.ru/ru/article/view?id=1028']]},
+
+ {n:4,author:'Борис Моносов',img:'q4_underwater',need:'Неспойлерный ШИРОКИЙ подводный кадр (общий план дна)',
+  q:`Авторы научно-популярной книги пишут, что на ранней стадии восстановления ОНА напоминает комету. Назовите ЕЁ.`,
+  opts:[{t:'Ящерица'},{t:'Медуза'},{t:'Планария'},{t:'Морская звезда',c:1}],
+  ans:'Морская звезда',
+  expl:[`Морские звёзды регенерируют даже из одного луча — благодаря распределённой нервной системе. Из оторванного луча растёт новая звезда: на нём появляются четыре лучика поменьше, и он похож на комету с хвостом.`,
+        `Раньше думали, что у морской звезды нет головы, но выяснилось наоборот: вся она — это и есть голова.`],
+  revImgs:[{img:'q4_seastar_comet',lab:'стадия «кометы»'},{img:'q4_starfish',lab:'взрослая звезда'}],
+  src:[['CNN: Starfish are all head','https://edition.cnn.com/2023/11/02/world/starfish-head-body-plan-scn/index.html'],['Wikipedia','https://en.wikipedia.org/wiki/Starfish_regeneration']]},
+
+ {n:5,author:'Илья Иванов',img:'q5_ice',need:'Неспойлерный ШИРОКИЙ зимний/водный визуал (лёд макро)',
+  q:`Форма определяется строением молекулы воды H₂O и водородными связями под строго определённым углом. Мы не спрашиваем, форму чего объясняет заметка. Назовите самое частое значение этого угла.`,
+  opts:[{t:'18°'},{t:'45°'},{t:'90°'},{t:'60°',c:1}],
+  ans:'60 градусов',
+  expl:[`Речь о снежинках: их основа обычно шестилучевая, угол между соседними лучами — 60°.`,
+        `Снежинки с четырьмя, пятью и восемью лучами не встречаются, а с тремя и двенадцатью — изредка находятся.`],
+  revImgs:[{img:'q5_snowflakes'}],
+  src:[['Вокруг света','https://www.vokrugsveta.ru/article/194203/']]},
+
+ {n:6,author:'Артём Колесов',img:'q6_slime',need:'HQ ШИРОКОЕ фото слизевика Physarum polycephalum',
+  q:`Перед вами слизевик. Учёные разложили овсяные хлопья узором Токио с пригородами и поместили в центр слизевика. На что оказался сильно похож результат?`,
+  opts:[{t:'Карта пробок в час пик'},{t:'Канализационная система'},{t:'Тепловая карта коронавируса'},{t:'Карта метрополитена',c:1}],
+  ans:'Карта метрополитена',
+  expl:[`Слизевик — одна гигантская клетка без мозга. Работает простое правило: трубочки с бо́льшим потоком утолщаются, малоиспользуемые рассасываются.`,
+        `Этого хватает, чтобы за сутки найти решение, над которым инженеры работали с 1872 года, оптимизируя карту токийского метро.`],
+  src:[['Discover Magazine','https://www.discovermagazine.com/brainless-slime-mold-builds-a-replica-tokyo-subway-51'],['ZME Science','https://www.zmescience.com/science/news-science/brainless-slime-mold-recreates-tokyos-super-efficient-rail-network/']]},
+
+ {n:7,author:'Николай Русскин',img:'q7_circle',need:'HQ ШИРОКОЕ фото «круга на песке» рыбы-иглобрюха',
+  q:`Перед вами узор около двух метров на дне Тихого океана у берегов Японии. Учёные десятилетиями спорили о его природе. Какое объяснение оказалось верным?`,
+  opts:[{t:'След подводного гейзера'},{t:'Эпицентр сейсмической активности'},{t:'Работа коралловых полипов'},{t:'Брачный ритуал одного вида рыб',c:1}],
+  ans:'Брачный ритуал одного вида рыб',
+  expl:[`Только в 2011 году дайверы засняли «архитектора», а биолог Хироси Кавасэ описал процесс в 2013-м. Автор узора — самец белопятнистого иглобрюха Torquigener albomaculosus длиной около 12 см.`,
+        `Он работает плавниками 7–10 дней, прокладывая около двадцати четырёх радиальных борозд, расходящихся от центра почти идеальной звездой. Канавки помогают собирать мелкий песок для кладки икры.`],
+  revImgs:[{img:'q7_fish',need:'Чёткое фото иглобрюха Torquigener albomaculosus'}],
+  src:[['Springer','https://link.springer.com/article/10.1007/s10228-014-0428-5'],['Элементы','https://elementy.ru/kartinka_dnya/1164/Ryba_arkhitektor'],['Wikipedia','https://en.wikipedia.org/wiki/Pufferfish_mating_ritual']]},
+
+ {n:8,author:'Николай Русскин',img:'q8_lichtenberg',need:'HQ ШИРОКОЕ фото фигуры Лихтенберга',
+  q:`Такие уникальные разветвлённые узоры называются фигурами Лихтенберга. Каким образом они образуются?`,
+  opts:[{t:'Рост грибницы'},{t:'Трещины из-за нагревания'},{t:'Вымерзание после мороза'},{t:'Удар электрического разряда',c:1}],
+  ans:'Удар электрического разряда',
+  expl:[`Фигуры Лихтенберга возникают при скользящем искровом разряде на поверхности диэлектрика: ток пробивает каналы и оставляет ветвящийся самоподобный след.`,
+        `Похожие узоры остаются на коже людей, переживших удар молнии.`],
+  src:[['Electricalschool','https://electricalschool.info/spravochnik/poleznoe/2317-figury-lihtenberga.html']]},
+
+ {n:9,author:'Николай Русскин',img:'q9_turing',need:'Неспойлерный ШИРОКИЙ абстрактный узор морфогенеза',
+  q:`Алан Тьюринг исследовал систему двух диффундирующих веществ. Даже из почти однородного состояния она приходит к устойчивому узору. Что позже объяснили с помощью подобных систем?`,
+  opts:[{t:'Узор пятен леопарда'},{t:'Формирование отпечатков пальцев человека'},{t:'Полосатую пигментацию у рыб'},{t:'Всё вышеперечисленное',c:1}],
+  ans:'Всё вышеперечисленное',
+  expl:[`В статье 1952 года «Химические основы морфогенеза» Тьюринг описал активатор и ингибитор. Если ингибитор диффундирует быстрее, малейшая флуктуация рождает устойчивый узор: узкая ткань даёт полосы, плоская — пятна.`,
+        `Мюррей показал, как одни уравнения дают пятна леопарда и полосы зебры. Кондо расшифровал механизм для данио-рерио, а в 2023-м группа Glover — что и валики отпечатков пальцев формируются системой Тьюринга.`],
+  revImgs:[{img:'turing_spots',lab:'пятна (заглушка)',need:'Заменить на фото пятен леопарда'},{img:'turing_stripes',lab:'полосы (заглушка)',need:'Заменить на фото полос зебры'}],
+  src:[['Wikipedia: Turing pattern','https://en.wikipedia.org/wiki/Turing_pattern'],['Википедия: Химическая основа морфогенеза','https://ru.wikipedia.org/wiki/Химическая_основа_морфогенеза']]}
+];
+
+let correct=0;
+const deck=document.getElementById('deck');
+const dots=document.getElementById('dots');
+function fmt(s){const m=(s/60|0),ss=s%60;return m+':'+String(ss).padStart(2,'0');}
+function parseDur(str){str=(str||'').trim();let m=0,sec=0;if(str.indexOf(':')>=0){const p=str.split(':');m=parseInt(p[0])||0;sec=parseInt(p[1])||0;}else{m=parseInt(str)||0;}let t=m*60+sec;if(isNaN(t)||t<5)t=5;if(t>5999)t=5999;return t;}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+const lb=document.getElementById('lb'),lbimg=document.getElementById('lbimg');
+function openLb(src){lbimg.src=src;lb.classList.add('on');lb.setAttribute('aria-hidden','false');}
+function closeLb(){lb.classList.remove('on');lb.setAttribute('aria-hidden','true');lbimg.src='';}
+lb.addEventListener('click',closeLb);document.getElementById('lbx').addEventListener('click',e=>{e.stopPropagation();closeLb();});
+addEventListener('keydown',e=>{if(e.key==='Escape')closeLb();});
+function scrollToScene(i){const s=deck.children[i];if(s)s.scrollIntoView({behavior:'smooth'});}
+const PLAY='<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+const PAUSE='<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+
+function buildScene(item,idx){
+  const sc=document.createElement('section');sc.className='scene q';sc.id='s'+item.n;
+  const inner=document.createElement('div');inner.className='inner';
+
+  const top=document.createElement('div');top.className='s-top';
+  top.innerHTML=`<span class="qnum">${String(item.n).padStart(2,'0')} <b>/ 09</b></span>`;
+  const timer=document.createElement('div');timer.className='timer';
+  const toggle=document.createElement('button');toggle.className='t-toggle';toggle.type='button';toggle.setAttribute('aria-label','Запустить таймер');toggle.innerHTML=PLAY;
+  const field=document.createElement('input');field.className='t-field';field.value='2:00';field.setAttribute('inputmode','numeric');field.setAttribute('aria-label','Время на вопрос');field.spellcheck=false;
+  timer.append(toggle,field);top.appendChild(timer);inner.appendChild(top);
+
+  const mid=document.createElement('div');mid.className='s-mid';
+  if(item.img){
+    const art=document.createElement('div');art.className='s-art';
+    const im=document.createElement('img');im.src=IMG[item.img]||'';im.alt='';im.loading='lazy';im.decoding='async';im.dataset.needsImage=item.need||'';
+    im.addEventListener('click',()=>openLb(IMG[item.img]));art.appendChild(im);mid.appendChild(art);
+  }else{
+    const ph=document.createElement('div');ph.className='ph';ph.dataset.needsImage=item.need||'';
+    ph.innerHTML=`<span class="pn">${String(item.n).padStart(2,'0')}</span><span class="pl">визуал — в разборе</span>`;mid.appendChild(ph);
+  }
+  const qt=document.createElement('p');qt.className='s-q';qt.textContent=item.q;mid.appendChild(qt);
+  const opts=document.createElement('div');opts.className='s-opts';
+  const shuffled=shuffle(item.opts.map(o=>({...o})));const btns=[];
+  shuffled.forEach((o,i)=>{const b=document.createElement('button');b.className='opt';b.type='button';
+    b.innerHTML=`<span class="lt">${LET[i]}</span><span class="ot">${o.t}</span>`;
+    b.addEventListener('click',()=>choose(!!o.c,b));opts.appendChild(b);btns.push(b);});
+  mid.appendChild(opts);inner.appendChild(mid);
+
+  const bot=document.createElement('div');bot.className='s-bot';
+  bot.innerHTML=`<span class="byline">Автор: ${item.author}</span>`;
+  const grp=document.createElement('div');grp.className='grp';
+  const peek=document.createElement('button');peek.className='btn ghost';peek.type='button';peek.textContent='Ответ';
+  const nb=document.createElement('button');nb.className='btn';nb.type='button';nb.innerHTML=`Дальше <span class="arr">→</span>`;
+  nb.addEventListener('click',()=>scrollToScene(idx+1));grp.append(peek,nb);bot.appendChild(grp);inner.appendChild(bot);
+
+  const rev=document.createElement('div');rev.className='reveal';
+  const rin=document.createElement('div');rin.className='in';
+  const rtop=document.createElement('div');rtop.className='rtop';rtop.innerHTML='<span class="rlbl">Ответ</span>';
+  const rback=document.createElement('button');rback.className='rback';rback.type='button';rback.textContent='↺ к вопросу';
+  rback.addEventListener('click',()=>rev.classList.remove('open'));rtop.appendChild(rback);rin.appendChild(rtop);
+  const ansEl=document.createElement('p');ansEl.className='ans';ansEl.textContent=item.ans;rin.appendChild(ansEl);
+  if(item.revImgs){const g=document.createElement('div');g.className='rimgs';
+    item.revImgs.forEach(ri=>{const f=document.createElement('figure');const d=document.createElement('div');d.className='im';d.dataset.needsImage=ri.need||'';
+      const im=document.createElement('img');im.src=IMG[ri.img]||'';im.alt='';im.loading='lazy';im.addEventListener('click',()=>openLb(IMG[ri.img]));d.appendChild(im);f.appendChild(d);
+      if(ri.lab){const c=document.createElement('figcaption');c.textContent=ri.lab;f.appendChild(c);}g.appendChild(f);});rin.appendChild(g);}
+  const ex=document.createElement('div');ex.className='expl';item.expl.forEach(t=>{const p=document.createElement('p');p.textContent=t;ex.appendChild(p);});rin.appendChild(ex);
+  if(item.src){const s=document.createElement('div');s.className='src';s.innerHTML='<span class="sl">Источники</span>';
+    item.src.forEach(pair=>{const a=document.createElement('a');a.href=pair[1];a.target='_blank';a.rel='noopener';a.textContent=pair[0];s.appendChild(a);});rin.appendChild(s);}
+  const rn=document.createElement('button');rn.className='btn';rn.type='button';rn.innerHTML=`Дальше <span class="arr">→</span>`;
+  rn.addEventListener('click',()=>{rev.classList.remove('open');scrollToScene(idx+1);});rin.appendChild(rn);
+  rev.appendChild(rin);inner.appendChild(rev);
+  sc.appendChild(inner);
+
+  // timer
+  let dur=120,remaining=120,tick=null,running=false;
+  function setDur(v){dur=v;if(!running){remaining=dur;field.value=fmt(dur);}}
+  function stop(){if(tick){clearInterval(tick);tick=null;}running=false;toggle.innerHTML=PLAY;timer.classList.remove('run');field.readOnly=false;}
+  field.addEventListener('change',()=>{if(!running)setDur(parseDur(field.value));});
+  field.addEventListener('blur',()=>{if(!running)setDur(parseDur(field.value));});
+  field.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();setDur(parseDur(field.value));field.blur();}});
+  toggle.addEventListener('click',()=>{if(item._done)return;if(running){stop();return;}
+    if(remaining<=0)remaining=dur;running=true;toggle.innerHTML=PAUSE;timer.classList.add('run');field.readOnly=true;field.value=fmt(remaining);
+    tick=setInterval(()=>{remaining--;field.value=fmt(Math.max(remaining,0));if(remaining<=10)timer.classList.add('warn');if(remaining<=0){stop();onTimeUp();}},1000);});
+
+  // answer / reveal
+  function correctText(){return item.opts.find(o=>o.c).t;}
+  function lock(){btns.forEach(b=>b.disabled=true);}
+  function markCorrect(){btns.forEach(b=>{if(b.querySelector('.ot').textContent===correctText())b.classList.add('correct');});}
+  function openRev(){rev.classList.add('open');rev.scrollTop=0;}
+  function ensureDone(){if(!item._done){item._done=true;stop();timer.classList.add('off');lock();markCorrect();sc.__done=true;updDots();}}
+  function choose(isRight,btn){if(item._done){openRev();return;}item._done=true;stop();timer.classList.add('off');lock();
+    if(isRight){correct++;btn.classList.add('correct');}else{btn.classList.add('wrong');markCorrect();}
+    sc.__done=true;updDots();setTimeout(openRev,600);}
+  function onTimeUp(){ensureDone();openRev();}
+  peek.addEventListener('click',()=>{ensureDone();openRev();}); // ALWAYS opens the explanation
+
+  return sc;
+}
+
+// hero
+const hero=document.createElement('section');hero.className='scene hero';
+hero.innerHTML=`<div class="inner">
+  <p class="kick">Фрактальная Одиссея · квиз</p>
+  <h1>Фракталы <em>в природе</em></h1>
+  <p class="desc">Как одна геометрия проступает в подсолнухе, снежинке, коже рыбы и следе молнии.</p>
+  <p class="sub">Составитель — Николай Русскин</p>
+  <div class="actions"><button class="btn xl" id="startBtn">Начать <span class="arr">→</span></button></div>
+</div>`;
+deck.appendChild(hero);
+
+QUESTIONS.forEach((it,i)=>deck.appendChild(buildScene(it,i+1)));
+
+// final
+const fin=document.createElement('section');fin.className='scene final';fin.id='final';
+fin.innerHTML=`<div class="inner">
+  <h2>Спасибо за игру</h2>
+  <p class="res">Верных ответов: <b id="resN">0</b> из 9</p>
+  <div class="final-links">
+    <a class="btn ghost" href="https://matema-fest.ru" target="_blank" rel="noopener">matema-fest.ru <span class="arr">→</span></a>
+    <a class="btn ghost" href="https://t.me/turings_crossword" target="_blank" rel="noopener">Кроссворд Тьюринга <span class="arr">→</span></a>
+  </div>
+  <div class="actions"><button class="btn xl" id="againBtn">Пройти заново <span class="arr">↺</span></button></div>
+</div>`;
+deck.appendChild(fin);
+
+document.getElementById('startBtn').addEventListener('click',()=>scrollToScene(1));
+document.getElementById('againBtn').addEventListener('click',()=>location.reload());
+
+const scenes=[...deck.children];
+QUESTIONS.forEach((it,i)=>{const b=document.createElement('button');b.type='button';b.title='Вопрос '+it.n;
+  b.addEventListener('click',()=>scrollToScene(i+1));dots.appendChild(b);});
+function updDots(){[...dots.children].forEach((d,k)=>{const s=scenes[k+1];if(s&&s.__done)d.classList.add('done');});
+  const rn=document.getElementById('resN');if(rn)rn.textContent=correct;}
+
+let curr=0;
+function onScroll(){const i=Math.round(deck.scrollTop/deck.clientHeight);if(i!==curr){curr=i;
+  [...dots.children].forEach(d=>d.classList.remove('active'));
+  if(i>=1&&i<=9&&dots.children[i-1])dots.children[i-1].classList.add('active');
+  if(scenes[i]&&scenes[i].id==='final'){const rn=document.getElementById('resN');if(rn)rn.textContent=correct;}}}
+deck.addEventListener('scroll',()=>requestAnimationFrame(onScroll),{passive:true});
+addEventListener('keydown',e=>{if(lb.classList.contains('on'))return;
+  if(document.activeElement&&document.activeElement.classList.contains('t-field'))return;
+  if(e.key==='ArrowDown'||e.key==='PageDown'){e.preventDefault();scrollToScene(Math.min(curr+1,scenes.length-1));}
+  if(e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();scrollToScene(Math.max(curr-1,0));}});
+</script>
+</body>
+</html>
