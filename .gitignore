@@ -16,3 +16,8 @@ fractal-odyssey-editor/
 # `paket-kartinki-pravki.zip` — 0 байт, оборванная загрузка.
 zhurnal/2026-07-09_kvyz-fraktaly/zi7uuFeL
 zhurnal/2026-07-09_kvyz-fraktaly/paket-kartinki-pravki.zip
+
+# ── Общий мусор среды и рабочие следы фабрики (гит-ревизия 2026-09-17, G1).
+# `.commit-plan` пишет git_zona.py под каждый прогон коммита — расходный, живёт часами.
+__pycache__/
+.commit-plan
