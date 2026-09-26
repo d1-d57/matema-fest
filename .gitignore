@@ -11,8 +11,9 @@ node_modules/
 fractal-odyssey-editor/
 
 # ── Скачанное из браузера в папку арки — не работа (гит-ревизия 2026-09-17, G1).
-# `zi7uuFeL` — zip-архив на 18,8 МБ без расширения и с правами 600: временный файл
-# загрузки того же пакета картинок, что уже распакован рядом в `novye-kartinki/`.
+# `zi7uuFeL` — zip-архив на 18,8 МБ без расширения и с правами 600. НЕ дубль `novye-kartinki/`
+# (сверка 26.09: его 10 PNG квиза нет больше нигде) — единственная копия лежит на Google Диске
+# `gdrive:Архив-GitHub/matema-fest/zhurnal/2026-07-09_kvyz-fraktaly/zi7uuFeL` (md5 сверен).
 # `paket-kartinki-pravki.zip` — 0 байт, оборванная загрузка.
 zhurnal/2026-07-09_kvyz-fraktaly/zi7uuFeL
 zhurnal/2026-07-09_kvyz-fraktaly/paket-kartinki-pravki.zip
